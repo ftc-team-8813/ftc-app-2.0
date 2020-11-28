@@ -39,6 +39,4 @@ public class Robot {
         drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, forward_enc, side_enc);
         turret = new Turret(left_potentiometer, right_potentiometer, finger, leftLift, rightLift, shooter);
     }
-
-
 }
