@@ -3,13 +3,14 @@ package org.firstinspires.ftc.teamcode.input;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import java.util.ResourceBundle;
+
 public class ControllerMap
 {
     private Gamepad gamepad1;
     private Gamepad gamepad2;
     
-    private int oldButtons1;
-    private int oldButtons2;
+    private int[] oldButtons = {0, 0};
     private float triggerThreshold = 0.8f;
     
     public ControllerMap(Gamepad gamepad1, Gamepad gamepad2)
@@ -125,5 +126,29 @@ public class ControllerMap
     public boolean getButton(Controller gamepad, Button button)
     {
         return (getButtons(gamepad) & (1 << button.ordinal())) != 0;
+    }
+    
+    public int getEdge(Controller gamepad, Button button)
+    {
+        int buttonVal = getButtons(gamepad) & (1 << button.ordinal());
+        int padnum = gamepad.ordinal();
+        if (buttonVal != 0)
+        {
+            if ((oldButtons[padnum] & (1 << button.ordinal())) == 0)
+            {
+                oldButtons[padnum] |= (1 << button.ordinal());
+                return 1;
+            }
+            else return 0;
+        }
+        else
+        {
+            if ((oldButtons[padnum] & (1 << button.ordinal())) != 0)
+            {
+                oldButtons[padnum] &= ~(1 << button.ordinal());
+                return -1;
+            }
+            else return 0;
+        }
     }
 }
