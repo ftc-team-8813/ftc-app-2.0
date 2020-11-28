@@ -11,29 +11,32 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 public class Robot {
     public final Drivetrain drivetrain;
     public final Turret turret;
-    public final Lift_Grabber lift_grabber;
 
     public Robot(HardwareMap hardwareMap){
         // Hardware Maps
-        DcMotor topLeft = hardwareMap.get(DcMotor.class, "lf");
-        DcMotor bottomLeft = hardwareMap.get(DcMotor.class, "lb");
-        DcMotor topRight = hardwareMap.get(DcMotor.class, "rf");
-        DcMotor bottomRight = hardwareMap.get(DcMotor.class, "rb");
-        DcMotor rotator = null; // hardwareMap.get(DcMotor.class, "rotator");
-        AnalogInput left_potentiometer = hardwareMap.get(AnalogInput.class, "a0");
-        AnalogInput right_potentiometer = hardwareMap.get(AnalogInput.class, "a1");
-        CRServo left_lift = hardwareMap.get(CRServo.class, "lift l");
-        CRServo right_lift = hardwareMap.get(CRServo.class, "lift r");
+        DcMotor top_left = hardwareMap.get(DcMotor.class, "top_left");
+        DcMotor bottom_left = hardwareMap.get(DcMotor.class, "bottom_left");
+        DcMotor top_right = hardwareMap.get(DcMotor.class, "top_right");
+        DcMotor bottom_right = hardwareMap.get(DcMotor.class, "bottom_right");
+        DcMotor shooter = hardwareMap.get(DcMotor.class, "shooter");
+        DcMotor rotator = hardwareMap.get(DcMotor.class, "rotator");
+        DcMotor forward_enc = hardwareMap.get(DcMotor.class, "forward_enc");
+        DcMotor side_enc = hardwareMap.get(DcMotor.class, "side_enc");
+
+        AnalogInput left_potentiometer = hardwareMap.get(AnalogInput.class, "left_potentiometer");
+        AnalogInput right_potentiometer = hardwareMap.get(AnalogInput.class, "right_potentiometer");
+
+        Servo finger = hardwareMap.get(Servo.class, "finger");
+        CRServo leftLift = hardwareMap.get(CRServo.class, "left_lift");
+        CRServo rightLift = hardwareMap.get(CRServo.class, "right_lift");
+
 
         //Reverses left side to match right side rotation in Drivetrain
-        topRight.setDirection(REVERSE);
-        bottomRight.setDirection(REVERSE);
+        top_right.setDirection(REVERSE);
+        bottom_right.setDirection(REVERSE);
 
         // Sub-Assemblies
-        drivetrain = new Drivetrain(topLeft, bottomLeft, topRight, bottomRight);
-        turret = new Turret(rotator);
-        lift_grabber = new Lift_Grabber(left_potentiometer, right_potentiometer, left_lift, right_lift);
+        drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, forward_enc, side_enc);
+        turret = new Turret(left_potentiometer, right_potentiometer, finger, leftLift, rightLift, shooter);
     }
-
-
 }

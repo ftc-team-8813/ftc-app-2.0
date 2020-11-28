@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 
+import java.util.Arrays;
+
 @TeleOp(name="Potentiometer Test")
 public class PotentiometerTest extends OpMode
 {
@@ -19,8 +21,7 @@ public class PotentiometerTest extends OpMode
     @Override
     public void loop()
     {
-        telemetry.addData("Left potentiometer V", robot.lift_grabber.left_potentiometer.getVoltage());
-        telemetry.addData("Right potentiometer V", robot.lift_grabber.right_potentiometer.getVoltage());
+        telemetry.addData("Potentiometer Pos (Left, Right)", Arrays.toString(robot.turret.getPotenPos()));
         telemetry.update();
     }
 }

@@ -19,7 +19,7 @@ public class CurrentTele extends OpMode {
     public void loop() {
         // Drivetrain (Normal Drive)
         robot.drivetrain.telemove(0.5*(gamepad1.left_stick_y), 0.5*(gamepad1.right_stick_x));
-        robot.lift_grabber.lift_grab(gamepad2.left_stick_y, gamepad2.a);
-        telemetry.addData("Lift Positions", Arrays.toString(robot.lift_grabber.getPotenPos()));
+        robot.turret.liftGrab(gamepad2.left_stick_y, gamepad2.a);
+        telemetry.addData("Lift Positions", Arrays.toString(robot.turret.getPotenPos()));
     }
 }
