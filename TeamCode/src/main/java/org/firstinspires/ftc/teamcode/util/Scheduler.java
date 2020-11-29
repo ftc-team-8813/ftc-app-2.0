@@ -19,7 +19,7 @@ public class Scheduler
         public boolean cancelled;
         public float[] lastExecTimes;
         public int timeLogId; // which slot to log the next iteration time into
-        
+
         public Task(Runnable execFunction, double delay, boolean repeat)
         {
             this.execFunction = execFunction;
@@ -72,7 +72,7 @@ public class Scheduler
     
     public void loop()
     {
-        for (Task task : tasks)
+        for (Task task : new ArrayList<>(tasks))
         {
             double time = getTime();
             if (time >= task.start + task.delay)

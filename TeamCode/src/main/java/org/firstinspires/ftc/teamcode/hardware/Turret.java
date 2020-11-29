@@ -25,6 +25,48 @@ public class Turret {
         this.shooter = shooter;
     }
 
+    public void setGrabber(int mode){
+        if (mode == 0){
+            left_lift.setPower(0);
+            right_lift.setPower(0);
+        } else if (mode == 1){
+            left_lift.setPower(-0.2);
+            right_lift.setPower(-0.2);
+        } else if (mode == 2){
+            left_lift.setPower(0.2);
+            right_lift.setPower(0.2);
+        }
+    }
+
+    public void setFinger(int pos){
+        // TODO Find init, hold, extended positions of finger
+        if (pos == 0){
+            finger.setPosition(0);
+        } else if (pos == 1){
+            finger.setPosition(0.8);
+        } else if (pos == 2){
+            finger.setPosition(1);
+        }
+    }
+
+    public void setLift(int pos){
+        // TODO Determine Proportional Gain
+        double proportional = 0.6;
+        double[] voltage_positions = new double[] {0, 0.669, 0.776};
+        double error = getPotenPos()[0] - voltage_positions[pos];
+        while (error != 0){
+            left_lift.setPower(error * proportional);
+            right_lift.setPower(-error * proportional);
+            error = getPotenPos()[0] - voltage_positions[pos];
+        }
+        left_lift.setPower(0);
+        right_lift.setPower(0);
+    }
+
+    public double[] getPotenPos(){
+        return new double[]{left_potentiometer.getVoltage(), right_potentiometer.getVoltage()};
+    }
+
     // Lift rotations pinned in #dev-ops
     public void liftGrab(double left_stick_y, boolean a){
         boolean grab_in_use = false;
@@ -38,10 +80,6 @@ public class Turret {
             left_lift.setPower(left_stick_y);
             right_lift.setPower(-left_stick_y);
         }
-    }
-
-    public double[] getPotenPos(){
-        return new double[]{left_potentiometer.getVoltage(), right_potentiometer.getVoltage()};
     }
 
     public void shoot(boolean b) throws InterruptedException {
