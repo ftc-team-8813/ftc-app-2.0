@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.util;
 
+import org.firstinspires.ftc.teamcode.util.event.Event;
+import org.firstinspires.ftc.teamcode.util.event.EventBus;
+import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,77 +14,75 @@ public class Scheduler
         return (double)System.nanoTime() / 1_000_000_000.0;
     }
     
-    public class Task
+    public class Timer
     {
-        public Runnable execFunction;
+        public final String name;
+        public final int eventChannel;
         public double start;
         public double delay;
-        public boolean repeat;
+        public final boolean repeat;
         public boolean cancelled;
-        public float[] lastExecTimes;
-        public int timeLogId; // which slot to log the next iteration time into
-
-        public Task(Runnable execFunction, double delay, boolean repeat)
+    
+        public Timer(String name, double delay, boolean repeat, int evChannel)
         {
-            this.execFunction = execFunction;
+            this.name = name;
             this.delay = delay;
             this.repeat = repeat;
-            this.lastExecTimes = new float[5];
+            this.eventChannel = evChannel;
             this.cancelled = false;
             this.start = getTime();
         }
-        
-        private void exec()
+    
+        private void trigger()
         {
             if (cancelled) return;
-            double start = getTime();
-            execFunction.run();
-            double end = getTime();
-            lastExecTimes[timeLogId] = (float)(end - start);
+            bus.pushEvent(new TimerEvent(getTime(), eventChannel));
             if (repeat)
             {
-                this.start = start;
-                // TODO: if (getTime() > start + delay), log a warning
+                start += delay;
             }
             else
             {
-                this.cancelled = true;
+                cancelled = true;
             }
         }
     }
     
-    private List<Task> tasks;
+    private List<Timer> timers;
+    private EventBus bus;
+    private Logger log;
+    private int nextChannel = 0;
     
-    public Scheduler()
+    public Scheduler(EventBus bus)
     {
-        tasks = new ArrayList<>();
+        timers = new ArrayList<>();
+        log = new Logger("Scheduler");
     }
     
-    public Task addFutureTask(double delay, Runnable fun)
+    public Timer addFutureTrigger(double delay, String name)
     {
-        Task t = new Task(fun, delay, false);
-        tasks.add(t);
+        Timer t = new Timer(name, delay, false, nextChannel++);
+        timers.add(t);
         return t;
     }
     
-    public Task addRepeatingTask(double delay, Runnable fun)
+    public Timer addRepeatingTrigger(double delay, String name)
     {
-        Task t = new Task(fun, delay, true);
-        tasks.add(t);
+        Timer t = new Timer(name, delay, true, nextChannel++);
+        timers.add(t);
         return t;
     }
     
     public void loop()
     {
-        for (Task task : new ArrayList<>(tasks))
+        for (Timer task : new ArrayList<>(timers)) // copy tasks so we don't have concurrent modification errors
         {
             double time = getTime();
             if (time >= task.start + task.delay)
             {
-                // TODO: if (time >= task.start + task.delay + 0.01) log a warning about timing
-                task.exec();
+                task.trigger();
             }
         }
-        tasks.removeIf((task) -> task.cancelled);
+        timers.removeIf((task) -> task.cancelled);
     }
 }
