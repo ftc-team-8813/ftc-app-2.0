@@ -5,22 +5,28 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-public class Turret {
-    DcMotor shooter;
-    AnalogInput left_potentiometer;
-    AnalogInput right_potentiometer;
-    Servo finger;
-    CRServo left_lift;
-    CRServo right_lift;
-    int lift_target_pos;
+import org.firstinspires.ftc.teamcode.util.event.EventBus;
+import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
 
-    public Turret(AnalogInput left_potentiometer, AnalogInput right_potentiometer, Servo finger, CRServo left_lift, CRServo right_lift, DcMotor shooter){
+public class Turret {
+    private DcMotor shooter;
+    private AnalogInput left_potentiometer;
+    private AnalogInput right_potentiometer;
+    private Servo finger;
+    private CRServo left_lift;
+    private CRServo right_lift;
+    private int lift_target_pos;
+    private boolean enable_lift_event = false;
+    private EventBus ev_bus;
+
+    public Turret(AnalogInput left_potentiometer, AnalogInput right_potentiometer, Servo finger, CRServo left_lift, CRServo right_lift, DcMotor shooter, EventBus evBus){
         this.left_potentiometer = left_potentiometer;
         this.right_potentiometer = right_potentiometer;
         this.finger = finger;
         this.left_lift = left_lift;
         this.right_lift = right_lift;
         this.shooter = shooter;
+        this.ev_bus = evBus;
     }
 
     public void setGrabber(int mode){
@@ -59,16 +65,22 @@ public class Turret {
 
     public void setLift(int pos){
         this.lift_target_pos = pos;
+        this.enable_lift_event = true;
     }
 
     public void updateLiftPID(){
         // TODO Determine Proportional Gain
         // TODO Integrate second potentiometer towards PID
-        double proportional = 0.6;
+        double kP = 0.6;
         double[] voltage_positions = new double[] {0, 0.669, 0.776};
         double error = getPotenPos()[0] - voltage_positions[lift_target_pos];
-        left_lift.setPower(error * proportional);
-        right_lift.setPower(-error * proportional);
+        left_lift.setPower(error * kP);
+        right_lift.setPower(-error * kP);
+        if (Math.abs(error) < 0.05 && enable_lift_event)
+        {
+            enable_lift_event = false;
+            ev_bus.pushEvent(new TriggerEvent(1));
+        }
     }
 
     public double[] getPotenPos(){

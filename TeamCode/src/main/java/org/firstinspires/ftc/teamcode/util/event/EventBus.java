@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.util.event;
 
+import org.firstinspires.ftc.teamcode.util.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -11,7 +13,7 @@ public class EventBus
         void run(T event, EventBus bus, Subscriber<T> sub);
     }
     
-    public class Subscriber<T extends Event>
+    public static class Subscriber<T extends Event>
     {
         public final Class<T> evClass;
         public final SubCallback<T> callback;
@@ -29,6 +31,7 @@ public class EventBus
     
     private List<Event> events;
     private List<Subscriber<?>> subscribers;
+    private Logger log = new Logger("Event Bus");
     
     public EventBus()
     {
@@ -40,6 +43,7 @@ public class EventBus
     {
         Subscriber<T> sub = new Subscriber<T>(evClass, callback, name, channel);
         subscribers.add(sub);
+        log.d("Subscriber Add: '%s' receives %s on channel %d", name, evClass.getSimpleName(), channel);
         return sub;
     }
     
@@ -48,9 +52,24 @@ public class EventBus
         subscribers.remove(sub);
     }
     
+    public <T extends Event> void unsubscribeAll(Class<T> evClass, int channel)
+    {
+        log.d("Unsubscribing all %s listeners on channel %d", evClass.getSimpleName(), channel);
+        subscribers.removeIf((sub) -> {
+            if (sub.evClass == evClass && sub.channel == channel)
+            {
+                log.v(" -> Removed '%s'", sub.name);
+                return true;
+            }
+            return false;
+        });
+    }
+    
     public void pushEvent(Event ev)
     {
         events.add(ev);
+        String callingClassName = Thread.currentThread().getStackTrace()[1].getClassName();
+        log.d("Push %s on channel %d (from %s)", ev.getClass().getSimpleName(), ev.getChannel(), callingClassName);
     }
     
     @SuppressWarnings("unchecked")
@@ -60,10 +79,14 @@ public class EventBus
         List<Subscriber<?>> oldSubs = new ArrayList<>(subscribers);
         for (Event ev : events)
         {
+            log.v("Event: %s on channel %d: %s", ev.getClass().getSimpleName(), ev.getChannel(), ev.toString());
             for (Subscriber sub : oldSubs)
             {
                 if (ev.getClass() == sub.evClass && ev.getChannel() == sub.channel)
+                {
+                    log.v(" -> Send to subscriber '%s'", sub.name);
                     sub.callback.run(ev, this, sub);
+                }
             }
         }
     }
