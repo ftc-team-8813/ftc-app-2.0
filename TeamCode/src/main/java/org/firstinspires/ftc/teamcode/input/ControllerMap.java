@@ -35,9 +35,19 @@ public class ControllerMap
         buttons.put(name, new ButtonEntry(c, b));
     }
     
+    public void setButtonMap(String name, String c, String b)
+    {
+        setButtonMap(name, Controller.valueOf(c), Button.valueOf(b));
+    }
+    
     public void setAxisMap(String name, Controller c, Axis a)
     {
         axes.put(name, new AxisEntry(c, a));
+    }
+    
+    public void setAxisMap(String name, String c, String a)
+    {
+        setAxisMap(name, Controller.valueOf(c), Axis.valueOf(a));
     }
     
     public Gamepad getController(Controller c)
