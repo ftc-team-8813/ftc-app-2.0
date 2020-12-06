@@ -38,16 +38,14 @@ public class CurrentTele extends OpMode {
             }, "Pick Ring", 1);
         }, "Lift Down", 0);
         /*
-        eventBus.subscribe(TriggerEvent.class, (ev, bus, sub) -> {
-            robot.turret.setLift(2);
-            robot.turret.setFinger(1);
-            robot.turret.setGrabber(2);
-            robot.turret.setGrabber(0);
-            robot.turret.setFinger(2);
-            robot.turret.setFinger(0);
-            robot.turret.setLift(1);
-        }, "Ring Shoot", 1);
-         */
+        robot.turret.setLift(2);
+        robot.turret.setFinger(1);
+        robot.turret.setGrabber(2);
+        robot.turret.setGrabber(0);
+        robot.turret.setFinger(2);
+        robot.turret.setFinger(0);
+        robot.turret.setLift(1);
+        */
     }
 
     @Override
@@ -60,15 +58,13 @@ public class CurrentTele extends OpMode {
 
         // Sets constants
         robot.turret.setShooter(1);
+        robot.intake.setIntake(1);
 
         boolean ring_found = robot.ring_detector.alpha() < 100;
         boolean ring_taken = robot.ring_detector.alpha() > 100;
         if (ring_found) {
             eventBus.pushEvent(new TriggerEvent(0));
             total_rings += 1;
-        }
-        if (total_rings == 3  || gamepad2.b){
-
         }
 
         taskScheduler.loop();
