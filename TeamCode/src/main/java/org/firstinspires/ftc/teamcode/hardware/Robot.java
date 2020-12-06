@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import android.graphics.Color;
+
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -11,6 +14,7 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 public class Robot {
     public final Drivetrain drivetrain;
     public final Turret turret;
+    public final ColorSensor ring_detector;
 
     public Robot(HardwareMap hardwareMap){
         // Hardware Maps
@@ -25,6 +29,8 @@ public class Robot {
 
         AnalogInput left_potentiometer = hardwareMap.get(AnalogInput.class, "left_potentiometer");
         AnalogInput right_potentiometer = hardwareMap.get(AnalogInput.class, "right_potentiometer");
+
+        ring_detector = hardwareMap.get(ColorSensor.class, "light sensor");
 
         Servo finger = hardwareMap.get(Servo.class, "finger");
         CRServo leftLift = hardwareMap.get(CRServo.class, "left_lift");

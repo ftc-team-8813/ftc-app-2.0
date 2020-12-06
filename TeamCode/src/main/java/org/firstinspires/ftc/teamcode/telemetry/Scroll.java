@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.telemetry;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.util.Scheduler;
 
 import java.util.ArrayList;
 
@@ -10,6 +11,7 @@ public class Scroll
     public static final int SCROLL_WRAP = 2;
     
     private ArrayList<String> lines;
+    private ArrayList<Object> metadata;
     private Telemetry.Line[] visLines;
     private Telemetry.Item[] visLineData;
     private final int visibleLines;
@@ -24,24 +26,36 @@ public class Scroll
     {
         if (visibleLines <= 0) throw new IllegalArgumentException("Must have at least one visible line");
         this.visibleLines = visibleLines;
+        this.lines = new ArrayList<>();
+        this.metadata = new ArrayList<>();
     }
     
-    public void addLine(String value)
+    public void setScrollMode(int scrollMode)
+    {
+        this.scrollMode = scrollMode;
+    }
+    
+    public void addLine(String value, Object meta)
     {
         lines.add(value);
+        metadata.add(meta);
         invalid = true;
     }
+    
+    public void addLine(String value) { addLine(value, null); }
     
     public String removeLine(int index)
     {
         invalid = true;
-        return lines.remove(index);
+        metadata.remove(index);
+        String line = lines.remove(index);
+        if (getScrollPos() >= lines.size()) setScrollPos(getScrollPos()); // re-validate scroll position
+        return line;
     }
     
-    public String getLine(int index)
-    {
-        return lines.get(index);
-    }
+    public String getLine(int index) { return lines.get(index); }
+    
+    public Object getLineMeta(int index) { return metadata.get(index); }
     
     public void setLine(int index, String value)
     {
@@ -49,13 +63,21 @@ public class Scroll
         lines.set(index, value);
     }
     
-    public void insertLine(int index, String value)
+    public void setLineMeta(int index, Object value)
+    {
+        metadata.set(index, value);
+    }
+    
+    public void insertLine(int index, String value, Object meta)
     {
         invalid = true;
+        metadata.add(index, meta);
         lines.add(index, value);
     }
     
-    public int getNumLines()
+    public void insertLine(int index, String value) { insertLine(index, value, null); }
+    
+    public int size()
     {
         return lines.size();
     }
@@ -85,6 +107,21 @@ public class Scroll
         return pos;
     }
     
+    public String getSelectedLine()
+    {
+        return getLine(getScrollPos());
+    }
+    
+    public Object getSelectedMeta()
+    {
+        return getLineMeta(getScrollPos());
+    }
+    
+    public int getScrollPos()
+    {
+        return selected;
+    }
+    
     public void invalidate()
     {
         invalid = true;
@@ -109,7 +146,8 @@ public class Scroll
             {
                 int x = i + visStart;
                 visLineData[i].setCaption((x == selected) ? selectedCaption : unselectedCaption);
-                visLineData[i].setValue(lines.get(i));
+                if (x < lines.size()) visLineData[i].setValue(lines.get(x));
+                else visLineData[i].setValue("");
             }
             invalid = false;
         }
@@ -120,5 +158,45 @@ public class Scroll
         for (Telemetry.Line line : visLines)
             telemetry.removeLine(line);
         visLines = null;
+    }
+    
+    private static final double preHoldTime = 0.5;
+    private static final double holdTime    = 0.05;
+    
+    private double holdStart = 0;
+    private boolean holdTick = false;
+    private int holdDir = 0;
+    
+    public void press(int dir)
+    {
+        holdStart = Scheduler.getTime();
+        holdDir = dir;
+        holdTick = false;
+        
+        setScrollPos(selected + dir);
+    }
+    
+    public boolean hold()
+    {
+        if (holdTick)
+        {
+            if (Scheduler.getTime() - holdStart > holdTime)
+            {
+                setScrollPos(selected + holdDir);
+                holdStart = Scheduler.getTime();
+                return true;
+            }
+        }
+        else
+        {
+            if (Scheduler.getTime() - holdStart > preHoldTime)
+            {
+                setScrollPos(selected + holdDir);
+                holdStart = Scheduler.getTime();
+                holdTick = true;
+                return true;
+            }
+        }
+        return false;
     }
 }
