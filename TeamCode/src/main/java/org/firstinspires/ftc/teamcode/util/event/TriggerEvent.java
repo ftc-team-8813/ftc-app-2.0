@@ -10,7 +10,7 @@ public class TriggerEvent implements Event {
 
     public String toString()
     {
-        return String.format("TriggerEvent ch=%d t=%.3f", channel);
+        return String.format("TriggerEvent ch=%d", channel);
     }
 
     public int getChannel()

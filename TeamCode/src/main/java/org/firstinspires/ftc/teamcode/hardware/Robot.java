@@ -23,18 +23,18 @@ public class Robot {
         DcMotor top_right = hardwareMap.get(DcMotor.class, "top_right");
         DcMotor bottom_right = hardwareMap.get(DcMotor.class, "bottom_right");
         DcMotor shooter = hardwareMap.get(DcMotor.class, "shooter");
-        DcMotor rotator = hardwareMap.get(DcMotor.class, "rotator");
-        DcMotor forward_enc = hardwareMap.get(DcMotor.class, "forward_enc");
-        DcMotor side_enc = hardwareMap.get(DcMotor.class, "side_enc");
+        DcMotor rotator = hardwareMap.get(DcMotor.class, "turret");
+        // DcMotor forward_enc = hardwareMap.get(DcMotor.class, "forward_enc");
+        // DcMotor side_enc = hardwareMap.get(DcMotor.class, "side_enc");
 
-        AnalogInput left_potentiometer = hardwareMap.get(AnalogInput.class, "left_potentiometer");
-        AnalogInput right_potentiometer = hardwareMap.get(AnalogInput.class, "right_potentiometer");
+        AnalogInput left_potentiometer = hardwareMap.get(AnalogInput.class, "lift l");
+        AnalogInput right_potentiometer = hardwareMap.get(AnalogInput.class, "lift r");
 
         ring_detector = hardwareMap.get(ColorSensor.class, "light sensor");
 
         Servo finger = hardwareMap.get(Servo.class, "finger");
-        CRServo leftLift = hardwareMap.get(CRServo.class, "left_lift");
-        CRServo rightLift = hardwareMap.get(CRServo.class, "right_lift");
+        CRServo leftLift = hardwareMap.get(CRServo.class, "lift l");
+        CRServo rightLift = hardwareMap.get(CRServo.class, "lift r");
 
 
         //Reverses left side to match right side rotation in Drivetrain
@@ -42,7 +42,7 @@ public class Robot {
         bottom_right.setDirection(REVERSE);
 
         // Sub-Assemblies
-        drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, forward_enc, side_enc);
+        drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, null, null);
         turret = new Turret(left_potentiometer, right_potentiometer, finger, leftLift, rightLift, shooter);
     }
 }
