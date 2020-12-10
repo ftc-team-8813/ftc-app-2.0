@@ -15,7 +15,8 @@ public class Robot {
     public final Drivetrain drivetrain;
     public final Turret turret;
     public final ColorSensor ring_detector;
-
+    public final Servo clawIn;
+    public final Servo clawOut;
     public Robot(HardwareMap hardwareMap){
         // Hardware Maps
         DcMotor top_left = hardwareMap.get(DcMotor.class, "top_left");
@@ -33,6 +34,8 @@ public class Robot {
         ring_detector = hardwareMap.get(ColorSensor.class, "light sensor");
 
         Servo finger = hardwareMap.get(Servo.class, "finger");
+        clawIn = hardwareMap.servo.get("wobble_in");
+        clawOut = hardwareMap.servo.get("wobble_out");
         CRServo leftLift = hardwareMap.get(CRServo.class, "lift l");
         CRServo rightLift = hardwareMap.get(CRServo.class, "lift r");
 

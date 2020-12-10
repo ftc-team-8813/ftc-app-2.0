@@ -24,9 +24,14 @@ public class CurrentTele extends OpMode {
     private ControllerMap.ButtonEntry btn_ring_find;
     private ControllerMap.AxisEntry ax_forward;
     private ControllerMap.AxisEntry ax_turn;
-    
+    private ControllerMap.ButtonEntry btn_wobble_pivot;
+    private boolean isWobblePivotToggled;
+    private boolean isWobbleClawToggled;
+    private ControllerMap.ButtonEntry btn_wobble_claw;
     private int total_rings;
-
+    //0 - down and closed; 1 - up and closed; 2 - down and open; 3 - up and open
+    private static final double[] wobbleIn = {0.0, 0.25, 0.5, 1.0};
+    private static final double[] wobbleOut = {0.0, 0.25, 0.5, 1.0};
     @Override
     public void init() {
         robot = new Robot(hardwareMap);
@@ -38,12 +43,16 @@ public class CurrentTele extends OpMode {
         controllerMap.setButtonMap("ring_find", "gamepad1", "b");
         controllerMap.setAxisMap("forward", "gamepad1", "left_stick_y");
         controllerMap.setAxisMap("turn", "gamepad1", "right_stick_x");
+        controllerMap.setButtonMap("wobble_pivot", "gamepad1", "left_stick_button");
+        controllerMap.setButtonMap("wobble_claw", "gamepad1", "right_stick_button");
         // TODO load profile from file
         // assign mappings to variables
         btn_ring_find = controllerMap.buttons.get("ring_find");
         ax_forward = controllerMap.axes.get("forward");
         ax_turn = controllerMap.axes.get("turn");
-        
+        btn_wobble_pivot = controllerMap.buttons.get("wobble_pivot");
+        btn_wobble_claw = controllerMap.buttons.get("wobble_claw");
+
         /*
         Scheduler.Timer timer = taskScheduler.addRepeatingTrigger(0.5, "Example timer");
         eventBus.subscribe(TimerEvent.class, (ev, bus, sub) -> telemetry.update(), "Telemetry update trigger", timer.eventChannel);
@@ -92,7 +101,21 @@ public class CurrentTele extends OpMode {
             eventBus.pushEvent(new TriggerEvent(0));
             total_rings += 1;
         }
-
+        int wobblePositionIndex = 0;
+        if(btn_wobble_claw.edge() > 0){
+            isWobbleClawToggled = !isWobbleClawToggled;
+        }
+        if(btn_wobble_pivot.edge() > 0){
+            isWobblePivotToggled = !isWobblePivotToggled;
+        }
+        if (isWobbleClawToggled){
+            wobblePositionIndex += 2;
+        }
+        if (isWobblePivotToggled){
+            wobblePositionIndex += 1;
+        }
+        robot.clawIn.setPosition(wobbleIn[wobblePositionIndex]);
+        robot.clawIn.setPosition(wobbleOut[wobblePositionIndex]);
         taskScheduler.loop();
         eventBus.update();
     }
