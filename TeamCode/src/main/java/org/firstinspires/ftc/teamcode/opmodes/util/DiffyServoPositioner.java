@@ -17,6 +17,7 @@ import java.util.Map;
 import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.HTML;
 
 @TeleOp(group="util", name="Differential Servo Positioner")
+// much of this code is copied from ServoPositioner.java (from commit ab4c65f)
 public class DiffyServoPositioner extends OpMode
 {
     
@@ -126,7 +127,8 @@ public class DiffyServoPositioner extends OpMode
         controllerMap.setButtonMap("ok",           ControllerMap.Controller.gamepad1, ControllerMap.Button.b);
         controllerMap.setButtonMap("stop_servo",   ControllerMap.Controller.gamepad1, ControllerMap.Button.a);
         controllerMap.setButtonMap("exit_to_menu", ControllerMap.Controller.gamepad1, ControllerMap.Button.right_bumper);
-        controllerMap.setAxisMap  ("change_pos",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.left_stick_y);
+        controllerMap.setAxisMap  ("change_pos_a",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.left_stick_y);
+        controllerMap.setAxisMap  ("change_pos_b",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.right_stick_y);
     }
     
     private class SceneChoose extends Scene
