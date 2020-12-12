@@ -149,7 +149,7 @@ public class Turret {
         return new double[] {x, y};
     }
 
-    // Lift rotations pinned in #dev-ops
+    // Direct Tele-Op Movements
     public void liftGrab(double left_stick_y, boolean a){
         boolean grab_in_use = false;
         boolean lift_in_use = false;
@@ -161,26 +161,6 @@ public class Turret {
             lift_in_use = true;
             left_lift.setPower(left_stick_y);
             right_lift.setPower(-left_stick_y);
-        }
-    }
-
-    public void shoot(boolean b) throws InterruptedException {
-        double finger_up_pos = 0;
-        double finger_down_pos = 0;
-        double finger_push_pos = 0;
-        double shooter_pow = 0;
-        if (b){
-            finger.setPosition(finger_up_pos);
-
-            left_lift.setPower(0.2);
-            right_lift.setPower(0.2);
-            Thread.sleep(1000);
-
-            shooter.setPower(shooter_pow);
-
-            finger.setPosition(finger_push_pos);
-        } else {
-            finger.setPosition(finger_down_pos);
         }
     }
 }
