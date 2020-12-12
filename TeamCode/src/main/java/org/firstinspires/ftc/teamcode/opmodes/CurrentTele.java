@@ -27,6 +27,8 @@ public class CurrentTele extends OpMode {
     private ControllerMap.AxisEntry ax_turn;
     
     private int total_rings;
+    private boolean ring_deposit;
+    private boolean ring_pickup;
 
     @Override
     public void init() {
@@ -44,14 +46,15 @@ public class CurrentTele extends OpMode {
         btn_ring_find = controllerMap.buttons.get("ring_find");
         ax_forward = controllerMap.axes.get("forward");
         ax_turn = controllerMap.axes.get("turn");
-        
+
         /*
         Scheduler.Timer timer = taskScheduler.addRepeatingTrigger(0.5, "Example timer");
         eventBus.subscribe(TimerEvent.class, (ev, bus, sub) -> telemetry.update(), "Telemetry update trigger", timer.eventChannel);
          */
         EventFlow liftFlow = new EventFlow(eventBus);
-        Scheduler.Timer grabber_timer = taskScheduler.addFutureTrigger(1, "grabber timer");
-        grabber_timer.cancelled = true;
+        Scheduler.Timer grabber_pickup = taskScheduler.addFutureTrigger(1, "Grabber Pickup");
+        Scheduler.Timer grabber_dropoff = taskScheduler.addFutureTrigger(0.1, "Grabber Dropoff");
+        grabber_pickup.cancelled = true;
         liftFlow.start(
             new EventBus.Subscriber<>(TriggerEvent.class,
                 (ev, bus, sub) ->
@@ -62,27 +65,51 @@ public class CurrentTele extends OpMode {
                 (ev, bus, sub) ->
                 {
                     robot.turret.setGrabber(1);
-                    grabber_timer.reset();
+                    grabber_pickup.reset();
                 }, "Pick Ring", 1))
             .then(new EventBus.Subscriber<>(TimerEvent.class,
                 (ev, bus, sub) ->
                 {
                     robot.turret.setGrabber(0);
                     robot.turret.setLift(1);
-                }, "Lift Reset", grabber_timer.eventChannel))
+                }, "Lift Reset", grabber_pickup.eventChannel))
             .then(new EventBus.Subscriber<>(TriggerEvent.class,
-                (ev, bus, sub) -> {}, "Lift Reset Complete", 1));
-        /*
-        eventBus.subscribe(TriggerEvent.class, (ev, bus, sub) -> {
-            robot.turret.setLift(2);
-            robot.turret.setFinger(1);
-            robot.turret.setGrabber(2);
-            robot.turret.setGrabber(0);
-            robot.turret.setFinger(2);
-            robot.turret.setFinger(0);
-            robot.turret.setLift(1);
-        }, "Ring Shoot", 1);
-         */
+                (ev, bus, sub) -> {}, "Lift Pickup Complete", 1));
+        liftFlow.start(
+                new EventBus.Subscriber<>(TriggerEvent.class,
+                        (ev, bus, sub) ->
+                        {
+                            robot.turret.setLift(2);
+                        }, "Lift Up", 5))
+                .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                        (ev, bus, sub) ->
+                        {
+                            robot.turret.setFinger(1);
+                            robot.turret.setGrabber(2);
+                            grabber_dropoff.reset();
+                        }, "Finger Out", 6))
+                .then(new EventBus.Subscriber<>(TimerEvent.class,
+                        (ev, bus, sub) ->
+                        {
+                            robot.turret.setGrabber(0);
+                        }, "Release Ring", grabber_dropoff.eventChannel))
+                .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                        (ev, bus, sub) ->
+                        {
+                            robot.turret.setFinger(2);
+                        }, "Push Into Shooter", 8))
+                .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                        (ev, bus, sub) ->
+                        {
+                            robot.turret.setFinger(0);
+                        }, "Push Into Shooter", 9))
+                .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                        (ev, bus, sub) ->
+                        {
+                            robot.turret.setLift(1);
+                        }, "Push Into Shooter", 9))
+                .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                        (ev, bus, sub) -> {}, "Lift Dropoff Complete", 10));
         robot.ring_detector.enableLed(false); // turn off the blindness hazard since we don't need it right now
     }
 
