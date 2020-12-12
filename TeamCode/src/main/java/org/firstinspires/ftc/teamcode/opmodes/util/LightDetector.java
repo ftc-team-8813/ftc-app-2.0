@@ -16,7 +16,12 @@ public class LightDetector extends OpMode {
 
     @Override
     public void loop() {
-        telemetry.addData("Luminosity", robot.ring_detector.alpha());
+        int r = robot.ring_detector.red();
+        int g = robot.ring_detector.green();
+        int b = robot.ring_detector.blue();
+        int a = robot.ring_detector.alpha();
+        telemetry.addData("RGBA", "%3d, %3d, %3d, %3d", r, g, b, a);
+        telemetry.addData("Brightness", Math.max(r, Math.max(g, b)));
         telemetry.update();
     }
 }

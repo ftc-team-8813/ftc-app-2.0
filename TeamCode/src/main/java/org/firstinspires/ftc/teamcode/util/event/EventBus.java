@@ -117,17 +117,20 @@ public class EventBus
     {
         // copy the subscriber list so they can remove themselves if they wish
         List<Subscriber<?>> oldSubs = new ArrayList<>(subscribers);
-        for (Event ev : events)
+        for (Event ev : new ArrayList<>(events))
         {
             log.v("Event: %s on channel %d: %s", ev.getClass().getSimpleName(), ev.getChannel(), ev.toString());
+            boolean remove = false;
             for (Subscriber sub : oldSubs)
             {
                 if (ev.getClass() == sub.evClass && ev.getChannel() == sub.channel)
                 {
                     log.v(" -> Send to subscriber '%s'", sub.name);
                     sub.callback.run(ev, this, sub);
+                    remove = true; // assume the subscriber always consumes the event
                 }
             }
+            if (remove) events.remove(ev);
         }
     }
 }
