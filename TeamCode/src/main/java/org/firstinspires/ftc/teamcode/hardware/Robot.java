@@ -15,6 +15,7 @@ public class Robot {
     public final Drivetrain drivetrain;
     public final Turret turret;
     public final ColorSensor ring_detector;
+    public final Intake intake;
 
     public Robot(HardwareMap hardwareMap){
         // Hardware Maps
