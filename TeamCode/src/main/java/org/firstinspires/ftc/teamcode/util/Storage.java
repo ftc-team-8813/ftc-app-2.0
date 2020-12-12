@@ -48,6 +48,11 @@ public class Storage
         return f;
     }
     
+    public static File getFile(String path)
+    {
+        return new File(STORAGE_ROOT, path);
+    }
+    
     public static void deleteFile(String path)
     {
         File f = new File(STORAGE_ROOT, path);

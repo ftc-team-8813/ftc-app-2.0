@@ -37,7 +37,7 @@ public class LiftCalibrator extends OpMode
     @Override
     public void loop()
     {
-        double value = turret.getRawPos()[0] / 3.3;
+        double value = turret.getRawPos()[1] / 3.3;
         int pos = enc.getCurrentPosition();
         telemetry.addData("voltage", "%.3f", value);
         telemetry.addData("pos", pos);
@@ -57,10 +57,12 @@ public class LiftCalibrator extends OpMode
         int range = maxPos - minPos;
         Integer[] keys = data.keySet().toArray(new Integer[0]);
         Arrays.sort(keys);
-        try (FileWriter w = new FileWriter(Storage.createFile("lift_cal_l.csv")))
+        try (FileWriter w = new FileWriter(Storage.createFile("lift_cal_r.csv")))
         {
-            for (Integer key : keys)
+            int i = keys.length;
+            while (i --> 0)
             {
+                int key = keys[i];
                 double x = 1 - (double)(key - minPos) / range;
                 double y = data.get(key);
                 w.write(String.format("%.3f,%.4f\n", x, y));

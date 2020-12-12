@@ -26,10 +26,10 @@ public class PotentiometerTest extends OpMode
     @Override
     public void loop()
     {
-        double[] pos = robot.turret.getPotenPos();
-        double[] xy = robot.turret.getXYPos();
+        double[] pos = robot.lift.getPositions();
+        // double[] xy = robot.turret.getXYPos();
         telemetry.addData("values", "%.3f, %.3f", pos[0], pos[1]);
-        telemetry.addData("xy", "%.3f, %.3f", xy[0], xy[1]);
+        // telemetry.addData("xy", "%.3f, %.3f", xy[0], xy[1]);
         telemetry.update();
     }
 }
