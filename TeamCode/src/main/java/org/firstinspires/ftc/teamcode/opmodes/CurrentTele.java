@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
+import org.firstinspires.ftc.teamcode.util.event.EventFlow;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
 
@@ -48,19 +49,29 @@ public class CurrentTele extends OpMode {
         Scheduler.Timer timer = taskScheduler.addRepeatingTrigger(0.5, "Example timer");
         eventBus.subscribe(TimerEvent.class, (ev, bus, sub) -> telemetry.update(), "Telemetry update trigger", timer.eventChannel);
          */
-        eventBus.subscribe(TriggerEvent.class, (ev, bus, sub) -> {
-            robot.turret.setLift(0);
-            eventBus.subscribe(TriggerEvent.class, (ev1, bus1, sub1) -> {
-                Scheduler.Timer grabber_timer = taskScheduler.addFutureTrigger(1, "Grabber Timer");
-                robot.turret.setGrabber(1);
-                eventBus.subscribe(TimerEvent.class, (ev2, bus2, sub2) -> {
+        EventFlow liftFlow = new EventFlow(eventBus);
+        Scheduler.Timer grabber_timer = taskScheduler.addFutureTrigger(1, "grabber timer");
+        grabber_timer.cancelled = true;
+        liftFlow.start(
+            new EventBus.Subscriber<>(TriggerEvent.class,
+                (ev, bus, sub) ->
+                {
+                    robot.turret.setLift(0);
+                }, "Lift Down", 0))
+            .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                (ev, bus, sub) ->
+                {
+                    robot.turret.setGrabber(1);
+                    grabber_timer.reset();
+                }, "Pick Ring", 1))
+            .then(new EventBus.Subscriber<>(TimerEvent.class,
+                (ev, bus, sub) ->
+                {
                     robot.turret.setGrabber(0);
                     robot.turret.setLift(1);
-                    eventBus.unsubscribe(sub2);
-                }, "Lift Reset", grabber_timer.eventChannel);
-                eventBus.unsubscribe(sub1);
-            }, "Pick Ring", 1);
-        }, "Lift Down", 0);
+                }, "Lift Reset", grabber_timer.eventChannel))
+            .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                (ev, bus, sub) -> {}, "Lift Reset Complete", 1));
         /*
         eventBus.subscribe(TriggerEvent.class, (ev, bus, sub) -> {
             robot.turret.setLift(2);
