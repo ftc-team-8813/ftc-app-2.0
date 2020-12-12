@@ -3,19 +3,23 @@ package org.firstinspires.ftc.teamcode.util.event;
 import org.firstinspires.ftc.teamcode.util.Logger;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 public class EventFlow
 {
     private final EventBus bus;
-    private HashMap<String, WeakReference<Node>> nodes; // nodes by name; hard references here only to make cleanup easier
+    private List<Node> nodes; // nodes by name; hard references here only to make cleanup easier
     private Node rootNode;
     private Logger log = new Logger("Event Flow");
+    private int jumpTarget = -1;
     
     public EventFlow(EventBus bus)
     {
         this.bus = bus;
+        nodes = new ArrayList<>();
     }
     
     public <T extends Event> NodeBuilder start(EventBus.Subscriber<T> rootSub)
@@ -28,8 +32,13 @@ public class EventFlow
         }
         rootNode = new Node(rootSub);
         rootNode.subscribe();
-        nodes.put(rootSub.name, new WeakReference<>(rootNode));
+        nodes.add(rootNode);
         return new NodeBuilder(rootNode);
+    }
+    
+    public void jump(int index)
+    {
+        jumpTarget = index;
     }
     
     public class NodeBuilder
@@ -49,7 +58,7 @@ public class EventFlow
                 bus.unsubscribe(sub);
             }
             Node nextNode = new Node(sub);
-            nodes.put(sub.name, new WeakReference<>(nextNode));
+            nodes.add(nextNode);
             prevNode.next = nextNode;
             return new NodeBuilder(nextNode);
         }
@@ -67,8 +76,19 @@ public class EventFlow
                     (ev, bus1, sub1) -> {
                         sub.callback.run(ev, bus1, sub1);
                         unsubscribe();
-                        if (next != null) next.subscribe();
-                        else rootNode.subscribe();
+                        if (jumpTarget >= 0)
+                        {
+                            nodes.get(jumpTarget).subscribe();
+                            jumpTarget = -1;
+                        }
+                        else if (next != null)
+                        {
+                            next.subscribe();
+                        }
+                        else
+                        {
+                            rootNode.subscribe();
+                        }
                     }, sub.name, sub.channel);
             this.name = sub.name;
             next = null;
