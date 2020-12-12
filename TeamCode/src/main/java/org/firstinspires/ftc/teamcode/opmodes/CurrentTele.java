@@ -31,6 +31,7 @@ public class CurrentTele extends OpMode {
     public void init() {
         robot = new Robot(hardwareMap);
         eventBus = new EventBus();
+        robot.turret.connectEventBus(eventBus);
         taskScheduler = new Scheduler(eventBus);
         controllerMap = new ControllerMap(gamepad1, gamepad2);
         // setup default button map
@@ -55,7 +56,9 @@ public class CurrentTele extends OpMode {
                 eventBus.subscribe(TimerEvent.class, (ev2, bus2, sub2) -> {
                     robot.turret.setGrabber(0);
                     robot.turret.setLift(1);
+                    eventBus.unsubscribe(sub2);
                 }, "Lift Reset", grabber_timer.eventChannel);
+                eventBus.unsubscribe(sub1);
             }, "Pick Ring", 1);
         }, "Lift Down", 0);
         /*
