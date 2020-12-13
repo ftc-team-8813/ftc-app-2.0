@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes.util;
 
-import android.os.UserManager;
-
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.LynxServoController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -15,14 +12,13 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.telemetry.HTMLString;
 import org.firstinspires.ftc.teamcode.telemetry.Scroll;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.HTML;
 
-@TeleOp(group="util", name="Servo Positioner")
-public class ServoPositioner extends OpMode
+@TeleOp(group="util", name="Differential Servo Positioner")
+// much of this code is copied from ServoPositioner.java (from commit ab4c65f)
+public class DiffyServoPositioner extends OpMode
 {
     
     private static final int SERVOS_PER_CONTROLLER = 6;
@@ -55,7 +51,8 @@ public class ServoPositioner extends OpMode
     private ControllerMap.ButtonEntry btn_ok;
     private ControllerMap.ButtonEntry btn_stop_servo;
     private ControllerMap.ButtonEntry btn_exit_to_menu;
-    private ControllerMap.AxisEntry ax_change_position;
+    private ControllerMap.AxisEntry ax_change_position_a;
+    private ControllerMap.AxisEntry ax_change_position_b;
     
     private static abstract class Scene
     {
@@ -67,7 +64,8 @@ public class ServoPositioner extends OpMode
     private Scene currScene;
     private ControllerMap controllerMap;
     private boolean started;
-    private int servoId;
+    private int servoA;
+    private int servoB;
     private ServoController[] servoControllers;
     
     @Override
@@ -87,7 +85,8 @@ public class ServoPositioner extends OpMode
         btn_ok =             controllerMap.buttons.get("ok");
         btn_stop_servo =     controllerMap.buttons.get("stop_servo");
         btn_exit_to_menu =   controllerMap.buttons.get("exit_to_menu");
-        ax_change_position = controllerMap.axes.get("change_pos");
+        ax_change_position_a = controllerMap.axes.get("change_pos_a");
+        ax_change_position_b = controllerMap.axes.get("change_pos_b");
     }
     
     @Override
@@ -128,16 +127,21 @@ public class ServoPositioner extends OpMode
         controllerMap.setButtonMap("ok",           ControllerMap.Controller.gamepad1, ControllerMap.Button.b);
         controllerMap.setButtonMap("stop_servo",   ControllerMap.Controller.gamepad1, ControllerMap.Button.a);
         controllerMap.setButtonMap("exit_to_menu", ControllerMap.Controller.gamepad1, ControllerMap.Button.right_bumper);
-        controllerMap.setAxisMap  ("change_pos",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.left_stick_y);
+        controllerMap.setAxisMap  ("change_pos_a",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.left_stick_y);
+        controllerMap.setAxisMap  ("change_pos_b",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.right_stick_y);
     }
     
     private class SceneChoose extends Scene
     {
+        private Telemetry.Item status;
         private Scroll servoChooser;
+        private int numPicked = 0;
+        private final String[] indexes = {"first", "second"};
         
         @Override
         public void init()
         {
+            status = telemetry.addLine().addData("", "");
             servoChooser = new Scroll(8);
             Servo[] servos = enumerateServos(hardwareMap);
             for (int i = 0; i < servos.length; i++)
@@ -148,7 +152,7 @@ public class ServoPositioner extends OpMode
                             "span", "style=\"color: #aaaaaa;\"",
                             servoControllers[i/6].getConnectionInfo()).toString(), -1);
                 }
-        
+                
                 if (servos[i] == null)
                 {
                     servoChooser.addLine(new HTMLString(
@@ -162,10 +166,11 @@ public class ServoPositioner extends OpMode
                 }
             }
         }
-    
+        
         @Override
         public void loop()
         {
+            status.setCaption(String.format("Choose the %s servo", indexes[numPicked]));
             int up_edge = btn_up_arrow.edge();
             int dn_edge = btn_down_arrow.edge();
             if (up_edge > 0)      servoChooser.press(-1);
@@ -178,8 +183,16 @@ public class ServoPositioner extends OpMode
                 int sel_servo = (Integer)servoChooser.getLineMeta(servoChooser.getScrollPos());
                 if (sel_servo >= 0)
                 {
-                    servoId = sel_servo;
-                    currScene = new SceneMove();
+                    if (numPicked == 0)
+                    {
+                        servoA = sel_servo;
+                    }
+                    else if (numPicked == 1)
+                    {
+                        servoB = sel_servo;
+                        currScene = new SceneMove();
+                    }
+                    numPicked++;
                 }
             }
             servoChooser.render(telemetry);
@@ -188,26 +201,29 @@ public class ServoPositioner extends OpMode
     
     private class SceneMove extends Scene
     {
-        private LynxServoController controller;
-        private int servo;
-        private double pos = 0;
+        private LynxServoController controllerA;
+        private LynxServoController controllerB;
+        private int cservoA;
+        private int cservoB;
+        private double posA = 0;
+        private double posB = 0;
         private Scroll posList;
         private Telemetry.Item status;
-    
+        
         @Override
         void init()
         {
-            controller = (LynxServoController)servoControllers[servoId / 6];
-            servo = servoId % 6;
+            controllerA = (LynxServoController)servoControllers[servoA / 6];
+            controllerB = (LynxServoController)servoControllers[servoB / 6];
+            cservoA = servoA % 6;
+            cservoB = servoB % 6;
             
-            controller.pwmDisable();
-            controller.setServoPwmEnable(servo);
             posList = new Scroll(8);
             posList.setScrollMode(Scroll.SCROLL_WRAP);
-            posList.addLine("", Double.NaN); // dummy value, will get set immediately
+            posList.addLine("", new double[] {Double.NaN, Double.NaN}); // dummy value, will get set immediately
             status = telemetry.addLine().addData("", "");
         }
-    
+        
         @Override
         void loop()
         {
@@ -216,15 +232,21 @@ public class ServoPositioner extends OpMode
                 status.setCaption("Press the PLAY button to start");
                 return;
             }
-            double step = Math.pow(-ax_change_position.get(), 5) * 0.005;
-            pos += step;
-            if (pos > 1) pos = 1;
-            else if (pos < 0) pos = 0;
+            double step1 = Math.pow(-ax_change_position_a.get(), 5) * 0.005;
+            posA += step1;
+            if (posA > 1) posA = 1;
+            else if (posA < 0) posA = 0;
             
-            controller.setServoPosition(servo, pos);
+            double step2 = Math.pow(-ax_change_position_b.get(), 5) * 0.005;
+            posB += step2;
+            if (posB > 1) posB = 1;
+            else if (posB < 0) posB = 0;
+            
+            controllerA.setServoPosition(cservoA, posA);
+            controllerB.setServoPosition(cservoB, posB);
             
             status.setCaption("Servo positions");
-    
+            
             boolean change = false;
             if (btn_up_arrow.edge() > 0)
             {
@@ -243,17 +265,24 @@ public class ServoPositioner extends OpMode
                 change = true;
             }
             
-            if (change) pos = (Double)posList.getSelectedMeta();
+            if (change)
+            {
+                double[] data = (double[])posList.getSelectedMeta();
+                posA = data[0];
+                posB = data[1];
+            }
             else if (btn_reset_pos.edge() > 0)
             {
-                posList.addLine("", Double.NaN); // dummy, will get filled immediately
+                posList.addLine("", new double[] {Double.NaN, Double.NaN}); // dummy, will get filled immediately
                 posList.setScrollPos(posList.size() - 1);
             }
             
-            if (pos != (Double)posList.getSelectedMeta())
+            double[] listPositions = (double[]) posList.getSelectedMeta();
+            if (posA != listPositions[0] && posB != listPositions[1])
             {
-                posList.setLine(posList.getScrollPos(), String.format("%.3f", pos));
-                posList.setLineMeta(posList.getScrollPos(), pos);
+                posList.setLine(posList.getScrollPos(), String.format("%.3f, %.3f", posA, posB));
+                listPositions[0] = posA;
+                listPositions[1] = posB;
             }
             
             posList.render(telemetry);

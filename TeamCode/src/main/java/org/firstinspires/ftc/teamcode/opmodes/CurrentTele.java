@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
+import org.firstinspires.ftc.teamcode.util.event.EventFlow;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
 
@@ -24,14 +25,11 @@ public class CurrentTele extends OpMode {
     private ControllerMap.ButtonEntry btn_ring_find;
     private ControllerMap.AxisEntry ax_forward;
     private ControllerMap.AxisEntry ax_turn;
-    private ControllerMap.ButtonEntry btn_wobble_pivot;
-    private boolean isWobblePivotToggled;
-    private boolean isWobbleClawToggled;
-    private ControllerMap.ButtonEntry btn_wobble_claw;
+    
     private int total_rings;
-    //0 - down and closed; 1 - up and closed; 2 - down and open; 3 - up and open
-    private static final double[] wobbleIn = {0.0, 0.25, 0.5, 1.0};
-    private static final double[] wobbleOut = {0.0, 0.25, 0.5, 1.0};
+    private boolean ring_deposit;
+    private boolean ring_pickup;
+
     @Override
     public void init() {
         robot = new Robot(hardwareMap);
@@ -43,44 +41,75 @@ public class CurrentTele extends OpMode {
         controllerMap.setButtonMap("ring_find", "gamepad1", "b");
         controllerMap.setAxisMap("forward", "gamepad1", "left_stick_y");
         controllerMap.setAxisMap("turn", "gamepad1", "right_stick_x");
-        controllerMap.setButtonMap("wobble_pivot", "gamepad1", "left_stick_button");
-        controllerMap.setButtonMap("wobble_claw", "gamepad1", "right_stick_button");
         // TODO load profile from file
         // assign mappings to variables
         btn_ring_find = controllerMap.buttons.get("ring_find");
         ax_forward = controllerMap.axes.get("forward");
         ax_turn = controllerMap.axes.get("turn");
-        btn_wobble_pivot = controllerMap.buttons.get("wobble_pivot");
-        btn_wobble_claw = controllerMap.buttons.get("wobble_claw");
 
         /*
         Scheduler.Timer timer = taskScheduler.addRepeatingTrigger(0.5, "Example timer");
         eventBus.subscribe(TimerEvent.class, (ev, bus, sub) -> telemetry.update(), "Telemetry update trigger", timer.eventChannel);
          */
-        eventBus.subscribe(TriggerEvent.class, (ev, bus, sub) -> {
-            robot.turret.setLift(0);
-            eventBus.subscribe(TriggerEvent.class, (ev1, bus1, sub1) -> {
-                Scheduler.Timer grabber_timer = taskScheduler.addFutureTrigger(1, "Grabber Timer");
-                robot.turret.setGrabber(1);
-                eventBus.subscribe(TimerEvent.class, (ev2, bus2, sub2) -> {
+        EventFlow liftFlow = new EventFlow(eventBus);
+        Scheduler.Timer grabber_pickup = taskScheduler.addFutureTrigger(1, "Grabber Pickup");
+        Scheduler.Timer grabber_dropoff = taskScheduler.addFutureTrigger(0.1, "Grabber Dropoff");
+        grabber_pickup.cancelled = true;
+        liftFlow.start(
+            new EventBus.Subscriber<>(TriggerEvent.class,
+                (ev, bus, sub) ->
+                {
+                    robot.turret.setLift(0);
+                }, "Lift Down", 0))
+            .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                (ev, bus, sub) ->
+                {
+                    robot.turret.setGrabber(1);
+                    grabber_pickup.reset();
+                }, "Pick Ring", 1))
+            .then(new EventBus.Subscriber<>(TimerEvent.class,
+                (ev, bus, sub) ->
+                {
                     robot.turret.setGrabber(0);
                     robot.turret.setLift(1);
-                    eventBus.unsubscribe(sub2);
-                }, "Lift Reset", grabber_timer.eventChannel);
-                eventBus.unsubscribe(sub1);
-            }, "Pick Ring", 1);
-        }, "Lift Down", 0);
-        /*
-        eventBus.subscribe(TriggerEvent.class, (ev, bus, sub) -> {
-            robot.turret.setLift(2);
-            robot.turret.setFinger(1);
-            robot.turret.setGrabber(2);
-            robot.turret.setGrabber(0);
-            robot.turret.setFinger(2);
-            robot.turret.setFinger(0);
-            robot.turret.setLift(1);
-        }, "Ring Shoot", 1);
-         */
+                }, "Lift Reset", grabber_pickup.eventChannel))
+            .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                (ev, bus, sub) -> {}, "Lift Pickup Complete", 1));
+        liftFlow.start(
+                new EventBus.Subscriber<>(TriggerEvent.class,
+                        (ev, bus, sub) ->
+                        {
+                            robot.turret.setLift(2);
+                        }, "Lift Up", 5))
+                .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                        (ev, bus, sub) ->
+                        {
+                            robot.turret.setFinger(1);
+                            robot.turret.setGrabber(2);
+                            grabber_dropoff.reset();
+                        }, "Finger Out", 6))
+                .then(new EventBus.Subscriber<>(TimerEvent.class,
+                        (ev, bus, sub) ->
+                        {
+                            robot.turret.setGrabber(0);
+                        }, "Release Ring", grabber_dropoff.eventChannel))
+                .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                        (ev, bus, sub) ->
+                        {
+                            robot.turret.setFinger(2);
+                        }, "Push Into Shooter", 8))
+                .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                        (ev, bus, sub) ->
+                        {
+                            robot.turret.setFinger(0);
+                        }, "Push Into Shooter", 9))
+                .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                        (ev, bus, sub) ->
+                        {
+                            robot.turret.setLift(1);
+                        }, "Push Into Shooter", 9))
+                .then(new EventBus.Subscriber<>(TriggerEvent.class,
+                        (ev, bus, sub) -> {}, "Lift Dropoff Complete", 10));
         robot.ring_detector.enableLed(false); // turn off the blindness hazard since we don't need it right now
     }
 
@@ -101,21 +130,7 @@ public class CurrentTele extends OpMode {
             eventBus.pushEvent(new TriggerEvent(0));
             total_rings += 1;
         }
-        int wobblePositionIndex = 0;
-        if(btn_wobble_claw.edge() > 0){
-            isWobbleClawToggled = !isWobbleClawToggled;
-        }
-        if(btn_wobble_pivot.edge() > 0){
-            isWobblePivotToggled = !isWobblePivotToggled;
-        }
-        if (isWobbleClawToggled){
-            wobblePositionIndex += 2;
-        }
-        if (isWobblePivotToggled){
-            wobblePositionIndex += 1;
-        }
-        robot.clawIn.setPosition(wobbleIn[wobblePositionIndex]);
-        robot.clawIn.setPosition(wobbleOut[wobblePositionIndex]);
+
         taskScheduler.loop();
         eventBus.update();
     }

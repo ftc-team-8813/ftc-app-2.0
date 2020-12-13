@@ -32,6 +32,12 @@ public class Scheduler
             this.cancelled = false;
             this.start = getTime();
         }
+        
+        public void reset()
+        {
+            this.cancelled = false;
+            this.start = getTime();
+        }
     
         private void trigger()
         {
@@ -77,12 +83,13 @@ public class Scheduler
     {
         for (Timer task : new ArrayList<>(timers)) // copy tasks so we don't have concurrent modification errors
         {
+            if (task.cancelled) continue;
             double time = getTime();
             if (time >= task.start + task.delay)
             {
                 task.trigger();
             }
         }
-        timers.removeIf((task) -> task.cancelled);
+        // timers.removeIf((task) -> task.cancelled);
     }
 }
