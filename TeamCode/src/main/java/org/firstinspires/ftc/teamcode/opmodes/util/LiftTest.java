@@ -14,6 +14,7 @@ public class LiftTest extends OpMode
     private ControllerMap controllerMap;
 
     private ControllerMap.ButtonEntry btn_enable;
+    private ControllerMap.ButtonEntry btn_home;
     private ControllerMap.AxisEntry ax_lift;
     private ControllerMap.AxisEntry ax_grab;
     
@@ -24,10 +25,12 @@ public class LiftTest extends OpMode
         controllerMap = new ControllerMap(gamepad1, gamepad2);
         
         controllerMap.setButtonMap("enable", "gamepad1", "right_trigger");
+        controllerMap.setButtonMap("home", "gamepad1", "y");
         controllerMap.setAxisMap("lift", "gamepad1", "left_stick_y");
         controllerMap.setAxisMap("grab", "gamepad1", "right_stick_y");
         
         btn_enable = controllerMap.buttons.get("enable");
+        btn_home = controllerMap.buttons.get("home");
         ax_lift = controllerMap.axes.get("lift");
         ax_grab = controllerMap.axes.get("grab");
     }
@@ -46,6 +49,8 @@ public class LiftTest extends OpMode
         if (grab_tgt_new < 0) robot.lift.grabTarget = 0;
         else if (grab_tgt_new > 0.5) robot.lift.grabTarget = 0.5;
         else robot.lift.grabTarget = grab_tgt_new;
+        
+        if (btn_home.edge() > 0) robot.lift.home_stage = 1;
         
         telemetry.addData("Lift target", "%.3f", robot.lift.liftTarget);
         telemetry.addData("Grab target", "%.3f", robot.lift.grabTarget);

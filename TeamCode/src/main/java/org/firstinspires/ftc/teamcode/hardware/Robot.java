@@ -6,8 +6,10 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoController;
 
 import org.firstinspires.ftc.teamcode.util.Storage;
 
@@ -37,6 +39,7 @@ public class Robot {
         AnalogInput left_potentiometer = hardwareMap.get(AnalogInput.class, "lift l");
         AnalogInput right_potentiometer = hardwareMap.get(AnalogInput.class, "lift r");
         AnalogInput rotate_potentiometer = hardwareMap.get(AnalogInput.class, "turret");
+        DigitalChannel top_button = hardwareMap.get(DigitalChannel.class, "top switch");
 
         ring_detector = hardwareMap.get(ColorSensor.class, "light sensor");
 
@@ -58,6 +61,6 @@ public class Robot {
 
         CalibratedAnalogInput lPot = new CalibratedAnalogInput(left_potentiometer, Storage.getFile("lift_calib_l.json"));
         CalibratedAnalogInput rPot = new CalibratedAnalogInput(right_potentiometer, Storage.getFile("lift_calib_r.json"));
-        lift = new Lift(leftLift, rightLift, lPot, rPot);
+        lift = new Lift(leftLift, rightLift, lPot, rPot, top_button);
     }
 }

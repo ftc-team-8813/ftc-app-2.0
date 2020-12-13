@@ -278,7 +278,7 @@ public class DiffyServoPositioner extends OpMode
             }
             
             double[] listPositions = (double[]) posList.getSelectedMeta();
-            if (posA != listPositions[0] && posB != listPositions[1])
+            if (posA != listPositions[0] || posB != listPositions[1])
             {
                 posList.setLine(posList.getScrollPos(), String.format("%.3f, %.3f", posA, posB));
                 listPositions[0] = posA;

@@ -9,12 +9,16 @@ import com.google.gson.stream.JsonReader;
 import com.qualcomm.hardware.lynx.LynxServoController;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Storage;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -23,29 +27,56 @@ public class Lift
 {
     private CRServo lServo, rServo;
     private CalibratedAnalogInput lPot, rPot;
+    private DigitalChannel topButton;
     public double liftTarget; // distance from top (top=0)
     public double grabTarget; // positive = roll IN
-    private double kP = 12;
+    private double kP = 5;
     
     public boolean hold = false;
-    private boolean homing = false;
     // Homing stages:
-    // * 0 =
-    private int home_stage = 0;
+    // * 0 = not homing -> 1
+    // * 1 = move up until an endstop is hit -> 2/3/4
+    // * 2 = button hit, slide across to l=0 -> 0
+    // * 3 = l endstop hit, slide r up until button hit -> 0
+    // * 4 = r endstop hit, slide l back until button hit -> 2
+    public int home_stage = 0;
     private double topR = 0.5;
+    private ArrayList<String> homingLog = new ArrayList<>();
+    private long lastLog;
     
-    public Lift(CRServo lServo, CRServo rServo, CalibratedAnalogInput lPot, CalibratedAnalogInput rPot)
+    private Logger log = new Logger("Lift");
+    
+    public Lift(CRServo lServo, CRServo rServo, CalibratedAnalogInput lPot, CalibratedAnalogInput rPot, DigitalChannel button)
     {
         this.lServo = lServo;
         this.rServo = rServo;
         this.lPot = lPot;
         this.rPot = rPot;
+        this.topButton = button;
     }
     
     public void update(Telemetry telemetry)
     {
-        if (!homing)
+        if (home_stage == 0)
         {
+            if (!homingLog.isEmpty())
+            {
+                log.d("Writing homing log");
+                try (FileWriter w = new FileWriter(Storage.createFile("homing_log.csv")))
+                {
+                    for (String s : homingLog)
+                    {
+                        w.write(s);
+                        w.write('\n');
+                    }
+                    homingLog.clear();
+                }
+                catch (IOException e)
+                {
+                    log.e(e);
+                }
+                log.d("Complete");
+            }
             // The lift knows where it is, because it knows where it isn't:
             double lTarget = liftTarget + grabTarget;
             double rTarget = topR - liftTarget + grabTarget;
@@ -78,22 +109,63 @@ public class Lift
                 stopServos();
             }
         }
+        else
+        {
+            if (home_stage == 1) // move up
+            {
+                lServo.setPower(0.1); // + power -> - distance
+                rServo.setPower(-0.1);
+                if (!topButton.getState()) // pressed -> LOW == 0 == false
+                    home_stage = 2;
+                else if (lPot.get() < 0.01)
+                    home_stage = 3;
+                else if (rPot.get() > 0.98)
+                    home_stage = 4;
+            }
+            else if (home_stage == 2) // button hit, slide across
+            {
+                lServo.setPower(0.1);
+                rServo.setPower(0.1);
+                if (lPot.get() < 0.01) home_stage = 0;
+            }
+            else if (home_stage == 3) // left end hit, slide right servo up
+            {
+                lServo.setPower(0);
+                rServo.setPower(-0.1);
+                if (!topButton.getState()) home_stage = 0;
+            }
+            else if (home_stage == 4) // right end hit, slide left servo down
+            {
+                lServo.setPower(0.1);
+                rServo.setPower(0);
+                if (!topButton.getState()) home_stage = 2;
+            }
+            if (System.nanoTime() > lastLog + 100_000_000)
+            {
+                lastLog = System.nanoTime();
+                homingLog.add(String.format("%d,%.3f,%.3f", home_stage, lPot.get(), rPot.get()));
+            }
+        }
     }
     
     private void stopServos()
     {
+        /*
         LynxServoController lCtrl = (LynxServoController)lServo.getController();
         LynxServoController rCtrl = (LynxServoController)rServo.getController();
         lCtrl.setServoPwmDisable(lServo.getPortNumber());
         rCtrl.setServoPwmDisable(rServo.getPortNumber());
+         */
     }
     
     private void enableServos()
     {
+        /*
         LynxServoController lCtrl = (LynxServoController)lServo.getController();
         LynxServoController rCtrl = (LynxServoController)rServo.getController();
         lCtrl.setServoPwmEnable(lServo.getPortNumber());
         rCtrl.setServoPwmEnable(rServo.getPortNumber());
+         */
     }
     
     public double[] getPositions()
