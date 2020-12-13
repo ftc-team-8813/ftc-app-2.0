@@ -25,10 +25,9 @@ public class CurrentTele extends OpMode {
     private ControllerMap.ButtonEntry btn_ring_find;
     private ControllerMap.AxisEntry ax_forward;
     private ControllerMap.AxisEntry ax_turn;
-    
+
     private int total_rings;
-    private boolean ring_deposit;
-    private boolean ring_pickup;
+    private boolean lift_moving;
 
     @Override
     public void init() {
@@ -51,11 +50,12 @@ public class CurrentTele extends OpMode {
         Scheduler.Timer timer = taskScheduler.addRepeatingTrigger(0.5, "Example timer");
         eventBus.subscribe(TimerEvent.class, (ev, bus, sub) -> telemetry.update(), "Telemetry update trigger", timer.eventChannel);
          */
-        EventFlow liftFlow = new EventFlow(eventBus);
+        EventFlow liftPickup = new EventFlow(eventBus);
+        EventFlow liftDeposit = new EventFlow(eventBus);
         Scheduler.Timer grabber_pickup = taskScheduler.addFutureTrigger(1, "Grabber Pickup");
         Scheduler.Timer grabber_dropoff = taskScheduler.addFutureTrigger(0.1, "Grabber Dropoff");
         grabber_pickup.cancelled = true;
-        liftFlow.start(
+        liftPickup.start(
             new EventBus.Subscriber<>(TriggerEvent.class,
                 (ev, bus, sub) ->
                 {
@@ -75,7 +75,7 @@ public class CurrentTele extends OpMode {
                 }, "Lift Reset", grabber_pickup.eventChannel))
             .then(new EventBus.Subscriber<>(TriggerEvent.class,
                 (ev, bus, sub) -> {}, "Lift Pickup Complete", 1));
-        liftFlow.start(
+        liftDeposit.start(
                 new EventBus.Subscriber<>(TriggerEvent.class,
                         (ev, bus, sub) ->
                         {
@@ -101,12 +101,14 @@ public class CurrentTele extends OpMode {
                 .then(new EventBus.Subscriber<>(TriggerEvent.class,
                         (ev, bus, sub) ->
                         {
-                            robot.turret.setFinger("in");
+                            robot.turret.setFinger("catch");
+                            liftDeposit.jump(2);
                         }, "Push Into Shooter", 9))
                 .then(new EventBus.Subscriber<>(TriggerEvent.class,
                         (ev, bus, sub) ->
                         {
                             robot.lift.setLiftTarget("middle");
+                            lift_moving = false;
                         }, "Push Into Shooter", 9))
                 .then(new EventBus.Subscriber<>(TriggerEvent.class,
                         (ev, bus, sub) -> {}, "Lift Dropoff Complete", 10));
@@ -118,17 +120,39 @@ public class CurrentTele extends OpMode {
         // Drivetrain (Normal Drive)
         robot.drivetrain.telemove(0.5*(ax_forward.get()), 0.5*(ax_turn.get()));
 
+        // Rotator Power
+        robot.turret.rotateTurret(gamepad2.left_stick_x);
+
+        // Adjust Aim
+        // TODO Find endpoints, direction, and increment
+        if (gamepad2.dpad_up){
+            robot.turret.aim.setPosition(robot.turret.aim.getPosition() + 0.0001);
+        } else if (gamepad2.dpad_down){
+            robot.turret.aim.setPosition(robot.turret.aim.getPosition() - 0.0001);
+        }
+
         // Update PID
-        robot.turret.updateLiftPID();
+        robot.lift.update(telemetry);
 
-        // Sets constants
+        // Constants
         robot.turret.setShooter(1);
+        robot.intake.setIntake(1);
 
-        // boolean ring_found = robot.ring_detector.alpha() < 100;
-        // boolean ring_taken = robot.ring_detector.alpha() > 100;
-        if (btn_ring_find.edge() > 0) {
+        // Lift Conditionals
+        int r = robot.ring_detector.red();
+        int g = robot.ring_detector.green();
+        int b = robot.ring_detector.blue();
+        int brightness = Math.max(r, Math.max(g, b));
+
+        boolean ring_found = brightness > 100;
+        if ((btn_ring_find.edge() > 0 || ring_found) && !lift_moving) {
             eventBus.pushEvent(new TriggerEvent(0));
             total_rings += 1;
+        }
+
+        if (total_rings == 3 && !lift_moving){
+            eventBus.pushEvent(new TriggerEvent(5));
+            total_rings = 0;
         }
 
         taskScheduler.loop();
