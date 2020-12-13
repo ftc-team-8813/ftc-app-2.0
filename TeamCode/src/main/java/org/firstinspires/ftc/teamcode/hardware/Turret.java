@@ -75,7 +75,6 @@ public class Turret {
     }
 
     public void setFinger(String pos){
-        // TODO Find init, hold, extended positions of finger
         finger.setPosition(positions.get(pos));
     }
 
@@ -100,8 +99,6 @@ public class Turret {
 
     @Deprecated
     public void updateLiftPID(){
-        // TODO Determine Proportional Gain
-        // TODO Integrate second potentiometer towards PID
         double kP = 0.1;
         double[] voltage_positions = new double[] {0, 0.669, 0.776};
         double voltage = getPotenPos()[0];
