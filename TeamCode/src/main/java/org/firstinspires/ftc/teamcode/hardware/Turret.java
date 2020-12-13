@@ -5,12 +5,16 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.util.Configurations;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
 
+import java.util.HashMap;
+
 public class Turret {
+    private DcMotor rotator;
     private DcMotor shooter;
     private AnalogInput left_potentiometer;
     private AnalogInput right_potentiometer;
@@ -19,7 +23,9 @@ public class Turret {
     private Servo finger;
     private CRServo left_lift;
     private CRServo right_lift;
-    
+
+    HashMap<String, Double> positions;
+
     private int lift_target_pos;
     private boolean enable_lift_event = false;
     
@@ -28,7 +34,7 @@ public class Turret {
 
     public Turret(AnalogInput left_potentiometer, AnalogInput right_potentiometer,
                   Servo finger, CRServo left_lift, CRServo right_lift, DcMotor shooter,
-                  AnalogInput rotate_potentiometer){
+                  DcMotor rotator, AnalogInput rotate_potentiometer){
         this.left_potentiometer = left_potentiometer;
         this.right_potentiometer = right_potentiometer;
         this.rotate_potentiometer = rotate_potentiometer;
@@ -36,8 +42,12 @@ public class Turret {
         this.finger = finger;
         this.left_lift = left_lift;
         this.right_lift = right_lift;
+        this.rotator = rotator;
         this.shooter = shooter;
         this.ev_bus = null;
+
+        String[] pos_keys = new String[]{"in", "catch", "out"};
+        positions = Configurations.readData(pos_keys, Storage.getFile("finger.json"));
     }
     
     public void connectEventBus(EventBus evBus)
@@ -60,15 +70,9 @@ public class Turret {
         }
     }
 
-    public void setFinger(int pos){
+    public void setFinger(String pos){
         // TODO Find init, hold, extended positions of finger
-        if (pos == 0){
-            finger.setPosition(0);
-        } else if (pos == 1){
-            finger.setPosition(0.8);
-        } else if (pos == 2){
-            finger.setPosition(1);
-        }
+        finger.setPosition(positions.get(pos));
     }
 
     public void setShooter(int mode){
@@ -80,11 +84,11 @@ public class Turret {
         }
     }
 
-    public void setLift(int pos){
-        this.lift_target_pos = pos;
-        this.enable_lift_event = true;
+    public void rotateTurret(double rotation){
+        rotator.setPower(rotation);
     }
 
+    @Deprecated
     public void updateLiftPID(){
         // TODO Determine Proportional Gain
         // TODO Integrate second potentiometer towards PID

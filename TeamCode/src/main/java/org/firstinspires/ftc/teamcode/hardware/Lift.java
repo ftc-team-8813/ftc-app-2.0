@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.util.Configurations;
+import org.firstinspires.ftc.teamcode.util.Storage;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,6 +20,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Lift
 {
@@ -33,6 +36,8 @@ public class Lift
     // * 0 =
     private int home_stage = 0;
     private double topR = 0.5;
+
+    private HashMap<String, Double> positions;
     
     public Lift(CRServo lServo, CRServo rServo, CalibratedAnalogInput lPot, CalibratedAnalogInput rPot)
     {
@@ -40,6 +45,9 @@ public class Lift
         this.rServo = rServo;
         this.lPot = lPot;
         this.rPot = rPot;
+
+        final String[] pos_keys = new String[]{"bottom", "middle", "top"};
+        positions = Configurations.readData(pos_keys, Storage.getFile("lift.json"));
     }
     
     public void update(Telemetry telemetry)
@@ -78,6 +86,10 @@ public class Lift
                 stopServos();
             }
         }
+    }
+
+    public void setLiftTarget(String pos){
+        liftTarget = positions.get(pos);
     }
     
     private void stopServos()
