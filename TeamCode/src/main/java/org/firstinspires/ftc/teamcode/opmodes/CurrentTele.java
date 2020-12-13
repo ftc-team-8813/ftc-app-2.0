@@ -59,7 +59,7 @@ public class CurrentTele extends OpMode {
             new EventBus.Subscriber<>(TriggerEvent.class,
                 (ev, bus, sub) ->
                 {
-                    robot.turret.setLift(0);
+                    robot.lift.setLiftTarget("bottom");
                 }, "Lift Down", 0))
             .then(new EventBus.Subscriber<>(TriggerEvent.class,
                 (ev, bus, sub) ->
@@ -71,7 +71,7 @@ public class CurrentTele extends OpMode {
                 (ev, bus, sub) ->
                 {
                     robot.turret.setGrabber(0);
-                    robot.turret.setLift(1);
+                    robot.lift.setLiftTarget("middle");
                 }, "Lift Reset", grabber_pickup.eventChannel))
             .then(new EventBus.Subscriber<>(TriggerEvent.class,
                 (ev, bus, sub) -> {}, "Lift Pickup Complete", 1));
@@ -79,12 +79,12 @@ public class CurrentTele extends OpMode {
                 new EventBus.Subscriber<>(TriggerEvent.class,
                         (ev, bus, sub) ->
                         {
-                            robot.turret.setLift(2);
+                            robot.lift.setLiftTarget("top");
                         }, "Lift Up", 5))
                 .then(new EventBus.Subscriber<>(TriggerEvent.class,
                         (ev, bus, sub) ->
                         {
-                            robot.turret.setFinger(1);
+                            robot.turret.setFinger("catch");
                             robot.turret.setGrabber(2);
                             grabber_dropoff.reset();
                         }, "Finger Out", 6))
@@ -96,17 +96,17 @@ public class CurrentTele extends OpMode {
                 .then(new EventBus.Subscriber<>(TriggerEvent.class,
                         (ev, bus, sub) ->
                         {
-                            robot.turret.setFinger(2);
+                            robot.turret.setFinger("out");
                         }, "Push Into Shooter", 8))
                 .then(new EventBus.Subscriber<>(TriggerEvent.class,
                         (ev, bus, sub) ->
                         {
-                            robot.turret.setFinger(0);
+                            robot.turret.setFinger("in");
                         }, "Push Into Shooter", 9))
                 .then(new EventBus.Subscriber<>(TriggerEvent.class,
                         (ev, bus, sub) ->
                         {
-                            robot.turret.setLift(1);
+                            robot.lift.setLiftTarget("middle");
                         }, "Push Into Shooter", 9))
                 .then(new EventBus.Subscriber<>(TriggerEvent.class,
                         (ev, bus, sub) -> {}, "Lift Dropoff Complete", 10));

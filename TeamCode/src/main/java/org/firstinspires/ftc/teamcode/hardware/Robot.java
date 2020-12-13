@@ -48,7 +48,7 @@ public class Robot {
 
         // Sub-Assemblies
         drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, null, null);
-        turret = new Turret(left_potentiometer, right_potentiometer, finger, leftLift, rightLift, shooter);
+        turret = new Turret(left_potentiometer, right_potentiometer, finger, leftLift, rightLift, shooter, rotator);
         intake = new Intake(intaker);
         
         CalibratedAnalogInput lPot = new CalibratedAnalogInput(left_potentiometer, Storage.getFile("lift_calib_l.json"));
