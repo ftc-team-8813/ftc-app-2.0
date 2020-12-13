@@ -41,6 +41,8 @@ public class Robot {
         ring_detector = hardwareMap.get(ColorSensor.class, "light sensor");
 
         Servo finger = hardwareMap.get(Servo.class, "finger");
+        Servo aim = hardwareMap.get(Servo.class, "aim");
+
         clawIn = hardwareMap.servo.get("wobble_in");
         clawOut = hardwareMap.servo.get("wobble_out");
         CRServo leftLift = hardwareMap.get(CRServo.class, "lift l");
@@ -53,7 +55,7 @@ public class Robot {
 
         // Sub-Assemblies
         drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, null, null);
-        turret = new Turret(left_potentiometer, right_potentiometer, finger, leftLift, rightLift, shooter, rotator, rotate_potentiometer);
+        turret = new Turret(left_potentiometer, right_potentiometer, finger, aim, leftLift, rightLift, shooter, rotator, rotate_potentiometer);
         intake = new Intake(intaker);
 
         CalibratedAnalogInput lPot = new CalibratedAnalogInput(left_potentiometer, Storage.getFile("lift_calib_l.json"));
