@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Storage;
+import org.firstinspires.ftc.teamcode.util.Configurations;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,6 +23,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Lift
 {
@@ -41,6 +43,8 @@ public class Lift
     // * 4 = r endstop hit, slide l back until button hit -> 2
     public int home_stage = 0;
     private double topR = 0.5;
+
+    private HashMap<String, Double> positions;
     private ArrayList<String> homingLog = new ArrayList<>();
     private long lastLog;
     
@@ -53,6 +57,9 @@ public class Lift
         this.lPot = lPot;
         this.rPot = rPot;
         this.topButton = button;
+
+        final String[] pos_keys = new String[]{"bottom", "middle", "top"};
+        positions = Configurations.readData(pos_keys, Storage.getFile("lift.json"));
     }
     
     public void update(Telemetry telemetry)
@@ -146,6 +153,10 @@ public class Lift
                 homingLog.add(String.format("%d,%.3f,%.3f", home_stage, lPot.get(), rPot.get()));
             }
         }
+    }
+
+    public void setLiftTarget(String pos){
+        liftTarget = positions.get(pos);
     }
     
     private void stopServos()
