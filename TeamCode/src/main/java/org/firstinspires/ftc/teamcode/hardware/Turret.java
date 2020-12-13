@@ -18,6 +18,8 @@ public class Turret {
     private DcMotor shooter;
     private AnalogInput left_potentiometer;
     private AnalogInput right_potentiometer;
+    private AnalogInput rotate_potentiometer;
+    private CalibratedAnalogInput turret_pot;
     private Servo finger;
     private CRServo left_lift;
     private CRServo right_lift;
@@ -30,9 +32,13 @@ public class Turret {
     private EventBus ev_bus;
     private Logger log = new Logger("Turret");
 
-    public Turret(AnalogInput left_potentiometer, AnalogInput right_potentiometer, Servo finger, CRServo left_lift, CRServo right_lift, DcMotor shooter, DcMotor rotator){
+    public Turret(AnalogInput left_potentiometer, AnalogInput right_potentiometer,
+                  Servo finger, CRServo left_lift, CRServo right_lift, DcMotor shooter, DcMotor rotator,
+                  AnalogInput rotate_potentiometer){
         this.left_potentiometer = left_potentiometer;
         this.right_potentiometer = right_potentiometer;
+        this.rotate_potentiometer = rotate_potentiometer;
+        this.turret_pot = new CalibratedAnalogInput(rotate_potentiometer, Storage.getFile("turret_calib.json"));
         this.finger = finger;
         this.left_lift = left_lift;
         this.right_lift = right_lift;
@@ -82,7 +88,6 @@ public class Turret {
         rotator.setPower(rotation);
     }
 
-    @Deprecated
     public void updateLiftPID(){
         // TODO Determine Proportional Gain
         // TODO Integrate second potentiometer towards PID
@@ -99,11 +104,10 @@ public class Turret {
             if (ev_bus != null) ev_bus.pushEvent(new TriggerEvent(1));
         }
     }
-    
-    @Deprecated
+
     public double[] getRawPos()
     {
-        return new double[]{left_potentiometer.getVoltage(), right_potentiometer.getVoltage()};
+        return new double[]{left_potentiometer.getVoltage(), right_potentiometer.getVoltage(), rotate_potentiometer.getVoltage()};
     }
 
     @Deprecated

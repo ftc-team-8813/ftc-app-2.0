@@ -36,6 +36,7 @@ public class Robot {
 
         AnalogInput left_potentiometer = hardwareMap.get(AnalogInput.class, "lift l");
         AnalogInput right_potentiometer = hardwareMap.get(AnalogInput.class, "lift r");
+        AnalogInput rotate_potentiometer = hardwareMap.get(AnalogInput.class, "turret");
 
         ring_detector = hardwareMap.get(ColorSensor.class, "light sensor");
 
@@ -52,7 +53,7 @@ public class Robot {
 
         // Sub-Assemblies
         drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, null, null);
-        turret = new Turret(left_potentiometer, right_potentiometer, finger, leftLift, rightLift, shooter, rotator);
+        turret = new Turret(left_potentiometer, right_potentiometer, finger, leftLift, rightLift, shooter, rotator, rotate_potentiometer);
         intake = new Intake(intaker);
 
         CalibratedAnalogInput lPot = new CalibratedAnalogInput(left_potentiometer, Storage.getFile("lift_calib_l.json"));
