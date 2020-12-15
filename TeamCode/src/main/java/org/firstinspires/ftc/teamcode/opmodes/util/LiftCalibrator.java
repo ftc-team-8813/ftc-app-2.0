@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.util;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -14,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 @TeleOp(name="Lift Calibrator")
+@Disabled
 public class LiftCalibrator extends OpMode
 {
     

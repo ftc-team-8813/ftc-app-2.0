@@ -230,22 +230,25 @@ public class DiffyServoPositioner extends OpMode
             if (!started)
             {
                 status.setCaption("Press the PLAY button to start");
-                return;
             }
             double step1 = Math.pow(-ax_change_position_a.get(), 5) * 0.005;
-            posA += step1;
+            double step2 = Math.pow(-ax_change_position_b.get(), 5) * 0.005;
+            
+            posA += step1 + step2;
             if (posA > 1) posA = 1;
             else if (posA < 0) posA = 0;
             
-            double step2 = Math.pow(-ax_change_position_b.get(), 5) * 0.005;
-            posB += step2;
+            posB += step1 - step2;
             if (posB > 1) posB = 1;
             else if (posB < 0) posB = 0;
             
-            controllerA.setServoPosition(cservoA, posA);
-            controllerB.setServoPosition(cservoB, posB);
-            
-            status.setCaption("Servo positions");
+            if (started)
+            {
+                controllerA.setServoPosition(cservoA, posA);
+                controllerB.setServoPosition(cservoB, posB);
+    
+                status.setCaption("Servo positions");
+            }
             
             boolean change = false;
             if (btn_up_arrow.edge() > 0)
