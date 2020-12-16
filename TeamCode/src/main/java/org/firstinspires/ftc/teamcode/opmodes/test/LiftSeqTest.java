@@ -39,15 +39,17 @@ public class LiftSeqTest extends OpMode
         btn_trigger = controllerMap.buttons.get("trigger");
         
         robot.lift.connectEventBus(evBus);
-        robot.lift.home_stage = 1; // start homing
+        robot.lift.homeLift(); // start homing
         robot.lift.hold = true; // always hold position
         robot.turret.setFinger("in");
         
         EventFlow flow = new EventFlow(evBus);
-        Scheduler.Timer servoTimer = scheduler.addFutureTrigger(0.1, "Servo Timer");
-        Scheduler.Timer pushTimer = scheduler.addFutureTrigger(0.5, "Push Timer");
+        Scheduler.Timer servoTimer = scheduler.addFutureTrigger(1, "Servo Timer");
+        Scheduler.Timer pushTimer = scheduler.addFutureTrigger(2, "Push Timer");
+        Scheduler.Timer dropTimer = scheduler.addFutureTrigger(1, "Drop Timer");
         servoTimer.cancelled = true;
         pushTimer.cancelled = true;
+        dropTimer.cancelled = true;
         flow.start(new EventBus.Subscriber<>(LiftEvent.class, (ev, bus, sub) -> { // 0
                 robot.lift.moveLiftPreset("middle");
             }, "Homing Complete", LiftEvent.LIFT_HOMED))
@@ -59,7 +61,7 @@ public class LiftSeqTest extends OpMode
             }, "Grab", LiftEvent.LIFT_MOVED))
             .then(new EventBus.Subscriber<>(LiftEvent.class, (ev, bus, sub) -> { // 3
                 ringCount++;
-                if (ringCount < 1) // set max rings here TODO make a constant
+                if (ringCount < 2) // set max rings here TODO make a constant
                 {
                     robot.lift.moveLiftPreset("middle");
                     flow.jump(1);
@@ -77,10 +79,13 @@ public class LiftSeqTest extends OpMode
             .then(new EventBus.Subscriber<>(TimerEvent.class, (ev, bus, sub) -> { // 5
                 robot.lift.moveGrabberPreset(-1);
             }, "Roller Out", servoTimer.eventChannel))
-            .then(new EventBus.Subscriber<>(LiftEvent.class, (ev, bus, sub) -> { // 6
+            .then(new EventBus.Subscriber<>(LiftEvent.class, (ev, bus, sub) -> {
+                dropTimer.reset();
+            }, "Drop Wait", LiftEvent.LIFT_MOVED))
+            .then(new EventBus.Subscriber<>(TimerEvent.class, (ev, bus, sub) -> { // 6
                 robot.turret.setFinger("out");
                 pushTimer.reset();
-            }, "Push Ring", LiftEvent.LIFT_MOVED))
+            }, "Push Ring", dropTimer.eventChannel))
             .then(new EventBus.Subscriber<>(TimerEvent.class, (ev, bus, sub) -> { // 7
                 ringCount--;
                 if (ringCount > 0)
@@ -97,6 +102,7 @@ public class LiftSeqTest extends OpMode
                 }
             }, "Count Rings", pushTimer.eventChannel))
             .then(new EventBus.Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
+                robot.lift.moveGrabber(0);
                 robot.lift.moveLiftPreset("middle");
                 robot.turret.setShooter(0);
                 flow.jump(1); // where it will wait for another trigger event

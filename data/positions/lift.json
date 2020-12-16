@@ -1,6 +1,7 @@
 {
-  "bottom": 0.19,
-  "middle": 0.15,
-  "top":    0,
-  "grab":   0.08
+  "bottom":  0.20,
+  "middle":  0.16,
+  "top":     0,
+  "grab":    0.08,
+  "release": 0.04
 }

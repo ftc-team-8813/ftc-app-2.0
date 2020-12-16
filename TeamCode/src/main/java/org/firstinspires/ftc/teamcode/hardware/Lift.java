@@ -39,7 +39,7 @@ public class Lift
     private double topR = 0.5;
     private boolean bounceHold = false;
     private long lastBounce = 0;
-
+    
     private HashMap<String, Double> positions;
     private ArrayList<String> homingLog = new ArrayList<>();
     private long lastLog;
@@ -56,8 +56,8 @@ public class Lift
         this.lPot = lPot;
         this.rPot = rPot;
         this.topButton = button;
-
-        final String[] pos_keys = new String[]{"bottom", "middle", "top", "grab"};
+    
+        final String[] pos_keys = new String[]{"bottom", "middle", "top", "grab", "release"};
         positions = Configurations.readData(pos_keys, Storage.getFile("positions/lift.json"));
     }
     
@@ -86,8 +86,7 @@ public class Lift
                         w.write('\n');
                     }
                     homingLog.clear();
-                }
-                catch (IOException e)
+                } catch (IOException e)
                 {
                     log.e(e);
                 }
@@ -140,15 +139,13 @@ public class Lift
                 enableServos();
                 lServo.setPower(lPower);
                 rServo.setPower(rPower);
-            }
-            else
+            } else
             {
                 lServo.setPower(0);
                 rServo.setPower(0);
                 stopServos();
             }
-        }
-        else
+        } else
         {
             if (home_stage == 1) // move up
             {
@@ -160,20 +157,17 @@ public class Lift
                     home_stage = 3;
                 else if (rPot.get() > 0.98)
                     home_stage = 4;
-            }
-            else if (home_stage == 2) // button hit, slide across
+            } else if (home_stage == 2) // button hit, slide across
             {
                 lServo.setPower(0.2);
                 rServo.setPower(0.2);
                 if (lPot.get() < 0.01) home_stage = 0;
-            }
-            else if (home_stage == 3) // left end hit, slide right servo up
+            } else if (home_stage == 3) // left end hit, slide right servo up
             {
                 lServo.setPower(0);
                 rServo.setPower(-0.2);
                 if (!topButton.getState()) home_stage = 0;
-            }
-            else if (home_stage == 4) // right end hit, slide left servo down
+            } else if (home_stage == 4) // right end hit, slide left servo down
             {
                 lServo.setPower(0.2);
                 rServo.setPower(0);
@@ -201,7 +195,9 @@ public class Lift
     
     public boolean moveGrabberPreset(int dir)
     {
-        double newPos = grabTarget + dir * positions.get("grab");
+        double grab_in = positions.get("grab");
+        double grab_out = -positions.get("release");
+        double newPos = grabTarget + Math.abs(dir) * (dir < 0 ? grab_out : grab_in);
         if (newPos < 0 || newPos > (1 - topR))
         {
             log.e("FAIL: Cannot set grabber position to %.3f", newPos);
@@ -209,6 +205,11 @@ public class Lift
         }
         moveGrabber(newPos);
         return true;
+    }
+    
+    public void homeLift()
+    {
+        home_stage = 1; // initiate homing sequence
     }
 
     public void moveLiftPreset(String pos){
