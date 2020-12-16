@@ -57,7 +57,7 @@ public class Robot {
         bottom_right.setDirection(REVERSE);
 
         // Sub-Assemblies
-        drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, null, null);
+        drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right);
         turret = new Turret(left_potentiometer, right_potentiometer, finger, aim, leftLift, rightLift, shooter, rotator, rotate_potentiometer);
         intake = new Intake(intaker);
 

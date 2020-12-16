@@ -15,6 +15,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Lift -- Controls automatic lift movement. Also can run an automatic homing process. When connected
+ * to an EventBus, produces LiftEvents when movement and homing commands are completed.
+ */
 public class Lift
 {
     private CRServo lServo, rServo;
