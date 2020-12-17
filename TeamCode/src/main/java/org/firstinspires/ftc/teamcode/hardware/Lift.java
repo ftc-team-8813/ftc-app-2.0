@@ -115,7 +115,7 @@ public class Lift
             double lPower = -lError * kP;
             double rPower = -rError * kP;
             
-            if (Math.abs(lError) < 0.005 && Math.abs(rError) < 0.005)
+            if (Math.abs(lError) < 0.005 && Math.abs(rError) < 0.007)
             {
                 if (eventBus != null && sendEvent)
                 {
