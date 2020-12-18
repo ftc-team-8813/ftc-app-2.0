@@ -1,20 +1,15 @@
 package org.firstinspires.ftc.teamcode.util.event;
 
-public class TriggerEvent implements Event {
-    public final int channel;
+public class TriggerEvent extends Event {
 
     public TriggerEvent(int id)
     {
-        this.channel = id;
+        super(id);
     }
 
     public String toString()
     {
-        return String.format("TriggerEvent ch=%d t=%.3f", channel);
+        return String.format("TriggerEvent ch=%d", channel);
     }
 
-    public int getChannel()
-    {
-        return this.channel;
-    }
 }

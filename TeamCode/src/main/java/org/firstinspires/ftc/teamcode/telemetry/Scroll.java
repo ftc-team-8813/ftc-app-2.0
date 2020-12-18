@@ -49,7 +49,7 @@ public class Scroll
         invalid = true;
         metadata.remove(index);
         String line = lines.remove(index);
-        if (getScrollPos() >= lines.size()) setScrollPos(getScrollPos()); // re-validate scroll position
+        if (getScrollPos() >= lines.size()) updateScrollPos(getScrollPos()); // re-validate scroll position
         return line;
     }
     
@@ -85,7 +85,11 @@ public class Scroll
     public int setScrollPos(int pos)
     {
         if (pos == selected) return pos;
-        
+        return updateScrollPos(pos);
+    }
+    
+    private int updateScrollPos(int pos)
+    {
         int len = lines.size();
         if (pos < 0)
         {
@@ -97,13 +101,13 @@ public class Scroll
             if (scrollMode == SCROLL_STOP) pos = len-1;
             else pos -= len;
         }
-        
+    
         if (pos < visStart) visStart = pos;
         else if (pos >= visStart + visibleLines) visStart = pos - visibleLines + 1;
-        
+    
         selected = pos;
         invalid = true;
-        
+    
         return pos;
     }
     

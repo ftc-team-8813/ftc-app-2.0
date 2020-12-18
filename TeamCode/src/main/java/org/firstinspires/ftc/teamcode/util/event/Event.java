@@ -1,6 +1,11 @@
 package org.firstinspires.ftc.teamcode.util.event;
 
-public interface Event
+public abstract class Event
 {
-    int getChannel();
+    public final int channel;
+    
+    public Event(int channel)
+    {
+        this.channel = channel;
+    }
 }

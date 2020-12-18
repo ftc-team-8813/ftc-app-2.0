@@ -1,14 +1,13 @@
 package org.firstinspires.ftc.teamcode.util.event;
 
-public class TimerEvent implements Event
+public class TimerEvent extends Event
 {
     public final double time;
-    public final int channel;
     
     public TimerEvent(double time, int id)
     {
+        super(id);
         this.time = time;
-        this.channel = id;
     }
     
     public String toString()
@@ -16,8 +15,4 @@ public class TimerEvent implements Event
         return String.format("TimerEvent ch=%d t=%.3f", channel, time);
     }
     
-    public int getChannel()
-    {
-        return this.channel;
-    }
 }
