@@ -39,6 +39,7 @@ public class EventFlow
     public void jump(int index)
     {
         jumpTarget = index;
+        log.d("Jump -> %d", index);
     }
     
     public class NodeBuilder

@@ -51,7 +51,7 @@ public class Turret {
         this.ev_bus = null;
 
         String[] pos_keys = new String[]{"in", "catch", "out"};
-        positions = Configurations.readData(pos_keys, Storage.getFile("finger.json"));
+        positions = Configurations.readData(pos_keys, Storage.getFile("positions/finger.json"));
     }
     
     public void connectEventBus(EventBus evBus)

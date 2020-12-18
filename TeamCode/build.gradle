@@ -21,3 +21,10 @@ repositories {
 dependencies {
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 }
+
+task onInstall {
+    exec {
+        workingDir '.'
+        commandLine('python', 'generator.py')
+    }
+}

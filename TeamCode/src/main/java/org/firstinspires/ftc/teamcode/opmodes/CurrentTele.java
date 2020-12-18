@@ -51,67 +51,73 @@ public class CurrentTele extends OpMode {
         eventBus.subscribe(TimerEvent.class, (ev, bus, sub) -> telemetry.update(), "Telemetry update trigger", timer.eventChannel);
          */
         EventFlow liftPickup = new EventFlow(eventBus);
-        EventFlow liftDeposit = new EventFlow(eventBus);
         Scheduler.Timer grabber_pickup = taskScheduler.addFutureTrigger(1, "Grabber Pickup");
         Scheduler.Timer grabber_dropoff = taskScheduler.addFutureTrigger(0.1, "Grabber Dropoff");
         grabber_pickup.cancelled = true;
         liftPickup.start(
-            new EventBus.Subscriber<>(TriggerEvent.class,
+            new EventBus.Subscriber<>(TriggerEvent.class,                                     // # 0
                 (ev, bus, sub) ->
                 {
-                    robot.lift.setLiftTarget("bottom");
+                    robot.lift.moveLiftPreset("bottom");
                 }, "Lift Down", 0))
-            .then(new EventBus.Subscriber<>(TriggerEvent.class,
+            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 1
                 (ev, bus, sub) ->
                 {
                     robot.turret.setGrabber(1);
                     grabber_pickup.reset();
                 }, "Pick Ring", 1))
-            .then(new EventBus.Subscriber<>(TimerEvent.class,
+            .then(new EventBus.Subscriber<>(TimerEvent.class,                                 // # 2
                 (ev, bus, sub) ->
                 {
                     robot.turret.setGrabber(0);
-                    robot.lift.setLiftTarget("middle");
+                    robot.lift.moveLiftPreset("middle");
                 }, "Lift Reset", grabber_pickup.eventChannel))
-            .then(new EventBus.Subscriber<>(TriggerEvent.class,
-                (ev, bus, sub) -> {}, "Lift Pickup Complete", 1));
-        liftDeposit.start(
-                new EventBus.Subscriber<>(TriggerEvent.class,
-                        (ev, bus, sub) ->
-                        {
-                            robot.lift.setLiftTarget("top");
-                        }, "Lift Up", 5))
-                .then(new EventBus.Subscriber<>(TriggerEvent.class,
-                        (ev, bus, sub) ->
-                        {
-                            robot.turret.setFinger("catch");
-                            robot.turret.setGrabber(2);
-                            grabber_dropoff.reset();
-                        }, "Finger Out", 6))
-                .then(new EventBus.Subscriber<>(TimerEvent.class,
-                        (ev, bus, sub) ->
-                        {
-                            robot.turret.setGrabber(0);
-                        }, "Release Ring", grabber_dropoff.eventChannel))
-                .then(new EventBus.Subscriber<>(TriggerEvent.class,
-                        (ev, bus, sub) ->
-                        {
-                            robot.turret.setFinger("out");
-                        }, "Push Into Shooter", 8))
-                .then(new EventBus.Subscriber<>(TriggerEvent.class,
-                        (ev, bus, sub) ->
-                        {
-                            robot.turret.setFinger("catch");
-                            liftDeposit.jump(2);
-                        }, "Push Into Shooter", 9))
-                .then(new EventBus.Subscriber<>(TriggerEvent.class,
-                        (ev, bus, sub) ->
-                        {
-                            robot.lift.setLiftTarget("middle");
-                            lift_moving = false;
-                        }, "Push Into Shooter", 9))
-                .then(new EventBus.Subscriber<>(TriggerEvent.class,
-                        (ev, bus, sub) -> {}, "Lift Dropoff Complete", 10));
+            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 3
+                (ev, bus, sub) ->
+                {
+                    total_rings += 1;
+                    if (total_rings < 3)
+                    {
+                        liftPickup.jump(0);
+                    }
+                }, "Lift Pickup Complete", 1))
+            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 4
+                (ev, bus, sub) ->
+                {
+                    robot.lift.moveLiftPreset("top");
+                }, "Lift Up", 5))
+            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 5
+                (ev, bus, sub) ->
+                {
+                    robot.turret.setFinger("catch");
+                    robot.turret.setGrabber(2);
+                    grabber_dropoff.reset();
+                }, "Finger Out", 6))
+            .then(new EventBus.Subscriber<>(TimerEvent.class,                                 // # 6
+                (ev, bus, sub) ->
+                {
+                    robot.turret.setGrabber(0);
+                }, "Release Ring", grabber_dropoff.eventChannel))
+            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 7
+                (ev, bus, sub) ->
+                {
+                    robot.turret.setFinger("out");
+                }, "Push Into Shooter", 8))
+            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 8
+                (ev, bus, sub) ->
+                {
+                    robot.turret.setFinger("catch");
+                    total_rings -= 1;
+                    if (total_rings > 0) liftPickup.jump(6);
+                }, "Push Into Shooter", 9))
+            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 9
+                (ev, bus, sub) ->
+                {
+                    robot.lift.moveLiftPreset("middle");
+                    lift_moving = false;
+                }, "Push Into Shooter", 9))
+            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // #10
+                (ev, bus, sub) -> {}, "Lift Dropoff Complete", 10));
         robot.ring_detector.enableLed(false); // turn off the blindness hazard since we don't need it right now
     }
 
@@ -147,7 +153,7 @@ public class CurrentTele extends OpMode {
         boolean ring_found = brightness > 100;
         if ((btn_ring_find.edge() > 0 || ring_found) && !lift_moving) {
             eventBus.pushEvent(new TriggerEvent(0));
-            total_rings += 1;
+            // total_rings += 1;
         }
 
         if (total_rings == 3 && !lift_moving){

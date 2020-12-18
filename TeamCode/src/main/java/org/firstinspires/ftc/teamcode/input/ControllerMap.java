@@ -180,6 +180,8 @@ public class ControllerMap
         right_trigger
     }
     
+    public static final int NUM_BUTTONS = Button.values().length;
+    
     public enum Axis
     {
         left_stick_x,
@@ -191,6 +193,8 @@ public class ControllerMap
         dpad_x,
         dpad_y
     }
+    
+    public static final int NUM_AXES = Axis.values().length;
     
     public class ButtonEntry
     {

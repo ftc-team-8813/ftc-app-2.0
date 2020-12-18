@@ -82,6 +82,7 @@ public class EventBus
     {
         if (sub.subbed) throw new IllegalArgumentException("Subscriber already subscribed");
         subscribers.add(sub);
+        sub.subbed = true;
         log.d("Subscriber add (existing): '%s' receives %s on channel %d", sub.name, sub.evClass.getSimpleName(), sub.channel);
     }
     
@@ -108,8 +109,9 @@ public class EventBus
     public void pushEvent(Event ev)
     {
         events.add(ev);
-        String callingClassName = Thread.currentThread().getStackTrace()[1].getClassName();
-        log.d("Push %s on channel %d (from %s)", ev.getClass().getSimpleName(), ev.getChannel(), callingClassName);
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        String callingClassName = stackTrace[1].getClassName();
+        log.d("Push %s on channel %d (from %s)", ev.getClass().getSimpleName(), ev.channel, callingClassName);
     }
     
     @SuppressWarnings("unchecked")
@@ -119,18 +121,18 @@ public class EventBus
         List<Subscriber<?>> oldSubs = new ArrayList<>(subscribers);
         for (Event ev : new ArrayList<>(events))
         {
-            log.v("Event: %s on channel %d: %s", ev.getClass().getSimpleName(), ev.getChannel(), ev.toString());
-            boolean remove = false;
+            log.v("Event: %s on channel %d: %s", ev.getClass().getSimpleName(), ev.channel, ev.toString());
+            // boolean remove = false; // TODO how to handle this better
             for (Subscriber sub : oldSubs)
             {
-                if (ev.getClass() == sub.evClass && ev.getChannel() == sub.channel)
+                if (ev.getClass() == sub.evClass && ev.channel == sub.channel)
                 {
                     log.v(" -> Send to subscriber '%s'", sub.name);
                     sub.callback.run(ev, this, sub);
-                    remove = true; // assume the subscriber always consumes the event
+                    // remove = true; // assume the subscriber always consumes the event
                 }
             }
-            if (remove) events.remove(ev);
+            events.remove(ev);
         }
     }
 }

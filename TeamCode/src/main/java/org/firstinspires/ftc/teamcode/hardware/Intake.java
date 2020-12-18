@@ -2,6 +2,10 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+/**
+ * Intake -- Control intake movement.
+ * TODO: Do we need this?
+ */
 public class Intake {
     DcMotor intake;
 

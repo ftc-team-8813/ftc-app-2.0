@@ -63,6 +63,7 @@ public class Scheduler
     {
         timers = new ArrayList<>();
         log = new Logger("Scheduler");
+        this.bus = bus;
     }
     
     public Timer addFutureTrigger(double delay, String name)
