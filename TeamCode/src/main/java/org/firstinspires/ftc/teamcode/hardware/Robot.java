@@ -49,10 +49,6 @@ public class Robot {
         CRServo rightLift = hardwareMap.get(CRServo.class, "lift r");
 
 
-        //Reverses left side to match right side rotation in Drivetrain
-        top_right.setDirection(REVERSE);
-        bottom_right.setDirection(REVERSE);
-
         // Sub-Assemblies
         drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, null, null);
         turret = new Turret(left_potentiometer, right_potentiometer, finger, aim, leftLift, rightLift, shooter, rotator, rotate_potentiometer);
