@@ -2,10 +2,11 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
+
 /**
  * Drivetrain -- handles movement of the drive wheels.
  */
-import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
 public class Drivetrain {
     private DcMotor top_left;
@@ -18,8 +19,6 @@ public class Drivetrain {
         this.bottom_left = bottom_left;
         this.top_right = top_right;
         this.bottom_right = bottom_right;
-        this.forward_enc = forward_enc;
-        this.side_enc = side_enc;
 
         //Reverses left side to match right side rotation and sets mode
         top_right.setDirection(REVERSE);
