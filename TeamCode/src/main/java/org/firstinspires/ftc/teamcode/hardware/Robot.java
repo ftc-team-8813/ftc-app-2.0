@@ -25,19 +25,21 @@ public class Robot {
     public final Lift lift;
 
     public Robot(HardwareMap hardwareMap){
+        //inleft inright outright outleft
+
         // Hardware Maps
-        DcMotor top_left = hardwareMap.get(DcMotor.class, "top_left");
-        DcMotor bottom_left = hardwareMap.get(DcMotor.class, "bottom_left");
-        DcMotor top_right = hardwareMap.get(DcMotor.class, "top_right");
-        DcMotor bottom_right = hardwareMap.get(DcMotor.class, "bottom_right");
+        DcMotor top_left = hardwareMap.get(DcMotor.class, "out_left");
+        DcMotor bottom_left = hardwareMap.get(DcMotor.class, "in_left");
+        DcMotor top_right = hardwareMap.get(DcMotor.class, "out_right");
+        DcMotor bottom_right = hardwareMap.get(DcMotor.class, "in_right");
         DcMotor shooter = hardwareMap.get(DcMotor.class, "shooter");
         DcMotor intaker = hardwareMap.get(DcMotor.class, "intaker");
         DcMotor rotator = hardwareMap.get(DcMotor.class, "rotator");
         // DcMotor forward_enc = hardwareMap.get(DcMotor.class, "forward_enc");
         // DcMotor side_enc = hardwareMap.get(DcMotor.class, "side_enc");
 
-        AnalogInput left_potentiometer = hardwareMap.get(AnalogInput.class, "lift l");
-        AnalogInput right_potentiometer = hardwareMap.get(AnalogInput.class, "lift r");
+        AnalogInput left_potentiometer = hardwareMap.get(AnalogInput.class, "left_potentiometer");
+        AnalogInput right_potentiometer = hardwareMap.get(AnalogInput.class, "right_potentiometer");
         AnalogInput rotate_potentiometer = hardwareMap.get(AnalogInput.class, "turret");
         DigitalChannel top_button = hardwareMap.get(DigitalChannel.class, "top switch");
 

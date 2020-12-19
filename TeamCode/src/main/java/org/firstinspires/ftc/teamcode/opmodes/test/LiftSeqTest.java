@@ -42,7 +42,7 @@ public class LiftSeqTest extends OpMode
         controllerMap.setButtonMap("trigger", "gamepad1", "y");
         controllerMap.setButtonMap("intake", "gamepad2", "x");
         controllerMap.setAxisMap("forward", "gamepad1", "left_stick_y");
-        controllerMap.setAxisMap("turn", "gamepad1", "right_stick_y");
+        controllerMap.setAxisMap("turn", "gamepad1", "right_stick_x");
         controllerMap.setAxisMap("turret", "gamepad2", "left_stick_x");
         
         btn_trigger = controllerMap.buttons.get("trigger");
@@ -149,7 +149,7 @@ public class LiftSeqTest extends OpMode
             evBus.pushEvent(new TriggerEvent(0));
         }
         
-        // loopTeleop();
+        loopTeleop();
         
         robot.lift.update(telemetry);
         scheduler.loop();
