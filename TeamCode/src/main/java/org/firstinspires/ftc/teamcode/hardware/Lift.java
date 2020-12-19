@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.events.LiftEvent;
-import org.firstinspires.ftc.teamcode.util.Configurations;
+import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -58,7 +58,7 @@ public class Lift
         this.topButton = button;
     
         final String[] pos_keys = new String[]{"bottom", "middle", "top", "grab", "release"};
-        positions = Configurations.readData(pos_keys, Storage.getFile("positions/lift.json"));
+        positions = Configuration.readData(pos_keys, Storage.getFile("positions/lift.json"));
     }
     
     public void connectEventBus(EventBus evBus)

@@ -74,7 +74,7 @@ public class LiftSeqTest extends OpMode
             }, "Grab", LiftEvent.LIFT_MOVED))
             .then(new EventBus.Subscriber<>(LiftEvent.class, (ev, bus, sub) -> { // 3
                 ringCount++;
-                if (ringCount < 1) // set max rings here TODO make a constant
+                if (ringCount < 2) // set max rings here TODO make a constant
                 {
                     robot.lift.moveLiftPreset("middle");
                     flow.jump(1);
@@ -151,6 +151,7 @@ public class LiftSeqTest extends OpMode
         
         loopTeleop();
         
+        robot.turret.update();
         robot.lift.update(telemetry);
         scheduler.loop();
         evBus.update();
