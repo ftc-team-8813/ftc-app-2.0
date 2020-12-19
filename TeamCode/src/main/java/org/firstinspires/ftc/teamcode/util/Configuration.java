@@ -13,7 +13,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 
-public class Configurations {
+public class Configuration
+{
     public static void rewriteData(HashMap<String, Double> values, File file) throws IOException {
         JSONObject json = new JSONObject(values);
         try(FileWriter writer = new FileWriter(file)){
@@ -33,7 +34,17 @@ public class Configurations {
             }
             return values;
         } catch (IOException e) {
-            throw new IllegalArgumentException();
+            throw new IllegalStateException("Failed to read JSON from " + file.getPath());
+        }
+    }
+    
+    public static JsonObject readJson(File f)
+    {
+        try (JsonReader reader = new JsonReader(new FileReader(f))){
+            JsonParser parser = new JsonParser();
+            return parser.parse(reader).getAsJsonObject();
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read JSON from " + f.getPath());
         }
     }
 }
