@@ -20,6 +20,7 @@ repositories {
 
 dependencies {
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
+    module ':opencv-sdk'
 }
 
 task onInstall {
