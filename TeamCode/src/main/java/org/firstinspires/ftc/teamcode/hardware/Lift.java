@@ -40,6 +40,8 @@ public class Lift
     private boolean bounceHold = false;
     private long lastBounce = 0;
     
+    public double liftTweak = 0;
+    
     private HashMap<String, Double> positions;
     private ArrayList<String> homingLog = new ArrayList<>();
     private long lastLog;
@@ -183,7 +185,7 @@ public class Lift
     
     public void moveLift(double lift)
     {
-        liftTarget = lift;
+        liftTarget = lift + liftTweak;
         sendEvent = true;
     }
     
@@ -191,6 +193,12 @@ public class Lift
     {
         grabTarget = grab;
         sendEvent = true;
+    }
+    
+    public void stop()
+    {
+        lServo.setPower(0);
+        rServo.setPower(0);
     }
     
     public boolean moveGrabberPreset(int dir)

@@ -83,7 +83,7 @@ public class Turret {
         }
     }
 
-    public void setFinger(String pos){
+    public void setTransfer(String pos){
         finger.setPosition(positions.get(pos));
     }
 

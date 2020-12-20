@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import android.text.style.IconMarginSpan;
-
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
@@ -11,9 +9,6 @@ import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.EventFlow;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
-
-import java.sql.Time;
-import java.util.Arrays;
 
 @TeleOp(name="CurrentTele")
 public class CurrentTele extends OpMode {
@@ -89,7 +84,7 @@ public class CurrentTele extends OpMode {
             .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 5
                 (ev, bus, sub) ->
                 {
-                    robot.turret.setFinger("catch");
+                    robot.turret.setTransfer("catch");
                     robot.turret.setGrabber(2);
                     grabber_dropoff.reset();
                 }, "Finger Out", 6))
@@ -101,12 +96,12 @@ public class CurrentTele extends OpMode {
             .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 7
                 (ev, bus, sub) ->
                 {
-                    robot.turret.setFinger("out");
+                    robot.turret.setTransfer("out");
                 }, "Push Into Shooter", 8))
             .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 8
                 (ev, bus, sub) ->
                 {
-                    robot.turret.setFinger("catch");
+                    robot.turret.setTransfer("catch");
                     total_rings -= 1;
                     if (total_rings > 0) liftPickup.jump(6);
                 }, "Push Into Shooter", 9))

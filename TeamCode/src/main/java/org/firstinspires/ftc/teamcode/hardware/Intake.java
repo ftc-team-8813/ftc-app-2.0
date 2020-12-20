@@ -18,7 +18,7 @@ public class Intake {
         if (mode == 0){
             intake.setPower(0);
         } else if (mode == 1){
-            intake.setPower(1);
+            intake.setPower(-1);
         }
     }
 }
