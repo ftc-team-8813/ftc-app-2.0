@@ -25,8 +25,8 @@ public class LiftSeqTest extends OpMode
     
     private ControllerMap.ButtonEntry btn_trigger;
     private ControllerMap.ButtonEntry btn_intake;
-    private ControllerMap.AxisEntry ax_forward;
-    private ControllerMap.AxisEntry ax_turn;
+    private ControllerMap.AxisEntry ax_forward_left;
+    private ControllerMap.AxisEntry ax_forward_right;
     private ControllerMap.AxisEntry ax_turret;
     
     private int ringCount = 0;
@@ -41,14 +41,14 @@ public class LiftSeqTest extends OpMode
         
         controllerMap.setButtonMap("trigger", "gamepad1", "y");
         controllerMap.setButtonMap("intake", "gamepad2", "x");
-        controllerMap.setAxisMap("forward", "gamepad1", "left_stick_y");
-        controllerMap.setAxisMap("turn", "gamepad1", "right_stick_x");
+        controllerMap.setAxisMap("forward_l", "gamepad1", "left_stick_y");
+        controllerMap.setAxisMap("forward_r", "gamepad1", "right_stick_y");
         controllerMap.setAxisMap("turret", "gamepad2", "left_stick_x");
         
         btn_trigger = controllerMap.buttons.get("trigger");
         btn_intake = controllerMap.buttons.get("intake");
-        ax_forward = controllerMap.axes.get("forward");
-        ax_turn = controllerMap.axes.get("turn");
+        ax_forward_left = controllerMap.axes.get("forward_l");
+        ax_forward_right = controllerMap.axes.get("forward_r");
         ax_turret = controllerMap.axes.get("turret");
         
         robot.lift.connectEventBus(evBus);
@@ -133,7 +133,7 @@ public class LiftSeqTest extends OpMode
     
     private void loopTeleop()
     {
-        robot.drivetrain.telemove(ax_forward.get(), -ax_turn.get());
+        robot.drivetrain.telemove(ax_forward_left.get(), ax_forward_right.get());
         
         robot.turret.rotateTurret(ax_turret.get());
         
