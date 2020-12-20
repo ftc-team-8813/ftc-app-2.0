@@ -33,20 +33,40 @@ public class RingDetector {
         this.result = result;
     }
 
-    public boolean findRing(){
+    public int findRing(){
         Mat result = this.result;
-        final int[] top_left = new int[]{265, 210};
-        final int[] bottom_right = new int[]{279, 215};
-        int total_values = (bottom_right[0] - top_left[0]) * (bottom_right[1] - top_left[1]);
+        final int[] one_top_corner = new int[]{265, 210};
+        final int[] one_bottom_corner = new int[]{279, 215};
+        final int[] four_top_corner = new int[]{153, 165};
+        final int[] four_bottom_corner = new int[]{270, 172};
+        int one_total_values = (one_bottom_corner[0] - one_top_corner[0]) * (one_bottom_corner[1] - one_top_corner[1]);
+        int four_total_values = (four_bottom_corner[0] - four_top_corner[0]) * (four_bottom_corner[1] - four_top_corner[1]);
         int aggregator = 0;
-        for (int y = top_left[0]; y <= bottom_right[0]; y++){
-            for (int x = top_left[1]; x <= bottom_right[1]; y++){
+        for (int y = one_top_corner[0]; y <= one_bottom_corner[0]; y++){
+            for (int x = one_top_corner[1]; x <= one_bottom_corner[1]; y++){
                 if (!Arrays.equals(result.get(x, y), new double[]{0, 0, 0})){
                     aggregator++;
                 }
             }
         }
-        this.result = null;
-        return aggregator == total_values;
+        double one_or_none = aggregator/one_total_values;
+        aggregator = 0;
+        if (one_or_none >= 0.9){
+            for (int y = four_top_corner[0]; y <= four_bottom_corner[0]; y++){
+                for (int x = four_top_corner[1]; x <= four_bottom_corner[1]; y++){
+                    if (!Arrays.equals(result.get(x, y), new double[]{0, 0, 0})){
+                        aggregator++;
+                    }
+                }
+            }
+            double one_or_four = aggregator/four_total_values;
+            if (one_or_four >= 0.9) {
+                return 2;
+            } else {
+                return 1;
+            }
+        } else {
+            return 0;
+        }
     }
 }
