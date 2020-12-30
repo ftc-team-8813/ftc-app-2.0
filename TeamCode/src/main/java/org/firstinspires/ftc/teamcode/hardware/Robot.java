@@ -26,34 +26,35 @@ public class Robot {
 
     public Robot(HardwareMap hardwareMap){
         // Hardware Maps
-        DcMotor top_left = hardwareMap.get(DcMotor.class, "top_left");
-        DcMotor bottom_left = hardwareMap.get(DcMotor.class, "bottom_left");
-        DcMotor top_right = hardwareMap.get(DcMotor.class, "top_right");
-        DcMotor bottom_right = hardwareMap.get(DcMotor.class, "bottom_right");
-        DcMotor shooter = hardwareMap.get(DcMotor.class, "shooter");
-        DcMotor intaker = hardwareMap.get(DcMotor.class, "intaker");
-        DcMotor rotator = hardwareMap.get(DcMotor.class, "rotator");
+        DcMotor top_left = hardwareMap.get(DcMotor.class, "top left");
+        DcMotor bottom_left = hardwareMap.get(DcMotor.class, "bottom left");
+        DcMotor top_right = hardwareMap.get(DcMotor.class, "top right");
+        DcMotor bottom_right = hardwareMap.get(DcMotor.class, "bottom right");
+        DcMotor shooter = null; // hardwareMap.get(DcMotor.class, "shooter");
+        DcMotor intaker = hardwareMap.get(DcMotor.class, "intake");
+        DcMotor rotator = hardwareMap.get(DcMotor.class, "turret");
+        DcMotor ramp = hardwareMap.get(DcMotor.class, "ramp");
 
-        AnalogInput left_potentiometer = hardwareMap.get(AnalogInput.class, "left_potentiometer");
-        AnalogInput right_potentiometer = hardwareMap.get(AnalogInput.class, "right_potentiometer");
-        AnalogInput rotate_potentiometer = hardwareMap.get(AnalogInput.class, "turret");
-        DigitalChannel top_button = hardwareMap.get(DigitalChannel.class, "top switch");
+        AnalogInput left_potentiometer = null; // hardwareMap.get(AnalogInput.class, "lift l");
+        AnalogInput right_potentiometer = null; // hardwareMap.get(AnalogInput.class, "lift r");
+        AnalogInput rotate_potentiometer = null; // hardwareMap.get(AnalogInput.class, "turret");
+        DigitalChannel top_button = null; // hardwareMap.get(DigitalChannel.class, "top switch");
 
-        ring_detector = hardwareMap.get(ColorSensor.class, "light sensor");
+        ring_detector = null; // hardwareMap.get(ColorSensor.class, "light sensor");
 
-        Servo finger = hardwareMap.get(Servo.class, "finger");
-        Servo aim = hardwareMap.get(Servo.class, "aim");
+        Servo finger = null; // hardwareMap.get(Servo.class, "finger");
+        Servo aim = null; // hardwareMap.get(Servo.class, "aim");
 
-        clawIn = hardwareMap.servo.get("wobble_in");
-        clawOut = hardwareMap.servo.get("wobble_out");
-        CRServo leftLift = hardwareMap.get(CRServo.class, "lift l");
-        CRServo rightLift = hardwareMap.get(CRServo.class, "lift r");
+        clawIn = null; // hardwareMap.servo.get("wobble_in");
+        clawOut = null; // hardwareMap.servo.get("wobble_out");
+        CRServo leftLift = null; // hardwareMap.get(CRServo.class, "lift l");
+        CRServo rightLift = null; // hardwareMap.get(CRServo.class, "lift r");
 
 
         // Sub-Assemblies
         drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right);
-        turret = new Turret(left_potentiometer, right_potentiometer, finger, aim, leftLift, rightLift, shooter, rotator, rotate_potentiometer);
-        intake = new Intake(intaker);
+        turret = null; // new Turret(left_potentiometer, right_potentiometer, finger, aim, leftLift, rightLift, shooter, rotator, rotate_potentiometer);
+        intake = new Intake(intaker, ramp);
 
         CalibratedAnalogInput lPot = new CalibratedAnalogInput(left_potentiometer, Storage.getFile("lift_calib_l.json"));
         CalibratedAnalogInput rPot = new CalibratedAnalogInput(right_potentiometer, Storage.getFile("lift_calib_r.json"));

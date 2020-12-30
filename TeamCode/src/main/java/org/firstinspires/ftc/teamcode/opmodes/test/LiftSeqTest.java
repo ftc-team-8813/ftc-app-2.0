@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.test;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
 
 @TeleOp(name="Low Effort TeleOp")
+@Disabled
 public class LiftSeqTest extends OpMode
 {
     private Robot robot;
