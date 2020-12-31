@@ -20,6 +20,7 @@ public class Shooter
     public Shooter(DcMotor motor, File configFile)
     {
         this.motor = motor;
+        // motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         loadConfiguration(configFile);
     }

@@ -39,11 +39,11 @@ public class Turret {
     
     public void push()
     {
-        pusher.setPosition(0.5);
+        pusher.setPosition(0.85);
     }
     
     public void unpush()
     {
-        pusher.setPosition(0.1);
+        pusher.setPosition(1);
     }
 }

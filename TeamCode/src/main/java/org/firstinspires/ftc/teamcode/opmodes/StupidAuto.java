@@ -7,9 +7,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.Turret;
+import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
-@Autonomous(name="bad autonomous")
+@Autonomous(name="terrible auto")
 public class StupidAuto extends LinearOpMode
 {
     private Drivetrain drivetrain;
@@ -22,6 +23,7 @@ public class StupidAuto extends LinearOpMode
         // final int target = 2600;
         while (drivetrain.top_left.getCurrentPosition() < target)
         {
+            turret.shooter.update();
             sleep(10);
         }
     
@@ -37,6 +39,7 @@ public class StupidAuto extends LinearOpMode
         turret = robot.turret;
         
         drivetrain.resetEncoders();
+        turret.unpush();
         
         while (!isStarted())
         {
@@ -44,6 +47,20 @@ public class StupidAuto extends LinearOpMode
             sleep(1);
         }
         
+        turret.shooter.start();
+        goTo(2400);
+        double t = Scheduler.getTime();
+        while (Scheduler.getTime() - t < 3)
+        {
         
+        }
+        
+        for (int i = 0; i < 3; i++)
+        {
+            turret.push();
+            sleep(250);
+            turret.unpush();
+            sleep(1250);
+        }
     }
 }

@@ -27,8 +27,8 @@ public class ShooterTest extends OpMode
     {
         if (gamepad1.y) shooter.start();
         else shooter.stop();
-        if (gamepad1.b) pusher.setPosition(0.5);
-        else pusher.setPosition(0.1);
+        if (gamepad1.b) pusher.setPosition(0.8);
+        else pusher.setPosition(0.95);
         shooter.update();
     }
 }
