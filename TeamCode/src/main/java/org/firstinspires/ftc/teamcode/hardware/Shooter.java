@@ -26,8 +26,11 @@ public class Shooter
     
     public void start()
     {
-        startTime = System.nanoTime();
-        started = true;
+        if (!started)
+        {
+            startTime = System.nanoTime();
+            started = true;
+        }
     }
     
     public void stop()
