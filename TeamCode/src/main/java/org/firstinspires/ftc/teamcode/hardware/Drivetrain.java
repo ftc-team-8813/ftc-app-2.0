@@ -32,14 +32,7 @@ public class Drivetrain {
         bottom_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void setModeRun(){
-        top_right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        bottom_right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        top_left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        bottom_left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    }
-
-    public void setModeReset(){
+    public void resetEncoders(){
         top_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         bottom_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         top_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -50,21 +43,7 @@ public class Drivetrain {
         top_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bottom_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
-
-    public void setPos(int ticks){
-        top_left.setTargetPosition(ticks);
-        bottom_left.setTargetPosition(ticks);
-        top_right.setTargetPosition(ticks);
-        bottom_right.setTargetPosition(ticks);
-    }
-
-    public void setPower(double power){
-        top_right.setPower(power);
-        bottom_right.setPower(power);
-        top_left.setPower(power);
-        bottom_left.setPower(power);
-    }
-
+    
     /**
      * Move the drivetrain based on gamepad-compatible inputs
      * @param left_stick_y Left Wheel Velocity
@@ -78,16 +57,5 @@ public class Drivetrain {
         bottom_left.setPower(left_wheel_speed);
         top_right.setPower(right_wheel_speed);
         bottom_right.setPower(right_wheel_speed);
-    }
-
-    public void automove(double distance, double power, Telemetry telemetry){
-        setModeReset();
-        final double ENCODER_TICKS = 537.6;
-        double ratio = (distance/(101.5 * Math.PI / 10));
-        int ticks = (int) (ratio * (24 / 22) * ENCODER_TICKS);
-        telemetry.addData("Set Encoder Ticks", ticks);
-        setPos(ticks);
-        setPower(power);
-        setModeRun();
     }
 }

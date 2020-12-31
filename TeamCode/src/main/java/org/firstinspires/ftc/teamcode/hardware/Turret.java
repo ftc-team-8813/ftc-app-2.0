@@ -15,121 +15,35 @@ import java.io.File;
 import java.util.HashMap;
 
 public class Turret {
-    private DcMotor rotator;
-    private DcMotor shooter_motor;
-    private AnalogInput left_potentiometer;
-    private AnalogInput right_potentiometer;
-    private AnalogInput rotate_potentiometer;
-    private CalibratedAnalogInput turret_pot;
-    private Servo finger;
-    public Servo aim;
-    private CRServo left_lift;
-    private CRServo right_lift;
     
-    private Shooter shooter;
-
-    HashMap<String, Double> positions;
-
-    private int lift_target_pos;
-    private boolean enable_lift_event = false;
+    private DcMotor turret;
+    public final Shooter shooter;
+    private Servo pusher;
+    private Servo aim;
+    private CalibratedAnalogInput turretFb;
     
-    private EventBus ev_bus;
-    private Logger log = new Logger("Turret");
-
-    public Turret(AnalogInput left_potentiometer, AnalogInput right_potentiometer,
-                  Servo finger, Servo aim,
-                  CRServo left_lift, CRServo right_lift,
-                  DcMotor shooter, DcMotor rotator,
-                  AnalogInput rotate_potentiometer){
-        this.left_potentiometer = left_potentiometer;
-        this.right_potentiometer = right_potentiometer;
-        this.rotate_potentiometer = rotate_potentiometer;
-        this.turret_pot = new CalibratedAnalogInput(rotate_potentiometer, Storage.getFile("turret_calib.json"));
-        this.finger = finger;
+    public Turret(DcMotor turret, DcMotor shooter, Servo pusher, Servo aim, AnalogInput rotateFeedback,
+                  File shooterConfig, File rotateConfig)
+    {
+        this.turret = turret;
+        this.shooter = new Shooter(shooter, shooterConfig);
+        this.pusher = pusher;
         this.aim = aim;
-        this.left_lift = left_lift;
-        this.right_lift = right_lift;
-        this.rotator = rotator;
-        this.shooter_motor = shooter;
-        this.shooter = new Shooter(shooter, Storage.getFile("shooter.json"));
-        this.ev_bus = null;
-
-        String[] pos_keys = new String[]{"in", "catch", "out"};
-        positions = Configuration.readData(pos_keys, Storage.getFile("positions/finger.json"));
+        this.turretFb = new CalibratedAnalogInput(rotateFeedback, rotateConfig);
     }
     
-    public void update()
+    public void rotate(double position)
     {
-        shooter.update();
+        // TODO implement this: set target position (between 0 and 1)
     }
     
-    public void connectEventBus(EventBus evBus)
+    public void push()
     {
-        this.ev_bus = evBus;
-        log.d("Event bus connected");
+        pusher.setPosition(0.5);
     }
-
-    public void setGrabber(int mode){
-        // TODO Find grabber power needed for keeping ring controlled
-        if (mode == 0){
-            left_lift.setPower(0);
-            right_lift.setPower(0);
-        } else if (mode == 1){
-            left_lift.setPower(-0.2);
-            right_lift.setPower(-0.2);
-        } else if (mode == 2){
-            left_lift.setPower(0.2);
-            right_lift.setPower(0.2);
-        }
-    }
-
-    public void setTransfer(String pos){
-        finger.setPosition(positions.get(pos));
-    }
-
-    public void setShooter(int mode){
-        // TODO Find shooter power
-        if (mode == 0){
-            shooter.stop();
-        } else if (mode == 1){
-            shooter.start();
-        }
-    }
-
-    public void rotateTurret(double rotation){
-        rotator.setPower(rotation);
-    }
-
-
-    public double[] getRawPos()
+    
+    public void unpush()
     {
-        return new double[]{left_potentiometer.getVoltage(), right_potentiometer.getVoltage(), rotate_potentiometer.getVoltage()};
-    }
-
-    @Deprecated
-    public void updateLiftPID(){
-        double kP = 0.1;
-        double[] voltage_positions = new double[] {0, 0.669, 0.776};
-        double voltage = getPotenPos()[0];
-        double error = voltage - voltage_positions[lift_target_pos];
-        left_lift.setPower(error * kP);
-        right_lift.setPower(-error * kP);
-        log.v("PID update: voltage=%.3f target=%.3f error=%.3f power=%.3f", voltage, voltage_positions[lift_target_pos], error, error * kP);
-        if (Math.abs(error) < 0.05 && enable_lift_event)
-        {
-            enable_lift_event = false;
-            if (ev_bus != null) ev_bus.pushEvent(new TriggerEvent(1));
-        }
-    }
-
-    @Deprecated
-    public double[] getPotenPos(){
-        double lVoltage = left_potentiometer.getVoltage();
-        double rVoltage = right_potentiometer.getVoltage();
-        double lValue = lVoltage / 3.3;
-        double rValue = rVoltage / 3.3;
-        if (rValue <= 0) rValue = 0;
-        
-        return new double[]{lValue, rValue};
+        pusher.setPosition(0.1);
     }
 }

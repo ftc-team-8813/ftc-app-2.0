@@ -14,14 +14,4 @@ public class Intake {
         this.intake = intake;
         this.ramp = ramp;
     }
-
-    @Deprecated
-    public void setIntake(int mode){
-        // TODO Find actual power values
-        if (mode == 0){
-            intake.setPower(0);
-        } else if (mode == 1){
-            intake.setPower(-1);
-        }
-    }
 }

@@ -46,6 +46,7 @@ public class CalibratedAnalogInput
      */
     public double get()
     {
+        if (in == null) return 0;
         double value = in.getVoltage() / in.getMaxVoltage();
         return linearize(value);
     }
