@@ -42,7 +42,8 @@ public class Scheduler
         private void trigger()
         {
             if (cancelled) return;
-            bus.pushEvent(new TimerEvent(getTime(), eventChannel));
+            // suppress debug info for repeating triggers
+            bus.pushEvent(new TimerEvent(getTime(), eventChannel, repeat));
             if (repeat)
             {
                 start += delay;
