@@ -21,7 +21,7 @@ apply plugin: 'com.android.application'
 
 android {
 
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     signingConfigs {
         debug {
@@ -98,13 +98,13 @@ android {
 
     sourceSets.main {
         jni.srcDirs = []
-        jniLibs.srcDir rootProject.file('libs')
+        jniLibs.srcDirs rootProject.file('libs'), project(':opencv-sdk').file('native/libs')
     }
 }
 
 repositories {
     flatDir {
-        dirs rootProject.file('libs')
+        dirs rootProject.file('libs'), project(':opencv-sdk').file('native/libs')
     }
 }
 apply from: 'build.release.gradle'

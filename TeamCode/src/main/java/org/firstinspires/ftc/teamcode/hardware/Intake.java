@@ -7,18 +7,21 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * TODO: Do we need this?
  */
 public class Intake {
-    DcMotor intake;
+    public final DcMotor intake;
+    public final DcMotor ramp;
 
-    public Intake(DcMotor intake){
+    public Intake(DcMotor intake, DcMotor ramp){
         this.intake = intake;
+        this.ramp = ramp;
     }
 
+    @Deprecated
     public void setIntake(int mode){
         // TODO Find actual power values
         if (mode == 0){
             intake.setPower(0);
         } else if (mode == 1){
-            intake.setPower(1);
+            intake.setPower(-1);
         }
     }
 }

@@ -1,0 +1,3 @@
+[submodule "opencv-sdk"]
+	path = opencv-sdk
+	url = https://github.com/ftc-team-8813/opencv-sdk

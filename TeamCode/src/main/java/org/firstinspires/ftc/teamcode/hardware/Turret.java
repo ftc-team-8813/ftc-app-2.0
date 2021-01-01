@@ -5,17 +5,18 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.util.Configurations;
+import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
 
+import java.io.File;
 import java.util.HashMap;
 
 public class Turret {
     private DcMotor rotator;
-    private DcMotor shooter;
+    private DcMotor shooter_motor;
     private AnalogInput left_potentiometer;
     private AnalogInput right_potentiometer;
     private AnalogInput rotate_potentiometer;
@@ -24,6 +25,8 @@ public class Turret {
     public Servo aim;
     private CRServo left_lift;
     private CRServo right_lift;
+    
+    private Shooter shooter;
 
     HashMap<String, Double> positions;
 
@@ -47,11 +50,17 @@ public class Turret {
         this.left_lift = left_lift;
         this.right_lift = right_lift;
         this.rotator = rotator;
-        this.shooter = shooter;
+        this.shooter_motor = shooter;
+        this.shooter = new Shooter(shooter, Storage.getFile("shooter.json"));
         this.ev_bus = null;
 
         String[] pos_keys = new String[]{"in", "catch", "out"};
-        positions = Configurations.readData(pos_keys, Storage.getFile("positions/finger.json"));
+        positions = Configuration.readData(pos_keys, Storage.getFile("positions/finger.json"));
+    }
+    
+    public void update()
+    {
+        shooter.update();
     }
     
     public void connectEventBus(EventBus evBus)
@@ -74,16 +83,16 @@ public class Turret {
         }
     }
 
-    public void setFinger(String pos){
+    public void setTransfer(String pos){
         finger.setPosition(positions.get(pos));
     }
 
     public void setShooter(int mode){
         // TODO Find shooter power
         if (mode == 0){
-            shooter.setPower(0);
+            shooter.stop();
         } else if (mode == 1){
-            shooter.setPower(1);
+            shooter.start();
         }
     }
 

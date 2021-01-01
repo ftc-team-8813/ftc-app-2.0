@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.events.LiftEvent;
-import org.firstinspires.ftc.teamcode.util.Configurations;
+import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -40,6 +40,8 @@ public class Lift
     private boolean bounceHold = false;
     private long lastBounce = 0;
     
+    public double liftTweak = 0;
+    
     private HashMap<String, Double> positions;
     private ArrayList<String> homingLog = new ArrayList<>();
     private long lastLog;
@@ -58,7 +60,7 @@ public class Lift
         this.topButton = button;
     
         final String[] pos_keys = new String[]{"bottom", "middle", "top", "grab", "release"};
-        positions = Configurations.readData(pos_keys, Storage.getFile("positions/lift.json"));
+        positions = Configuration.readData(pos_keys, Storage.getFile("positions/lift.json"));
     }
     
     public void connectEventBus(EventBus evBus)
@@ -183,7 +185,7 @@ public class Lift
     
     public void moveLift(double lift)
     {
-        liftTarget = lift;
+        liftTarget = lift + liftTweak;
         sendEvent = true;
     }
     
@@ -191,6 +193,12 @@ public class Lift
     {
         grabTarget = grab;
         sendEvent = true;
+    }
+    
+    public void stop()
+    {
+        lServo.setPower(0);
+        rServo.setPower(0);
     }
     
     public boolean moveGrabberPreset(int dir)
