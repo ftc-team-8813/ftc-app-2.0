@@ -21,7 +21,7 @@ public class Robot {
     public final Drivetrain drivetrain;
     public final Intake intake;
     public final Turret turret;
-    
+    public final SimpleLift lift;
     
     public Robot(HardwareMap hardwareMap){
         // Hardware Maps
@@ -36,14 +36,22 @@ public class Robot {
 
         Servo pusher = hardwareMap.get(Servo.class, "pusher");
         Servo aim = null; // hardwareMap.get(Servo.class, "aim");
+        
+        Servo lift_a = hardwareMap.get(Servo.class, "lift a");
+        Servo lift_b = hardwareMap.get(Servo.class, "lift b");
 
         // Sub-Assemblies
         drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right);
         
-        AnalogInput turretFeedback = null;
-        File turretConfig = Storage.getFile("turret_calib.json");
+        AnalogInput turretFeedback = hardwareMap.get(AnalogInput.class, "turret");
+        File turretCalib   = Storage.getFile("turret_calib.json");
         File shooterConfig = Storage.getFile("shooter.json");
-        this.turret = new Turret(turret, shooter, pusher, aim, turretFeedback, shooterConfig, turretConfig);
+        File turretConfig  = Storage.getFile("turret.json");
+        this.turret = new Turret(turret, shooter, pusher, aim, turretFeedback,
+                                 shooterConfig, turretCalib, turretConfig);
         this.intake = new Intake(intake, ramp);
+        
+        File liftPositions = Storage.getFile("positions/lift.json");
+        this.lift = new SimpleLift(lift_a, lift_b, liftPositions);
     }
 }

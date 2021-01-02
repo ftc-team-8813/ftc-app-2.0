@@ -1,18 +1,14 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.Configuration;
-import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.util.Storage;
-import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
+import org.firstinspires.ftc.teamcode.util.Time;
 
 import java.io.File;
-import java.util.HashMap;
 
 public class Turret {
     
@@ -22,19 +18,62 @@ public class Turret {
     private Servo aim;
     private CalibratedAnalogInput turretFb;
     
+    private double turretHome;
+    private double turretKp;
+    
+    private double target;
+    private double lastUpdate;
+    private double lastPos;
+    
     public Turret(DcMotor turret, DcMotor shooter, Servo pusher, Servo aim, AnalogInput rotateFeedback,
-                  File shooterConfig, File rotateConfig)
+                  File shooterConfig, File fbConfig, File turretConfig)
     {
         this.turret = turret;
         this.shooter = new Shooter(shooter, shooterConfig);
         this.pusher = pusher;
         this.aim = aim;
-        this.turretFb = new CalibratedAnalogInput(rotateFeedback, rotateConfig);
+        this.turretFb = new CalibratedAnalogInput(rotateFeedback, fbConfig);
+    
+        JsonObject root = Configuration.readJson(turretConfig);
+        turretHome = root.get("home").getAsDouble();
+        turretKp   = root.get("kp").getAsDouble();
+        
+        target = turretHome;
     }
     
     public void rotate(double position)
     {
-        // TODO implement this: set target position (between 0 and 1)
+        if (position < 0.1) position = 0.1;
+        else if (position > 0.9) position = 0.9;
+        target = position;
+    }
+    
+    public void home()
+    {
+        target = turretHome;
+    }
+    
+    public double getTarget()
+    {
+        return target;
+    }
+    
+    public double getPosition()
+    {
+        return lastPos;
+    }
+    
+    public void update()
+    {
+        shooter.update();
+        if (lastUpdate == 0) lastUpdate = Time.now();
+        double dt = Time.since(lastUpdate);
+        double pos = turretFb.get();
+        double error = target - pos;
+        
+        double power = error * dt * turretKp;
+        turret.setPower(power);
+        lastUpdate = Time.now();
     }
     
     public void push()

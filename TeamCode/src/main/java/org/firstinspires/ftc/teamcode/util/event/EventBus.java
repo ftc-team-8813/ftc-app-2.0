@@ -1,11 +1,10 @@
 package org.firstinspires.ftc.teamcode.util.event;
 
 import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.util.Scheduler;
+import org.firstinspires.ftc.teamcode.util.Time;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * <pre>
@@ -149,9 +148,9 @@ public class EventBus
                 {
                     if (!ev.suppressDebug)
                         log.v(" -> Send to subscriber '%s'", sub.name);
-                    double execStart = Scheduler.getTime();
+                    double execStart = Time.now();
                     sub.callback.run(ev, this, sub);
-                    double elapsed = Scheduler.getTime() - execStart;
+                    double elapsed = Time.now() - execStart;
                     if (elapsed > 0.25)
                     {
                         log.w("Subscriber %s took %.3fs to handle %s (ch=%d)",

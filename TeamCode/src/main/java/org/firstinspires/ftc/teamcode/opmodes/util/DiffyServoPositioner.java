@@ -1,13 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes.util;
 
-import android.util.JsonReader;
-import android.util.JsonWriter;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.internal.bind.JsonTreeWriter;
 import com.qualcomm.hardware.lynx.LynxServoController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -20,11 +16,10 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.telemetry.HTMLString;
 import org.firstinspires.ftc.teamcode.telemetry.Scroll;
 import org.firstinspires.ftc.teamcode.util.Configuration;
-import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Storage;
+import org.firstinspires.ftc.teamcode.util.Time;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
@@ -270,13 +265,13 @@ public class DiffyServoPositioner extends OpMode
         @Override
         void loop()
         {
-            if (lastTick == 0) lastTick = Scheduler.getTime(); // avoid large jump from 0 to whenever we are now
+            if (lastTick == 0) lastTick = Time.now(); // avoid large jump from 0 to whenever we are now
             if (!started)
             {
                 status.setCaption("Press the PLAY button to start");
             }
-            double dt = Scheduler.getTime() - lastTick; // seconds per loop
-            lastTick = Scheduler.getTime();
+            double dt = Time.now() - lastTick; // seconds per loop
+            lastTick = Time.now();
             double step1 = Math.pow(-ax_change_position_a.get(), 3) * 0.3 * dt;
             double step2 = Math.pow(-ax_change_position_b.get(), 3) * 0.3 * dt;
             

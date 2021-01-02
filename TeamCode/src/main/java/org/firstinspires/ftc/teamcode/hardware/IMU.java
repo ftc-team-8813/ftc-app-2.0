@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.hardware.events.IMUEvent;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Storage;
@@ -80,7 +80,7 @@ public class IMU
         private int updateCount;
         private boolean autoCalibrating;
         
-        private int status = PRE_INIT;
+        private int state = PRE_INIT;
         private String detailStatus = "";
         
         private float heading, roll, pitch;
@@ -146,9 +146,9 @@ public class IMU
         @Override
         public void run(TimerEvent ev, EventBus bus, EventBus.Subscriber<TimerEvent> sub)
         {
-            if (status > CLOSED)
+            if (state > CLOSED)
             {
-                switch (status)
+                switch (state)
                 {
                     case PRE_INIT:
                     {
@@ -177,7 +177,7 @@ public class IMU
                         log.d("Initializing IMU [WILL BLOCK EVENT LOOP]");
                         detailStatus = "Initializing";
                         imu.initialize(params);
-                        status = CALIBRATING;
+                        setState(CALIBRATING);
                         break;
                     }
                     case CALIBRATING:
@@ -197,14 +197,10 @@ public class IMU
                                 log.e("Unable to write calibration file");
                                 log.e(e);
                             }
-                            break;
-                        }
-                        
-                        if (!autoCalibrating)
-                        {
+                            
                             detailStatus = "Initialized";
-                            if (immediateStart) status = STARTED;
-                            else status = INITIALIZED;
+                            if (immediateStart) setState(STARTED);
+                            else setState(INITIALIZED);
                         }
                         break;
                     }
@@ -236,14 +232,15 @@ public class IMU
             return pitch;
         }
         
-        public void setStatus(int status)
+        public void setState(int state)
         {
-            this.status = status;
+            evBus.pushEvent(new IMUEvent(this.state, state));
+            this.state = state;
         }
         
-        public int getStatus()
+        public int getState()
         {
-            return status;
+            return state;
         }
         
         public String getDetailStatus()
@@ -260,7 +257,7 @@ public class IMU
     
     public void initialize(EventBus evBus, Scheduler scheduler)
     {
-        if (worker.getStatus() >= PRE_INIT) // is it already initialized/initializing?
+        if (worker.getState() >= PRE_INIT) // is it already initialized/initializing?
         {
             log.w("Already initialized!");
             return;
@@ -279,7 +276,7 @@ public class IMU
     
     public void setImmediateStart(boolean immediateStart)
     {
-        if (worker.getStatus() < INITIALIZED) worker.setImmediateStart(immediateStart);
+        if (worker.getState() < INITIALIZED) worker.setImmediateStart(immediateStart);
     }
     
     public void start()
@@ -290,23 +287,23 @@ public class IMU
     public void start(boolean inRadians)
     {
         worker.inRadians = inRadians;
-        if (worker.getStatus() < INITIALIZED)
+        if (worker.getState() < INITIALIZED)
         {
             log.f("start() called before initialization complete!");
             throw new IllegalStateException("start() called before initialization complete!");
         }
-        if (worker.getStatus() == STARTED)
+        if (worker.getState() == STARTED)
         {
             log.d("Trying to start IMU even though it is already running");
             // understandable; have a nice day
             return;
         }
-        worker.setStatus(STARTED);
+        worker.setState(STARTED);
     }
     
     public int getStatus()
     {
-        return worker.getStatus();
+        return worker.getState();
     }
     
     public String getDetailStatus()
@@ -336,9 +333,9 @@ public class IMU
     
     public void stop()
     {
-        if (worker.getStatus() > CLOSED)
+        if (worker.getState() > CLOSED)
         {
-            worker.setStatus(CLOSED);
+            worker.setState(CLOSED);
         }
     }
 }

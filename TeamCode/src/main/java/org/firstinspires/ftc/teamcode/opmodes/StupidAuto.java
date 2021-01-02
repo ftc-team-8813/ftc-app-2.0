@@ -2,12 +2,11 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.Turret;
-import org.firstinspires.ftc.teamcode.util.Scheduler;
+import org.firstinspires.ftc.teamcode.util.Time;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 @Autonomous(name="terrible auto")
@@ -49,8 +48,8 @@ public class StupidAuto extends LinearOpMode
         
         turret.shooter.start();
         goTo(2400);
-        double t = Scheduler.getTime();
-        while (Scheduler.getTime() - t < 3)
+        double t = Time.now();
+        while (Time.now() - t < 3)
         {
         
         }

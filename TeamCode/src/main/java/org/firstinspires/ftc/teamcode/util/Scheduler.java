@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.util;
 
-import org.firstinspires.ftc.teamcode.util.event.Event;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 
@@ -9,10 +8,6 @@ import java.util.List;
 
 public class Scheduler
 {
-    public static double getTime()
-    {
-        return (double)System.nanoTime() / 1_000_000_000.0;
-    }
     
     public class Timer
     {
@@ -30,20 +25,20 @@ public class Scheduler
             this.repeat = repeat;
             this.eventChannel = evChannel;
             this.cancelled = false;
-            this.start = getTime();
+            this.start = Time.now();
         }
         
         public void reset()
         {
             this.cancelled = false;
-            this.start = getTime();
+            this.start = Time.now();
         }
     
         private void trigger()
         {
             if (cancelled) return;
             // suppress debug info for repeating triggers
-            bus.pushEvent(new TimerEvent(getTime(), eventChannel, repeat));
+            bus.pushEvent(new TimerEvent(Time.now(), eventChannel, repeat));
             if (repeat)
             {
                 start += delay;
@@ -67,6 +62,12 @@ public class Scheduler
         this.bus = bus;
     }
     
+    /**
+     * Add a timer to trigger at some set time after it is created
+     * @param delay Delay in seconds
+     * @param name  Timer name for debugging
+     * @return A Timer object for this timer
+     */
     public Timer addFutureTrigger(double delay, String name)
     {
         Timer t = new Timer(name, delay, false, nextChannel++);
@@ -74,6 +75,26 @@ public class Scheduler
         return t;
     }
     
+    /**
+     * Same as {@link #addFutureTrigger(double, String)}, but immediately stops the timer. To start
+     * the timer later, use {@link Timer#reset()} on the returned Timer object.
+     * @param delay Delay in seconds
+     * @param name  Timer name for debugging
+     * @return A Timer object for this timer
+     */
+    public Timer addPendingTrigger(double delay, String name)
+    {
+        Timer t = addFutureTrigger(delay, name);
+        t.cancelled = true;
+        return t;
+    }
+    
+    /**
+     * Add a repeating timer, which triggers repeatedly after a set delay
+     * @param delay The interval of time on which to trigger the event
+     * @param name The name of the timer, for debugging
+     * @return A Timer object for this timer
+     */
     public Timer addRepeatingTrigger(double delay, String name)
     {
         Timer t = new Timer(name, delay, true, nextChannel++);
@@ -86,7 +107,7 @@ public class Scheduler
         for (Timer task : new ArrayList<>(timers)) // copy tasks so we don't have concurrent modification errors
         {
             if (task.cancelled) continue;
-            double time = getTime();
+            double time = Time.now();
             if (time >= task.start + task.delay)
             {
                 task.trigger();
