@@ -121,7 +121,7 @@ public class EventBus
         if (!ev.suppressDebug)
         {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-            String callingClassName = stackTrace[2].getClassName();
+            String callingClassName = stackTrace[3].getClassName();
             log.d("Push %s on channel %d (from %s)", ev.getClass().getSimpleName(), ev.channel, callingClassName);
         }
     }
@@ -136,18 +136,20 @@ public class EventBus
         List<Subscriber<?>> oldSubs = new ArrayList<>(subscribers);
         // same for the event list
         List<Event> oldEvents = new ArrayList<>(events);
+        events.clear();
         
         // loop subs first, since there will most likely be more subs than events at any given time
         for (Subscriber sub : oldSubs)
         {
-            for (Event ev : events)
+            for (Event ev : oldEvents)
             {
-                if (!ev.suppressDebug)
-                    log.v("Event: %s on channel %d: %s", ev.getClass().getSimpleName(), ev.channel, ev.toString());
                 if (ev.getClass() == sub.evClass && ev.channel == sub.channel)
                 {
                     if (!ev.suppressDebug)
+                    {
+                        log.v("Event: %s on channel %d: %s", ev.getClass().getSimpleName(), ev.channel, ev.toString());
                         log.v(" -> Send to subscriber '%s'", sub.name);
+                    }
                     double execStart = Time.now();
                     sub.callback.run(ev, this, sub);
                     double elapsed = Time.now() - execStart;
@@ -159,6 +161,5 @@ public class EventBus
                 }
             }
         }
-        events.clear();
     }
 }

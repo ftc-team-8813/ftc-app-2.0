@@ -257,7 +257,7 @@ public class IMU
     
     public void initialize(EventBus evBus, Scheduler scheduler)
     {
-        if (worker.getState() >= PRE_INIT) // is it already initialized/initializing?
+        if (worker.getState() > PRE_INIT) // is it already initialized/initializing?
         {
             log.w("Already initialized!");
             return;
@@ -269,7 +269,6 @@ public class IMU
         params.mode = BNO055IMU.SensorMode.IMU;
         
         this.evBus = evBus;
-        worker = new Worker();
         workerInterval = scheduler.addRepeatingTrigger(0.05, "IMU Worker Timer");
         workerSub = evBus.subscribe(TimerEvent.class, worker, "IMU Worker", workerInterval.eventChannel);
     }

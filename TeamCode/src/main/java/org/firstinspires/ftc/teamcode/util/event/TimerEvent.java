@@ -8,6 +8,7 @@ public class TimerEvent extends Event
     {
         super(id);
         this.time = time;
+        this.suppressDebug = suppress;
     }
     
     public String toString()

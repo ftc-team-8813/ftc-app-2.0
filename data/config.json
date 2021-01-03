@@ -11,7 +11,7 @@
     "kp":  10,
     "pusher": {
       "in": 1,
-      "out": 0.7
+      "out": 0.6
     }
   },
   "lift": {
@@ -31,6 +31,9 @@
     "arm_down": 0,
     "claw_open": 0,
     "claw_close": 0.3
+  },
+  "angle_hold": {
+    "kp": 0.02
   },
 
   "turret_cal": {

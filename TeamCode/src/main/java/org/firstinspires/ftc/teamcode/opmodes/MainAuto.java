@@ -8,8 +8,10 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
+import org.firstinspires.ftc.teamcode.hardware.navigation.AngleHold;
 import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Scheduler.Timer;
@@ -57,12 +59,18 @@ public class MainAuto extends LoggingOpMode
         double power;
         boolean sendEvent = false;
         
+        IMU imu;
+        AngleHold hold;
+        double[] adj = new double[2];
+        
         Mover(DcMotor l, DcMotor ls, DcMotor r, DcMotor rs)
         {
             this.l = l;
             this.ls = ls;
             this.r = r;
             this.rs = rs;
+            imu = new IMU(robot.imu);
+            hold = new AngleHold(imu, bus, scheduler, robot.config.getAsJsonObject("angle_hold"));
         }
         
         void forward(int dist, double power)
@@ -79,10 +87,12 @@ public class MainAuto extends LoggingOpMode
             double pAdj = kp * error;
             pAdj = Range.clip(pAdj, -1, 1);
             
-            l.setPower(power * pAdj);
-            r.setPower(power * pAdj);
-            ls.setPower(power * pAdj);
-            rs.setPower(power * pAdj);
+            hold.getAdj(telemetry, adj);
+            
+            l.setPower (power * pAdj + adj[0]);
+            r.setPower (power * pAdj + adj[1]);
+            ls.setPower(power * pAdj + adj[0]);
+            rs.setPower(power * pAdj + adj[1]);
             
             if (Math.abs(error) < deadband && sendEvent)
             {
@@ -122,15 +132,15 @@ public class MainAuto extends LoggingOpMode
         robot.turret.connectEventBus(bus);
         
         robot.drivetrain.resetEncoders();
-        // TODO NOTE RIGHT AND LEFT SWAPPED -- CONFIG ISSUE
+        // TODO RIGHT AND LEFT SWAPPED -- CONFIG ISSUE
         mover = new Mover(robot.drivetrain.top_right, robot.drivetrain.bottom_right,
                           robot.drivetrain.top_left, robot.drivetrain.bottom_left);
         
         final double ogSpinupDelay = 5;
         // timers here
         Timer shooterTimer = scheduler.addPendingTrigger(ogSpinupDelay, "Shooter Spin-Up");
-        Timer pushTimer = scheduler.addPendingTrigger(0.5, "Push Timer");
-        Timer shootTimer = scheduler.addFutureTrigger(3, "Shoot Timer");
+        Timer pushTimer = scheduler.addPendingTrigger(0.8, "Push Timer");
+        Timer shootTimer = scheduler.addFutureTrigger(2, "Shoot Timer");
         
         // flow
         autoFlow.start(new Subscriber<>(LifecycleEvent.class, (ev, bus, sub) -> { // 0
@@ -175,6 +185,14 @@ public class MainAuto extends LoggingOpMode
             robot.turret.rotate(turretPos[ringCount], true);
             autoFlow.jump(3);
         }, "Re-SpinUp", shootTimer.eventChannel));
+    }
+    
+    @Override
+    public void init_loop()
+    {
+        mover.hold.getAdj(telemetry, mover.adj); // show telemetry
+        scheduler.loop();
+        bus.update();
     }
     
     @Override

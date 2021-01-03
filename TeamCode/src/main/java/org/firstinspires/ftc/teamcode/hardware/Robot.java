@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 import android.graphics.Color;
 
 import com.google.gson.JsonObject;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -28,6 +29,8 @@ public class Robot {
     
     public final JsonObject config;
     
+    public final BNO055IMU imu;
+    
     public Robot(HardwareMap hardwareMap){
         config = Configuration.readJson(Storage.getFile("config.json"));
         
@@ -44,11 +47,13 @@ public class Robot {
         Servo pusher = hardwareMap.get(Servo.class, "pusher");
         Servo aim = null; // hardwareMap.get(Servo.class, "aim");
         
-        Servo wobble_arm = hardwareMap.get(Servo.class, "wobble a");
+        Servo wobble_arm = hardwareMap.get(Servo.class, "wobble b");
         Servo wobble_claw = hardwareMap.get(Servo.class, "wobble claw");
         
         Servo lift_a = hardwareMap.get(Servo.class, "lift a");
         Servo lift_b = hardwareMap.get(Servo.class, "lift b");
+        
+        this.imu = hardwareMap.get(BNO055IMU.class, "imu");
 
         // Sub-Assemblies
         drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right);
