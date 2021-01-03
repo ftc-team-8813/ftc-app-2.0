@@ -51,7 +51,8 @@ public class StupidAuto extends LinearOpMode
         double t = Time.now();
         while (Time.now() - t < 3)
         {
-        
+            turret.shooter.update();
+            sleep(10);
         }
         
         for (int i = 0; i < 3; i++)
@@ -60,6 +61,9 @@ public class StupidAuto extends LinearOpMode
             sleep(250);
             turret.unpush();
             sleep(1250);
+            robot.drivetrain.telemove(0.5, -0.5);
+            sleep(100);
+            robot.drivetrain.telemove(0, 0);
         }
     }
 }

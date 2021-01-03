@@ -61,6 +61,7 @@ public class DiffyServoPositioner extends OpMode
     private ControllerMap.ButtonEntry btn_ok;
     private ControllerMap.ButtonEntry btn_stop_servo;
     private ControllerMap.ButtonEntry btn_exit_to_menu;
+    private ControllerMap.ButtonEntry btn_toggle_mode;
     private ControllerMap.AxisEntry ax_change_position_a;
     private ControllerMap.AxisEntry ax_change_position_b;
     
@@ -98,6 +99,7 @@ public class DiffyServoPositioner extends OpMode
         btn_ok =             controllerMap.buttons.get("ok");
         btn_stop_servo =     controllerMap.buttons.get("stop_servo");
         btn_exit_to_menu =   controllerMap.buttons.get("exit_to_menu");
+        btn_toggle_mode =    controllerMap.buttons.get("toggle_mode");
         ax_change_position_a = controllerMap.axes.get("change_pos_a");
         ax_change_position_b = controllerMap.axes.get("change_pos_b");
     }
@@ -140,6 +142,7 @@ public class DiffyServoPositioner extends OpMode
         controllerMap.setButtonMap("ok",           ControllerMap.Controller.gamepad1, ControllerMap.Button.b);
         controllerMap.setButtonMap("stop_servo",   ControllerMap.Controller.gamepad1, ControllerMap.Button.a);
         controllerMap.setButtonMap("exit_to_menu", ControllerMap.Controller.gamepad1, ControllerMap.Button.right_bumper);
+        controllerMap.setButtonMap("toggle_mode",  ControllerMap.Controller.gamepad1, ControllerMap.Button.back);
         controllerMap.setAxisMap  ("change_pos_a",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.left_stick_y);
         controllerMap.setAxisMap  ("change_pos_b",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.right_stick_y);
     }
@@ -228,6 +231,7 @@ public class DiffyServoPositioner extends OpMode
         private Scroll posList;
         private Telemetry.Item status;
         private double lastTick = 0;
+        private boolean differential = true;
         
         @Override
         void init()
@@ -275,11 +279,13 @@ public class DiffyServoPositioner extends OpMode
             double step1 = Math.pow(-ax_change_position_a.get(), 3) * 0.3 * dt;
             double step2 = Math.pow(-ax_change_position_b.get(), 3) * 0.3 * dt;
             
-            posA += step1 + step2;
+            if (differential) posA += step1 + step2;
+            else posA += step1;
             if (posA > 1) posA = 1;
             else if (posA < 0) posA = 0;
             
-            posB += step1 - step2;
+            if (differential) posB += step1 - step2;
+            else posB += step2;
             if (posB > 1) posB = 1;
             else if (posB < 0) posB = 0;
             
@@ -331,6 +337,11 @@ public class DiffyServoPositioner extends OpMode
             }
             
             posList.render(telemetry);
+            
+            if (btn_toggle_mode.edge() > 0)
+            {
+                differential = !differential;
+            }
             
             if (btn_exit_to_menu.edge() > 0)
             {

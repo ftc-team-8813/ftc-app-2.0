@@ -33,7 +33,7 @@ public class CalibratedAnalogInput
      * @param in The analog input
      * @param calibrationJson The calibration data file
      */
-    public CalibratedAnalogInput(AnalogInput in, File calibrationJson)
+    public CalibratedAnalogInput(AnalogInput in, JsonObject calibrationJson)
     {
         this.in = in;
         loadCalibration(calibrationJson);
@@ -69,7 +69,7 @@ public class CalibratedAnalogInput
         return xbase + dx;
     }
     
-    private void loadCalibration(File calibrationJson)
+    private void loadCalibration(JsonObject root)
     {
         /*
             Calibration data format:
@@ -78,27 +78,19 @@ public class CalibratedAnalogInput
               "yValues": [ Y values (nonlinear values) ]
             }
         */
-        try (JsonReader reader = new JsonReader(new FileReader(calibrationJson)))
+        JsonArray xValues = root.get("xValues").getAsJsonArray();
+        JsonArray yValues = root.get("yValues").getAsJsonArray();
+        ArrayList<Double> xList = new ArrayList<>();
+        ArrayList<Double> yList = new ArrayList<>();
+        for (JsonElement elem : xValues)
         {
-            JsonParser parser = new JsonParser();
-            JsonObject root = parser.parse(reader).getAsJsonObject();
-            JsonArray xValues = root.get("xValues").getAsJsonArray();
-            JsonArray yValues = root.get("yValues").getAsJsonArray();
-            ArrayList<Double> xList = new ArrayList<>();
-            ArrayList<Double> yList = new ArrayList<>();
-            for (JsonElement elem : xValues)
-            {
-                xList.add(elem.getAsDouble());
-            }
-            for (JsonElement elem : yValues)
-            {
-                yList.add(elem.getAsDouble());
-            }
-            calibrationX = xList.toArray(new Double[0]);
-            calibrationY = yList.toArray(new Double[0]);
-        } catch (IOException | JsonParseException e)
-        {
-            throw new IllegalStateException("Unable to load calibration data", e);
+            xList.add(elem.getAsDouble());
         }
+        for (JsonElement elem : yValues)
+        {
+            yList.add(elem.getAsDouble());
+        }
+        calibrationX = xList.toArray(new Double[0]);
+        calibrationY = yList.toArray(new Double[0]);
     }
 }

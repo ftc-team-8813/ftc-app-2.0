@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import android.graphics.Color;
 
+import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -11,6 +12,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoController;
 
+import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Storage;
 
 import java.io.File;
@@ -22,8 +24,13 @@ public class Robot {
     public final Intake intake;
     public final Turret turret;
     public final SimpleLift lift;
+    public final Wobble wobble;
+    
+    public final JsonObject config;
     
     public Robot(HardwareMap hardwareMap){
+        config = Configuration.readJson(Storage.getFile("config.json"));
+        
         // Hardware Maps
         DcMotor top_left = hardwareMap.get(DcMotor.class, "top left");
         DcMotor bottom_left = hardwareMap.get(DcMotor.class, "bottom left");
@@ -37,6 +44,9 @@ public class Robot {
         Servo pusher = hardwareMap.get(Servo.class, "pusher");
         Servo aim = null; // hardwareMap.get(Servo.class, "aim");
         
+        Servo wobble_arm = hardwareMap.get(Servo.class, "wobble a");
+        Servo wobble_claw = hardwareMap.get(Servo.class, "wobble claw");
+        
         Servo lift_a = hardwareMap.get(Servo.class, "lift a");
         Servo lift_b = hardwareMap.get(Servo.class, "lift b");
 
@@ -44,14 +54,16 @@ public class Robot {
         drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right);
         
         AnalogInput turretFeedback = hardwareMap.get(AnalogInput.class, "turret");
-        File turretCalib   = Storage.getFile("turret_calib.json");
-        File shooterConfig = Storage.getFile("shooter.json");
-        File turretConfig  = Storage.getFile("turret.json");
         this.turret = new Turret(turret, shooter, pusher, aim, turretFeedback,
-                                 shooterConfig, turretCalib, turretConfig);
+                                 config.getAsJsonObject("shooter"),
+                                 config.getAsJsonObject("turret_cal"),
+                                 config.getAsJsonObject("turret"));
         this.intake = new Intake(intake, ramp);
         
-        File liftPositions = Storage.getFile("positions/lift.json");
-        this.lift = new SimpleLift(lift_a, lift_b, liftPositions);
+        this.lift = new SimpleLift(lift_a, lift_b,
+                                   config.getAsJsonObject("lift"));
+        
+        this.wobble = new Wobble(wobble_arm, wobble_claw,
+                                 config.getAsJsonObject("wobble"));
     }
 }

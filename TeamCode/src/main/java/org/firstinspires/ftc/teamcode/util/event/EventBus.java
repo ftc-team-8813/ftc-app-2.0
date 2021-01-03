@@ -121,7 +121,7 @@ public class EventBus
         if (!ev.suppressDebug)
         {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-            String callingClassName = stackTrace[1].getClassName();
+            String callingClassName = stackTrace[2].getClassName();
             log.d("Push %s on channel %d (from %s)", ev.getClass().getSimpleName(), ev.channel, callingClassName);
         }
     }

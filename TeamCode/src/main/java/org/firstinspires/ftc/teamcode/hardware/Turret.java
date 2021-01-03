@@ -4,29 +4,44 @@ import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
 import org.firstinspires.ftc.teamcode.util.Configuration;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Time;
+import org.firstinspires.ftc.teamcode.util.event.Event;
+import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 import java.io.File;
 
 public class Turret {
     
-    private DcMotor turret;
+    public final DcMotor turret;
     public final Shooter shooter;
     private Servo pusher;
     private Servo aim;
-    private CalibratedAnalogInput turretFb;
+    public final CalibratedAnalogInput turretFb;
+    
+    private Logger log = new Logger("Turret");
     
     private double turretHome;
     private double turretKp;
+    private double turretMin;
+    private double turretMax;
+    private double turretSpeed;
+    private double pushIn;
+    private double pushOut;
     
     private double target;
-    private double lastUpdate;
     private double lastPos;
     
+    private EventBus evBus;
+    private boolean sendEvent = false;
+    
     public Turret(DcMotor turret, DcMotor shooter, Servo pusher, Servo aim, AnalogInput rotateFeedback,
-                  File shooterConfig, File fbConfig, File turretConfig)
+                  JsonObject shooterConfig, JsonObject fbConfig, JsonObject turretConfig)
     {
         this.turret = turret;
         this.shooter = new Shooter(shooter, shooterConfig);
@@ -34,23 +49,40 @@ public class Turret {
         this.aim = aim;
         this.turretFb = new CalibratedAnalogInput(rotateFeedback, fbConfig);
     
-        JsonObject root = Configuration.readJson(turretConfig);
+        JsonObject root = turretConfig;
         turretHome = root.get("home").getAsDouble();
         turretKp   = root.get("kp").getAsDouble();
+        turretMin  = root.get("min").getAsDouble();
+        turretMax  = root.get("max").getAsDouble();
+        turretSpeed= root.get("maxSpeed").getAsDouble();
+        JsonObject pusherConf = root.getAsJsonObject("pusher");
+        pushIn  = pusherConf.get("in").getAsDouble();
+        pushOut = pusherConf.get("out").getAsDouble();
         
         target = turretHome;
     }
     
+    public void connectEventBus(EventBus evBus)
+    {
+        this.evBus = evBus;
+    }
+    
     public void rotate(double position)
     {
-        if (position < 0.1) position = 0.1;
-        else if (position > 0.9) position = 0.9;
+        rotate(position, false);
+    }
+    
+    public void rotate(double position, boolean sendEvent)
+    {
+        position = Range.clip(position, turretMin, turretMax);
         target = position;
+        if (sendEvent) this.sendEvent = true;
     }
     
     public void home()
     {
         target = turretHome;
+        sendEvent = true;
     }
     
     public double getTarget()
@@ -63,26 +95,35 @@ public class Turret {
         return lastPos;
     }
     
-    public void update()
+    public void update(Telemetry telemetry)
     {
         shooter.update();
-        if (lastUpdate == 0) lastUpdate = Time.now();
-        double dt = Time.since(lastUpdate);
+        
         double pos = turretFb.get();
+        lastPos = pos;
         double error = target - pos;
         
-        double power = error * dt * turretKp;
+        if (sendEvent && Math.abs(error) < 0.05 && evBus != null)
+        {
+            sendEvent = false;
+            evBus.pushEvent(new TurretEvent(TurretEvent.TURRET_MOVED));
+        }
+        
+        double power = Range.clip(error * turretKp, -turretSpeed, turretSpeed);
         turret.setPower(power);
-        lastUpdate = Time.now();
+        telemetry.addData("pos", "%.3f", pos);
+        telemetry.addData("target", "%.3f", target);
+        telemetry.addData("error", "%.3f", error);
+        telemetry.addData("power", "%.3f", power);
     }
     
     public void push()
     {
-        pusher.setPosition(0.85);
+        pusher.setPosition(pushOut);
     }
     
     public void unpush()
     {
-        pusher.setPosition(1);
+        pusher.setPosition(pushIn);
     }
 }

@@ -17,7 +17,13 @@ public class Intake {
     public void intake()
     {
         intake.setPower(1);
-        ramp.setPower(1);
+        ramp.setPower(0.75);
+    }
+    
+    public void outtake()
+    {
+        intake.setPower(-1);
+        ramp.setPower(-1);
     }
     
     public void stop()

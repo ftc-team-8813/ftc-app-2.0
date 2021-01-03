@@ -17,12 +17,12 @@ public class Shooter
     private long startTime;
     private boolean started;
     
-    public Shooter(DcMotor motor, File configFile)
+    public Shooter(DcMotor motor, JsonObject config)
     {
         this.motor = motor;
         // motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        loadConfiguration(configFile);
+        loadConfiguration(config);
     }
     
     public void start()
@@ -54,9 +54,8 @@ public class Shooter
         motor.setPower(power);
     }
     
-    private void loadConfiguration(File configFile)
+    private void loadConfiguration(JsonObject root)
     {
-        JsonObject root = Configuration.readJson(configFile);
         rampTime = root.get("rampTime").getAsDouble();
         maxPower = root.get("maxPower").getAsDouble();
     }
