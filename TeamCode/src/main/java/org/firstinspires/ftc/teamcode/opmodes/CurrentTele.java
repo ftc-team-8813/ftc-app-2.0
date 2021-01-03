@@ -129,7 +129,8 @@ public class CurrentTele extends OpMode {
     {
         double dt = Time.since(lastUpdate);
         lastUpdate = Time.now();
-        robot.drivetrain.telemove(ax_drive_l.get() * driveSpeed, ax_drive_r.get() * driveSpeed);
+        // TODO -- HACK: axes swapped due to config problem
+        robot.drivetrain.telemove(ax_drive_r.get() * driveSpeed, ax_drive_l.get() * driveSpeed);
         
         if (btn_intake.get())          robot.intake.intake();
         else if (btn_intake_out.get()) robot.intake.outtake();

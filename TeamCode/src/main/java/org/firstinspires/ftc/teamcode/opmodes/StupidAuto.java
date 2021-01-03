@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.util.Time;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 @Autonomous(name="terrible auto")
+@Disabled
 public class StupidAuto extends LinearOpMode
 {
     private Drivetrain drivetrain;
@@ -64,6 +66,7 @@ public class StupidAuto extends LinearOpMode
             robot.drivetrain.telemove(0.5, -0.5);
             sleep(100);
             robot.drivetrain.telemove(0, 0);
+            sleep(100);
         }
     }
 }
