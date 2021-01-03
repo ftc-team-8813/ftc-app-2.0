@@ -5,10 +5,11 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
 @TeleOp(name="Controller test")
 @Disabled
-public class ButtonTest extends OpMode
+public class ButtonTest extends LoggingOpMode
 {
     ControllerMap map;
     

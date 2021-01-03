@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.telemetry.HTMLString;
 import org.firstinspires.ftc.teamcode.telemetry.Scroll;
 import org.firstinspires.ftc.teamcode.util.Time;
@@ -24,7 +25,7 @@ import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.H
 
 // TODO: Add save-load system (from DiffyServoPositioner)
 @TeleOp(group="util", name="Servo Positioner")
-public class ServoPositioner extends OpMode
+public class ServoPositioner extends LoggingOpMode
 {
     
     private static final int SERVOS_PER_CONTROLLER = 6;

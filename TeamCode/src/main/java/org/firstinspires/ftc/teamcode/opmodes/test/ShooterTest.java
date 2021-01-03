@@ -8,11 +8,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.hardware.Shooter;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Storage;
 
 @TeleOp(name="Shooter Test")
-public class ShooterTest extends OpMode
+public class ShooterTest extends LoggingOpMode
 {
     private Servo pusher;
     private Shooter shooter;

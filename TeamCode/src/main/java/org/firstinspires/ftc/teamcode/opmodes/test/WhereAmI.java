@@ -6,9 +6,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
 @TeleOp(name="Where Am I")
-public class WhereAmI extends OpMode
+public class WhereAmI extends LoggingOpMode
 {
     private Drivetrain drivetrain;
     

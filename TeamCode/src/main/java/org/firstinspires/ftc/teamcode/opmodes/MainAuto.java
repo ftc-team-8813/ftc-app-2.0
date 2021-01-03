@@ -27,7 +27,7 @@ import static org.firstinspires.ftc.teamcode.util.event.LifecycleEvent.START;
 
 // we going to use the event bus system for this so that everything can be done on one thread
 @Autonomous(name="Auto")
-public class MainAuto extends OpMode
+public class MainAuto extends LoggingOpMode
 {
     private EventBus bus;
     private Scheduler scheduler;
@@ -86,6 +86,7 @@ public class MainAuto extends OpMode
             
             if (Math.abs(error) < deadband && sendEvent)
             {
+                sendEvent = false;
                 bus.pushEvent(new MoverEvent());
             }
         }
@@ -165,6 +166,7 @@ public class MainAuto extends OpMode
             }
             else
             {
+                robot.turret.shooter.stop();
                 mover.forward(forward2, movePower);
                 autoFlow.jump(0); // finish -- lifecycle event only triggered once
             }
@@ -184,6 +186,7 @@ public class MainAuto extends OpMode
     @Override
     public void loop()
     {
+        mover.update();
         robot.turret.update(telemetry);
         scheduler.loop();
         bus.update();

@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.telemetry.HTMLString;
 import org.firstinspires.ftc.teamcode.telemetry.Scroll;
 import org.firstinspires.ftc.teamcode.util.Configuration;
@@ -28,7 +29,7 @@ import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.H
 
 @TeleOp(group="util", name="Differential Servo Positioner")
 // much of this code is copied from ServoPositioner.java (from commit ab4c65f)
-public class DiffyServoPositioner extends OpMode
+public class DiffyServoPositioner extends LoggingOpMode
 {
     
     private static final int SERVOS_PER_CONTROLLER = 6;
@@ -407,6 +408,7 @@ public class DiffyServoPositioner extends OpMode
     @Override
     public void stop()
     {
+        super.stop();
         save();
     }
 }

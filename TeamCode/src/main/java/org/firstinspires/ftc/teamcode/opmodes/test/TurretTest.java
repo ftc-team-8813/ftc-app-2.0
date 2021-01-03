@@ -4,9 +4,10 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
 @TeleOp(name="Turret Test")
-public class TurretTest extends OpMode
+public class TurretTest extends LoggingOpMode
 {
     private Robot robot;
     

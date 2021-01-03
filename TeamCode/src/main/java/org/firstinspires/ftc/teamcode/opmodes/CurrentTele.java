@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
 
 @TeleOp(name="!!THE TeleOp!!")
-public class CurrentTele extends OpMode {
+public class CurrentTele extends LoggingOpMode {
     private Robot robot;
     private ControllerMap controllerMap;
     
