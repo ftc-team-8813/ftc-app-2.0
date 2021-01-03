@@ -47,7 +47,7 @@ public class Robot {
         Servo pusher = hardwareMap.get(Servo.class, "pusher");
         Servo aim = null; // hardwareMap.get(Servo.class, "aim");
         
-        Servo wobble_arm = hardwareMap.get(Servo.class, "wobble b");
+        Servo wobble_arm = hardwareMap.get(Servo.class, "wobble a");
         Servo wobble_claw = hardwareMap.get(Servo.class, "wobble claw");
         
         Servo lift_a = hardwareMap.get(Servo.class, "lift a");

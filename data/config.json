@@ -8,7 +8,7 @@
     "min": 0,
     "max": 0.65,
     "maxSpeed": 0.5,
-    "kp":  10,
+    "kp":  15,
     "pusher": {
       "in": 1,
       "out": 0.6
@@ -24,13 +24,15 @@
     }
   },
   "teleop": {
-    "drive_speed": -0.8
+    "drive_speed": -0.8,
+    "slow_speed": -0.4
   },
   "wobble": {
     "arm_up": 1,
+    "arm_mid": 0.56,
     "arm_down": 0,
-    "claw_open": 0,
-    "claw_close": 0.3
+    "claw_open": 0.14,
+    "claw_close": 0.69
   },
   "angle_hold": {
     "kp": 0.02

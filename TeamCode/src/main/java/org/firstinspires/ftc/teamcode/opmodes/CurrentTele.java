@@ -35,12 +35,15 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.ButtonEntry btn_wobble_down;
     private ControllerMap.ButtonEntry btn_wobble_open;
     private ControllerMap.ButtonEntry btn_wobble_close;
+    private ControllerMap.ButtonEntry btn_slow;
     
     private double driveSpeed;
+    private double slowSpeed;
     private double lastUpdate;
     
     private boolean lift_up = false;
     private boolean shooter_on = false;
+    private boolean slow = false;
     
     private EventBus evBus;
     private Scheduler scheduler; // just in case
@@ -98,6 +101,7 @@ public class CurrentTele extends LoggingOpMode {
         controllerMap.setButtonMap("wobble_dn", "gamepad2", "dpad_down");
         controllerMap.setButtonMap("wobble_o",  "gamepad2", "dpad_left");
         controllerMap.setButtonMap("wobble_c",  "gamepad2", "dpad_right");
+        controllerMap.setButtonMap("slow",      "gamepad1", "left_stick_button");
         
         ax_drive_l      = controllerMap.axes.get("drive_l");
         ax_drive_r      = controllerMap.axes.get("drive_r");
@@ -111,10 +115,11 @@ public class CurrentTele extends LoggingOpMode {
         btn_wobble_down = controllerMap.buttons.get("wobble_dn");
         btn_wobble_open = controllerMap.buttons.get("wobble_o");
         btn_wobble_close= controllerMap.buttons.get("wobble_c");
+        btn_slow        = controllerMap.buttons.get("slow");
     
         JsonObject config = robot.config.getAsJsonObject("teleop");
         driveSpeed = config.get("drive_speed").getAsDouble();
-        
+        slowSpeed  = config.get("slow_speed").getAsDouble();
         robot.lift.down();
     }
     
@@ -130,7 +135,9 @@ public class CurrentTele extends LoggingOpMode {
         double dt = Time.since(lastUpdate);
         lastUpdate = Time.now();
         // TODO -- HACK: axes swapped due to config problem
-        robot.drivetrain.telemove(ax_drive_r.get() * driveSpeed, ax_drive_l.get() * driveSpeed);
+        double speed = slow ? slowSpeed : driveSpeed;
+        robot.drivetrain.telemove(ax_drive_r.get() * speed,
+                                 ax_drive_l.get() * speed);
         
         if (btn_intake.get())          robot.intake.intake();
         else if (btn_intake_out.get()) robot.intake.outtake();
@@ -151,6 +158,11 @@ public class CurrentTele extends LoggingOpMode {
             shooter_on = !shooter_on;
             if (shooter_on) robot.turret.shooter.start();
             else            robot.turret.shooter.stop();
+        }
+        
+        if (btn_slow.edge() > 0)
+        {
+            slow = !slow;
         }
         
         if (btn_pusher.get()) robot.turret.push();
