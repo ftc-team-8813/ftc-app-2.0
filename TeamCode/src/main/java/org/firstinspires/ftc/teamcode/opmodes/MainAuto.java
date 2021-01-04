@@ -124,12 +124,18 @@ public class MainAuto extends LoggingOpMode
             turretPos[i] = pos.get(i).getAsDouble();
         }
         
+        double pushTime = conf.get("pushTime").getAsDouble();
+        double shootTime = conf.get("shootTime").getAsDouble();
+        
         bus = new EventBus();
         scheduler = new Scheduler(bus);
         autoFlow = new EventFlow(bus);
         
         robot = new Robot(hardwareMap);
         robot.turret.connectEventBus(bus);
+        
+        robot.wobble.close();
+        robot.wobble.up();
         
         robot.drivetrain.resetEncoders();
         // TODO RIGHT AND LEFT SWAPPED -- CONFIG ISSUE
@@ -139,8 +145,8 @@ public class MainAuto extends LoggingOpMode
         final double ogSpinupDelay = 5;
         // timers here
         Timer shooterTimer = scheduler.addPendingTrigger(ogSpinupDelay, "Shooter Spin-Up");
-        Timer pushTimer = scheduler.addPendingTrigger(0.8, "Push Timer");
-        Timer shootTimer = scheduler.addFutureTrigger(2, "Shoot Timer");
+        Timer pushTimer = scheduler.addPendingTrigger(pushTime, "Push Timer");
+        Timer shootTimer = scheduler.addPendingTrigger(shootTime, "Shoot Timer");
         
         // flow
         autoFlow.start(new Subscriber<>(LifecycleEvent.class, (ev, bus, sub) -> { // 0

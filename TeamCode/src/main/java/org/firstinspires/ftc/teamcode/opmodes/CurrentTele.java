@@ -36,6 +36,7 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.ButtonEntry btn_wobble_open;
     private ControllerMap.ButtonEntry btn_wobble_close;
     private ControllerMap.ButtonEntry btn_slow;
+    private ControllerMap.ButtonEntry btn_wobble_int;
     
     private double driveSpeed;
     private double slowSpeed;
@@ -101,7 +102,8 @@ public class CurrentTele extends LoggingOpMode {
         controllerMap.setButtonMap("wobble_dn", "gamepad2", "dpad_down");
         controllerMap.setButtonMap("wobble_o",  "gamepad2", "dpad_left");
         controllerMap.setButtonMap("wobble_c",  "gamepad2", "dpad_right");
-        controllerMap.setButtonMap("slow",      "gamepad1", "left_stick_button");
+        controllerMap.setButtonMap("slow",      "gamepad1", "left_bumper");
+        controllerMap.setButtonMap("wobble_i",  "gamepad2", "left_bumper");
         
         ax_drive_l      = controllerMap.axes.get("drive_l");
         ax_drive_r      = controllerMap.axes.get("drive_r");
@@ -116,6 +118,7 @@ public class CurrentTele extends LoggingOpMode {
         btn_wobble_open = controllerMap.buttons.get("wobble_o");
         btn_wobble_close= controllerMap.buttons.get("wobble_c");
         btn_slow        = controllerMap.buttons.get("slow");
+        btn_wobble_int  = controllerMap.buttons.get("wobble_i");
     
         JsonObject config = robot.config.getAsJsonObject("teleop");
         driveSpeed = config.get("drive_speed").getAsDouble();
@@ -172,6 +175,7 @@ public class CurrentTele extends LoggingOpMode {
         if (btn_wobble_down.get()) robot.wobble.down();
         if (btn_wobble_open.get()) robot.wobble.open();
         if (btn_wobble_close.get()) robot.wobble.close();
+        if (btn_wobble_int.get()) robot.wobble.middle();
         
         robot.lift.update(telemetry);
         robot.turret.update(telemetry);

@@ -7,7 +7,7 @@ public class Wobble
 {
     private Servo armServo, clawServo;
     
-    private double arm_up, arm_down;
+    private double arm_up, arm_down, arm_mid;
     private double claw_open, claw_close;
     
     public Wobble(Servo armServo, Servo clawServo, JsonObject config)
@@ -16,6 +16,7 @@ public class Wobble
         this.clawServo = clawServo;
         arm_up = config.get("arm_up").getAsDouble();
         arm_down = config.get("arm_down").getAsDouble();
+        arm_mid = config.get("arm_mid").getAsDouble();
         claw_open = config.get("claw_open").getAsDouble();
         claw_close = config.get("claw_close").getAsDouble();
     }
@@ -38,5 +39,10 @@ public class Wobble
     public void close()
     {
         clawServo.setPosition(claw_close);
+    }
+    
+    public void middle()
+    {
+        armServo.setPosition(arm_mid);
     }
 }

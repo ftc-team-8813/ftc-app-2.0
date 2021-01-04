@@ -32,7 +32,7 @@
     "arm_mid": 0.56,
     "arm_down": 0,
     "claw_open": 0.14,
-    "claw_close": 0.69
+    "claw_close": 0.55
   },
   "angle_hold": {
     "kp": 0.02

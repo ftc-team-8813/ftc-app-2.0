@@ -1,6 +1,9 @@
 {
   "movePower": 0.5,
-  "forward1": 2000,
-  "forward2": 1200,
-  "turretPos": [0.22, 0.19, 0.16]
+  "forward1": 2200,
+  "forward2": 1000,
+  "turretPos": [0.22, 0.2, 0.18],
+  "_turretPos": [0.17, 0.17, 0.17],
+  "pushTime": 0.8,
+  "shootTime": 2
 }
