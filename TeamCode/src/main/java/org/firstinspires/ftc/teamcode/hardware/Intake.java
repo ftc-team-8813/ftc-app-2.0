@@ -4,21 +4,31 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
  * Intake -- Control intake movement.
- * TODO: Do we need this?
  */
 public class Intake {
-    DcMotor intake;
+    public final DcMotor intake;
+    public final DcMotor ramp;
 
-    public Intake(DcMotor intake){
+    public Intake(DcMotor intake, DcMotor ramp){
         this.intake = intake;
+        this.ramp = ramp;
     }
-
-    public void setIntake(int mode){
-        // TODO Find actual power values
-        if (mode == 0){
-            intake.setPower(0);
-        } else if (mode == 1){
-            intake.setPower(1);
-        }
+    
+    public void intake()
+    {
+        intake.setPower(1);
+        ramp.setPower(1);
+    }
+    
+    public void outtake()
+    {
+        intake.setPower(-1);
+        ramp.setPower(-1);
+    }
+    
+    public void stop()
+    {
+        intake.setPower(0);
+        ramp.setPower(0);
     }
 }

@@ -4,10 +4,11 @@ public class TimerEvent extends Event
 {
     public final double time;
     
-    public TimerEvent(double time, int id)
+    public TimerEvent(double time, int id, boolean suppress)
     {
         super(id);
         this.time = time;
+        this.suppressDebug = suppress;
     }
     
     public String toString()

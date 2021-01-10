@@ -12,8 +12,10 @@ import com.qualcomm.robotcore.hardware.ServoController;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.telemetry.HTMLString;
 import org.firstinspires.ftc.teamcode.telemetry.Scroll;
+import org.firstinspires.ftc.teamcode.util.Time;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +23,9 @@ import java.util.Map;
 
 import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.HTML;
 
+// TODO: Add save-load system (from DiffyServoPositioner)
 @TeleOp(group="util", name="Servo Positioner")
-public class ServoPositioner extends OpMode
+public class ServoPositioner extends LoggingOpMode
 {
     
     private static final int SERVOS_PER_CONTROLLER = 6;
@@ -56,6 +59,8 @@ public class ServoPositioner extends OpMode
     private ControllerMap.ButtonEntry btn_stop_servo;
     private ControllerMap.ButtonEntry btn_exit_to_menu;
     private ControllerMap.AxisEntry ax_change_position;
+    
+    private double lastTick;
     
     private static abstract class Scene
     {
@@ -216,7 +221,9 @@ public class ServoPositioner extends OpMode
                 status.setCaption("Press the PLAY button to start");
                 return;
             }
-            double step = Math.pow(-ax_change_position.get(), 5) * 0.005;
+            double dt = Time.now() - lastTick; // seconds per loop
+            lastTick = Time.now();
+            double step = Math.pow(-ax_change_position.get(), 3) * 0.3 * dt;
             pos += step;
             if (pos > 1) pos = 1;
             else if (pos < 0) pos = 0;

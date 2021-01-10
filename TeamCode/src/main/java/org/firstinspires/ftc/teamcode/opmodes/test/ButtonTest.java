@@ -1,12 +1,15 @@
 package org.firstinspires.ftc.teamcode.opmodes.test;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
 @TeleOp(name="Controller test")
-public class ButtonTest extends OpMode
+@Disabled
+public class ButtonTest extends LoggingOpMode
 {
     ControllerMap map;
     

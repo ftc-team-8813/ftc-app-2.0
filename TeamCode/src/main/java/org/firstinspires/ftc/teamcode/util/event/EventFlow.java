@@ -13,6 +13,7 @@ public class EventFlow
     private final EventBus bus;
     private List<Node> nodes; // nodes by name; hard references here only to make cleanup easier
     private Node rootNode;
+    private Node currentNode;
     private Logger log = new Logger("Event Flow");
     private int jumpTarget = -1;
     
@@ -40,6 +41,12 @@ public class EventFlow
     {
         jumpTarget = index;
         log.d("Jump -> %d", index);
+    }
+    
+    public void forceJump(int index)
+    {
+        currentNode.unsubscribe();
+        nodes.get(index).subscribe();
     }
     
     public class NodeBuilder
@@ -97,6 +104,7 @@ public class EventFlow
         
         protected void subscribe()
         {
+            currentNode = this;
             bus.subscribe(sub);
         }
         

@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
-    implementation project(path: ':opencv-sdk')
+    implementation project(':opencv-sdk')
 }
 
 task onInstall {

@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes.util;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.qualcomm.hardware.lynx.LynxServoController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,16 +13,23 @@ import com.qualcomm.robotcore.hardware.ServoController;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.telemetry.HTMLString;
 import org.firstinspires.ftc.teamcode.telemetry.Scroll;
+import org.firstinspires.ftc.teamcode.util.Configuration;
+import org.firstinspires.ftc.teamcode.util.Storage;
+import org.firstinspires.ftc.teamcode.util.Time;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Map;
 
 import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.HTML;
 
 @TeleOp(group="util", name="Differential Servo Positioner")
 // much of this code is copied from ServoPositioner.java (from commit ab4c65f)
-public class DiffyServoPositioner extends OpMode
+public class DiffyServoPositioner extends LoggingOpMode
 {
     
     private static final int SERVOS_PER_CONTROLLER = 6;
@@ -51,6 +62,7 @@ public class DiffyServoPositioner extends OpMode
     private ControllerMap.ButtonEntry btn_ok;
     private ControllerMap.ButtonEntry btn_stop_servo;
     private ControllerMap.ButtonEntry btn_exit_to_menu;
+    private ControllerMap.ButtonEntry btn_toggle_mode;
     private ControllerMap.AxisEntry ax_change_position_a;
     private ControllerMap.AxisEntry ax_change_position_b;
     
@@ -68,9 +80,12 @@ public class DiffyServoPositioner extends OpMode
     private int servoB;
     private ServoController[] servoControllers;
     
+    private String fileName;
+    
     @Override
     public void init()
     {
+        Storage.createDirs("servo_positions");
         telemetry.setDisplayFormat(HTML);
         currScene = new SceneChoose();
         controllerMap = new ControllerMap(gamepad1, gamepad2);
@@ -85,6 +100,7 @@ public class DiffyServoPositioner extends OpMode
         btn_ok =             controllerMap.buttons.get("ok");
         btn_stop_servo =     controllerMap.buttons.get("stop_servo");
         btn_exit_to_menu =   controllerMap.buttons.get("exit_to_menu");
+        btn_toggle_mode =    controllerMap.buttons.get("toggle_mode");
         ax_change_position_a = controllerMap.axes.get("change_pos_a");
         ax_change_position_b = controllerMap.axes.get("change_pos_b");
     }
@@ -127,6 +143,7 @@ public class DiffyServoPositioner extends OpMode
         controllerMap.setButtonMap("ok",           ControllerMap.Controller.gamepad1, ControllerMap.Button.b);
         controllerMap.setButtonMap("stop_servo",   ControllerMap.Controller.gamepad1, ControllerMap.Button.a);
         controllerMap.setButtonMap("exit_to_menu", ControllerMap.Controller.gamepad1, ControllerMap.Button.right_bumper);
+        controllerMap.setButtonMap("toggle_mode",  ControllerMap.Controller.gamepad1, ControllerMap.Button.back);
         controllerMap.setAxisMap  ("change_pos_a",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.left_stick_y);
         controllerMap.setAxisMap  ("change_pos_b",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.right_stick_y);
     }
@@ -190,6 +207,11 @@ public class DiffyServoPositioner extends OpMode
                     else if (numPicked == 1)
                     {
                         servoB = sel_servo;
+                        // set file name
+                        String ctrlA = ((LynxServoController)servoControllers[servoA/6]).getSerialNumber().toString();
+                        String ctrlB = ((LynxServoController)servoControllers[servoA/6]).getSerialNumber().toString();
+                        fileName = String.format("servo_positions/%s.%d_%s.%d.json", ctrlA, servoA % 6, ctrlB, servoB % 6);
+                        
                         currScene = new SceneMove();
                     }
                     numPicked++;
@@ -209,6 +231,8 @@ public class DiffyServoPositioner extends OpMode
         private double posB = 0;
         private Scroll posList;
         private Telemetry.Item status;
+        private double lastTick = 0;
+        private boolean differential = true;
         
         @Override
         void init()
@@ -220,25 +244,49 @@ public class DiffyServoPositioner extends OpMode
             
             posList = new Scroll(8);
             posList.setScrollMode(Scroll.SCROLL_WRAP);
-            posList.addLine("", new double[] {Double.NaN, Double.NaN}); // dummy value, will get set immediately
+            double[] init_pos = load(posList);
+            if (init_pos == null)
+            {
+                posList.addLine("", new double[]{Double.NaN, Double.NaN}); // dummy value, will get set immediately
+            }
+            else
+            {
+                posA = init_pos[0];
+                posB = init_pos[1];
+                for (int i = 0; i < posList.size(); i++)
+                {
+                    updateLabel(i);
+                }
+            }
             status = telemetry.addLine().addData("", "");
+        }
+        
+        void updateLabel(int index)
+        {
+            double[] metadata = (double[])posList.getLineMeta(index);
+            posList.setLine(index, String.format("%.3f, %.3f", metadata[0], metadata[1]));
         }
         
         @Override
         void loop()
         {
+            if (lastTick == 0) lastTick = Time.now(); // avoid large jump from 0 to whenever we are now
             if (!started)
             {
                 status.setCaption("Press the PLAY button to start");
             }
-            double step1 = Math.pow(-ax_change_position_a.get(), 5) * 0.005;
-            double step2 = Math.pow(-ax_change_position_b.get(), 5) * 0.005;
+            double dt = Time.now() - lastTick; // seconds per loop
+            lastTick = Time.now();
+            double step1 = Math.pow(-ax_change_position_a.get(), 3) * 0.3 * dt;
+            double step2 = Math.pow(-ax_change_position_b.get(), 3) * 0.3 * dt;
             
-            posA += step1 + step2;
+            if (differential) posA += step1 + step2;
+            else posA += step1;
             if (posA > 1) posA = 1;
             else if (posA < 0) posA = 0;
             
-            posB += step1 - step2;
+            if (differential) posB += step1 - step2;
+            else posB += step2;
             if (posB > 1) posB = 1;
             else if (posB < 0) posB = 0;
             
@@ -283,14 +331,84 @@ public class DiffyServoPositioner extends OpMode
             double[] listPositions = (double[]) posList.getSelectedMeta();
             if (posA != listPositions[0] || posB != listPositions[1])
             {
-                posList.setLine(posList.getScrollPos(), String.format("%.3f, %.3f", posA, posB));
+                // modify the metadata in-place
                 listPositions[0] = posA;
                 listPositions[1] = posB;
+                updateLabel(posList.getScrollPos());
             }
             
             posList.render(telemetry);
             
-            if (btn_exit_to_menu.edge() > 0) currScene = new SceneChoose();
+            if (btn_toggle_mode.edge() > 0)
+            {
+                differential = !differential;
+            }
+            
+            if (btn_exit_to_menu.edge() > 0)
+            {
+                save();
+                currScene = new SceneChoose();
+            }
         }
+    }
+    
+    private double[] load(Scroll posList)
+    {
+        File dataFile = Storage.getFile(fileName);
+        if (dataFile.exists())
+        {
+            JsonObject root = Configuration.readJson(dataFile);
+            JsonArray positions = root.get("positions").getAsJsonArray();
+            if (positions.size() > 0)
+            {
+                for (int i = 0; i < positions.size(); i++)
+                {
+                    JsonArray data = positions.get(i).getAsJsonArray();
+                    posList.addLine("", new double[]{data.get(0).getAsDouble(), data.get(1).getAsDouble()});
+                }
+                return (double[]) posList.getLineMeta(0);
+            }
+        }
+        return null;
+    }
+    
+    private void save()
+    {
+        if (currScene != null && currScene instanceof SceneMove)
+        {
+            SceneMove scn = (SceneMove)currScene;
+            Scroll posList = scn.posList;
+            
+            JsonObject root = new JsonObject();
+            JsonArray positions = new JsonArray();
+            root.add("positions", positions);
+            
+            for (int i = 0; i < posList.size(); i++)
+            {
+                double[] data = (double[])posList.getLineMeta(i);
+                JsonArray pos = new JsonArray();
+                pos.add(data[0]);
+                pos.add(data[1]);
+                positions.add(pos);
+            }
+            
+            try (FileWriter w = new FileWriter(Storage.createFile(fileName)))
+            {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String jsonData = gson.toJson(root);
+                w.write(jsonData + "\n");
+            }
+            catch (IOException e)
+            {
+                throw new IllegalStateException("Position save failed: " + e.getMessage(), e);
+            }
+        }
+    }
+    
+    @Override
+    public void stop()
+    {
+        super.stop();
+        save();
     }
 }

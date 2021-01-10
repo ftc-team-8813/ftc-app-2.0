@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import android.graphics.Color;
 
+import com.google.gson.JsonObject;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -11,52 +13,62 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoController;
 
+import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Storage;
+
+import java.io.File;
 
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
 public class Robot {
     public final Drivetrain drivetrain;
-    public final Turret turret;
-    public final ColorSensor ring_detector;
-    public final Servo clawIn;
-    public final Servo clawOut;
     public final Intake intake;
-    public final Lift lift;
-
+    public final Turret turret;
+    public final SimpleLift lift;
+    public final Wobble wobble;
+    
+    public final JsonObject config;
+    
+    public final BNO055IMU imu;
+    
     public Robot(HardwareMap hardwareMap){
+        config = Configuration.readJson(Storage.getFile("config.json"));
+        
         // Hardware Maps
-        DcMotor top_left = hardwareMap.get(DcMotor.class, "top_left");
-        DcMotor bottom_left = hardwareMap.get(DcMotor.class, "bottom_left");
-        DcMotor top_right = hardwareMap.get(DcMotor.class, "top_right");
-        DcMotor bottom_right = hardwareMap.get(DcMotor.class, "bottom_right");
+        DcMotor top_left = hardwareMap.get(DcMotor.class, "top left");
+        DcMotor bottom_left = hardwareMap.get(DcMotor.class, "bottom left");
+        DcMotor top_right = hardwareMap.get(DcMotor.class, "top right");
+        DcMotor bottom_right = hardwareMap.get(DcMotor.class, "bottom right");
         DcMotor shooter = hardwareMap.get(DcMotor.class, "shooter");
-        DcMotor intaker = hardwareMap.get(DcMotor.class, "intaker");
-        DcMotor rotator = hardwareMap.get(DcMotor.class, "rotator");
+        DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
+        DcMotor turret = hardwareMap.get(DcMotor.class, "turret");
+        DcMotor ramp = hardwareMap.get(DcMotor.class, "ramp");
 
-        AnalogInput left_potentiometer = hardwareMap.get(AnalogInput.class, "left_potentiometer");
-        AnalogInput right_potentiometer = hardwareMap.get(AnalogInput.class, "right_potentiometer");
-        AnalogInput rotate_potentiometer = hardwareMap.get(AnalogInput.class, "turret");
-        DigitalChannel top_button = hardwareMap.get(DigitalChannel.class, "top switch");
-
-        ring_detector = hardwareMap.get(ColorSensor.class, "light sensor");
-
-        Servo finger = hardwareMap.get(Servo.class, "finger");
-        Servo aim = hardwareMap.get(Servo.class, "aim");
-
-        clawIn = hardwareMap.servo.get("wobble_in");
-        clawOut = hardwareMap.servo.get("wobble_out");
-        CRServo leftLift = hardwareMap.get(CRServo.class, "lift l");
-        CRServo rightLift = hardwareMap.get(CRServo.class, "lift r");
-
+        Servo pusher = hardwareMap.get(Servo.class, "pusher");
+        Servo aim = null; // hardwareMap.get(Servo.class, "aim");
+        
+        Servo wobble_arm = hardwareMap.get(Servo.class, "wobble a");
+        Servo wobble_claw = hardwareMap.get(Servo.class, "wobble claw");
+        
+        Servo lift_a = hardwareMap.get(Servo.class, "lift a");
+        Servo lift_b = hardwareMap.get(Servo.class, "lift b");
+        
+        this.imu = hardwareMap.get(BNO055IMU.class, "imu");
 
         // Sub-Assemblies
         drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right);
-        turret = new Turret(left_potentiometer, right_potentiometer, finger, aim, leftLift, rightLift, shooter, rotator, rotate_potentiometer);
-        intake = new Intake(intaker);
-
-        CalibratedAnalogInput lPot = new CalibratedAnalogInput(left_potentiometer, Storage.getFile("lift_calib_l.json"));
-        CalibratedAnalogInput rPot = new CalibratedAnalogInput(right_potentiometer, Storage.getFile("lift_calib_r.json"));
-        lift = new Lift(leftLift, rightLift, lPot, rPot, top_button);
+        
+        AnalogInput turretFeedback = hardwareMap.get(AnalogInput.class, "turret");
+        this.turret = new Turret(turret, shooter, pusher, aim, turretFeedback,
+                                 config.getAsJsonObject("shooter"),
+                                 config.getAsJsonObject("turret_cal"),
+                                 config.getAsJsonObject("turret"));
+        this.intake = new Intake(intake, ramp);
+        
+        this.lift = new SimpleLift(lift_a, lift_b,
+                                   config.getAsJsonObject("lift"));
+        
+        this.wobble = new Wobble(wobble_arm, wobble_claw,
+                                 config.getAsJsonObject("wobble"));
     }
 }
