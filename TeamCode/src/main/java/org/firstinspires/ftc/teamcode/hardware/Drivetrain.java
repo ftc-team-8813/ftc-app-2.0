@@ -74,10 +74,17 @@ public class Drivetrain {
         bottom_right.setPower(right_wheel_speed);
     }
 
+    /**
+     * Moves drivetrain forward/backward a certain distance depending on postive/negative power
+     * @param distance Wanted Distance Travelled in Centimeters
+     * @param power From 1 (forward) to -1 (backward)
+     * @param telemetry Used for debugging
+     */
     public void automove(double distance, double power, Telemetry telemetry){
         setModeReset();
         final double ENCODER_TICKS = 537.6;
-        double ratio = (distance/(101.5 * Math.PI / 10));
+        double circumference = 101.5 * Math.PI / 10;
+        double ratio = (distance/circumference);
         int ticks = (int) (ratio * (24 / 22) * ENCODER_TICKS);
         telemetry.addData("Set Encoder Ticks", ticks);
         setPos(ticks);

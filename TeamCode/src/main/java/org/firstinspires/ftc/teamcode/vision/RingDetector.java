@@ -15,6 +15,9 @@ public class RingDetector {
         this.image = image;
     }
 
+    /**
+     * Updates result to the masked input image
+     */
     public void processImage(){
         Mat hsv = new Mat();
         Imgproc.cvtColor(image, hsv, Imgproc.COLOR_BGR2HSV);
@@ -33,6 +36,11 @@ public class RingDetector {
         this.result = result;
     }
 
+    /**
+     * Uses result to find determine ring position by looking for color boxes in certain regions
+     * Should be run after processImage()
+     * @return Number of rings
+     */
     public int findRing(){
         Mat result = this.result;
         final int[] one_top_corner = new int[]{265, 210};
@@ -61,7 +69,7 @@ public class RingDetector {
             }
             double one_or_four = aggregator/four_total_values;
             if (one_or_four >= 0.9) {
-                return 2;
+                return 4;
             } else {
                 return 1;
             }
