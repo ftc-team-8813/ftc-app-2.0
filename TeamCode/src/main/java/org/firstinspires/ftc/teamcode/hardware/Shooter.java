@@ -23,6 +23,7 @@ public class Shooter
         // motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         loadConfiguration(config);
+        
     }
     
     public void start()
