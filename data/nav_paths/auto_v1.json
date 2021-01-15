@@ -1,0 +1,77 @@
+{
+  "version": "1.0.1",
+  "defaultSpeed": 0.5,
+  "_comments": [
+
+  ],
+  "_uses": [
+    "condition ringCount -- get the total number of rings seen by the vision algorithm",
+    "actuator shooter -- {'action': 'start'} starts it, {'action': 'stop'} stops it",
+    "actuator turret:",
+    " {'action': 'rotatePs'} -- rotate to constant 'powershot0', 'powershot1', or 'powershot2' based on ringCount",
+    "   -> sends hardware.events.TurretEvent on channel 0",
+    " {'action': 'rotate', 'angle': num} -- rotate to specified angle",
+    "   -> sends hardware.events.TurretEvent on channel 0",
+    " {'action': 'push'} -- push ring in",
+    " {'action': 'unpush'} -- reset pusher"
+  ],
+
+  "timers": {
+    "spinupDelay": 2
+  },
+
+  "constants": {
+    "shootFwd": 2200,
+    "powershot0": 0.5,
+    "powershot1": 0.5,
+    "powershot2": 0.5
+  },
+
+  "path": [
+    {
+      "_comment": "Initial move: Start the shooter wheel right away to give it enough time to start",
+      "type": "actuator",
+
+      "actuator": {
+        "name": "shooter",
+        "params": {"action": "start"}
+      }
+    },
+
+    {
+      "_comment": "While the shooter is starting, move forward to the shoot position",
+      "type": "forward",
+      "dist": "shootFwd"
+    },
+
+    {
+      "_comment": "Move the turret to the correct position",
+      "type": "actuator",
+
+      "actuator": {
+        "name": "turret",
+        "params": {"action": "rotatePs"}
+      }
+    },
+
+    {
+      "_comment": "Once the turret has reached its target, delay for some time to get the shooter to max speed",
+
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.hardware.events.TurretEvent",
+        "channel": 0
+      },
+
+      "type": "nop"
+    },
+
+    {
+      "_comment": "After the aforementioned delay, run the pusher",
+
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "spinupDelay"
+      }
+    }
+  ]
+}

@@ -31,8 +31,9 @@ public class ShooterTest extends LoggingOpMode
     {
         if (gamepad1.y) shooter.start();
         else shooter.stop();
-        if (gamepad1.b) pusher.setPosition(0.8);
-        else pusher.setPosition(0.95);
+        // TODO new numbers, put them in the official config file
+        if (gamepad1.b) pusher.setPosition(0.3);
+        else pusher.setPosition(0.1);
         shooter.update();
     }
 }

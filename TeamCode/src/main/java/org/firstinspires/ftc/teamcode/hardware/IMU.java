@@ -25,6 +25,9 @@ public class IMU
     public static final int STARTED = 3;
     public static final int CLOSED = -2;
     public static final int ERROR = -1;
+    private static final String[] statuses = {
+            "pre-init", "calibrating", "initialized", "started", "error", "closed"
+    };
     
     //The IMU
     private BNO055IMU imu;
@@ -303,6 +306,14 @@ public class IMU
     public int getStatus()
     {
         return worker.getState();
+    }
+    
+    public String getStatusString()
+    {
+        int status = getStatus();
+        if (status == ERROR) return statuses[4];
+        if (status == CLOSED) return statuses[5];
+        return statuses[status];
     }
     
     public String getDetailStatus()
