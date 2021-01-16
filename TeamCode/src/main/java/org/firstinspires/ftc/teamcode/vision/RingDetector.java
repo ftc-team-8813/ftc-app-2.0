@@ -64,7 +64,7 @@ public class RingDetector
             Color c = notChosen;
             if (i == maxContourIndex) c = chosen;
             ImageDraw.Point[] contour = ImageDraw.Point.fromContour(contours.get(i));
-            draw.draw(new ImageDraw.Lines(c, 2, contour));
+            if (contour.length >= 2) draw.draw(new ImageDraw.Lines(c, 2, contour));
         }
         
         return maxArea;

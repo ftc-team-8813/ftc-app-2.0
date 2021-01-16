@@ -5,19 +5,30 @@
 
   ],
   "_uses": [
-    "condition ringCount -- get the total number of rings seen by the vision algorithm",
+    "condition ringsSeen -- get the total number of rings seen by the vision algorithm",
+
     "actuator shooter -- {'action': 'start'} starts it, {'action': 'stop'} stops it",
+
     "actuator turret:",
     " {'action': 'rotatePs'} -- rotate to constant 'powershot0', 'powershot1', or 'powershot2' based on ringCount",
     "   -> sends hardware.events.TurretEvent on channel 0",
     " {'action': 'rotate', 'angle': num} -- rotate to specified angle",
     "   -> sends hardware.events.TurretEvent on channel 0",
     " {'action': 'push'} -- push ring in",
-    " {'action': 'unpush'} -- reset pusher"
+    " {'action': 'unpush'} -- reset pusher",
+
+    "condition webcamState -- return the webcam state",
+
+    "actuator webcamDetect -- poke the image detector until it gives us something meaningful",
+    " -- retrieve the result of this with ringsSeen",
+
+    "condition incRingCount -- increment the counter of rings shot and return that value"
   ],
 
   "timers": {
-    "spinupDelay": 2
+    "spinupDelay": 2,
+    "webcamDelay": 1,
+    "pushDelay": 0.5
   },
 
   "constants": {
@@ -29,23 +40,56 @@
 
   "path": [
     {
-      "_comment": "Initial move: Start the shooter wheel right away to give it enough time to start",
+      "_comment": "[00] Initial move: Start the shooter wheel right away to give it enough time to start",
       "type": "actuator",
 
       "actuator": {
         "name": "shooter",
         "params": {"action": "start"}
+      },
+
+      "_comment2": "-- Check if the webcam is already initialized; skip waiting for it if it is",
+      "condition": {
+        "name": "webcamState",
+        "cond": "==",
+        "value": 3,
+
+        "jumpTrue": 2
       }
     },
 
     {
-      "_comment": "While the shooter is starting, move forward to the shoot position",
+      "_comment": "[01] Wait until the webcam is running (state=3)",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.vision.webcam.WebcamEvent",
+        "channel": 3
+      },
+
+      "type": "nop"
+    },
+
+    {
+      "_comment": "[02] Give the webcam a second or so to warm up, then run the vision algorithm",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "webcamDelay"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "webcamDetect",
+        "params": {}
+      }
+    },
+
+    {
+      "_comment": "[03] While the shooter is starting, move forward to the shoot position",
       "type": "forward",
       "dist": "shootFwd"
     },
 
     {
-      "_comment": "Move the turret to the correct position",
+      "_comment": "[04] Move the turret to the correct position",
       "type": "actuator",
 
       "actuator": {
@@ -55,7 +99,7 @@
     },
 
     {
-      "_comment": "Once the turret has reached its target, delay for some time to get the shooter to max speed",
+      "_comment": "[05] Wait for the turret to reach its target",
 
       "trigger": {
         "class": "org.firstinspires.ftc.teamcode.hardware.events.TurretEvent",
@@ -66,12 +110,60 @@
     },
 
     {
-      "_comment": "After the aforementioned delay, run the pusher",
+      "_comment": "[06] Delay for some time for the shooter to spin up, then run the pusher",
 
       "trigger": {
         "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
         "timer": "spinupDelay"
+      },
+
+      "type": "nop"
+    },
+
+    {
+      "_comment": "[07] Actually push the ring in (as a separate move so we can jump here)",
+
+      "type": "actuator",
+      "actuator": {
+        "name": "turret",
+        "params": {"action":  "push"}
       }
+    },
+
+    {
+      "_comment": "[08] After allowing the pusher to move, reset it",
+
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "pushDelay"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "turret",
+        "params": {"action":  "unpush"}
+      }
+    },
+
+    {
+      "_comment": "[09] Once the pusher is back, decide what to do next",
+
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "pushDelay"
+      },
+
+      "type": "nop",
+
+      "condition": {
+        "name": "incRingCount",
+        "cond": "==",
+        "value": 3
+      }
+    },
+
+    {
+      "_comment": "[10] "
     }
   ]
 }
