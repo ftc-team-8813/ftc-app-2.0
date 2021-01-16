@@ -1,7 +1,7 @@
 {
   "shooter": {
     "rampTime": 1,
-    "maxPower": 1
+    "maxPower": 0.55
   },
   "turret": {
     "home": 0.22,

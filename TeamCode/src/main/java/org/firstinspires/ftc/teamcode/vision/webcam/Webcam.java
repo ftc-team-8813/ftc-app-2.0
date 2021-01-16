@@ -206,6 +206,11 @@ public class Webcam
         return status;
     }
     
+    public int getState()
+    {
+        return state;
+    }
+    
     public void open(int format, int w, int h, int fps, FrameCallback cb)
     {
         log.i("Attempting to open camera asynchronously");

@@ -57,14 +57,17 @@ public class RingDetector
             }
         }
         
-        Color notChosen = ImageDraw.RED;
-        Color chosen    = ImageDraw.GREEN;
-        for (int i = 0; i < contours.size(); i++)
+        if (draw != null)
         {
-            Color c = notChosen;
-            if (i == maxContourIndex) c = chosen;
-            ImageDraw.Point[] contour = ImageDraw.Point.fromContour(contours.get(i));
-            if (contour.length >= 2) draw.draw(new ImageDraw.Lines(c, 2, contour));
+            Color notChosen = ImageDraw.RED;
+            Color chosen = ImageDraw.GREEN;
+            for (int i = 0; i < contours.size(); i++)
+            {
+                Color c = notChosen;
+                if (i == maxContourIndex) c = chosen;
+                ImageDraw.Point[] contour = ImageDraw.Point.fromContour(contours.get(i));
+                if (contour.length >= 2) draw.draw(new ImageDraw.Lines(c, 2, contour));
+            }
         }
         
         return maxArea;

@@ -22,20 +22,40 @@
     "actuator webcamDetect -- poke the image detector until it gives us something meaningful",
     " -- retrieve the result of this with ringsSeen",
 
-    "condition incRingCount -- increment the counter of rings shot and return that value"
+    "condition incRingCount -- increment the counter of rings shot and return that value",
+
+    "actuator wobble -- {'action': 'down'} -> down, {'action': 'up'} -> up, {'action': 'close'} -> close, {'action': 'open'} -> open"
   ],
 
   "timers": {
     "spinupDelay": 2,
     "webcamDelay": 1,
-    "pushDelay": 0.5
+    "pushDelay": 0.5,
+    "re_spinupDelay": 1,
+    "wobbleDownDelay": 1,
+    "wobbleOpenDelay": 0.3
   },
 
   "constants": {
-    "shootFwd": 2200,
-    "powershot0": 0.5,
-    "powershot1": 0.5,
-    "powershot2": 0.5
+    "shootFwd": -2200,
+    "powershot0": 0.225,
+    "powershot1": 0.240,
+    "powershot2": 0.255,
+
+    "near_rotate1": 65,
+    "near_forward1": -1550,
+    "near_rotate2": 120,
+    "near_forward2": 150,
+
+    "mid_rotate1": 38,
+    "mid_forward1": -1610,
+    "mid_rotate2": 60,
+    "mid_forward2": 300,
+
+    "far_rotate1": 40,
+    "far_forward1": -3180,
+    "far_rotate2": 65,
+    "far_forward2": 1700
   },
 
   "path": [
@@ -158,12 +178,250 @@
       "condition": {
         "name": "incRingCount",
         "cond": "==",
-        "value": 3
+        "value": 3,
+        "jumpTrue": 12
       }
     },
 
     {
-      "_comment": "[10] "
+      "_comment": "[10] Rotate the turret (should complete before re_spinupDelay)",
+
+      "type": "actuator",
+      "actuator": {
+        "name": "turret",
+        "params": {"action": "rotatePs"}
+      }
+    },
+
+    {
+      "_comment": "[11] Wait for the shooter to spin up again, then jump back",
+
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "re_spinupDelay"
+      },
+
+      "type": "nop",
+
+      "condition": {
+        "name": "0",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": 7
+      }
+    },
+
+    {
+      "_comment": "[12] Shooting complete; stop shooter",
+
+      "type": "actuator",
+
+      "actuator": {
+        "name": "shooter",
+        "params": {"action": "stop"}
+      },
+
+      "condition": {
+        "name": "ringsSeen",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": 14
+      }
+    },
+
+    {
+      "_comment": "[13] Is it 1 or 4?",
+      "type": "nop",
+
+      "condition": {
+        "name": "ringsSeen",
+        "cond": "==",
+        "value": 1,
+        "jumpTrue": 20,
+        "jumpFalse": 26
+      }
+    },
+
+    {
+      "_comment": "[14] 0 rings => nearest target",
+      "type": "turn",
+      "rotation": "near_rotate1"
+    },
+
+    {
+      "_comment": "[15] move forward",
+      "type": "forward",
+      "dist": "near_forward1"
+    },
+
+    {
+      "_comment": "[16] place wobble goal",
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+
+    {
+      "_comment": "[17] wait, open claw",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleDownDelay"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "open"}
+      }
+    },
+
+    {
+      "_comment": "[18] wait, turn robot",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleOpenDelay"
+      },
+
+      "type": "turn",
+      "absolute": true,
+      "rotation": "near_rotate2"
+    },
+
+    {
+      "_comment": "[19] back up",
+      "type": "forward",
+      "dist": "near_forward2",
+
+      "condition": {
+        "name": "0",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": 32
+      }
+    },
+
+    {
+      "_comment": "[20] 1 ring => mid target",
+      "type": "turn",
+      "rotation": "mid_rotate1"
+    },
+
+    {
+      "_comment": "[21] move forward",
+      "type": "forward",
+      "dist": "mid_forward1"
+    },
+
+    {
+      "_comment": "[22] place wobble goal",
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+
+    {
+      "_comment": "[23] wait, open claw",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleDownDelay"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "open"}
+      }
+    },
+
+    {
+      "_comment": "[24] wait, turn robot",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleOpenDelay"
+      },
+
+      "type": "turn",
+      "absolute": true,
+      "rotation": "mid_rotate2"
+    },
+
+    {
+      "_comment": "[25] back up",
+      "type": "forward",
+      "dist": "mid_forward2",
+
+      "condition": {
+        "name": "0",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": 32
+      }
+    },
+
+    {
+      "_comment": "[26] 4 rings => far target",
+      "type": "turn",
+      "rotation": "far_rotate1"
+    },
+
+    {
+      "_comment": "[27] move forward",
+      "type": "forward",
+      "dist": "far_forward1"
+    },
+
+    {
+      "_comment": "[28] place wobble goal",
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+
+    {
+      "_comment": "[29] wait, open claw",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleDownDelay"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "open"}
+      }
+    },
+
+    {
+      "_comment": "[30] wait, turn robot",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleOpenDelay"
+      },
+
+      "type": "turn",
+      "absolute": true,
+      "rotation": "far_rotate2"
+    },
+
+    {
+      "_comment": "[31] back up",
+      "type": "forward",
+      "dist": "far_forward2"
+    },
+
+    {
+      "_comment": "[32] common program end, wobble up",
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      }
     }
   ]
 }
