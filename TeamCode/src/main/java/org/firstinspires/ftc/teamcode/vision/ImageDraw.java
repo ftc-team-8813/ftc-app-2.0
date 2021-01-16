@@ -24,7 +24,7 @@ public class ImageDraw
         
         public Color(int argb) { this.color = argb; }
         
-        public Color(int r, int g, int b, int a) { this.color = (a << 24) | (r << 16) | (g << 8) | b; }
+        public Color(int r, int g, int b, int a) { this.color = (a << 24) | (b << 16) | (g << 8) | r; }
         
         public Color(int r, int g, int b)        { this(r, g, b, 0xff); }
         

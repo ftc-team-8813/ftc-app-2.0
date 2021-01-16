@@ -4,11 +4,18 @@ import android.annotation.SuppressLint;
 
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.teamcode.util.websocket.Server;
+
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -44,12 +51,14 @@ public class Logger
         public static final int ALL = Integer.MAX_VALUE;
     }
     
-    private static PrintStream writer;
+    private static PrintWriter writer;
     private static File file;
     private static boolean open = false;
     private static long start;
     private static boolean started = false;
     private static int maxLevel = Level.ALL;
+    private static ByteArrayOutputStream serverOutput;
+    private static PrintWriter serverWriter;
     
     private String tag;
     
@@ -81,7 +90,10 @@ public class Logger
         Logger.file = file;
         started = false;
         file.getParentFile().mkdirs();
-        writer = new PrintStream(new BufferedOutputStream(new FileOutputStream(file)));
+        writer = new PrintWriter(
+                new OutputStreamWriter(
+                        new BufferedOutputStream(
+                                new FileOutputStream(file)), StandardCharsets.UTF_8));
     }
     
     /**
@@ -94,6 +106,12 @@ public class Logger
         {
             writer.close();
             writer = null;
+        }
+        if (serverOutput != null)
+        {
+            // closing a byte array output stream has no effect
+            serverOutput = null;
+            serverWriter = null;
         }
         if (file != null)
         {
@@ -117,6 +135,20 @@ public class Logger
         started = true;
     }
     
+    public static void serveLogs(Server server, int commandId)
+    {
+        serverOutput = new ByteArrayOutputStream();
+        serverWriter = new PrintWriter(new OutputStreamWriter(serverOutput, StandardCharsets.UTF_8));
+        server.registerProcessor(commandId, (cmd, payload, resp) -> {
+            if (serverOutput.size() > 0)
+            {
+                byte[] newData = serverOutput.toByteArray();
+                resp.respond(ByteBuffer.wrap(newData));
+                serverOutput.reset();
+            }
+        });
+    }
+    
     public Logger(String tag)
     {
         this.tag = tag;
@@ -137,7 +169,9 @@ public class Logger
         if (level <= maxLevel)
         {
             String base = base(level);
-            if (writer != null) writer.println(base + String.format(fmt, args));
+            String line = base + String.format(fmt, args);
+            if (writer != null)       writer.println(line);
+            if (serverWriter != null) serverWriter.println(line);
             RobotLog.dd(tag, String.format(fmt, args));
         }
     }
@@ -157,8 +191,16 @@ public class Logger
         if (level <= maxLevel)
         {
             String base = base(level);
-            writer.print(base);
-            t.printStackTrace(writer);
+            if (writer != null)
+            {
+                writer.print(base);
+                t.printStackTrace(writer);
+            }
+            if (serverWriter != null)
+            {
+                serverWriter.print(base);
+                t.printStackTrace(serverWriter);
+            }
         }
     }
     

@@ -1,33 +1,23 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
-import android.net.wifi.aware.IdentityChangedListener;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
-import org.firstinspires.ftc.teamcode.hardware.navigation.AngleHold;
 import org.firstinspires.ftc.teamcode.hardware.navigation.NavPath;
 import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
-import org.firstinspires.ftc.teamcode.util.Scheduler.Timer;
 import org.firstinspires.ftc.teamcode.util.Storage;
-import org.firstinspires.ftc.teamcode.util.Time;
-import org.firstinspires.ftc.teamcode.util.event.Event;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.util.event.EventBus.Subscriber;
 import org.firstinspires.ftc.teamcode.util.event.EventFlow;
-import org.firstinspires.ftc.teamcode.util.event.LifecycleEvent;
-import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
+import org.firstinspires.ftc.teamcode.util.websocket.Server;
+import org.firstinspires.ftc.teamcode.vision.ImageDraw;
 import org.firstinspires.ftc.teamcode.vision.RingDetector;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 import org.opencv.android.OpenCVLoader;
@@ -35,7 +25,9 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
 
-import static org.firstinspires.ftc.teamcode.util.event.LifecycleEvent.START;
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+
 import static org.opencv.core.CvType.CV_8UC4;
 
 // we going to use the event bus system for this so that everything can be done on one thread
@@ -58,8 +50,13 @@ public class MainAuto extends LoggingOpMode
     private int ringCount = 0;
     
     private Mat detectorFrame;
+    private Bitmap serverFrame;
+    private ImageDraw serverDraw;
+    
+    private static final int DETECT_REQUEST_FRAME = 1;
+    private static final int DETECT_PROCESS_FRAME = 2;
     private RingDetector detector;
-    private boolean frameUsed = true;
+    private int detectStage = 0;
     private int ringsDetected = -1;
     
     private Webcam.SimpleFrameHandler frameHandler;
@@ -68,6 +65,9 @@ public class MainAuto extends LoggingOpMode
     private Logger log = new Logger("Autonomous");
     
     private static final String serial = "3522DE6F";
+    
+    private ByteBuffer telemBuf;
+    private boolean telemUsed;
     
     static
     {
@@ -78,17 +78,10 @@ public class MainAuto extends LoggingOpMode
     public void init()
     {
         robot = new Robot(hardwareMap);
-        // load config
-        JsonObject conf = Configuration.readJson(Storage.getFile("autonomous.json"));
-        JsonArray pos = conf.getAsJsonArray("turretPos");
-        turretPos = new double[pos.size()];
-        for (int i = 0; i < pos.size(); i++)
-        {
-            turretPos[i] = pos.get(i).getAsDouble();
-        }
         bus = new EventBus();
         scheduler = new Scheduler(bus);
         robot.turret.connectEventBus(bus);
+        telemBuf = ByteBuffer.allocate(65535);
         
         autoPath = new NavPath(Storage.getFile("nav_paths/auto_v1.json"), bus, scheduler, robot, robot.config.getAsJsonObject("nav"));
         autoPath.addActuator("turret", (params) -> {
@@ -123,15 +116,19 @@ public class MainAuto extends LoggingOpMode
             switch (action)
             {
                 case "down":
+                    log.v("Wobble DOWN");
                     robot.wobble.down();
                     break;
                 case "up":
+                    log.v("Wobble UP");
                     robot.wobble.up();
                     break;
                 case "close":
+                    log.v("Wobble CLOSE");
                     robot.wobble.close();
                     break;
                 case "open":
+                    log.v("Wobble OPEN");
                     robot.wobble.open();
                     break;
             }
@@ -141,14 +138,7 @@ public class MainAuto extends LoggingOpMode
         autoPath.addCondition("webcamState", () -> webcam.getState());
         autoPath.addCondition("ringsSeen", () -> ringsDetected);
         autoPath.addActuator("webcamDetect", (params) -> {
-            // assume a frame is available
-            double area = detector.detect(detectorFrame, null);
-            if      (area < 700)   ringsDetected = 0;
-            else if (area < 2500)  ringsDetected = 1;
-            else if (area < 10000) ringsDetected = 4;
-            else                   ringsDetected = -1;
-            log.d("Detected: %d rings (area=%.3f)", ringsDetected, area);
-            frameUsed = true;
+            detectStage = DETECT_REQUEST_FRAME;
         });
         
         webcam = Webcam.forSerial(serial);
@@ -161,6 +151,15 @@ public class MainAuto extends LoggingOpMode
         detector = new RingDetector(800, 448);
     
         autoPath.load();
+        
+        // load config
+        turretPos = new double[] {
+                autoPath.getConstant("powershot0"),
+                autoPath.getConstant("powershot1"),
+                autoPath.getConstant("powershot2")
+        };
+        
+        initServer();
     }
     
     @Override
@@ -181,12 +180,40 @@ public class MainAuto extends LoggingOpMode
     @Override
     public void loop()
     {
-        if (frameHandler.newFrameAvailable && frameUsed)
+        if (detectStage == DETECT_REQUEST_FRAME)
         {
             frameHandler.newFrameAvailable = false;
-            frameUsed = false;
-            Utils.bitmapToMat(frameHandler.currFramebuffer, detectorFrame);
             webcam.requestNewFrame();
+            detectStage = DETECT_PROCESS_FRAME;
+        }
+        else if (detectStage == DETECT_PROCESS_FRAME && frameHandler.newFrameAvailable)
+        {
+            frameHandler.newFrameAvailable = false;
+            detectStage = 0;
+            serverFrame = frameHandler.currFramebuffer.copy(Bitmap.Config.ARGB_8888, false);
+            serverDraw = new ImageDraw();
+            Utils.bitmapToMat(frameHandler.currFramebuffer, detectorFrame);
+            double area = detector.detect(detectorFrame, serverDraw);
+            if      (area < 700)   ringsDetected = 0;
+            else if (area < 2500)  ringsDetected = 1;
+            else if (area < 10000) ringsDetected = 4;
+            else                   ringsDetected = -1;
+            log.d("Detected: %d rings (area=%.3f)", ringsDetected, area);
+        }
+        
+        if (telemUsed)
+        {
+            telemBuf.clear();
+            for (double d : autoPath.navTelemetry)
+            {
+                telemBuf.putDouble(d);
+            }
+            telemBuf.putDouble(robot.turret.getPosition());
+            telemBuf.putDouble(robot.turret.getTarget());
+            telemBuf.putDouble(robot.turret.shooter.motor.getPower());
+            telemBuf.putDouble(((DcMotorEx)robot.turret.shooter.motor).getVelocity());
+            telemBuf.putDouble(ringsDetected);
+            telemUsed = false;
         }
         
         webcam.loop(bus);
@@ -196,5 +223,54 @@ public class MainAuto extends LoggingOpMode
         bus.update();
         
         telemetry.addData("Rings Detected", ringsDetected);
+    }
+    
+    @Override
+    public void stop()
+    {
+        webcam.close();
+        if (server != null) server.close();
+        super.stop();
+    }
+    
+    
+    /////////////////////////////
+    // DEBUG SERVER THINGS
+    
+    private Server server;
+    
+    private void initServer()
+    {
+        server = new Server(8813);
+        Logger.serveLogs(server, 0x01);
+        
+        server.registerProcessor(0x02, (cmd, payload, resp) -> {
+            if (serverFrame != null)
+            {
+                ByteArrayOutputStream os = new ByteArrayOutputStream(32768);
+                serverFrame.compress(Bitmap.CompressFormat.JPEG, 80, os); // probably quite slow
+                serverFrame.recycle();
+                serverFrame = null;
+                byte[] data = os.toByteArray();
+                resp.respond(ByteBuffer.wrap(data));
+            }
+        });
+        server.registerProcessor(0x03, (cmd, payload, resp) -> {
+            if (serverDraw != null)
+            {
+                ByteBuffer drawBuf = ByteBuffer.allocate(65535);
+                serverDraw.write(drawBuf);
+                resp.respond(drawBuf);
+                serverDraw = null;
+            }
+        });
+        server.registerProcessor(0x04, (cmd, payload, resp) -> {
+            if (!telemUsed)
+            {
+                resp.respond(telemBuf);
+            }
+        });
+        
+        server.startServer();
     }
 }
