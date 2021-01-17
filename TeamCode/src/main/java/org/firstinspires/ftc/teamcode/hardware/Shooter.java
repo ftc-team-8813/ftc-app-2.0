@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -13,6 +15,8 @@ public class Shooter
     public final DcMotor motor;
     private double rampTime;
     private double maxPower;
+    private double[] powershot_power;
+    private double maxPowerDef;
     
     private long startTime;
     private boolean started;
@@ -59,5 +63,18 @@ public class Shooter
     {
         rampTime = root.get("rampTime").getAsDouble();
         maxPower = root.get("maxPower").getAsDouble();
+        maxPowerDef = maxPower;
+        JsonArray powershots = root.get("powershots").getAsJsonArray();
+        powershot_power = new double[powershots.size()];
+        for (int i = 0; i < powershot_power.length; i++)
+        {
+            powershot_power[i] = powershots.get(i).getAsDouble();
+        }
+    }
+    
+    public void powershot(int i)
+    {
+        if (i < 0) maxPower = maxPowerDef;
+        maxPower = powershot_power[i];
     }
 }

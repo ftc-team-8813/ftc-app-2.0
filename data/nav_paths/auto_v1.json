@@ -31,31 +31,31 @@
     "spinupDelay": 2,
     "webcamDelay": 1,
     "pushDelay": 0.5,
-    "re_spinupDelay": 1,
+    "re_spinupDelay": 1.5,
     "wobbleDownDelay": 1,
     "wobbleOpenDelay": 0.3
   },
 
   "constants": {
     "shootFwd": -2200,
-    "powershot0": 0.225,
-    "powershot1": 0.240,
-    "powershot2": 0.255,
+    "powershot0": 0.227,
+    "powershot1": 0.218,
+    "powershot2": 0.200,
 
-    "near_rotate1": 65,
+    "near_rotate1": 68,
     "near_forward1": -1550,
     "near_rotate2": 120,
-    "near_forward2": 150,
+    "near_forward2": 400,
 
     "mid_rotate1": 38,
     "mid_forward1": -1610,
     "mid_rotate2": 60,
-    "mid_forward2": 300,
+    "mid_forward2": 400,
 
     "far_rotate1": 40,
     "far_forward1": -3180,
-    "far_rotate2": 65,
-    "far_forward2": 1700
+    "far_rotate2": 60,
+    "far_forward2": 2000
   },
 
   "path": [

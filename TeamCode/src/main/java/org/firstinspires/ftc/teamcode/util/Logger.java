@@ -140,6 +140,7 @@ public class Logger
         serverOutput = new ByteArrayOutputStream();
         serverWriter = new PrintWriter(new OutputStreamWriter(serverOutput, StandardCharsets.UTF_8));
         server.registerProcessor(commandId, (cmd, payload, resp) -> {
+            serverWriter.flush();
             if (serverOutput.size() > 0)
             {
                 byte[] newData = serverOutput.toByteArray();

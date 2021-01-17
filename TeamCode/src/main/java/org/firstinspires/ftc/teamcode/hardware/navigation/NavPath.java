@@ -117,18 +117,18 @@ public class NavPath
         return pathComplete;
     }
     
-    public void loop(Telemetry telemetry)
+    public void loop(Telemetry telemetry, boolean run)
     {
         double fwdPos = (robot.drivetrain.top_right.getCurrentPosition() + robot.drivetrain.top_left.getCurrentPosition()) / 2.0;
         double fwdError = fwdTarget - fwdPos;
         double fwdPower = Range.clip(kP * fwdError * speed, -speed, speed);
-        if (Math.abs(fwdPower / speed) < 0.05 && sendEvent)
+        if (Math.abs(fwdPower) < 0.07 && sendEvent)
         {
             sendEvent = false;
             evBus.pushEvent(new NavMoveEvent(NavMoveEvent.FORWARD_COMPLETE));
         }
         double turnPower = angleHold.getTurnPower();
-        robot.drivetrain.telemove(fwdPower, -turnPower);
+        if (run) robot.drivetrain.telemove(fwdPower, -turnPower);
         navTelemetry[0] = fwdPower;
         navTelemetry[1] = turnPower;
         navTelemetry[2] = fwdPos;

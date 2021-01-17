@@ -67,7 +67,7 @@ public class MainAuto extends LoggingOpMode
     private static final String serial = "3522DE6F";
     
     private ByteBuffer telemBuf;
-    private boolean telemUsed;
+    private boolean telemUsed = true;
     
     static
     {
@@ -83,6 +83,10 @@ public class MainAuto extends LoggingOpMode
         robot.turret.connectEventBus(bus);
         telemBuf = ByteBuffer.allocate(65535);
         
+        initServer();
+        
+        robot.wobble.close();
+        
         autoPath = new NavPath(Storage.getFile("nav_paths/auto_v1.json"), bus, scheduler, robot, robot.config.getAsJsonObject("nav"));
         autoPath.addActuator("turret", (params) -> {
             String action = params.get("action").getAsString();
@@ -90,6 +94,7 @@ public class MainAuto extends LoggingOpMode
             {
                 case "rotatePs":
                     robot.turret.rotate(turretPos[ringCount], true);
+                    robot.turret.shooter.powershot(ringCount);
                     break;
                 case "push":
                     robot.turret.push();
@@ -159,13 +164,12 @@ public class MainAuto extends LoggingOpMode
                 autoPath.getConstant("powershot2")
         };
         
-        initServer();
     }
     
     @Override
     public void init_loop()
     {
-        autoPath.loop(telemetry);
+        autoPath.loop(telemetry, false);
         scheduler.loop();
         bus.update();
     }
@@ -217,7 +221,7 @@ public class MainAuto extends LoggingOpMode
         }
         
         webcam.loop(bus);
-        autoPath.loop(telemetry);
+        autoPath.loop(telemetry, true);
         robot.turret.update(telemetry);
         scheduler.loop();
         bus.update();
@@ -260,6 +264,7 @@ public class MainAuto extends LoggingOpMode
             {
                 ByteBuffer drawBuf = ByteBuffer.allocate(65535);
                 serverDraw.write(drawBuf);
+                drawBuf.flip();
                 resp.respond(drawBuf);
                 serverDraw = null;
             }
@@ -267,7 +272,9 @@ public class MainAuto extends LoggingOpMode
         server.registerProcessor(0x04, (cmd, payload, resp) -> {
             if (!telemUsed)
             {
+                telemBuf.flip();
                 resp.respond(telemBuf);
+                telemUsed = true;
             }
         });
         

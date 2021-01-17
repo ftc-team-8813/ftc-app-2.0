@@ -1,13 +1,19 @@
 {
   "shooter": {
     "rampTime": 1,
-    "maxPower": 0.55
+    "maxPower": 1,
+
+    "powershots": [
+      0.567,
+      0.567,
+      0.575
+    ]
   },
   "turret": {
     "home": 0.22,
     "min": 0,
     "max": 0.65,
-    "maxSpeed": 0.5,
+    "maxSpeed": 0.4,
     "kp":  15,
     "pusher": {
       "in": 1,
@@ -25,7 +31,7 @@
   },
   "teleop": {
     "drive_speed": -0.8,
-    "slow_speed": -0.4
+    "slow_speed": -0.3
   },
   "wobble": {
     "arm_up": 1,
