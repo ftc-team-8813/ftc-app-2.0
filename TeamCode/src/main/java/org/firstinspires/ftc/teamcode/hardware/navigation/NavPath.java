@@ -90,6 +90,8 @@ public class NavPath
         this.jsonFile = jsonFile;
         actuators = new HashMap<>();
         conditions = new HashMap<>();
+        timers = new HashMap<>();
+        constants = new HashMap<>();
         paths = new ArrayList<>();
         robot.drivetrain.resetEncoders();
         this.angleHold = new AngleHold(new IMU(robot.imu), evBus, scheduler, navConfig);
@@ -209,7 +211,6 @@ public class NavPath
         log.d("-> Default speed: %.3f", defaultSpeed);
         // positionSrc = PositionSrc.valueOf(root.get("positionSrc").getAsString());
         // angleSrc = AngleSrc.valueOf(root.get("angleSrc").getAsString());
-        timers = new HashMap<>();
         if (root.has("timers"))
         {
             JsonObject timers = root.getAsJsonObject("timers");
@@ -223,7 +224,6 @@ public class NavPath
             }
         }
         
-        constants = new HashMap<>();
         if (root.has("constants"))
         {
             JsonObject consts = root.getAsJsonObject("constants");

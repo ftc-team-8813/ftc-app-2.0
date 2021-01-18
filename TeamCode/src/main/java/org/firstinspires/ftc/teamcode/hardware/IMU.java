@@ -60,7 +60,7 @@ public class IMU
     private class Worker implements EventBus.SubCallback<TimerEvent>
     {
         private Logger log;
-        private File calibrationFile = Storage.getFile("imu_calibration.json");
+        private File    calibrationFile = Storage.getFile("imu_calibration.json");
         
         private final String[] internalStatus =
                 {"Idle", "Error", "Initializing peripherals", "Initializing system", "Self-test",
@@ -283,12 +283,7 @@ public class IMU
     
     public void start()
     {
-        start(false);
-    }
-    
-    public void start(boolean inRadians)
-    {
-        worker.inRadians = inRadians;
+        worker.inRadians = false; // radians mode is most likely broken
         if (worker.getState() < INITIALIZED)
         {
             log.f("start() called before initialization complete!");

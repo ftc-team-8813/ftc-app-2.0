@@ -28,8 +28,8 @@ public class CurrentTele extends LoggingOpMode {
     
     private ControllerMap.AxisEntry   ax_drive_l;
     private ControllerMap.AxisEntry   ax_drive_r;
-    private ControllerMap.ButtonEntry btn_intake;
-    private ControllerMap.ButtonEntry btn_intake_out;
+    private ControllerMap.AxisEntry   ax_intake;
+    private ControllerMap.AxisEntry   ax_intake_out;
     private ControllerMap.AxisEntry   ax_turret;
     private ControllerMap.ButtonEntry btn_lift;
     private ControllerMap.ButtonEntry btn_shooter;
@@ -40,6 +40,7 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.ButtonEntry btn_wobble_close;
     private ControllerMap.ButtonEntry btn_slow;
     private ControllerMap.ButtonEntry btn_wobble_int;
+    private ControllerMap.ButtonEntry btn_turret_home;
     
     private double driveSpeed;
     private double slowSpeed;
@@ -95,8 +96,8 @@ public class CurrentTele extends LoggingOpMode {
          */
         controllerMap.setAxisMap  ("drive_l",   "gamepad1", "left_stick_y" );
         controllerMap.setAxisMap  ("drive_r",   "gamepad1", "right_stick_y");
-        controllerMap.setButtonMap("intake",    "gamepad1", "right_trigger");
-        controllerMap.setButtonMap("intake_out","gamepad1", "left_trigger");
+        controllerMap.setAxisMap  ("intake",    "gamepad1", "right_trigger");
+        controllerMap.setAxisMap  ("intake_out","gamepad1", "left_trigger");
         controllerMap.setAxisMap  ("turret",    "gamepad2", "left_stick_x" );
         controllerMap.setButtonMap("lift",      "gamepad1", "right_bumper" );
         controllerMap.setButtonMap("shooter",   "gamepad2", "y");
@@ -107,11 +108,12 @@ public class CurrentTele extends LoggingOpMode {
         controllerMap.setButtonMap("wobble_c",  "gamepad2", "dpad_right");
         controllerMap.setButtonMap("slow",      "gamepad1", "left_bumper");
         controllerMap.setButtonMap("wobble_i",  "gamepad2", "left_bumper");
+        controllerMap.setButtonMap("turr_home", "gamepad2", "a");
         
         ax_drive_l      = controllerMap.axes.get("drive_l");
         ax_drive_r      = controllerMap.axes.get("drive_r");
-        btn_intake      = controllerMap.buttons.get("intake");
-        btn_intake_out  = controllerMap.buttons.get("intake_out");
+        ax_intake       = controllerMap.axes.get("intake");
+        ax_intake_out   = controllerMap.axes.get("intake_out");
         ax_turret       = controllerMap.axes.get("turret");
         btn_lift        = controllerMap.buttons.get("lift");
         btn_shooter     = controllerMap.buttons.get("shooter");
@@ -122,6 +124,7 @@ public class CurrentTele extends LoggingOpMode {
         btn_wobble_close= controllerMap.buttons.get("wobble_c");
         btn_slow        = controllerMap.buttons.get("slow");
         btn_wobble_int  = controllerMap.buttons.get("wobble_i");
+        btn_turret_home = controllerMap.buttons.get("turr_home");
     
         JsonObject config = robot.config.getAsJsonObject("teleop");
         driveSpeed = config.get("drive_speed").getAsDouble();
@@ -145,11 +148,14 @@ public class CurrentTele extends LoggingOpMode {
         robot.drivetrain.telemove(ax_drive_r.get() * speed,
                                  ax_drive_l.get() * speed);
         
+        /*
         if (btn_intake.get())          robot.intake.intake();
         else if (btn_intake_out.get()) robot.intake.outtake();
         else                           robot.intake.stop();
+         */
+        robot.intake.run(ax_intake.get() - ax_intake_out.get());
         
-        double turret_adj = ax_turret.get() * dt * 0.5;
+        double turret_adj = Math.pow(ax_turret.get(), 3) * 0.025;
         robot.turret.rotate(robot.turret.getTarget() + turret_adj);
         
         if (btn_lift.edge() > 0)
@@ -173,6 +179,8 @@ public class CurrentTele extends LoggingOpMode {
         
         if (btn_pusher.get()) robot.turret.push();
         else                  robot.turret.unpush();
+        
+        if (btn_turret_home.edge() > 0) robot.turret.home();
         
         if (btn_wobble_up.get()) robot.wobble.up();
         if (btn_wobble_down.get()) robot.wobble.down();

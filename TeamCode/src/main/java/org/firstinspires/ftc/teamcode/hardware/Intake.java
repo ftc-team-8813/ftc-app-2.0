@@ -16,19 +16,22 @@ public class Intake {
     
     public void intake()
     {
-        intake.setPower(1);
-        ramp.setPower(1);
+        run(1);
     }
     
     public void outtake()
     {
-        intake.setPower(-1);
-        ramp.setPower(-1);
+        run(-1);
+    }
+    
+    public void run(double speed)
+    {
+        intake.setPower(speed);
+        ramp.setPower(speed);
     }
     
     public void stop()
     {
-        intake.setPower(0);
-        ramp.setPower(0);
+        run(0);
     }
 }

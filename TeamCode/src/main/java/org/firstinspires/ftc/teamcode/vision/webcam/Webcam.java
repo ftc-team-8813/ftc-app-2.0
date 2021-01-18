@@ -191,7 +191,7 @@ public class Webcam
     
     public int[] getAvailableFormats()
     {
-        return name.getCameraCharacteristics().getAndroidFormats();
+        return characteristics.getAndroidFormats();
     }
     
     public void requestNewFrame()

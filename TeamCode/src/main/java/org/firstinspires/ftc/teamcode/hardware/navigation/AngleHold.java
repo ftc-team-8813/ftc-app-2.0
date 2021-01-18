@@ -13,6 +13,10 @@ import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 
+/**
+ * As the name suggests, this class produces an adjustment value to keep the robot rotated to
+ * a certain heading. It also handles setting up the IMU on initialization.
+ */
 public class AngleHold
 {
     private IMU imu;
