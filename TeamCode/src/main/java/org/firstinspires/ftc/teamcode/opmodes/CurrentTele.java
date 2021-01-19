@@ -136,29 +136,29 @@ public class CurrentTele extends LoggingOpMode {
     public void loop()
     {
         double dt = Time.since(lastUpdate);
-        lastUpdate = Time.now();
-        // TODO -- HACK: axes swapped due to config problem
-        double speed = slow ? slowSpeed : driveSpeed;
-        robot.drivetrain.telemove(ax_drive_r.get() * speed,
-                                 ax_drive_l.get() * speed);
-        
-        if (btn_intake.get())          robot.intake.intake();
-        else if (btn_intake_out.get()) robot.intake.outtake();
-        else                           robot.intake.stop();
-        
-        double turret_adj = ax_turret.get() * dt * 0.5;
-        robot.turret.rotate(robot.turret.getTarget() + turret_adj);
-        
-        if (btn_lift.edge() > 0)
-        {
-            lift_up = !lift_up;
-            if (lift_up) robot.lift.up();
-            else         robot.lift.down();
-        }
-        
-        if (btn_shooter.edge() > 0)
-        {
-            shooter_on = !shooter_on;
+            lastUpdate = Time.now();
+            // TODO -- HACK: axes swapped due to config problem
+            double speed = slow ? slowSpeed : driveSpeed;
+            robot.drivetrain.telemove(ax_drive_r.get() * speed,
+                    ax_drive_l.get() * speed);
+
+            if (btn_intake.get())          robot.intake.intake();
+            else if (btn_intake_out.get()) robot.intake.outtake();
+            else                           robot.intake.stop();
+
+            double turret_adj = ax_turret.get() * dt * 0.5;
+            robot.turret.rotate(robot.turret.getTarget() + turret_adj);
+
+            if (btn_lift.edge() > 0)
+            {
+                lift_up = !lift_up;
+                if (lift_up) robot.lift.up();
+                else         robot.lift.down();
+            }
+
+            if (btn_shooter.edge() > 0)
+            {
+                shooter_on = !shooter_on;
             if (shooter_on) robot.turret.shooter.start();
             else            robot.turret.shooter.stop();
         }

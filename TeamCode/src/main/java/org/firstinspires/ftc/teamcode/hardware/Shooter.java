@@ -39,6 +39,10 @@ public class Shooter
     {
         started = false;
     }
+
+    public void setPower(double power){
+        motor.setPower(power);
+    }
     
     public void update()
     {

@@ -69,7 +69,7 @@ public class Drivetrain {
 
     public int odoPIDUpdate(){
         final double kP = 1;
-        double error = odometry.getDeltas();
+        double error = odometry.getX();
         double left_wheel_speed = -error * kP;
         double right_wheel_speed = error * kP;
         // TODO Increase deadband for error to make it possible to reach
