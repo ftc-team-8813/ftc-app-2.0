@@ -25,6 +25,9 @@ public class IMU
     public static final int STARTED = 3;
     public static final int CLOSED = -2;
     public static final int ERROR = -1;
+    private static final String[] statuses = {
+            "pre-init", "calibrating", "initialized", "started", "error", "closed"
+    };
     
     //The IMU
     private BNO055IMU imu;
@@ -57,7 +60,7 @@ public class IMU
     private class Worker implements EventBus.SubCallback<TimerEvent>
     {
         private Logger log;
-        private File calibrationFile = Storage.getFile("imu_calibration.json");
+        private File    calibrationFile = Storage.getFile("imu_calibration.json");
         
         private final String[] internalStatus =
                 {"Idle", "Error", "Initializing peripherals", "Initializing system", "Self-test",
@@ -280,12 +283,7 @@ public class IMU
     
     public void start()
     {
-        start(false);
-    }
-    
-    public void start(boolean inRadians)
-    {
-        worker.inRadians = inRadians;
+        worker.inRadians = false; // radians mode is most likely broken
         if (worker.getState() < INITIALIZED)
         {
             log.f("start() called before initialization complete!");
@@ -303,6 +301,14 @@ public class IMU
     public int getStatus()
     {
         return worker.getState();
+    }
+    
+    public String getStatusString()
+    {
+        int status = getStatus();
+        if (status == ERROR) return statuses[4];
+        if (status == CLOSED) return statuses[5];
+        return statuses[status];
     }
     
     public String getDetailStatus()

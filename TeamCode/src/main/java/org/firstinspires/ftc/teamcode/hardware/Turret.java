@@ -27,12 +27,15 @@ public class Turret {
     private Logger log = new Logger("Turret");
     
     private double turretHome;
+    private double turretHome2;
     private double turretKp;
     private double turretMin;
     private double turretMax;
     private double turretSpeed;
     private double pushIn;
     private double pushOut;
+    
+    private double turretDefSpeed;
     
     private double target;
     private double lastPos;
@@ -51,10 +54,12 @@ public class Turret {
     
         JsonObject root = turretConfig;
         turretHome = root.get("home").getAsDouble();
+        turretHome2= root.get("home2").getAsDouble();
         turretKp   = root.get("kp").getAsDouble();
         turretMin  = root.get("min").getAsDouble();
         turretMax  = root.get("max").getAsDouble();
         turretSpeed= root.get("maxSpeed").getAsDouble();
+        turretDefSpeed = turretSpeed;
         JsonObject pusherConf = root.getAsJsonObject("pusher");
         pushIn  = pusherConf.get("in").getAsDouble();
         pushOut = pusherConf.get("out").getAsDouble();
@@ -81,8 +86,21 @@ public class Turret {
     
     public void home()
     {
-        target = turretHome;
+        if (Math.abs(lastPos - turretHome2) < Math.abs(lastPos - turretHome))
+        {
+            target = turretHome2;
+        }
+        else
+        {
+            target = turretHome;
+        }
         sendEvent = true;
+        // HACK: 70% power homing
+        turretSpeed = 0.7;
+        evBus.subscribe(TurretEvent.class, (ev, bus, sub) -> {
+            turretSpeed = turretDefSpeed;
+            bus.unsubscribe(sub);
+        }, "Turret Speed Reset", TurretEvent.TURRET_MOVED);
     }
     
     public double getTarget()

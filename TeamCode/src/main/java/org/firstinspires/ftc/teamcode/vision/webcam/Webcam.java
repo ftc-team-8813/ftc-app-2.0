@@ -16,6 +16,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraManager;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 import java.util.HashMap;
 import java.util.List;
@@ -109,19 +110,39 @@ public class Webcam
         return cameras;
     }
     
+    public static Webcam forSerial(String serial)
+    {
+        Webcam[] cams = getConnected();
+        for (Webcam w : cams)
+        {
+            if (w.getSerialNumber().equals(serial)) return w;
+        }
+        return null;
+    }
+    
     private Webcam(WebcamName name)
     {
         this.name = name;
         this.characteristics = name.getCameraCharacteristics();
-        log.d("Webcam s/n %s at %s:", name.getSerialNumber(), name.getConnectionInfo());
+        log.v("Webcam s/n %s at %s:", name.getSerialNumber(), name.getConnectionInfo());
         for (CameraCharacteristics.CameraMode mode : characteristics.getAllCameraModes())
         {
             String defFlag = mode.isDefaultSize ? " [default size]" : "";
             String fmtName = formats.get(mode.androidFormat);
-            log.d("- available mode: %s at %dx%d%s at %d fps",
+            log.v("- available mode: %s at %dx%d%s at %d fps",
                     fmtName, mode.size.getWidth(), mode.size.getHeight(), defFlag, mode.fps);
         }
-        log.d("");
+        log.v("");
+    }
+    
+    private int lastState = state;
+    public void loop(EventBus bus)
+    {
+        if (state != lastState)
+        {
+            lastState = state;
+            bus.pushEvent(new WebcamEvent(state));
+        }
     }
     
     public interface FrameCallback
@@ -132,6 +153,37 @@ public class Webcam
         void onError(String err);
     }
     
+    public static class SimpleFrameHandler implements FrameCallback
+    {
+        public Bitmap currFramebuffer = null;
+        public volatile boolean newFrameAvailable = false;
+        public volatile boolean closed = false;
+        
+        @Override
+        public void setBuffer(Bitmap frameBuffer)
+        {
+            currFramebuffer = frameBuffer;
+        }
+    
+        @Override
+        public void onFrame(int droppedFrames)
+        {
+            newFrameAvailable = true;
+        }
+    
+        @Override
+        public void onClose(long lastFrameNum, int droppedFrames)
+        {
+            closed = true;
+        }
+    
+        @Override
+        public void onError(String err)
+        {
+            closed = true;
+        }
+    }
+    
     public String getSerialNumber()
     {
         return name.getSerialNumber().toString();
@@ -139,7 +191,7 @@ public class Webcam
     
     public int[] getAvailableFormats()
     {
-        return name.getCameraCharacteristics().getAndroidFormats();
+        return characteristics.getAndroidFormats();
     }
     
     public void requestNewFrame()
@@ -152,6 +204,11 @@ public class Webcam
         String status = statuses.get(state);
         if (state == ERROR) status += " -- " + error;
         return status;
+    }
+    
+    public int getState()
+    {
+        return state;
     }
     
     public void open(int format, int w, int h, int fps, FrameCallback cb)

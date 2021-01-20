@@ -1,31 +1,34 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import android.graphics.Bitmap;
+import android.graphics.ImageFormat;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
-import org.firstinspires.ftc.teamcode.hardware.navigation.AngleHold;
+import org.firstinspires.ftc.teamcode.hardware.navigation.NavPath;
 import org.firstinspires.ftc.teamcode.util.Configuration;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
-import org.firstinspires.ftc.teamcode.util.Scheduler.Timer;
 import org.firstinspires.ftc.teamcode.util.Storage;
-import org.firstinspires.ftc.teamcode.util.Time;
-import org.firstinspires.ftc.teamcode.util.event.Event;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.util.event.EventBus.Subscriber;
 import org.firstinspires.ftc.teamcode.util.event.EventFlow;
-import org.firstinspires.ftc.teamcode.util.event.LifecycleEvent;
-import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
+import org.firstinspires.ftc.teamcode.util.websocket.Server;
+import org.firstinspires.ftc.teamcode.vision.ImageDraw;
+import org.firstinspires.ftc.teamcode.vision.RingDetector;
+import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
 
 
-import static org.firstinspires.ftc.teamcode.util.event.LifecycleEvent.START;
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+
+import static org.opencv.core.CvType.CV_8UC4;
 
 // we going to use the event bus system for this so that everything can be done on one thread
 @Autonomous(name="Auto")
@@ -37,70 +40,7 @@ public class MainAuto extends LoggingOpMode
     
     private Robot robot;
     
-    private Mover mover;
-    
-    private static class MoverEvent extends Event
-    {
-        public MoverEvent()
-        {
-            super(0);
-        }
-    }
-    
-    private class Mover
-    {
-        DcMotor l, r;   // primary (encoder) motors
-        DcMotor ls, rs; // secondary motors
-        
-        final int deadband = 5;
-        final double kp = 0.02;
-        
-        int fwdTarget;
-        double power;
-        boolean sendEvent = false;
-        
-        IMU imu;
-        AngleHold hold;
-        double[] adj = new double[2];
-        
-        Mover(DcMotor l, DcMotor ls, DcMotor r, DcMotor rs)
-        {
-            this.l = l;
-            this.ls = ls;
-            this.r = r;
-            this.rs = rs;
-            imu = new IMU(robot.imu);
-            hold = new AngleHold(imu, bus, scheduler, robot.config.getAsJsonObject("angle_hold"));
-        }
-        
-        void forward(int dist, double power)
-        {
-            power = -power; // TODO HACK -- right and left wheels swapped
-            fwdTarget += dist;
-            this.power = power;
-            sendEvent = true;
-        }
-        
-        void update()
-        {
-            int error = fwdTarget - l.getCurrentPosition();
-            double pAdj = kp * error;
-            pAdj = Range.clip(pAdj, -1, 1);
-            
-            hold.getAdj(telemetry, adj);
-            
-            l.setPower (power * pAdj + adj[0]);
-            r.setPower (power * pAdj + adj[1]);
-            ls.setPower(power * pAdj + adj[0]);
-            rs.setPower(power * pAdj + adj[1]);
-            
-            if (Math.abs(error) < deadband && sendEvent)
-            {
-                sendEvent = false;
-                bus.pushEvent(new MoverEvent());
-            }
-        }
-    }
+    private NavPath autoPath;
     
     private int forward1;
     private int forward2; // distance from forward1 to park
@@ -109,94 +49,127 @@ public class MainAuto extends LoggingOpMode
     
     private int ringCount = 0;
     
+    private Mat detectorFrame;
+    private Bitmap serverFrame;
+    private ImageDraw serverDraw;
+    
+    private static final int DETECT_REQUEST_FRAME = 1;
+    private static final int DETECT_PROCESS_FRAME = 2;
+    private RingDetector detector;
+    private int detectStage = 0;
+    private int ringsDetected = -1;
+    
+    private Webcam.SimpleFrameHandler frameHandler;
+    private Webcam webcam;
+    
+    private Logger log = new Logger("Autonomous");
+    
+    private static final String serial = "3522DE6F";
+    
+    private ByteBuffer telemBuf;
+    private boolean telemUsed = true;
+    
+    static
+    {
+        OpenCVLoader.initDebug();
+    }
+    
     @Override
     public void init()
     {
-        // load config
-        JsonObject conf = Configuration.readJson(Storage.getFile("autonomous.json"));
-        movePower = conf.get("movePower").getAsDouble();
-        forward1 = conf.get("forward1").getAsInt();
-        forward2 = conf.get("forward2").getAsInt();
-        JsonArray pos = conf.getAsJsonArray("turretPos");
-        turretPos = new double[pos.size()];
-        for (int i = 0; i < pos.size(); i++)
-        {
-            turretPos[i] = pos.get(i).getAsDouble();
-        }
-        
-        double pushTime = conf.get("pushTime").getAsDouble();
-        double shootTime = conf.get("shootTime").getAsDouble();
-        
+        robot = new Robot(hardwareMap);
         bus = new EventBus();
         scheduler = new Scheduler(bus);
-        autoFlow = new EventFlow(bus);
-        
-        robot = new Robot(hardwareMap);
         robot.turret.connectEventBus(bus);
+        telemBuf = ByteBuffer.allocate(65535);
+        
+        initServer();
         
         robot.wobble.close();
-        robot.wobble.up();
         
-        robot.drivetrain.resetEncoders();
-        // TODO RIGHT AND LEFT SWAPPED -- CONFIG ISSUE
-        mover = new Mover(robot.drivetrain.top_right, robot.drivetrain.bottom_right,
-                          robot.drivetrain.top_left, robot.drivetrain.bottom_left);
+        autoPath = new NavPath(Storage.getFile("nav_paths/auto_v1.json"), bus, scheduler, robot, robot.config.getAsJsonObject("nav"));
+        autoPath.addActuator("turret", (params) -> {
+            String action = params.get("action").getAsString();
+            switch (action)
+            {
+                case "rotatePs":
+                    robot.turret.rotate(turretPos[ringCount], true);
+                    robot.turret.shooter.powershot(ringCount);
+                    break;
+                case "push":
+                    robot.turret.push();
+                    break;
+                case "unpush":
+                    robot.turret.unpush();
+                    break;
+            }
+        });
+        autoPath.addActuator("shooter", (params) -> {
+            String action = params.get("action").getAsString();
+            switch (action)
+            {
+                case "start":
+                    robot.turret.shooter.start();
+                    break;
+                case "stop":
+                    robot.turret.shooter.stop();
+                    break;
+            }
+        });
+        autoPath.addActuator("wobble", (params) -> {
+            String action = params.get("action").getAsString();
+            switch (action)
+            {
+                case "down":
+                    log.v("Wobble DOWN");
+                    robot.wobble.down();
+                    break;
+                case "up":
+                    log.v("Wobble UP");
+                    robot.wobble.up();
+                    break;
+                case "close":
+                    log.v("Wobble CLOSE");
+                    robot.wobble.close();
+                    break;
+                case "open":
+                    log.v("Wobble OPEN");
+                    robot.wobble.open();
+                    break;
+            }
+        });
+        autoPath.addCondition("0", () -> 0);
+        autoPath.addCondition("incRingCount", () -> ++ringCount);
+        autoPath.addCondition("webcamState", () -> webcam.getState());
+        autoPath.addCondition("ringsSeen", () -> ringsDetected);
+        autoPath.addActuator("webcamDetect", (params) -> {
+            detectStage = DETECT_REQUEST_FRAME;
+        });
         
-        final double ogSpinupDelay = 5;
-        // timers here
-        Timer shooterTimer = scheduler.addPendingTrigger(ogSpinupDelay, "Shooter Spin-Up");
-        Timer pushTimer = scheduler.addPendingTrigger(pushTime, "Push Timer");
-        Timer shootTimer = scheduler.addPendingTrigger(shootTime, "Shoot Timer");
+        webcam = Webcam.forSerial(serial);
+        if (webcam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + serial);
+        frameHandler = new Webcam.SimpleFrameHandler();
+        webcam.open(ImageFormat.YUY2, 800, 448, 30, frameHandler);
+    
+        detectorFrame = new Mat(800, 448, CV_8UC4);
+    
+        detector = new RingDetector(800, 448);
+    
+        autoPath.load();
         
-        // flow
-        autoFlow.start(new Subscriber<>(LifecycleEvent.class, (ev, bus, sub) -> { // 0
-            robot.turret.shooter.start();
-            mover.forward(forward1, movePower);
-            shooterTimer.reset();
-        }, "Start Moving", START))
-        .then(new Subscriber<>(MoverEvent.class, (ev, bus, sub) -> { // 1
-            if (shooterTimer.cancelled) // triggered early
-            {
-                shooterTimer.delay = 0.1;
-                shooterTimer.reset();
-            }
-        }, "Finish Moving", 0))
-        .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> { // 2
-            if (shooterTimer.delay < ogSpinupDelay) shooterTimer.delay = ogSpinupDelay; // reset delay
-            // move the turret
-            robot.turret.rotate(turretPos[ringCount], true);
-        }, "Rotate Turret", shooterTimer.eventChannel))
-        .then(new Subscriber<>(TurretEvent.class, (ev, bus, sub) -> { // 3
-            pushTimer.reset();
-        }, "Pre-Shoot Timer", TurretEvent.TURRET_MOVED))
-        .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> { // 4
-            robot.turret.push();
-            pushTimer.reset();
-        }, "Shoot", pushTimer.eventChannel))
-        .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> { // 5
-            robot.turret.unpush();
-            ringCount++;
-            if (ringCount < turretPos.length)
-            {
-                shootTimer.reset();
-            }
-            else
-            {
-                robot.turret.shooter.stop();
-                mover.forward(forward2, movePower);
-                autoFlow.jump(0); // finish -- lifecycle event only triggered once
-            }
-        }, "Finish Shoot", pushTimer.eventChannel))
-        .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> { // 6
-            robot.turret.rotate(turretPos[ringCount], true);
-            autoFlow.jump(3);
-        }, "Re-SpinUp", shootTimer.eventChannel));
+        // load config
+        turretPos = new double[] {
+                autoPath.getConstant("powershot0"),
+                autoPath.getConstant("powershot1"),
+                autoPath.getConstant("powershot2")
+        };
+        
     }
     
     @Override
     public void init_loop()
     {
-        mover.hold.getAdj(telemetry, mover.adj); // show telemetry
+        autoPath.loop(telemetry, false);
         scheduler.loop();
         bus.update();
     }
@@ -204,15 +177,107 @@ public class MainAuto extends LoggingOpMode
     @Override
     public void start()
     {
-        bus.pushEvent(new LifecycleEvent(START));
+        // bus.pushEvent(new LifecycleEvent(START));
+        autoPath.start();
     }
     
     @Override
     public void loop()
     {
-        mover.update();
+        if (detectStage == DETECT_REQUEST_FRAME)
+        {
+            frameHandler.newFrameAvailable = false;
+            webcam.requestNewFrame();
+            detectStage = DETECT_PROCESS_FRAME;
+        }
+        else if (detectStage == DETECT_PROCESS_FRAME && frameHandler.newFrameAvailable)
+        {
+            frameHandler.newFrameAvailable = false;
+            detectStage = 0;
+            serverFrame = frameHandler.currFramebuffer.copy(Bitmap.Config.ARGB_8888, false);
+            serverDraw = new ImageDraw();
+            Utils.bitmapToMat(frameHandler.currFramebuffer, detectorFrame);
+            double area = detector.detect(detectorFrame, serverDraw);
+            if      (area < 700)   ringsDetected = 0;
+            else if (area < 2500)  ringsDetected = 1;
+            else if (area < 10000) ringsDetected = 4;
+            else                   ringsDetected = -1;
+            log.d("Detected: %d rings (area=%.3f)", ringsDetected, area);
+        }
+        
+        if (telemUsed)
+        {
+            telemBuf.clear();
+            for (double d : autoPath.navTelemetry)
+            {
+                telemBuf.putDouble(d);
+            }
+            telemBuf.putDouble(robot.turret.getPosition());
+            telemBuf.putDouble(robot.turret.getTarget());
+            telemBuf.putDouble(robot.turret.shooter.motor.getPower());
+            telemBuf.putDouble(((DcMotorEx)robot.turret.shooter.motor).getVelocity());
+            telemBuf.putDouble(ringsDetected);
+            telemUsed = false;
+        }
+        
+        webcam.loop(bus);
+        autoPath.loop(telemetry, true);
         robot.turret.update(telemetry);
         scheduler.loop();
         bus.update();
+        
+        telemetry.addData("Rings Detected", ringsDetected);
+    }
+    
+    @Override
+    public void stop()
+    {
+        webcam.close();
+        if (server != null) server.close();
+        super.stop();
+    }
+    
+    
+    /////////////////////////////
+    // DEBUG SERVER THINGS
+    
+    private Server server;
+    
+    private void initServer()
+    {
+        server = new Server(8813);
+        Logger.serveLogs(server, 0x01);
+        
+        server.registerProcessor(0x02, (cmd, payload, resp) -> {
+            if (serverFrame != null)
+            {
+                ByteArrayOutputStream os = new ByteArrayOutputStream(32768);
+                serverFrame.compress(Bitmap.CompressFormat.JPEG, 80, os); // probably quite slow
+                serverFrame.recycle();
+                serverFrame = null;
+                byte[] data = os.toByteArray();
+                resp.respond(ByteBuffer.wrap(data));
+            }
+        });
+        server.registerProcessor(0x03, (cmd, payload, resp) -> {
+            if (serverDraw != null)
+            {
+                ByteBuffer drawBuf = ByteBuffer.allocate(65535);
+                serverDraw.write(drawBuf);
+                drawBuf.flip();
+                resp.respond(drawBuf);
+                serverDraw = null;
+            }
+        });
+        server.registerProcessor(0x04, (cmd, payload, resp) -> {
+            if (!telemUsed)
+            {
+                telemBuf.flip();
+                resp.respond(telemBuf);
+                telemUsed = true;
+            }
+        });
+        
+        server.startServer();
     }
 }

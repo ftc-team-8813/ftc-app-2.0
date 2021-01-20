@@ -75,11 +75,14 @@ public class Server
                 log.d("Closing server");
                 server.close();
             }
-            Socket conn = worker.connection.get();
-            if (conn != null && !conn.isClosed())
+            if (worker.connection != null)
             {
-                log.d("Closing connection");
-                conn.close();
+                Socket conn = worker.connection.get();
+                if (conn != null && !conn.isClosed())
+                {
+                    log.d("Closing connection");
+                    conn.close();
+                }
             }
         }
         catch (IOException e)

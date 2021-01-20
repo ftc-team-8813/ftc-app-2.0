@@ -55,8 +55,8 @@ public class Drivetrain {
      */
     public void telemove(double left_stick_y, double right_stick_y){
         //Subtracts power from forward based on the amount of rotation in the other stick
-        double left_wheel_speed = -left_stick_y;
-        double right_wheel_speed = -right_stick_y;
+        double left_wheel_speed = -left_stick_y + right_stick_y;
+        double right_wheel_speed = -left_stick_y - right_stick_y;
         top_left.setPower(left_wheel_speed);
         bottom_left.setPower(left_wheel_speed);
         top_right.setPower(right_wheel_speed);

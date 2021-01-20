@@ -1,17 +1,24 @@
 {
   "shooter": {
     "rampTime": 1,
-    "maxPower": 1
+    "maxPower": 1,
+
+    "powershots": [
+      0.567,
+      0.567,
+      0.575
+    ]
   },
   "turret": {
-    "home": 0.22,
+    "home":  0.070,
+    "home2": 0.800,
     "min": 0,
-    "max": 0.65,
-    "maxSpeed": 0.5,
-    "kp":  15,
+    "max": 0.95,
+    "maxSpeed": 0.4,
+    "kp":  -15,
     "pusher": {
-      "in": 1,
-      "out": 0.6
+      "in": 0.75,
+      "out": 0.4
     }
   },
   "lift": {
@@ -25,17 +32,18 @@
   },
   "teleop": {
     "drive_speed": -0.8,
-    "slow_speed": -0.4
+    "slow_speed": -0.3
   },
   "wobble": {
     "arm_up": 1,
     "arm_mid": 0.56,
     "arm_down": 0,
     "claw_open": 0.14,
-    "claw_close": 0.55
+    "claw_close": 0.47
   },
-  "angle_hold": {
-    "kp": 0.02
+  "nav": {
+    "angle_kp": 0.02,
+    "dist_kp": 0.005
   },
 
   "turret_cal": {

@@ -1,70 +1,75 @@
 package org.firstinspires.ftc.teamcode.vision;
+
+import org.firstinspires.ftc.teamcode.vision.ImageDraw.Color;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import java.lang.reflect.Array;
 import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class RingDetector {
-    Mat image;
-    Mat result;
-
-    public RingDetector(Mat image) {
-        this.image = image;
+public class RingDetector
+{
+    private Mat workImg;
+    private Mat workImg2;
+    private Mat binaryImg;
+    
+    private static final Scalar minColor = new Scalar(3,  18,  41);
+    private static final Scalar maxColor = new Scalar(19, 231, 255);
+    
+    public RingDetector(int width, int height)
+    {
+        workImg = new Mat(width, height, CvType.CV_8UC3);
+        workImg2 = new Mat(width, height, CvType.CV_8UC3);
+        binaryImg = new Mat(width, height, CvType.CV_8UC1);
     }
-
-    /**
-     * Updates result to the masked input image
-     */
-    public void processImage() {
-        // TODO Scale image by 50%
-        Mat hsv = new Mat();
-        Imgproc.cvtColor(image, hsv, Imgproc.COLOR_BGR2HSV);
-
-        Scalar lower_range = new Scalar(13, 50, 50);
-        Scalar upper_range = new Scalar(255, 255, 255);
-        Mat mask = new Mat();
-        Core.inRange(hsv, lower_range, upper_range, mask);
-
-        Mat masked = new Mat();
-        Core.bitwise_and(mask, mask, masked);
-
-        Mat bgr = new Mat();
-        Imgproc.cvtColor(masked, bgr, Imgproc.COLOR_HSV2BGR);
-
-        Mat gray = new Mat();
-        Imgproc.cvtColor(bgr, gray, Imgproc.COLOR_BGR2GRAY);
-
-        Mat blur = new Mat();
-        Imgproc.blur(gray, blur, new Size(3, 3));
-
-        Mat thresh = new Mat();
-        Imgproc.threshold(gray, thresh, 0, 150, Imgproc.THRESH_BINARY);
-
-        this.result = thresh;
-    }
-
-    /**
-     * Uses result to determine ring position by looking for color boxes in certain regions
-     * Should be run after processImage()
-     *
-     * @return Number of rings
-     */
-    public void findRing() {
-        int four_ring_area = 4400;
-        int one_ring_area = 1200;
-
-        Mat thresh = this.result;
-
+    
+    public double detect(Mat inputImg, ImageDraw draw)
+    {
+        Imgproc.cvtColor(inputImg, workImg, Imgproc.COLOR_RGBA2BGR);
+        Imgproc.cvtColor(workImg, workImg2, Imgproc.COLOR_BGR2HLS);
+        Imgproc.blur(workImg2, workImg, new Size(5, 5));
+        
+        Core.inRange(workImg, minColor, maxColor, binaryImg);
+    
         List<MatOfPoint> contours = new ArrayList<>();
-        Mat hierarchey = new Mat();
-        Imgproc.findContours(thresh, contours, hierarchey, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(binaryImg, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+        hierarchy.release();
+        
+        double maxArea = -1;
+        int maxContourIndex = -1;
+        
+        for (int i = 0; i < contours.size(); i++)
+        {
+            double area = Imgproc.contourArea(contours.get(i));
+            if (area > maxArea)
+            {
+                maxContourIndex = i;
+                maxArea = area;
+            }
+        }
+        
+        if (draw != null)
+        {
+            Color notChosen = ImageDraw.RED;
+            Color chosen = ImageDraw.GREEN;
+            for (int i = 0; i < contours.size(); i++)
+            {
+                Color c = notChosen;
+                if (i == maxContourIndex) c = chosen;
+                ImageDraw.Point[] contour = ImageDraw.Point.fromContour(contours.get(i));
+                if (contour.length >= 2) draw.draw(new ImageDraw.Lines(c, 2, contour));
+            }
+        }
+        
+        return maxArea;
     }
 }
