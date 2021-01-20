@@ -23,8 +23,8 @@ public class Tracker {
         this.turret = turret;
         this.imu = imu;
         this.starting_pos = starting_pos;
-        translateCoordinates(starting_pos);
         this.color = color;
+        translateCoordinates(starting_pos);
     }
 
     /**
@@ -47,17 +47,13 @@ public class Tracker {
         // TODO Find distance from center of the field for this.odometry.y
         switch (starting_pos){
             case 1:
-                this.odometry.x = -48;
-                this.odometry.y = -50;
+                this.odometry.setStartingPos(-48, -50);
             case 2:
-                this.odometry.x = -24;
-                this.odometry.y = -50;
+                this.odometry.setStartingPos(-24, -50);
             case 3:
-                this.odometry.x = 24;
-                this.odometry.y = -50;
+                this.odometry.setStartingPos(24, -50);
             case 4:
-                this.odometry.x = 48;
-                this.odometry.y = -50;
+                this.odometry.setStartingPos(48, -50);
         }
     }
 
