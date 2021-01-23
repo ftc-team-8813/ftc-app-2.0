@@ -83,6 +83,16 @@ public class Turret {
         target = position;
         if (sendEvent) this.sendEvent = true;
     }
+
+    public double getHeading(){
+        double spin_ratio = (turretFb.get() - turretHome) / turretHome2;
+        double degrees = spin_ratio * 360;
+        if (degrees > 180){
+            return 360 - degrees;
+        } else {
+            return degrees;
+        }
+    }
     
     public void home()
     {

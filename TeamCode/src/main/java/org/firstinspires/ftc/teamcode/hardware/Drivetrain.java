@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
+import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
@@ -17,14 +19,19 @@ public class Drivetrain {
     public final DcMotor bottom_right;
     public final Odometry odometry;
     public IMU imu;
+    private EventBus ev;
     public int auto_id = -1;
+    final double TICKS = 537.6;
+    final double CIRCUMFERENCE = 2.83 * Math.PI; // Inches
+    double target_pos = 0;
+    boolean send_event = false;
 
     public Drivetrain(DcMotor top_left, DcMotor bottom_left, DcMotor top_right, DcMotor bottom_right){
         this.top_left = top_left;
         this.bottom_left = bottom_left;
         this.top_right = top_right;
         this.bottom_right = bottom_right;
-        this.odometry = new Odometry(top_left, top_right, this.imu);
+        this.odometry = new Odometry(top_left, top_right);
 
         //Reverses left side to match right side rotation and sets mode
         top_right.setDirection(REVERSE);
@@ -63,24 +70,42 @@ public class Drivetrain {
         bottom_right.setPower(right_wheel_speed);
     }
 
-    public void automove(double distance){
-        odometry.setTargetPos(distance);
+    /**
+     * Updates target distance in ticks
+     * Appends to current position to account for previous movements
+     * @param distance Desired distance in inches
+     */
+    public void setTargetPos(double distance){
+        double rotations = distance / CIRCUMFERENCE;
+        double total_ticks = rotations * TICKS;
+        target_pos = total_ticks + top_left.getCurrentPosition();
+        send_event = true;
     }
 
-    public int odoPIDUpdate(){
+    /**
+     * Accelerates towards a set target position
+     */
+    public void autoPIDUpdate(){
+        // TODO Find PID constant
         final double kP = 1;
-        double error = odometry.getX();
+        double error = target_pos - top_left.getCurrentPosition();
         double left_wheel_speed = -error * kP;
         double right_wheel_speed = error * kP;
         // TODO Increase deadband for error to make it possible to reach
-        if (error != 0){
+        if (error > 10 || error < -10){
             top_left.setPower(left_wheel_speed);
             bottom_left.setPower(left_wheel_speed);
             top_right.setPower(right_wheel_speed);
             bottom_right.setPower(right_wheel_speed);
-            return this.auto_id;
         } else {
-            return this.auto_id + 1;
+            if (ev != null && send_event){
+                send_event = false;
+                ev.pushEvent(new NavMoveEvent(NavMoveEvent.NAVIGATION_COMPLETE));
+            }
         }
+    }
+
+    public void connectEventBus(EventBus ev){
+        this.ev = ev;
     }
 }

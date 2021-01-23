@@ -10,19 +10,15 @@ import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
  * Uses odometry class to update power and heading regressions
  */
 public class Tracker {
-    public Odometry odometry;
-    public IMU imu;
-    public Turret turret;
-    public final int starting_pos;
-    public final int color; // Tells which side of the field (-1 = Blue, 1 = Red)
-    public final double TURRET_CIRCUMFERENCE = 0;
-    public final double kP = 0;
+    private Odometry odometry;
+    private IMU imu;
+    private Turret turret;
+    private final int color; // Tells which side of the field (-1 = Blue, 1 = Red)
 
     public Tracker(Turret turret, DcMotor top_left, DcMotor top_right, IMU imu, int starting_pos, int color){
-        this.odometry = new Odometry(top_left, top_right, imu);
+        this.odometry = new Odometry(top_left, top_right);
         this.turret = turret;
         this.imu = imu;
-        this.starting_pos = starting_pos;
         this.color = color;
         translateCoordinates(starting_pos);
     }
@@ -32,8 +28,10 @@ public class Tracker {
      */
     public void updateVars(){
         this.odometry.updateDeltas();
+        double TURRET_CIRCUMFERENCE = 0;
         double rotation_distance = (this.imu.getHeading() / 360.0) * TURRET_CIRCUMFERENCE;
-        double power = Math.pow(kP*(getHypo()), 2); // Assuming regression is exponential for now
+        double kP = 0;
+        double power = Math.pow(kP *(getHypo()), 2); // Assuming regression is exponential for now
         this.turret.shooter.setPower(power);
         this.turret.rotate(rotation_distance);
     }
@@ -47,13 +45,13 @@ public class Tracker {
         // TODO Find distance from center of the field for this.odometry.y
         switch (starting_pos){
             case 1:
-                this.odometry.setStartingPos(-48, -50);
+                this.odometry.setStartingPos(48);
             case 2:
-                this.odometry.setStartingPos(-24, -50);
+                this.odometry.setStartingPos(24);
             case 3:
-                this.odometry.setStartingPos(24, -50);
+                this.odometry.setStartingPos(-24);
             case 4:
-                this.odometry.setStartingPos(48, -50);
+                this.odometry.setStartingPos(-48);
         }
     }
 
@@ -62,8 +60,8 @@ public class Tracker {
      * @return Hypotenuse of the right triangle (always positive)
      */
     public double getHypo(){
-        double x_side = odometry.getX() + 36 * this.color;
-        double y_side = odometry.getY() + 72;
+        double x_side = odometry.getX() + 72;
+        double y_side = odometry.getY() + 36 * this.color;
         return Math.sqrt(Math.pow(x_side, 2) + Math.pow(y_side, 2));
     }
 }
