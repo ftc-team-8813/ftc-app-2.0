@@ -14,6 +14,7 @@ public class Odometry {
     public DcMotor top_right;
     public double x, y;
     public double past_l, past_r;
+    public double heading;
     final double TICKS = 537.6;
     final double CIRCUMFERENCE = 2.83 * Math.PI; // Inches
     final double h = 7.5; // Half-Width of the robot in ticks
@@ -27,29 +28,38 @@ public class Odometry {
      * Updates overall x, y based on deltas from arc
      * x is forward/back and y is left/right
      */
-    public void updateDeltas(){
+    @Deprecated
+    public void updateDeltasArc(){
+        double radius, leg_x, leg_y, deltax, deltay, chord;
         double curr_l = getCurrentL();
         double curr_r = getCurrentR();
         double l = curr_l - past_l;
         double r = curr_r - past_r;
-        double x;
-        double deltax;
-        double deltay;
-        double delta_heading = (r - l)/(2 * h);
-        if (r > l){
-            x = l / delta_heading;
-            deltax = Math.cos(delta_heading) * (x + h) - (x + h);
-            deltay = Math.sin(delta_heading * (x + h));
-        } else if (l > r){
-            x = r / delta_heading;
-            deltax = (x + h) - Math.cos(delta_heading) * (x + h);
-            deltay = Math.sin(delta_heading * (x + h));
-        } else {
-            deltax = Math.cos(delta_heading) * l;
-            deltay = Math.sin(delta_heading) * l;
-        }
-        this.x += deltax;
-        this.y += deltay;
+        double delta_heading = (r - l)/(2 * h) + ticksToInches((r - l) / 2) / h;
+
+        leg_x = Math.cos(delta_heading) * l;
+        leg_y = Math.sin(delta_heading) * l;
+
+//        if (r > l){
+////            radius = l / delta_heading;
+////            leg_x = Math.cos(delta_heading) * (radius + h) - (radius + h);
+////            leg_y = Math.sin(delta_heading * (radius + h));
+////        } else if (l > r){
+////            radius = r / delta_heading;
+////            leg_x = (radius + h) - Math.cos(delta_heading) * (radius + h);
+////            leg_y = Math.sin(delta_heading * (radius + h));
+////        } else {
+////            leg_x = Math.cos(delta_heading) * l;
+////            leg_y = Math.sin(delta_heading) * l;
+////        }
+////
+////        chord = Math.sqrt(Math.pow(leg_x, 2) + Math.pow(leg_y, 2));
+////        deltax = chord * Math.sin(delta_heading);
+////        deltay = chord * Math.cos(delta_heading);
+
+        this.x += leg_x;
+        this.y += leg_y;
+        heading += delta_heading;
         past_l = curr_l;
         past_r = curr_r;
     }
