@@ -94,7 +94,7 @@ public class NavPath
         constants = new HashMap<>();
         paths = new ArrayList<>();
         robot.drivetrain.resetEncoders();
-        this.angleHold = new AngleHold(new IMU(robot.imu), evBus, scheduler, navConfig);
+        this.angleHold = new AngleHold(new IMU(robot.bn), evBus, scheduler, navConfig);
         this.kP = navConfig.get("dist_kp").getAsDouble();
         log.i("kP=%.3f", kP);
     }

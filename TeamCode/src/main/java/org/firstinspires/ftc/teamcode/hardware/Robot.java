@@ -29,8 +29,11 @@ public class Robot {
     public final Wobble wobble;
     
     public final JsonObject config;
-    
-    public final BNO055IMU imu;
+
+    @Deprecated
+    public final BNO055IMU bn;
+
+    public final IMU imu;
     
     public Robot(HardwareMap hardwareMap){
         config = Configuration.readJson(Storage.getFile("config.json"));
@@ -40,6 +43,8 @@ public class Robot {
         DcMotor bottom_left = hardwareMap.get(DcMotor.class, "bottom left");
         DcMotor top_right = hardwareMap.get(DcMotor.class, "top right");
         DcMotor bottom_right = hardwareMap.get(DcMotor.class, "bottom right");
+        DcMotor l_enc = hardwareMap.get(DcMotor.class, "l enc");
+        DcMotor r_enc = hardwareMap.get(DcMotor.class, "r enc");
         DcMotor shooter = hardwareMap.get(DcMotor.class, "shooter");
         DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
         DcMotor turret = hardwareMap.get(DcMotor.class, "turret");
@@ -54,10 +59,11 @@ public class Robot {
         Servo lift_a = hardwareMap.get(Servo.class, "lift a");
         Servo lift_b = hardwareMap.get(Servo.class, "lift b");
         
-        this.imu = hardwareMap.get(BNO055IMU.class, "imu");
+        this.bn = hardwareMap.get(BNO055IMU.class, "imu");
+        this.imu = new IMU(this.bn);
 
         // Sub-Assemblies
-        drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right);
+        this.drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, new Odometry(l_enc, r_enc, this.imu));
         
         AnalogInput turretFeedback = hardwareMap.get(AnalogInput.class, "turret");
         this.turret = new Turret(turret, shooter, pusher, aim, turretFeedback,
