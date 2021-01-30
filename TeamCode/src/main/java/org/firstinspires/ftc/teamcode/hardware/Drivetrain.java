@@ -17,21 +17,21 @@ public class Drivetrain {
     public final DcMotor bottom_left;
     public final DcMotor top_right;
     public final DcMotor bottom_right;
-    private Odometry odometry;
+    // public final Odometry odometry;
+    public IMU imu;
     private EventBus ev;
     public int auto_id = -1;
     final double TICKS = 537.6;
     final double CIRCUMFERENCE = 2.83 * Math.PI; // Inches
-    double l_target = 0;
-    double r_target = 0;
+    double target_pos = 0;
     boolean send_event = false;
 
-    public Drivetrain(DcMotor top_left, DcMotor bottom_left, DcMotor top_right, DcMotor bottom_right, Odometry odometry){
+    public Drivetrain(DcMotor top_left, DcMotor bottom_left, DcMotor top_right, DcMotor bottom_right){
         this.top_left = top_left;
         this.bottom_left = bottom_left;
         this.top_right = top_right;
         this.bottom_right = bottom_right;
-        this.odometry = odometry;
+        // this.odometry = new Odometry(top_left, top_right);
 
         //Reverses left side to match right side rotation and sets mode
         top_right.setDirection(REVERSE);
@@ -54,7 +54,7 @@ public class Drivetrain {
         top_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bottom_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
-
+    
     /**
      * Move the drivetrain based on gamepad-compatible inputs
      * @param left_stick_y Left Wheel Velocity
@@ -77,64 +77,32 @@ public class Drivetrain {
      */
     public void setTargetPos(double distance){
         double rotations = distance / CIRCUMFERENCE;
-        double target_ticks = rotations * TICKS;
-        if (l_target != 0 && r_target != 0) {
-            l_target = target_ticks + getCurrentPos();
-            r_target = target_ticks + getCurrentPos();
-        }
+        double total_ticks = rotations * TICKS;
+        target_pos = total_ticks + top_left.getCurrentPosition();
         send_event = true;
     }
 
     /**
-     * Turns robot certain degrees
-     * @param target_angle Range = 180 to -180 (counter-clockwise)
-     */
-    public void setTargetTurn(double target_angle){
-        double target_ticks = odometry.getH() * target_angle;
-        if (l_target != 0 && r_target != 0) {
-            double direction = Math.signum(target_angle);
-            l_target = direction * -target_ticks + getCurrentPos();
-            r_target = direction * target_ticks + getCurrentPos();
-        }
-    }
-
-    /**
-     * Accelerates towards a set target positions for both wheels
-     * Must be ran at the end of each loop cycle
+     * Accelerates towards a set target position
      */
     public void autoPIDUpdate(){
         // TODO Find PID constant
         final double kP = 1;
-        double l_error = l_target - odometry.l_enc.getCurrentPosition();
-        double r_error = r_target - odometry.r_enc.getCurrentPosition();
-        double left_wheel_speed = l_error * kP;
-        double right_wheel_speed = r_error * kP;
+        double error = target_pos - top_left.getCurrentPosition();
+        double left_wheel_speed = -error * kP;
+        double right_wheel_speed = error * kP;
         // TODO Increase deadband for error to make it possible to reach
-        if (l_error > 10 || l_error < -10){
+        if (error > 10 || error < -10){
             top_left.setPower(left_wheel_speed);
             bottom_left.setPower(left_wheel_speed);
             top_right.setPower(right_wheel_speed);
             bottom_right.setPower(right_wheel_speed);
         } else {
-            l_target = 0;
-            r_target = 0;
             if (ev != null && send_event){
                 send_event = false;
                 ev.pushEvent(new NavMoveEvent(NavMoveEvent.NAVIGATION_COMPLETE));
             }
         }
-    }
-
-    /**
-     * Averages both encoders to get center line position
-     * Also negates tick changes from turns
-     */
-    public double getCurrentPos(){
-        return (odometry.l_enc.getCurrentPosition() + odometry.r_enc.getCurrentPosition()) / 2.0;
-    }
-
-    public Odometry getOdometry(){
-        return this.odometry;
     }
 
     public void connectEventBus(EventBus ev){

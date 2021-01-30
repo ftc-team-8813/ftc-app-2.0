@@ -15,8 +15,8 @@ public class Tracker {
     private Turret turret;
     private final int color; // Tells which side of the field (-1 = Blue, 1 = Red)
 
-    public Tracker(Turret turret, Odometry odometry, int starting_pos, int color){
-        this.odometry = odometry;
+    public Tracker(Turret turret, DcMotor top_left, DcMotor top_right, IMU imu, int starting_pos, int color){
+        // this.odometry = new Odometry(top_left, top_right);
         this.turret = turret;
         this.imu = imu;
         this.color = color;
@@ -42,6 +42,7 @@ public class Tracker {
      * @param starting_pos Where the robot will start (1 = BlueLeft, 2 = BlueRight, 3 = RedLeft, 4 = RedRight)
      */
     public void translateCoordinates(int starting_pos){
+        // TODO Find distance from center of the field for this.odometry.y
         switch (starting_pos){
             case 1:
                 this.odometry.setStartingPos(48);

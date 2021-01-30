@@ -41,6 +41,7 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.ButtonEntry btn_slow;
     private ControllerMap.ButtonEntry btn_wobble_int;
     private ControllerMap.ButtonEntry btn_turret_home;
+    private ControllerMap.ButtonEntry btn_shooter_preset;
     
     private double driveSpeed;
     private double slowSpeed;
@@ -53,6 +54,8 @@ public class CurrentTele extends LoggingOpMode {
     private EventBus evBus;
     private Scheduler scheduler; // just in case
     private EventFlow liftFlow;
+    
+    private int shooterPowerIdx;
     
     private static final int TRIGGER_LIFT_FLOW = 0;
     
@@ -109,6 +112,7 @@ public class CurrentTele extends LoggingOpMode {
         controllerMap.setButtonMap("slow",      "gamepad1", "left_bumper");
         controllerMap.setButtonMap("wobble_i",  "gamepad2", "left_bumper");
         controllerMap.setButtonMap("turr_home", "gamepad2", "a");
+        controllerMap.setButtonMap("shoot_pre", "gamepad2", "right_bumper");
         
         ax_drive_l      = controllerMap.axes.get("drive_l");
         ax_drive_r      = controllerMap.axes.get("drive_r");
@@ -125,11 +129,14 @@ public class CurrentTele extends LoggingOpMode {
         btn_slow        = controllerMap.buttons.get("slow");
         btn_wobble_int  = controllerMap.buttons.get("wobble_i");
         btn_turret_home = controllerMap.buttons.get("turr_home");
+        btn_shooter_preset = controllerMap.buttons.get("shoot_pre");
     
         JsonObject config = robot.config.getAsJsonObject("teleop");
         driveSpeed = config.get("drive_speed").getAsDouble();
         slowSpeed  = config.get("slow_speed").getAsDouble();
         robot.lift.down();
+        
+        
     }
     
     @Override
@@ -155,7 +162,7 @@ public class CurrentTele extends LoggingOpMode {
          */
         robot.intake.run(ax_intake.get() - ax_intake_out.get());
         
-        double turret_adj = Math.pow(ax_turret.get(), 3) * 0.025;
+        double turret_adj = Math.pow(ax_turret.get(), 3) * 0.001;
         robot.turret.rotate(robot.turret.getTarget() + turret_adj);
         
         if (btn_lift.edge() > 0)
@@ -170,6 +177,13 @@ public class CurrentTele extends LoggingOpMode {
             shooter_on = !shooter_on;
             if (shooter_on) robot.turret.shooter.start();
             else            robot.turret.shooter.stop();
+        }
+        
+        if (btn_shooter_preset.edge() > 0)
+        {
+            shooterPowerIdx += 1;
+            robot.turret.shooter.setPreset(shooterPowerIdx);
+            robot.controlHub.setLEDColor(robot.turret.shooter.getPresetColor());
         }
         
         if (btn_slow.edge() > 0)
@@ -192,6 +206,7 @@ public class CurrentTele extends LoggingOpMode {
         robot.turret.update(telemetry);
         telemetry.addData("Shooter Velocity", "%.3f",
                 ((DcMotorEx)robot.turret.shooter.motor).getVelocity());
+        telemetry.addData("Shooter speed preset", robot.turret.shooter.getCurrPreset());
         scheduler.loop();
         evBus.update();
         // telemetry.addData("Turret power", "%.3f", robot.turret.turret.getPower());
