@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.util;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.hardware.tracking.TrainingDataLogger;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 public class TrainingDataCollector extends LoggingOpMode {
     private Robot robot;
     private Odometry odometry;
+    private IMU imu;
     private TrainingDataLogger logger;
     private ControllerMap controllerMap;
 
@@ -28,7 +30,7 @@ public class TrainingDataCollector extends LoggingOpMode {
     @Override
     public void init() {
         robot = new Robot(hardwareMap);
-        // odometry = new Odometry(robot.drivetrain.top_left, robot.drivetrain.top_right);
+        odometry = new Odometry(robot.drivetrain.top_left, robot.drivetrain.top_right, imu);
         odometry.setStartingPos(1);
         logger = new TrainingDataLogger();
         controllerMap = new ControllerMap(gamepad1, gamepad2);

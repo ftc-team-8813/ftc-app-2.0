@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes.test;
 
-import android.view.textservice.SpellCheckerInfo;
-
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -31,7 +28,7 @@ public class WhereAmI extends LoggingOpMode
         evBus = new EventBus();
         scheduler = new Scheduler(evBus);
         
-        hold = new AngleHold(new IMU(robot.imu), evBus, scheduler, robot.config.getAsJsonObject("nav"));
+        hold = new AngleHold(new IMU(robot.bn), evBus, scheduler, robot.config.getAsJsonObject("nav"));
         drivetrain.top_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drivetrain.top_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drivetrain.bottom_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
