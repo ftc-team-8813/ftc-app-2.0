@@ -36,7 +36,7 @@ public class ImageDraw
         
         public int a() { return (color >> 24) & 0xff; }
         
-        protected void write(ByteBuffer buf)
+        public void write(ByteBuffer buf)
         {
             buf.putInt(color);
         }

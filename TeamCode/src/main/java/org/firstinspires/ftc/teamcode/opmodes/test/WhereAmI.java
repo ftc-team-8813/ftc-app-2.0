@@ -18,6 +18,7 @@ public class WhereAmI extends LoggingOpMode
     private AngleHold hold;
     private EventBus evBus;
     private Scheduler scheduler;
+    private DcMotor odo_l, odo_r;
     
     @Override
     public void init()
@@ -32,6 +33,10 @@ public class WhereAmI extends LoggingOpMode
         drivetrain.top_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drivetrain.bottom_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drivetrain.bottom_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        odo_r = hardwareMap.dcMotor.get("intake");
+        odo_l = hardwareMap.dcMotor.get("turret");
+        odo_l.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        odo_r.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
     
     @Override
@@ -41,6 +46,8 @@ public class WhereAmI extends LoggingOpMode
         telemetry.addData("Front R", drivetrain.top_right.getCurrentPosition());
         telemetry.addData("Back L", drivetrain.bottom_left.getCurrentPosition());
         telemetry.addData("Back R", drivetrain.bottom_right.getCurrentPosition());
+        telemetry.addData("Odo L", odo_l.getCurrentPosition());
+        telemetry.addData("Odo R", odo_r.getCurrentPosition());
         telemetry.addData("IMU status", hold.getStatus());
         
         scheduler.loop();

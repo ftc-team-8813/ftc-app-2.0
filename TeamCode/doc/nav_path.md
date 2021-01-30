@@ -1,5 +1,5 @@
 # NavPath Objects
-*[last updated Jan 17 2021]*
+*[last updated Jan 29 2021]*
 
 The vast majority of the autonomous program is controlled by the `NavPath` class
 in `hardware.navigation`. `NavPath` objects represent a sequence of actions that

@@ -18,7 +18,7 @@ public class Tracker {
     public Tracker(Turret turret, Odometry odometry, int starting_pos, int color){
         this.odometry = odometry;
         this.turret = turret;
-        this.imu = imu;
+        this.imu = odometry.getIMU();
         this.color = color;
         translateCoordinates(starting_pos);
     }

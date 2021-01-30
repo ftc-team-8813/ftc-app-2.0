@@ -18,7 +18,8 @@ public class Odometry {
     public final double TICKS = 4096;
     public final double CIRCUMFERENCE = 1.38 * Math.PI; // Inches
     final double h = 7.5; // Half-Width of the robot in ticks
-    public ImageDraw.Color drawColor = ImageDraw.BLACK;
+    public ImageDraw.Color drawColor = ImageDraw.BLUE;
+    
 
     public Odometry(DcMotor l_enc, DcMotor r_enc, IMU imu){
         this.l_enc = l_enc;
@@ -40,11 +41,28 @@ public class Odometry {
         
         double dist = (l + r) / 2;
 
+//        if (r > l){
+//            radius = l / delta_heading;
+//            leg_x = Math.cos(delta_heading) * (radius + h) - (radius + h);
+//            leg_y = Math.sin(delta_heading * (radius + h));
+//        } else if (l > r){
+//            radius = r / delta_heading;
+//            leg_x = (radius + h) - Math.cos(delta_heading) * (radius + h);
+//            leg_y = Math.sin(delta_heading * (radius + h));
+//        } else {
+//            leg_x = Math.cos(delta_heading) * l;
+//            leg_y = Math.sin(delta_heading) * l;
+//        }
+//
+//        chord = Math.sqrt(Math.pow(leg_x, 2) + Math.pow(leg_y, 2));
+//        deltax = chord * Math.sin(delta_heading);
+//        deltay = chord * Math.cos(delta_heading);
         leg_x = Math.cos(heading) * dist;
         leg_y = Math.sin(heading) * dist;
 
         this.x += leg_x;
         this.y += leg_y;
+        // heading += delta_heading;
         past_l = curr_l;
         past_r = curr_r;
     }
