@@ -4,9 +4,9 @@
     "maxPower": 0.55,
 
     "powershots": [
-      0.9,
-      0.9,
-      0.9
+      0.495,
+      0.485,
+      0.475
     ],
 
     "presets": [
@@ -36,7 +36,7 @@
     }
   },
   "teleop": {
-    "drive_speed": -0.8,
+    "drive_speed": -0.75,
     "slow_speed": -0.3
   },
   "wobble": {
@@ -44,7 +44,7 @@
     "arm_mid": 0.56,
     "arm_down": 0,
     "claw_open": 0.14,
-    "claw_close": 0.4
+    "claw_close": 0.425
   },
   "nav": {
     "angle_kp": 0.02,
