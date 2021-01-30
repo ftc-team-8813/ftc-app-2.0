@@ -17,7 +17,7 @@ public class Drivetrain {
     public final DcMotor bottom_left;
     public final DcMotor top_right;
     public final DcMotor bottom_right;
-    public final Odometry odometry;
+    // public final Odometry odometry;
     public IMU imu;
     private EventBus ev;
     public int auto_id = -1;
@@ -31,7 +31,7 @@ public class Drivetrain {
         this.bottom_left = bottom_left;
         this.top_right = top_right;
         this.bottom_right = bottom_right;
-        this.odometry = new Odometry(top_left, top_right);
+        // this.odometry = new Odometry(top_left, top_right);
 
         //Reverses left side to match right side rotation and sets mode
         top_right.setDirection(REVERSE);

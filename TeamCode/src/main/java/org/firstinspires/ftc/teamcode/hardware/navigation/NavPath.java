@@ -26,7 +26,7 @@ import java.util.Map;
 // NavPath objects load path data from a JSON file
 public class NavPath
 {
-    private static final int[] formatVersion = {1, 0, 1};
+    private static final int[] formatVersion = {1, 0, 2};
     private double defaultSpeed;
     // private PositionSrc positionSrc;
     // private AngleSrc angleSrc;
@@ -34,6 +34,7 @@ public class NavPath
     private HashMap<String, Actuator> actuators;
     private HashMap<String, ConditionProducer> conditions;
     private HashMap<String, Double> constants;
+    private HashMap<String, Integer> labels;
     
     private ArrayList<PathEntry> paths;
     private int currPath;
@@ -92,6 +93,7 @@ public class NavPath
         conditions = new HashMap<>();
         timers = new HashMap<>();
         constants = new HashMap<>();
+        labels = new HashMap<>();
         paths = new ArrayList<>();
         robot.drivetrain.resetEncoders();
         this.angleHold = new AngleHold(new IMU(robot.imu), evBus, scheduler, navConfig);
@@ -154,7 +156,7 @@ public class NavPath
     
     /*
          {
-           "version": "1.0.1",
+           "version": "1.0.2",
            "defaultSpeed": default speed,
            "positionSrc": "drive", [or odometry] // for future implementation
            "angleSrc": "imu", [or drive, or odometry] // for future implementation
@@ -192,9 +194,12 @@ public class NavPath
                  "name": registered conditional name
                  "cond": "=="/"<"/">"/"<="/">="/"!="
                  "value": value to compare against {or constant name}
-                 "jumpTrue": which index to jump to
-                 "jumpFalse": which index to jump to otherwise (optional)
+                 "jumpTrue": which index/label to jump to
+                 "jumpFalse": which index/label to jump to otherwise (optional)
                }
+               
+               // optional
+               "label": label name
              }
            ]
          }
@@ -240,6 +245,17 @@ public class NavPath
         JsonArray path = root.get("path").getAsJsonArray();
         int i = 0;
         log.d("-> Loading paths");
+        // initial pass -- read labels
+        for (JsonElement elem : path)
+        {
+            JsonObject obj = elem.getAsJsonObject();
+            if (obj.has("label"))
+                labels.put(obj.get("label").getAsString(), i);
+            i++;
+        }
+        
+        i = 0;
+        
         for (JsonElement elem : path)
         {
             paths.add(new PathEntry(elem.getAsJsonObject(), i));
@@ -263,6 +279,19 @@ public class NavPath
         Double val = constants.get(name);
         if (val == null) throw new IllegalArgumentException("No constant named " + name);
         return val;
+    }
+    
+    public int getJumpOrLabel(JsonElement elem)
+    {
+        JsonPrimitive prim = elem.getAsJsonPrimitive();
+        if (prim.isString())
+        {
+            String key = prim.getAsString();
+            Integer val = labels.get(key);
+            if (val == null) throw new IllegalArgumentException("No label named " + key);
+            return val;
+        }
+        return prim.getAsInt();
     }
     
     private class PathEntry
@@ -366,8 +395,8 @@ public class NavPath
                     if (compStr.equals(comparisons[i])) compareType = i;
                 }
                 compareValue = getNumOrConstant(condInfo.get("value"));
-                jumpTrue = condInfo.get("jumpTrue").getAsInt();
-                jumpFalse = condInfo.has("jumpFalse") ? condInfo.get("jumpFalse").getAsInt() : -1;
+                jumpTrue = getJumpOrLabel(condInfo.get("jumpTrue"));
+                jumpFalse = condInfo.has("jumpFalse") ? getJumpOrLabel(condInfo.get("jumpFalse")) : -1;
                 log.d("      -> Compare: %s %.2f (%d)", compStr, compareValue, compareType);
                 log.d("      -> Jump to %d (else %d)", jumpTrue, jumpFalse);
             }

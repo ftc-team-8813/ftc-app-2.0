@@ -16,7 +16,7 @@ public class Tracker {
     private final int color; // Tells which side of the field (-1 = Blue, 1 = Red)
 
     public Tracker(Turret turret, DcMotor top_left, DcMotor top_right, IMU imu, int starting_pos, int color){
-        this.odometry = new Odometry(top_left, top_right);
+        // this.odometry = new Odometry(top_left, top_right);
         this.turret = turret;
         this.imu = imu;
         this.color = color;

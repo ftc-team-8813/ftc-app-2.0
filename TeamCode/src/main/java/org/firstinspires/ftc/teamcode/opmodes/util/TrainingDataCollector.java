@@ -28,7 +28,7 @@ public class TrainingDataCollector extends LoggingOpMode {
     @Override
     public void init() {
         robot = new Robot(hardwareMap);
-        odometry = new Odometry(robot.drivetrain.top_left, robot.drivetrain.top_right);
+        // odometry = new Odometry(robot.drivetrain.top_left, robot.drivetrain.top_right);
         odometry.setStartingPos(1);
         logger = new TrainingDataLogger();
         controllerMap = new ControllerMap(gamepad1, gamepad2);
