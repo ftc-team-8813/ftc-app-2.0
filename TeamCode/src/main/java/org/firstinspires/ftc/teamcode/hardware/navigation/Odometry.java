@@ -12,11 +12,11 @@ import org.firstinspires.ftc.teamcode.vision.ImageDraw;
 public class Odometry {
     public DcMotor l_enc;
     public DcMotor r_enc;
-    public IMU imu;
+    private IMU imu;
     public double x, y;
     public double past_l, past_r;
-    final double TICKS = 537.6;
-    final double CIRCUMFERENCE = 2.83 * Math.PI; // Inches
+    public final double TICKS = 4096;
+    public final double CIRCUMFERENCE = 1.38 * Math.PI; // Inches
     final double h = 7.5; // Half-Width of the robot in ticks
     public ImageDraw.Color drawColor = ImageDraw.BLACK;
 
@@ -62,10 +62,19 @@ public class Odometry {
         return ratio * CIRCUMFERENCE;
     }
 
+    public void resetEncoders(){
+        l_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        r_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        l_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        r_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
     public void setStartingPos(double start_y){
         this.x = -65;
         this.y = start_y;
     }
+
+    public IMU getIMU(){ return this.imu;}
 
     public double getX(){
         return this.x;

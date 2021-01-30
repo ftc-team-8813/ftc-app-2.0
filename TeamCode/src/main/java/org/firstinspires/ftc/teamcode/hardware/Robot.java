@@ -43,8 +43,8 @@ public class Robot {
         DcMotor bottom_left = hardwareMap.get(DcMotor.class, "bottom left");
         DcMotor top_right = hardwareMap.get(DcMotor.class, "top right");
         DcMotor bottom_right = hardwareMap.get(DcMotor.class, "bottom right");
-        DcMotor l_enc = hardwareMap.get(DcMotor.class, "l enc");
-        DcMotor r_enc = hardwareMap.get(DcMotor.class, "r enc");
+        DcMotor l_enc = hardwareMap.get(DcMotor.class, "turret");
+        DcMotor r_enc = hardwareMap.get(DcMotor.class, "intake");
         DcMotor shooter = hardwareMap.get(DcMotor.class, "shooter");
         DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
         DcMotor turret = hardwareMap.get(DcMotor.class, "turret");

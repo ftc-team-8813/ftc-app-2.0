@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
+import org.firstinspires.ftc.teamcode.hardware.events.AutoMoveEvent;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
@@ -19,11 +19,11 @@ public class Drivetrain {
     public final DcMotor bottom_right;
     private Odometry odometry;
     private EventBus ev;
-    public int auto_id = -1;
-    final double TICKS = 537.6;
-    final double CIRCUMFERENCE = 2.83 * Math.PI; // Inches
-    double l_target = 0;
-    double r_target = 0;
+    private int auto_id = -1;
+    public double l_target = 0;
+    public double r_target = 0;
+    double past_l_target = 0;
+    double past_r_target = 0;
     boolean send_event = false;
 
     public Drivetrain(DcMotor top_left, DcMotor bottom_left, DcMotor top_right, DcMotor bottom_right, Odometry odometry){
@@ -36,11 +36,11 @@ public class Drivetrain {
         //Reverses left side to match right side rotation and sets mode
         top_right.setDirection(REVERSE);
         bottom_right.setDirection(REVERSE);
-        // TODO drive motor encoders seem to be faulty right now
         top_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bottom_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         top_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bottom_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        odometry.resetEncoders();
     }
 
     public void resetEncoders(){
@@ -76,11 +76,11 @@ public class Drivetrain {
      * @param distance Desired distance in inches
      */
     public void setTargetPos(double distance){
-        double rotations = distance / CIRCUMFERENCE;
-        double target_ticks = rotations * TICKS;
-        if (l_target != 0 && r_target != 0) {
-            l_target = target_ticks + getCurrentPos();
-            r_target = target_ticks + getCurrentPos();
+        double rotations = distance / odometry.CIRCUMFERENCE;
+        double target_ticks = rotations * odometry.TICKS;
+        if (l_target != 0.0 && r_target != 0.0) {
+            l_target = target_ticks + getPastTicks();
+            r_target = target_ticks + getPastTicks();
         }
         send_event = true;
     }
@@ -93,8 +93,8 @@ public class Drivetrain {
         double target_ticks = odometry.getH() * target_angle;
         if (l_target != 0 && r_target != 0) {
             double direction = Math.signum(target_angle);
-            l_target = direction * -target_ticks + getCurrentPos();
-            r_target = direction * target_ticks + getCurrentPos();
+            l_target = direction * -target_ticks + getPastTicks();
+            r_target = direction * target_ticks + getPastTicks();
         }
     }
 
@@ -105,8 +105,8 @@ public class Drivetrain {
     public void autoPIDUpdate(){
         // TODO Find PID constant
         final double kP = 1;
-        double l_error = l_target - odometry.l_enc.getCurrentPosition();
-        double r_error = r_target - odometry.r_enc.getCurrentPosition();
+        double l_error = l_target - past_l_target;
+        double r_error = r_target - past_r_target;
         double left_wheel_speed = l_error * kP;
         double right_wheel_speed = r_error * kP;
         // TODO Increase deadband for error to make it possible to reach
@@ -116,11 +116,11 @@ public class Drivetrain {
             top_right.setPower(right_wheel_speed);
             bottom_right.setPower(right_wheel_speed);
         } else {
-            l_target = 0;
-            r_target = 0;
             if (ev != null && send_event){
+                past_l_target = l_target;
+                past_r_target = r_target;
                 send_event = false;
-                ev.pushEvent(new NavMoveEvent(NavMoveEvent.NAVIGATION_COMPLETE));
+                ev.pushEvent(new AutoMoveEvent(AutoMoveEvent.MOVED));
             }
         }
     }
@@ -129,8 +129,8 @@ public class Drivetrain {
      * Averages both encoders to get center line position
      * Also negates tick changes from turns
      */
-    public double getCurrentPos(){
-        return (odometry.l_enc.getCurrentPosition() + odometry.r_enc.getCurrentPosition()) / 2.0;
+    public double getPastTicks(){
+        return (past_l_target + past_r_target) / 2.0;
     }
 
     public Odometry getOdometry(){
@@ -139,5 +139,6 @@ public class Drivetrain {
 
     public void connectEventBus(EventBus ev){
         this.ev = ev;
+
     }
 }
