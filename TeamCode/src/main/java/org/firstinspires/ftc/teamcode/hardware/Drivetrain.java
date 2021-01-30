@@ -22,8 +22,6 @@ public class Drivetrain {
     private int auto_id = -1;
     public double l_target = 0;
     public double r_target = 0;
-    double past_l_target = 0;
-    double past_r_target = 0;
     boolean send_event = false;
 
     public Drivetrain(DcMotor top_left, DcMotor bottom_left, DcMotor top_right, DcMotor bottom_right, Odometry odometry){
@@ -76,12 +74,11 @@ public class Drivetrain {
      * @param distance Desired distance in inches
      */
     public void setTargetPos(double distance){
-        double rotations = distance / odometry.CIRCUMFERENCE;
-        double target_ticks = rotations * odometry.TICKS;
+        double target_ticks = odometry.inchesToTicks(distance);
         if (l_target != 0.0 && r_target != 0.0) {
-            l_target = target_ticks + getPastTicks();
-            r_target = target_ticks + getPastTicks();
-        }
+            l_target = target_ticks + l_target;
+            r_target = target_ticks + r_target;
+        } // hi
         send_event = true;
     }
 
@@ -93,8 +90,8 @@ public class Drivetrain {
         double target_ticks = odometry.getH() * target_angle;
         if (l_target != 0 && r_target != 0) {
             double direction = Math.signum(target_angle);
-            l_target = direction * -target_ticks + getPastTicks();
-            r_target = direction * target_ticks + getPastTicks();
+            l_target = direction * -target_ticks + l_target;
+            r_target = direction * target_ticks + r_target;
         }
     }
 
@@ -105,8 +102,8 @@ public class Drivetrain {
     public void autoPIDUpdate(){
         // TODO Find PID constant
         final double kP = 1;
-        double l_error = l_target - past_l_target;
-        double r_error = r_target - past_r_target;
+        double l_error = l_target - odometry.l_enc.getCurrentPosition();
+        double r_error = r_target - odometry.r_enc.getCurrentPosition();
         double left_wheel_speed = l_error * kP;
         double right_wheel_speed = r_error * kP;
         // TODO Increase deadband for error to make it possible to reach
@@ -117,20 +114,10 @@ public class Drivetrain {
             bottom_right.setPower(right_wheel_speed);
         } else {
             if (ev != null && send_event){
-                past_l_target = l_target;
-                past_r_target = r_target;
                 send_event = false;
                 ev.pushEvent(new AutoMoveEvent(AutoMoveEvent.MOVED));
             }
         }
-    }
-
-    /**
-     * Averages both encoders to get center line position
-     * Also negates tick changes from turns
-     */
-    public double getPastTicks(){
-        return (past_l_target + past_r_target) / 2.0;
     }
 
     public Odometry getOdometry(){

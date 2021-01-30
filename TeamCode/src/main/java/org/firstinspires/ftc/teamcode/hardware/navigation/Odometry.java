@@ -62,6 +62,11 @@ public class Odometry {
         return ratio * CIRCUMFERENCE;
     }
 
+    public double inchesToTicks(double inches){
+        double rotations = inches / CIRCUMFERENCE;
+        return rotations * TICKS;
+    }
+
     public void resetEncoders(){
         l_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         r_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
