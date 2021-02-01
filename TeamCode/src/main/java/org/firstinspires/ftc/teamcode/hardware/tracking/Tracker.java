@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware.tracking;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Turret;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
@@ -14,9 +15,12 @@ public class Tracker {
     private IMU imu;
     private Turret turret;
     private final int color; // Tells which side of the field (-1 = Blue, 1 = Red)
+    private final double y_offset = -2.4;
+    private double x_side;
+    private double y_side;
 
-    public Tracker(Turret turret, Odometry odometry, int starting_pos, int color){
-        this.odometry = odometry;
+    public Tracker(Turret turret, Drivetrain drivetrain, int starting_pos, int color){
+        this.odometry = drivetrain.getOdometry();
         this.turret = turret;
         this.imu = odometry.getIMU();
         this.color = color;
@@ -27,13 +31,13 @@ public class Tracker {
      * Updates power and rotation angle based on regression equations from training data
      */
     public void updateVars(){
-        this.odometry.updateDeltas();
-        double TURRET_CIRCUMFERENCE = 0;
-        double rotation_distance = (this.imu.getHeading() / 360.0) * TURRET_CIRCUMFERENCE;
-        double kP = 0;
-        double power = Math.pow(kP *(getHypo()), 2); // Assuming regression is exponential for now
-        this.turret.shooter.setPower(power);
-        this.turret.rotate(rotation_distance);
+        final double kP = 0;
+        odometry.updateDeltas();
+        updateLegs();
+        double power = kP * Math.pow((getHypo()), 2); // Assuming regression is exponential for now
+        double rotation_distance = (getTurretHeading() / 360.0) * (turret.getTurretHome2() - turret.getTurretHome());
+        // turret.shooter.setPower(power);
+        turret.rotate(turret.getTurretHome() + rotation_distance);
     }
 
     /**
@@ -54,13 +58,27 @@ public class Tracker {
         }
     }
 
+    public void updateLegs(){
+        x_side = odometry.getX() + 72;
+        y_side = (odometry.getY() + 36 + y_offset) * color;
+    }
+
     /**
      * Uses odometry to get hypotenuse of right triangle depending on which goal is chosen
      * @return Hypotenuse of the right triangle (always positive)
      */
     public double getHypo(){
-        double x_side = odometry.getX() + 72;
-        double y_side = odometry.getY() + 36 * this.color;
         return Math.sqrt(Math.pow(x_side, 2) + Math.pow(y_side, 2));
+    }
+
+    public double getTurretHeading(){
+        double robot_heading = odometry.getIMU().getHeading();
+        if (robot_heading > 180) {
+            robot_heading = -360 + robot_heading;
+        }
+        if (robot_heading > 0){
+            robot_heading = 180 + Math.abs(robot_heading);
+        }
+        return -Math.toDegrees(Math.atan(x_side / y_side)) - robot_heading;
     }
 }

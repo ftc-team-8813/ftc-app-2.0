@@ -5,8 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.events.AngleHoldEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.IMUEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.AutoMoveEvent;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.EventBus.Subscriber;
@@ -21,6 +23,8 @@ public class TestAuto extends LoggingOpMode {
     private EventBus bus;
     private Scheduler scheduler;
     private EventFlow flow;
+
+    private Logger log = new Logger("Test Auto");
 
     @Override
     public void init() {
@@ -38,6 +42,7 @@ public class TestAuto extends LoggingOpMode {
         }, "Reset Heading -- Delay", 0);
         bus.subscribe(TimerEvent.class, (ev, bus, sub) -> {
             imu.resetHeading();
+            bus.pushEvent(new AutoMoveEvent(AutoMoveEvent.MOVED));
         }, "Reset Heading", resetTimer.eventChannel);
 
         flow = new EventFlow(bus);
@@ -46,15 +51,11 @@ public class TestAuto extends LoggingOpMode {
             }, "Forward 20", AutoMoveEvent.MOVED))
             .then(new Subscriber<>(AutoMoveEvent.class, (ev, bus, sub) -> {
                 robot.drivetrain.setTargetTurn(90);
+                flow.stop();
             }, "Turn 90", AutoMoveEvent.MOVED));
 
         robot.drivetrain.resetEncoders();
         robot.drivetrain.connectEventBus(bus);
-    }
-
-    @Override
-    public void start(){
-        bus.pushEvent(new AutoMoveEvent(AutoMoveEvent.MOVED));
     }
 
     @Override

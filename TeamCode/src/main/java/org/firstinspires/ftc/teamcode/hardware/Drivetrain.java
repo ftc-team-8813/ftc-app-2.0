@@ -78,7 +78,7 @@ public class Drivetrain {
         if (l_target != 0.0 && r_target != 0.0) {
             l_target = target_ticks + l_target;
             r_target = target_ticks + r_target;
-        } // hi
+        }
         send_event = true;
     }
 

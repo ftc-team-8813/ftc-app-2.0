@@ -122,6 +122,14 @@ public class Turret {
     {
         return lastPos;
     }
+
+    public double getTurretHome(){
+        return turretHome;
+    }
+
+    public double getTurretHome2(){
+        return turretHome2;
+    }
     
     public void update(Telemetry telemetry)
     {

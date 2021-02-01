@@ -34,8 +34,8 @@ public class OdometryTest extends LoggingOpMode
         server = new Server(19999);
         
         robot.drivetrain.resetEncoders();
-        imu = new IMU(robot.imu);
-        
+        imu = robot.imu;
+
         evBus = new EventBus();
         scheduler = new Scheduler(evBus);
         

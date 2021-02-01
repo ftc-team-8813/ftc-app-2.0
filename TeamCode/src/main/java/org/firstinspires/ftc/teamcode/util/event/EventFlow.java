@@ -16,6 +16,7 @@ public class EventFlow
     private Node currentNode;
     private Logger log = new Logger("Event Flow");
     private int jumpTarget = -1;
+    private boolean stop;
     
     public EventFlow(EventBus bus)
     {
@@ -47,6 +48,11 @@ public class EventFlow
     {
         currentNode.unsubscribe();
         nodes.get(index).subscribe();
+    }
+
+    public void stop()
+    {
+        stop = true;
     }
     
     public class NodeBuilder
@@ -89,13 +95,12 @@ public class EventFlow
                             nodes.get(jumpTarget).subscribe();
                             jumpTarget = -1;
                         }
-                        else if (next != null)
-                        {
-                            next.subscribe();
-                        }
-                        else
-                        {
-                            rootNode.subscribe();
+                        else if (!stop) {
+                            if (next != null) {
+                                next.subscribe();
+                            } else {
+                                rootNode.subscribe();
+                            }
                         }
                     }, sub.name, sub.channel);
             this.name = sub.name;

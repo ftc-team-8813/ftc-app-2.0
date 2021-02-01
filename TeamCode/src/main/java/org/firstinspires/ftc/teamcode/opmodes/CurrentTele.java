@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.Turret;
 import org.firstinspires.ftc.teamcode.hardware.events.LiftEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
+import org.firstinspires.ftc.teamcode.hardware.tracking.Tracker;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
@@ -24,6 +25,7 @@ import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
 @TeleOp(name="!!THE TeleOp!!")
 public class CurrentTele extends LoggingOpMode {
     private Robot robot;
+    private Tracker tracker;
     private ControllerMap controllerMap;
     
     private ControllerMap.AxisEntry   ax_drive_l;
@@ -42,6 +44,7 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.ButtonEntry btn_wobble_int;
     private ControllerMap.ButtonEntry btn_turret_home;
     private ControllerMap.ButtonEntry btn_shooter_preset;
+    private ControllerMap.ButtonEntry btn_aim;
     
     private double driveSpeed;
     private double slowSpeed;
@@ -63,6 +66,7 @@ public class CurrentTele extends LoggingOpMode {
     public void init()
     {
         robot = new Robot(hardwareMap);
+        tracker = new Tracker(robot.turret, robot.drivetrain, 0, -1);
         evBus = new EventBus();
         scheduler = new Scheduler(evBus);
         
@@ -113,6 +117,7 @@ public class CurrentTele extends LoggingOpMode {
         controllerMap.setButtonMap("wobble_i",  "gamepad2", "left_bumper");
         controllerMap.setButtonMap("turr_home", "gamepad2", "a");
         controllerMap.setButtonMap("shoot_pre", "gamepad2", "right_bumper");
+        controllerMap.setButtonMap("aim",       "gamepad2", "b");
         
         ax_drive_l      = controllerMap.axes.get("drive_l");
         ax_drive_r      = controllerMap.axes.get("drive_r");
@@ -130,6 +135,7 @@ public class CurrentTele extends LoggingOpMode {
         btn_wobble_int  = controllerMap.buttons.get("wobble_i");
         btn_turret_home = controllerMap.buttons.get("turr_home");
         btn_shooter_preset = controllerMap.buttons.get("shoot_pre");
+        btn_aim = controllerMap.buttons.get("aim");
     
         JsonObject config = robot.config.getAsJsonObject("teleop");
         driveSpeed = config.get("drive_speed").getAsDouble();
@@ -161,9 +167,12 @@ public class CurrentTele extends LoggingOpMode {
         else                           robot.intake.stop();
          */
         robot.intake.run(ax_intake.get() - ax_intake_out.get());
-        
-        double turret_adj = Math.pow(ax_turret.get(), 3) * 0.001;
-        robot.turret.rotate(robot.turret.getTarget() + turret_adj);
+
+        if (btn_aim.edge() > 0){
+            tracker.updateVars();
+        }
+        //double turret_adj = Math.pow(ax_turret.get(), 3) * 0.001;
+        //robot.turret.rotate(robot.turret.getTarget() + turret_adj);
         
         if (btn_lift.edge() > 0)
         {
@@ -204,6 +213,7 @@ public class CurrentTele extends LoggingOpMode {
         
         robot.lift.update(telemetry);
         robot.turret.update(telemetry);
+        robot.drivetrain.getOdometry().updateDeltas();
         telemetry.addData("Shooter Velocity", "%.3f",
                 ((DcMotorEx)robot.turret.shooter.motor).getVelocity());
         telemetry.addData("Shooter speed preset", robot.turret.shooter.getCurrPreset());
