@@ -48,19 +48,19 @@ public class Tracker {
     public void translateCoordinates(int starting_pos){
         switch (starting_pos){
             case 1:
-                this.odometry.setStartingPos(48);
+                this.odometry.setStartingPos(0);
             case 2:
-                this.odometry.setStartingPos(24);
+                this.odometry.setStartingPos(0);
             case 3:
-                this.odometry.setStartingPos(-24);
+                this.odometry.setStartingPos(0);
             case 4:
-                this.odometry.setStartingPos(-48);
+                this.odometry.setStartingPos(0);
         }
     }
 
     public void updateLegs(){
-        x_side = odometry.getX() + 72;
-        y_side = (odometry.getY() + 36 + y_offset) * color;
+        x_side = odometry.getX() + 10;
+        y_side = (odometry.getY() + 10) * color;
     }
 
     /**
@@ -73,12 +73,9 @@ public class Tracker {
 
     public double getTurretHeading(){
         double robot_heading = odometry.getIMU().getHeading();
-        if (robot_heading > 180) {
-            robot_heading = -360 + robot_heading;
-        }
-        if (robot_heading > 0){
-            robot_heading = 180 + Math.abs(robot_heading);
-        }
-        return -Math.toDegrees(Math.atan(x_side / y_side)) - robot_heading;
+        double turret_heading = Math.toDegrees(Math.atan2(y_side, x_side)) + robot_heading;
+        turret_heading %= 360;
+        if (turret_heading < 0) turret_heading += 360;
+        return turret_heading;
     }
 }
