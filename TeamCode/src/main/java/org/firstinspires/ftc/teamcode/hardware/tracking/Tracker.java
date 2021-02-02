@@ -45,7 +45,7 @@ public class Tracker {
      * Ensures that all starting points can match training data
      * @param starting_pos Where the robot will start (1 = BlueLeft, 2 = BlueRight, 3 = RedLeft, 4 = RedRight)
      */
-    public void translateCoordinates(int starting_pos){
+    private void translateCoordinates(int starting_pos){
         switch (starting_pos){
             case 1:
                 this.odometry.setStartingPos(48);
@@ -58,7 +58,7 @@ public class Tracker {
         }
     }
 
-    public void updateLegs(){
+    private void updateLegs(){
         x_side = odometry.getX() + 72;
         y_side = (odometry.getY() + 36 + y_offset) * color;
     }
@@ -73,12 +73,7 @@ public class Tracker {
 
     public double getTurretHeading(){
         double robot_heading = odometry.getIMU().getHeading();
-        if (robot_heading > 180) {
-            robot_heading = -360 + robot_heading;
-        }
-        if (robot_heading > 0){
-            robot_heading = 180 + Math.abs(robot_heading);
-        }
-        return -Math.toDegrees(Math.atan(x_side / y_side)) - robot_heading;
+        double turret_heading = Math.abs(Math.toDegrees(Math.atan(x_side / y_side)));
+        return 360 - (turret_heading + robot_heading);
     }
 }
