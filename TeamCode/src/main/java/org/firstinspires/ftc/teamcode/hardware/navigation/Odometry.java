@@ -15,7 +15,7 @@ public class Odometry {
     private IMU imu;
     public double x, y;
     public double past_l, past_r;
-    public final double TICKS = 4096;
+    public final double TICKS = 512;
     public final double CIRCUMFERENCE = 1.38 * Math.PI; // Inches
     final double h = 7.5; // Half-Width of the robot in ticks
     public ImageDraw.Color drawColor = ImageDraw.BLUE;
@@ -39,7 +39,7 @@ public class Odometry {
         double r = curr_r - past_r;
         double heading = Math.toRadians(imu.getHeading());
         double dist = (l + r) / 2;
-
+        
         leg_x = Math.cos(heading) * dist;
         leg_y = Math.sin(heading) * dist;
 
@@ -75,7 +75,7 @@ public class Odometry {
     }
 
     public void setStartingPos(double start_y){
-        this.x = -65;
+        this.x = 0;
         this.y = start_y;
     }
 

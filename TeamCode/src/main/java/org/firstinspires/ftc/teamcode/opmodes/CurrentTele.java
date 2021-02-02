@@ -142,7 +142,7 @@ public class CurrentTele extends LoggingOpMode {
         slowSpeed  = config.get("slow_speed").getAsDouble();
         robot.lift.down();
         
-        
+        robot.imu.initialize(evBus, scheduler);
     }
     
     @Override
@@ -168,7 +168,7 @@ public class CurrentTele extends LoggingOpMode {
          */
         robot.intake.run(ax_intake.get() - ax_intake_out.get());
 
-        if (btn_aim.edge() > 0){
+        if (btn_aim.get()){
             tracker.updateVars();
         }
         //double turret_adj = Math.pow(ax_turret.get(), 3) * 0.001;
@@ -217,6 +217,8 @@ public class CurrentTele extends LoggingOpMode {
         telemetry.addData("Shooter Velocity", "%.3f",
                 ((DcMotorEx)robot.turret.shooter.motor).getVelocity());
         telemetry.addData("Shooter speed preset", robot.turret.shooter.getCurrPreset());
+        telemetry.addData("Turret target heading", "%.3f", tracker.getTurretHeading());
+        telemetry.addData("Odometry position", "%.3f,%.3f", robot.drivetrain.getOdometry().x, robot.drivetrain.getOdometry().y);
         scheduler.loop();
         evBus.update();
         // telemetry.addData("Turret power", "%.3f", robot.turret.turret.getPower());

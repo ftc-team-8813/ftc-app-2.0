@@ -1,5 +1,5 @@
 # NavPath Objects
-*[last updated Jan 29 2021]*
+*[last updated Jan 31 2021]*
 
 The vast majority of the autonomous program is controlled by the `NavPath` class
 in `hardware.navigation`. `NavPath` objects represent a sequence of actions that
@@ -17,6 +17,21 @@ Creating a `NavPath` requires several inputs:
   * `dist_kp` -- the proportional constant for forward movements
   * `angle_kp` -- the proportional constant for rotational movements
 
+Here is an example for how to set this up:
+```java
+// Create the Robot instance
+Robot robot = new Robot();
+
+// Create an event bus and scheduler. If both are already available, use those instead.
+EventBus evBus = new EventBus();
+Scheduler scheduler = new Scheduler(evBus);
+
+File jsonFile = Storage.getFile("paths/test.json"); // get the file to use
+JsonObject navConfig = robot.config.getAsJsonObject("nav");
+
+NavPath path = new NavPath(jsonFile, evBus, scheduler, robot, navConfig);
+```
+
 ### Using the NavPath
 Before running the path, any actuators/conditions (see below, `NavPath JSON Format`)
 must be registered.
@@ -24,10 +39,22 @@ must be registered.
 To register an actuator, use `addActuator(name, actuator)`. The `actuator` parameter
 should be a lambda function that takes a single `JsonObject` containing the actuator
 parameters and returns nothing.
+```java
+path.addActuator("foo", (params) -> {
+    // do whatever you like here; just don't block for very long.
+    // call some function foo() in the OpMode class
+    // params is a JsonObject extracted directly from the path file
+    foo(params.get("amount").getAsDouble());
+});
+```
 
 To register a condition producer, use `addCondition(name, producer)`. The `producer`
 parameter should be a lambda function that takes no parameters and returns a `double`
 containing the value to compare.
+```java
+// you can also send an integer value and compare it without issues
+path.addCondition("state", () -> getState());
+```
 
 Once all of the actuators and conditions have been registered, call `load()` to
 read the path JSON.
@@ -60,7 +87,7 @@ comments in the file should be written as `"_comment": "..."`).
 
 The root object contains a few important values:
 * `"versionCode"`: The loader version that this file was written for. As of the
-  writing of this document, this should be `"1.0.1"`. The loader is compatible
+  writing of this document, this should be `"1.0.2"`. The loader is compatible
   with files with the same first two version numbers.
 * `"defaultSpeed"`: The default speed that the robot executes forward moves at,
   unless otherwise specified. Generally, `0.5` is a good value.
@@ -77,6 +104,8 @@ The root object contains a few important values:
   * `"turn"` paths rotate the robot some angle before running the next entry.
   * `"actuator"` paths run a registered actuator with some specified parameters.
   * `"nop"` paths do nothing directly.  
+* `"label"`: *[Optional]* When present, this entry can be referenced by this label name
+  instead of using a jump index in conditions. *[New in version 1.0.2]*
 * `"trigger"`: *[Optional]* When present, execution waits until the specified event is triggered.
   Must be an object with the following values:
   * `"class"`: The full name of the event class (i.e.
@@ -93,11 +122,12 @@ The root object contains a few important values:
   * `"name"`: Name of a registered condition producer
   * `"cond"`: Must be one of [`"=="`, `"!="`, `"<"`, `">"`, `"<="`, `>=`]
   * `"value"`: Value to compare the result of the condition producer against.
-    *Can be replaced by a constant*.
+    *Can be replaced with a constant*.
   * `"jumpTrue"`: The index of the path entry to execute next if the comparison
-    evaluates to 'true'.
+    evaluates to 'true'. *Can be replaced with a label name, in which case, it will
+    jump to the path entry with the specified label.*
   * `"jumpFalse"`: *[Optional]* The index of the path entry to execute next if
-    the comparison evaluates to 'false'.  
+    the comparison evaluates to 'false'. *Can be replaced with a label name.*
   * **Note**: It is recommended to register a `"0"` condition that always evaluates
     to `0` so that conditions can *always* jump execution to some specified position.
     For example, the following condition:
@@ -115,10 +145,10 @@ The root object contains a few important values:
 If the path entry's type is `"forward"`, it must contain the following:
 
 * `"dist"`: The distance to move forward, in encoder ticks.
-  *Can be replaced by a constant*.
+  *Can be replaced with a constant*.
 * `"speed"`: *[Optional]* The motor power; must be between 0 and 1. If not
   present, defaults to the `NavPath`'s `"defaultSpeed"`.
-  *Can be replaced by a constant*
+  *Can be replaced with a constant*
 * `"absolute"`: *[Optional]* If present and `true`, *sets* the target position
   to `"dist"`, instead of adding it to the current target.
 * ~~`"ensure"`~~: *[Optional]* *[Currently not implemented]* If present and `true`,
@@ -127,9 +157,9 @@ If the path entry's type is `"forward"`, it must contain the following:
 ##### `"turn"` path entries
 If the path entry's type is `"turn"`, it must contain the following:
 
-* `"rotation"`: The angle to turn, in degrees. *Can be replaced by a constant*.
+* `"rotation"`: The angle to turn, in degrees. *Can be replaced with a constant*.
 * ~~`"speed"`~~: *[Optional]* *[Currently not implemented]* The motor power; must be
-  between 0 and 1. *Currently hard-coded to 0.5*. (*Can be replaced by a constant*.)
+  between 0 and 1. *Currently hard-coded to 0.5*. (*Can be replaced with a constant*.)
 * `"absolute"`: *[Optional]* If present and `true`, *sets* the target angle
   to `"rotation"`, instead of adding it to the current target.
 * ~~`"ensure"`~~: *[Optional]* *[Currently not implemented]* If present and `true`,
@@ -157,3 +187,12 @@ If the path's entry type is `"actuator"`, it must contain the following:
 ##### `"nop"` path entries
 `"nop"` entries have no additional properties. Instead, they are intended to be
 used along with the `"trigger"` and/or `"condition"` for flow control and delays.
+
+
+## Changelog
+* Version 1.0.2 -- Jan 29, 2021
+  * Added labels
+* Version 1.0.1 -- Jan 18, 2021
+  * Added constants
+* Version 1.0.0 -- Jan 17, 2021
+  * Initial version
