@@ -73,7 +73,7 @@ public class Tracker {
 
     public double getTurretHeading(){
         double robot_heading = odometry.getIMU().getHeading();
-        double turret_heading = Math.toDegrees(Math.atan2(y_side, x_side)) + robot_heading;
+        double turret_heading = -Math.toDegrees(Math.atan2(y_side, x_side)) + robot_heading;
         turret_heading %= 360;
         if (turret_heading < 0) turret_heading += 360;
         return turret_heading;
