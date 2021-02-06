@@ -58,18 +58,17 @@ public class Navigator
         double turnError = angleTarget - heading;
         double turnPower = Range.clip(turnError * turnKp, -turnSpeed, turnSpeed);
 
-
         if (ev != null){
-            if (turnError < 10 && turnError > 10){
+            if (Math.abs(turnError) < 0.1){
                 ev.pushEvent(new NavMoveEvent(NavMoveEvent.TURN_COMPLETE));
             }
-            if (fwdError < 10 && fwdError > 10){
+            if (Math.abs(fwdError) < 0.05){
                 ev.pushEvent(new NavMoveEvent(NavMoveEvent.FORWARD_COMPLETE));
             }
         }
         
         // Actually drive
-        drivetrain.telemove(fwdPower, turnPower);
+        drivetrain.teleMove(fwdPower, turnPower);
     }
     
     public void forward(double distance)
@@ -94,18 +93,19 @@ public class Navigator
     
     public void goTo(double x, double y, double finHeading)
     {
-        double targetHeading = Math.toDegrees(Math.atan2(y, x));
-        if (targetHeading < 0) targetHeading = 360 - Math.abs(targetHeading);
-        final double finalTargetHeading = targetHeading;
+        final double targetHeading = Math.toDegrees(Math.atan2(y, x));
         goTo.start(new Subscriber<>(NavMoveEvent.class, (ev, bus, sub) -> {
-            turnAbs(finalTargetHeading);
+            turnAbs(targetHeading);
         }, "Direction Aim", NavMoveEvent.TURN_COMPLETE))
         .then(new Subscriber<>(NavMoveEvent.class, (ev, bus, sub) -> {
             forward(Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)));
         }, "Move Forward", NavMoveEvent.FORWARD_COMPLETE))
         .then(new Subscriber<>(NavMoveEvent.class, (ev, bus, sub) -> {
             turnAbs(finHeading);
-        }, "Final Turn", NavMoveEvent.TURN_COMPLETE));
+        }, "Final Turn", NavMoveEvent.TURN_COMPLETE))
+        .then(new Subscriber<>(NavMoveEvent.class, (ev, bus, sub) -> {
+            bus.pushEvent(new NavMoveEvent(NavMoveEvent.TURN_COMPLETE));
+        }, "Complete", NavMoveEvent.TURN_COMPLETE));
     }
 
     private void connectEventBus(EventBus ev){

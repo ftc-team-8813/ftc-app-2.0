@@ -51,6 +51,7 @@ public class Robot {
         DcMotor bottom_right = hardwareMap.get(DcMotor.class, "bottom right");
         DcMotor l_enc = hardwareMap.get(DcMotor.class, "turret");
         DcMotor r_enc = hardwareMap.get(DcMotor.class, "intake");
+        DcMotor turret_enc = hardwareMap.get(DcMotor.class, "bottom left");
         DcMotor shooter = hardwareMap.get(DcMotor.class, "shooter");
         DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
         DcMotor turret = hardwareMap.get(DcMotor.class, "turret");
@@ -73,7 +74,7 @@ public class Robot {
         this.drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, new Odometry(l_enc, r_enc, this.imu));
         
         AnalogInput turretFeedback = hardwareMap.get(AnalogInput.class, "turret");
-        this.turret = new Turret(turret, shooter, pusher, aim, turretFeedback,
+        this.turret = new Turret(turret, shooter, pusher, aim, turret_enc,
                                  config.getAsJsonObject("shooter"),
                                  config.getAsJsonObject("turret_cal"),
                                  config.getAsJsonObject("turret"));

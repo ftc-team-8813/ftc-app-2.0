@@ -132,7 +132,7 @@ public class NavPath
             evBus.pushEvent(new NavMoveEvent(NavMoveEvent.FORWARD_COMPLETE));
         }
         double turnPower = angleHold.getTurnPower();
-        if (run) robot.drivetrain.telemove(fwdPower, -turnPower);
+        if (run) robot.drivetrain.teleMove(fwdPower, -turnPower);
         navTelemetry[0] = fwdPower;
         navTelemetry[1] = turnPower;
         navTelemetry[2] = fwdPos;

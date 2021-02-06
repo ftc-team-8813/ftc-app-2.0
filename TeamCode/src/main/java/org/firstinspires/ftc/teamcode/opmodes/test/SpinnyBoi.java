@@ -10,7 +10,6 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.events.IMUEvent;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
-import org.firstinspires.ftc.teamcode.util.Time;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 
@@ -57,7 +56,7 @@ public class SpinnyBoi extends LoggingOpMode
             
             double error = target - heading;
             double power = Range.clip(kp * error, -1, 1);
-            drivetrain.telemove(power * 0.5, power * -0.5);
+            drivetrain.teleMove(power * 0.5, power * -0.5);
         }
         else
         {

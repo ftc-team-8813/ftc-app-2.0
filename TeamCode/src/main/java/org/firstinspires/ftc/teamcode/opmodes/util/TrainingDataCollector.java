@@ -54,7 +54,7 @@ public class TrainingDataCollector extends LoggingOpMode {
 
     @Override
     public void loop() {
-        robot.drivetrain.telemove(ax_drive_l.get(), ax_drive_r.get());
+        robot.drivetrain.teleMove(ax_drive_l.get(), ax_drive_r.get());
 
         shooter_power = Range.clip(shooter_power + ax_shooter.get() * 0.1, -1, 1);
         robot.turret.shooter.setPower(turret_power);

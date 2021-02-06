@@ -58,7 +58,7 @@ public class Drivetrain {
      * @param left_stick_y Left Wheel Velocity
      * @param right_stick_y Right Wheel Velocity
      */
-    public void telemove(double left_stick_y, double right_stick_y){
+    public void teleMove(double left_stick_y, double right_stick_y){
         //Subtracts power from forward based on the amount of rotation in the other stick
         double left_wheel_speed = -left_stick_y + right_stick_y;
         double right_wheel_speed = -left_stick_y - right_stick_y;
@@ -68,56 +68,8 @@ public class Drivetrain {
         bottom_right.setPower(right_wheel_speed);
     }
 
-    /**
-     * Updates target distance in ticks
-     * Appends to current position to account for previous movements
-     * @param distance Desired distance in inches
-     */
-    public void setTargetPos(double distance){
-        double target_ticks = odometry.inchesToTicks(distance);
-        if (l_target != 0.0 && r_target != 0.0) {
-            l_target = target_ticks + l_target;
-            r_target = target_ticks + r_target;
-        }
-        send_event = true;
-    }
+    public void smartMove(double left_stick_y, double right_stick_y){
 
-    /**
-     * Turns robot certain degrees
-     * @param target_angle Range = 180 to -180 (counter-clockwise)
-     */
-    public void setTargetTurn(double target_angle){
-        double target_ticks = odometry.getH() * target_angle;
-        if (l_target != 0 && r_target != 0) {
-            double direction = Math.signum(target_angle);
-            l_target = direction * -target_ticks + l_target;
-            r_target = direction * target_ticks + r_target;
-        }
-    }
-
-    /**
-     * Accelerates towards a set target positions for both wheels
-     * Must be ran at the end of each loop cycle
-     */
-    public void autoPIDUpdate(){
-        // TODO Find PID constant
-        final double kP = 1;
-        double l_error = l_target - odometry.l_enc.getCurrentPosition();
-        double r_error = r_target - odometry.r_enc.getCurrentPosition();
-        double left_wheel_speed = l_error * kP;
-        double right_wheel_speed = r_error * kP;
-        // TODO Increase deadband for error to make it possible to reach
-        if (l_error > 10 || l_error < -10){
-            top_left.setPower(left_wheel_speed);
-            bottom_left.setPower(left_wheel_speed);
-            top_right.setPower(right_wheel_speed);
-            bottom_right.setPower(right_wheel_speed);
-        } else {
-            if (ev != null && send_event){
-                send_event = false;
-                ev.pushEvent(new AutoMoveEvent(AutoMoveEvent.MOVED));
-            }
-        }
     }
 
     public Odometry getOdometry(){
