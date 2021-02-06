@@ -53,7 +53,9 @@ public class Shooter
         this.motor = motor;
         this.motor2 = motor2;
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        motor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         powers = new ArrayList<>();
         loadConfiguration(config);
     }
