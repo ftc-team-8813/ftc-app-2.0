@@ -22,10 +22,14 @@ public class Turret {
     public final Shooter shooter;
     private Servo pusher;
     private Servo aim;
-    public final CalibratedAnalogInput turretFb;
+    public final DcMotor turretFb;
     
     private Logger log = new Logger("Turret");
-    
+
+    private final double TICKS = 128;
+    private final double ENC_TO_TURRET_RATIO = 110.0/30.0;
+
+    private double turretRotationSpan = TICKS * ENC_TO_TURRET_RATIO;
     private double turretHome;
     private double turretHome2;
     private double turretKp;
@@ -44,17 +48,17 @@ public class Turret {
     private boolean sendEvent = false;
     
     public Turret(DcMotor turret, DcMotor shooter, DcMotor shooter2, Servo pusher, Servo aim,
-                  AnalogInput rotateFeedback, JsonObject shooterConfig, JsonObject fbConfig,
+                  DcMotor rotateFeedback, JsonObject shooterConfig, JsonObject fbConfig,
                   JsonObject turretConfig)
     {
         this.turret = turret;
         this.shooter = new Shooter(shooter, shooter2, shooterConfig);
         this.pusher = pusher;
         this.aim = aim;
-        this.turretFb = new CalibratedAnalogInput(rotateFeedback, fbConfig);
+        this.turretFb = rotateFeedback;
     
         JsonObject root = turretConfig;
-        turretHome = root.get("home").getAsDouble();
+        //turretHome = root.get("home").getAsDouble();
         turretHome2= root.get("home2").getAsDouble();
         turretKp   = root.get("kp").getAsDouble();
         turretMin  = root.get("min").getAsDouble();
@@ -80,24 +84,19 @@ public class Turret {
     
     public void rotate(double position, boolean sendEvent)
     {
-        position = Range.clip(position, turretMin, turretMax);
+        position = Range.clip(position, 0, turretRotationSpan);
         target = position;
         if (sendEvent) this.sendEvent = true;
     }
 
     public double getHeading(){
-        double spin_ratio = (turretFb.get() - turretHome) / turretHome2;
-        double degrees = spin_ratio * 360;
-        if (degrees > 180){
-            return 360 - degrees;
-        } else {
-            return degrees;
-        }
+        double spin_ratio = turretFb.getCurrentPosition() / turretRotationSpan;
+        return spin_ratio * 360;
     }
-    
+
     public void home()
     {
-        if (Math.abs(lastPos - turretHome2) < Math.abs(lastPos - turretHome))
+        if (Math.abs(lastPos - turretRotationSpan) < Math.abs(lastPos - turretHome))
         {
             target = turretHome2;
         }
@@ -136,7 +135,7 @@ public class Turret {
     {
         shooter.update();
         
-        double pos = turretFb.get();
+        double pos = turretFb.getCurrentPosition();
         lastPos = pos;
         double error = target - pos;
         

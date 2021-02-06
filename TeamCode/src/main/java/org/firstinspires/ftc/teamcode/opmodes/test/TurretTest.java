@@ -20,7 +20,7 @@ public class TurretTest extends LoggingOpMode
     @Override
     public void loop()
     {
-        telemetry.addData("Position", "%.3f", robot.turret.turretFb.get());
+        telemetry.addData("Position", "%.3f", robot.turret.getPosition());
         robot.turret.turret.setPower(-gamepad1.left_stick_y * 0.3);
     }
 }

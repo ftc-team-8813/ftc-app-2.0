@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.hardware.IMU;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
 
 @Autonomous(name="Test Auto")
+@Disabled
 public class TestAuto extends LoggingOpMode {
     private Robot robot;
     private EventBus bus;
@@ -47,10 +49,10 @@ public class TestAuto extends LoggingOpMode {
 
         flow = new EventFlow(bus);
         flow.start(new Subscriber<>(AutoMoveEvent.class, (ev, bus, sub) -> {
-                robot.drivetrain.setTargetPos(24);
+                // robot.drivetrain.setTargetPos(24);
             }, "Forward 20", AutoMoveEvent.MOVED))
             .then(new Subscriber<>(AutoMoveEvent.class, (ev, bus, sub) -> {
-                robot.drivetrain.setTargetTurn(90);
+                // robot.drivetrain.setTargetTurn(90);
                 flow.stop();
             }, "Turn 90", AutoMoveEvent.MOVED));
 
@@ -61,7 +63,7 @@ public class TestAuto extends LoggingOpMode {
     @Override
     public void loop() {
         telemetry.addData("Target Pos", robot.drivetrain.l_target);
-        robot.drivetrain.autoPIDUpdate();
+        // robot.drivetrain.autoPIDUpdate();
         scheduler.loop();
         bus.update();
         telemetry.update();

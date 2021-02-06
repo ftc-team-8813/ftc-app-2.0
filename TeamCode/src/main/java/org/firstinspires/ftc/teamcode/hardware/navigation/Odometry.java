@@ -31,21 +31,18 @@ public class Odometry {
      * x is forward/back and y is left/right
      */
     public void updateDeltas(){
-        double leg_x, leg_y;
-        double curr_l = getCurrentL();
-        double curr_r = getCurrentR();
-        double l = curr_l - past_l;
-        double r = curr_r - past_r;
+        double l = getCurrentL() - past_l;
+        double r = getCurrentR() - past_r;
         double heading = Math.toRadians(imu.getHeading());
         double dist = (l + r) / 2;
         
-        leg_x = Math.cos(heading) * dist;
-        leg_y = Math.sin(heading) * dist;
+        double leg_x = Math.cos(heading) * dist;
+        double leg_y = Math.sin(heading) * dist;
 
         this.x += leg_x;
         this.y += leg_y;
-        past_l = curr_l;
-        past_r = curr_r;
+        past_l = getCurrentL();
+        past_r = getCurrentR();
     }
 
     public double getCurrentL(){

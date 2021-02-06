@@ -105,9 +105,8 @@ public class Navigator
         double turnError = angleTarget - heading;
         double turnPower = Range.clip(turnError * turnKp, -turnSpeed, turnSpeed);
 
-
         if (ev != null){
-            if (Math.abs(turnError) < 0.1 & sendEvent_turn) {
+            if (Math.abs(turnError) < 0.1 && sendEvent_turn) {
                 sendEvent_turn = false;
                 ev.pushEvent(new NavMoveEvent(NavMoveEvent.TURN_COMPLETE));
             }
