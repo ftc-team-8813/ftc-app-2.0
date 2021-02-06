@@ -27,11 +27,13 @@ public class NavigationTest extends LoggingOpMode
     
     private Navigator nav;
     
+    private int state = 0; // 0 = initialized, 1 = running
+    
     @Override
     public void init()
     {
         robot = new Robot(hardwareMap);
-        server = new Server(19999);
+        server = new Server(19998);
     
         robot.drivetrain.resetEncoders();
         imu = robot.imu;
@@ -45,16 +47,26 @@ public class NavigationTest extends LoggingOpMode
         
         nav = new Navigator(robot.drivetrain, odometry);
         nav.connectEventBus(evBus);
+        state = 0;
     
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
             // Get data
-            ByteBuffer buf = ByteBuffer.allocate(44);
-            buf.putDouble(odometry.past_l);
-            buf.putDouble(odometry.past_r);
-            buf.putDouble(imu.getHeading()); // imu heading
-            buf.putDouble(odometry.x);
-            buf.putDouble(odometry.y);
-            odometry.drawColor.write(buf);
+            ByteBuffer buf = ByteBuffer.allocate(64);
+            buf.putFloat((float)odometry.x); // 4
+            buf.putFloat((float)odometry.y); // 8
+            buf.putFloat((float)imu.getHeading()); // 12
+            buf.putFloat((float)0); // calculated odometry heading -- 16
+            buf.putInt(robot.drivetrain.top_left.getCurrentPosition()); // 20
+            buf.putInt(robot.drivetrain.top_right.getCurrentPosition()); // 24
+            buf.putFloat((float)odometry.past_l); // 28
+            buf.putFloat((float)odometry.past_r); // 32
+            buf.putFloat((float)nav.getTargetX()); // 36
+            buf.putFloat((float)nav.getTargetY()); // 40
+            buf.putFloat((float)nav.getTargetHeading()); // 44
+            buf.putFloat((float)nav.getTargetDistance()); // 48
+            buf.putFloat((float)nav.getFwdPower()); // 52
+            buf.putFloat((float)nav.getTurnPower()); // 56
+            buf.put((byte)state); // 57
             buf.flip();
         
             resp.respond(buf);
@@ -79,9 +91,10 @@ public class NavigationTest extends LoggingOpMode
     @Override
     public void start()
     {
-        nav.setForwardSpeed(0.2);
-        nav.setTurnSpeed(0.3);
+        nav.setForwardSpeed(0.5);
+        nav.setTurnSpeed(0.5);
         nav.goTo(0, -30);
+        state = 1;
     }
     
     @Override

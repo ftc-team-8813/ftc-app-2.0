@@ -8,12 +8,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  */
 public class Intake {
     public final DcMotor intake;
-    public final DcMotor ramp;
     public final CRServo appendage;
 
-    public Intake(DcMotor intake, DcMotor ramp, CRServo appendage){
+    public Intake(DcMotor intake, CRServo appendage){
         this.intake = intake;
-        this.ramp = ramp;
         this.appendage = appendage;
     }
     
@@ -30,7 +28,6 @@ public class Intake {
     public void run(double speed)
     {
         intake.setPower(speed);
-        ramp.setPower(speed);
         appendage.setPower(speed);
     }
     

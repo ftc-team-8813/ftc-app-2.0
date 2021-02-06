@@ -19,19 +19,23 @@ public class Navigator
 
     private EventFlow goTo;
     
-    private double fwdTarget;
+    private double fwdError;
     private double angleTarget;
     private double fwdSpeed = 0; // Initialized to 0
     private double turnSpeed = 0; // Initialized to 0
-    private double forwardKp = 0; // TODO load from config
-    private double turnKp = 0; // TODO load from config
+    public double forwardKp = 0; // TODO load from config
+    public double turnKp = 0; // TODO load from config
     
     private double xTarget = -1;
     private double yTarget = -1;
     private boolean navigating = false;
+    private boolean preTurnComplete = false;
     
     private boolean sendEvent_fwd = false;
     private boolean sendEvent_turn = false;
+    
+    private double fwdPower;
+    private double turnPower;
     
     public Navigator(Drivetrain drivetrain, Odometry odo)
     {
@@ -40,7 +44,7 @@ public class Navigator
         imu = odo.getIMU();
         goTo = new EventFlow(ev);
         
-        forwardKp = 0.01;
+        forwardKp = 0.5;
         turnKp = 0.01;
     }
     
@@ -62,7 +66,6 @@ public class Navigator
     
         double fwdPos = (l + r) / 2;
          */
-        double fwdError = 0;
         double heading = imu.getHeading();
         
         if (navigating)
@@ -70,16 +73,29 @@ public class Navigator
             angleTarget = Math.toDegrees(Math.atan2(yTarget - odometry.y, xTarget - odometry.x));
             // heading vector = <cos(heading), sin(heading)>
             // error vector   = <xTarget - x, yTarget - y>
-            double headingRad = Math.toRadians(heading);
-            fwdError = -(((xTarget - odometry.x) * Math.cos(headingRad)) + ((yTarget - odometry.y) * Math.sin(headingRad)));
-            
-            double distanceError = Math.hypot(xTarget - odometry.x, yTarget - odometry.y);
-            if (distanceError < 0.5)
+            if (!preTurnComplete)
             {
-                navigating = false;
-                ev.pushEvent(new NavMoveEvent(NavMoveEvent.NAVIGATION_COMPLETE));
+                double angleError = angleTarget - heading;
+                if (Math.abs(angleError) < 10) preTurnComplete = true;
             }
-            telemetry.addData("Distance error", "%.1f", distanceError);
+            else
+            {
+                double headingRad = Math.toRadians(heading);
+                fwdError = -(((xTarget - odometry.x) * Math.cos(headingRad)) + ((yTarget - odometry.y) * Math.sin(headingRad)));
+    
+                double distanceError = Math.hypot(xTarget - odometry.x, yTarget - odometry.y);
+                if (distanceError < 0.5)
+                {
+                    navigating = false;
+                    ev.pushEvent(new NavMoveEvent(NavMoveEvent.NAVIGATION_COMPLETE));
+                }
+                telemetry.addData("Distance error", "%.1f", distanceError);
+            }
+        }
+        else
+        {
+            fwdError = 0;
+            preTurnComplete = false;
         }
         
         // Forward
@@ -122,6 +138,36 @@ public class Navigator
         xTarget = x;
         yTarget = y;
         navigating = true;
+    }
+    
+    public double getTargetX()
+    {
+        return xTarget;
+    }
+    
+    public double getTargetY()
+    {
+        return yTarget;
+    }
+    
+    public double getTargetDistance()
+    {
+        return fwdError;
+    }
+    
+    public double getTargetHeading()
+    {
+        return angleTarget;
+    }
+    
+    public double getFwdPower()
+    {
+        return fwdPower;
+    }
+    
+    public double getTurnPower()
+    {
+        return turnPower;
     }
 
     public void connectEventBus(EventBus ev){

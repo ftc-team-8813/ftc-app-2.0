@@ -43,11 +43,12 @@ public class Turret {
     private EventBus evBus;
     private boolean sendEvent = false;
     
-    public Turret(DcMotor turret, DcMotor shooter, Servo pusher, Servo aim, AnalogInput rotateFeedback,
-                  JsonObject shooterConfig, JsonObject fbConfig, JsonObject turretConfig)
+    public Turret(DcMotor turret, DcMotor shooter, DcMotor shooter2, Servo pusher, Servo aim,
+                  AnalogInput rotateFeedback, JsonObject shooterConfig, JsonObject fbConfig,
+                  JsonObject turretConfig)
     {
         this.turret = turret;
-        this.shooter = new Shooter(shooter, shooterConfig);
+        this.shooter = new Shooter(shooter, shooter2, shooterConfig);
         this.pusher = pusher;
         this.aim = aim;
         this.turretFb = new CalibratedAnalogInput(rotateFeedback, fbConfig);

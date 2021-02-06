@@ -23,7 +23,8 @@ public class ShooterTest extends LoggingOpMode
     {
         pusher = hardwareMap.servo.get("pusher");
         JsonObject config = Configuration.readJson(Storage.getFile("config.json"));
-        shooter = new Shooter(hardwareMap.dcMotor.get("shooter"), config.getAsJsonObject("shooter"));
+        shooter = new Shooter(hardwareMap.dcMotor.get("shooter"),
+                              hardwareMap.dcMotor.get("intake"), config.getAsJsonObject("shooter"));
     }
     
     @Override
