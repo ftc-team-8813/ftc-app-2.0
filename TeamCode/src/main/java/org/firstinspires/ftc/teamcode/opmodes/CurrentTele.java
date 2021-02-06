@@ -163,11 +163,13 @@ public class CurrentTele extends LoggingOpMode {
          */
         robot.intake.run(ax_intake.get() - ax_intake_out.get());
 
+        /*
         if (btn_aim.get()){
             tracker.updateVars();
         }
-        //double turret_adj = Math.pow(ax_turret.get(), 3) * 0.001;
-        //robot.turret.rotate(robot.turret.getTarget() + turret_adj);
+         */
+        double turret_adj = Math.pow(ax_turret.get(), 3) * 0.001;
+        robot.turret.rotate(robot.turret.getTarget() + turret_adj);
         
         if (btn_lift.edge() > 0)
         {
