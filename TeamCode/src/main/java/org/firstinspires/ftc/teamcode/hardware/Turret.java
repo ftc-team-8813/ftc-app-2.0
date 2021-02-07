@@ -31,7 +31,6 @@ public class Turret {
 
     private double turretRotationSpan = TICKS * ENC_TO_TURRET_RATIO;
     private double turretHome;
-    private double turretHome2;
     private double turretKp;
     private double turretMin;
     private double turretMax;
@@ -41,7 +40,7 @@ public class Turret {
     
     private double turretDefSpeed;
     
-    private double target;
+    private double target = 0;
     private double lastPos;
     
     private EventBus evBus;
@@ -58,8 +57,7 @@ public class Turret {
         this.turretFb = rotateFeedback;
     
         JsonObject root = turretConfig;
-        //turretHome = root.get("home").getAsDouble();
-        turretHome2= root.get("home2").getAsDouble();
+        turretHome = root.get("home").getAsDouble();
         turretKp   = root.get("kp").getAsDouble();
         turretMin  = root.get("min").getAsDouble();
         turretMax  = root.get("max").getAsDouble();
@@ -94,12 +92,18 @@ public class Turret {
         return spin_ratio * 360;
     }
 
-    public void home()
+    public void home(int heading)
     {
-        target = 0;
+        if (heading == 0){
+            target = turretHome;
+        } else if (heading == 180){
+            target = turretRotationSpan / 2;
+        } else {
+            return;
+        }
         sendEvent = true;
         // HACK: 70% power homing
-        turretSpeed = 0.7;
+        turretSpeed = 0.3;
         evBus.subscribe(TurretEvent.class, (ev, bus, sub) -> {
             turretSpeed = turretDefSpeed;
             bus.unsubscribe(sub);
@@ -120,8 +124,8 @@ public class Turret {
         return turretHome;
     }
 
-    public double getTurretHome2(){
-        return turretHome2;
+    public double getTurretRotationSpan(){
+        return turretRotationSpan;
     }
     
     public void update(Telemetry telemetry)
@@ -131,8 +135,9 @@ public class Turret {
         double pos = turretFb.getCurrentPosition();
         lastPos = pos;
         double error = target - pos;
+        log.i(String.valueOf(error));
         
-        if (sendEvent && Math.abs(error) < 0.05 && evBus != null)
+        if (sendEvent && Math.abs(error) < 0.1 && evBus != null)
         {
             sendEvent = false;
             evBus.pushEvent(new TurretEvent(TurretEvent.TURRET_MOVED));

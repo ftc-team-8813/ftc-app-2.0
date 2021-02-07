@@ -1,26 +1,26 @@
 {
   "shooter": {
     "rampTime": 1,
-    "maxPower": 0.55,
+    "maxPower": 0.35,
 
     "powershots": [
-      0.9,
-      0.9,
-      0.9
+      0.35,
+      0.25,
+      0.25
     ],
 
     "presets": [
-      {"power":  0.55, "color": [255, 255, 0]},
-      {"power":  0.50, "color": [64,  0,   128]}
+      {"power":  0.405, "color": [255, 255, 0]},
+      {"power":  0.325, "color": [64,  0,   128]}
     ]
   },
   "turret": {
-    "home":  0.060,
-    "home2": 0.790,
+    "home":  0,
+    "oneEighty": 190,
     "min": 0,
     "max": 0.95,
     "maxSpeed": 0.4,
-    "kp":  -15,
+    "kp":  0.01,
     "pusher": {
       "in": 0.82,
       "out": 0.52
@@ -36,8 +36,8 @@
     }
   },
   "teleop": {
-    "drive_speed": -0.8,
-    "slow_speed": -0.3
+    "drive_speed": -0.7,
+    "slow_speed": -0.4
   },
   "wobble": {
     "arm_up": 1,

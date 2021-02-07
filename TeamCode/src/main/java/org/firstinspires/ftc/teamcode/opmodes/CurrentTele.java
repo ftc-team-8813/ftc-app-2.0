@@ -28,6 +28,7 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.AxisEntry   ax_intake;
     private ControllerMap.AxisEntry   ax_intake_out;
     private ControllerMap.AxisEntry   ax_turret;
+    private ControllerMap.AxisEntry   ax_turret_reverse;
     private ControllerMap.ButtonEntry btn_lift;
     private ControllerMap.ButtonEntry btn_shooter;
     private ControllerMap.ButtonEntry btn_pusher;
@@ -61,7 +62,7 @@ public class CurrentTele extends LoggingOpMode {
     public void init()
     {
         robot = new Robot(hardwareMap);
-        tracker = new Tracker(robot.turret, robot.drivetrain, 0, -1);
+        tracker = new Tracker(robot.turret, robot.drivetrain, 1, 0);
         evBus = new EventBus();
         scheduler = new Scheduler(evBus);
         
@@ -69,7 +70,7 @@ public class CurrentTele extends LoggingOpMode {
         Scheduler.Timer liftTimer = scheduler.addPendingTrigger(0.2, "Lift Timer");
         
         liftFlow.start(new Subscriber<>(TriggerEvent.class, (ev, bus, sub) -> {
-                    robot.turret.home();
+                    robot.turret.home(0);
                 }, "Home Turret", TRIGGER_LIFT_FLOW))
                 .then(new Subscriber<>(TurretEvent.class, (ev, bus, sub) -> {
                     robot.lift.up();
@@ -101,6 +102,7 @@ public class CurrentTele extends LoggingOpMode {
         controllerMap.setAxisMap  ("intake",    "gamepad1", "right_trigger");
         controllerMap.setAxisMap  ("intake_out","gamepad1", "left_trigger");
         controllerMap.setAxisMap  ("turret",    "gamepad2", "left_stick_x" );
+        controllerMap.setAxisMap  ("turr_reverse","gamepad2", "left_trigger");
         controllerMap.setButtonMap("lift",      "gamepad1", "right_bumper" );
         controllerMap.setButtonMap("shooter",   "gamepad2", "y");
         controllerMap.setButtonMap("pusher",    "gamepad2", "x");
@@ -119,6 +121,7 @@ public class CurrentTele extends LoggingOpMode {
         ax_intake       = controllerMap.axes.get("intake");
         ax_intake_out   = controllerMap.axes.get("intake_out");
         ax_turret       = controllerMap.axes.get("turret");
+        ax_turret_reverse  = controllerMap.axes.get("turr_reverse");
         btn_lift        = controllerMap.buttons.get("lift");
         btn_shooter     = controllerMap.buttons.get("shooter");
         btn_pusher      = controllerMap.buttons.get("pusher");
@@ -156,18 +159,15 @@ public class CurrentTele extends LoggingOpMode {
         robot.drivetrain.telemove(ax_drive_r.get() * speed,
                                  ax_drive_l.get() * speed);
         
-        /*
-        if (btn_intake.get())          robot.intake.intake();
-        else if (btn_intake_out.get()) robot.intake.outtake();
-        else                           robot.intake.stop();
-         */
+
         robot.intake.run(ax_intake.get() - ax_intake_out.get());
 
         //if (btn_aim.get()){
         //    tracker.updateVars();
         //}
-        double turret_adj = ax_turret.get() * 0.3;
-        robot.turret.turret.setPower(turret_adj);
+        double turret_adj = -ax_turret.get() * 5;
+        robot.turret.rotate(robot.turret.getTarget() + turret_adj);
+
         if (btn_aim.get()){
             tracker.updateVars();
         }
@@ -201,7 +201,8 @@ public class CurrentTele extends LoggingOpMode {
         if (btn_pusher.get()) robot.turret.push();
         else                  robot.turret.unpush();
         
-        if (btn_turret_home.edge() > 0) robot.turret.home();
+        if (btn_turret_home.edge() > 0) robot.turret.home(0);
+        if (ax_turret_reverse.get() > 0.5) robot.turret.home(180);
         
         if (btn_wobble_up.get()) robot.wobble.up();
         if (btn_wobble_down.get()) robot.wobble.down();
@@ -215,9 +216,9 @@ public class CurrentTele extends LoggingOpMode {
         telemetry.addData("Shooter Velocity", "%.3f",
                 ((DcMotorEx)robot.turret.shooter.motor).getVelocity());
         telemetry.addData("Shooter speed preset", robot.turret.shooter.getCurrPreset());
-        telemetry.addData("Turret target heading", "%.3f", tracker.getTurretHeading());
+        telemetry.addData("Turret target heading", "%.3f", tracker.getTargetHeading());
         telemetry.addData("Odometry position", "%.3f,%.3f", robot.drivetrain.getOdometry().x, robot.drivetrain.getOdometry().y);
-        telemetry.addData("Turret Current Position", robot.turret.turret.getCurrentPosition());
+        telemetry.addData("Turret Current Position", robot.turret.turretFb.getCurrentPosition());
         scheduler.loop();
         evBus.update();
         // telemetry.addData("Turret power", "%.3f", robot.turret.turret.getPower());

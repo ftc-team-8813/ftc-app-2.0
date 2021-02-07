@@ -70,7 +70,7 @@ public class Robot {
         this.drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, new Odometry(l_enc, r_enc, this.imu));
         
         AnalogInput turretFeedback = hardwareMap.get(AnalogInput.class, "turret");
-        this.turret = new Turret(turret, shooter, intake, pusher, aim, turret_enc,
+        this.turret = new Turret(turret, shooter, shooter2, pusher, aim, turret_enc,
                                  config.getAsJsonObject("shooter"),
                                  config.getAsJsonObject("turret_cal"),
                                  config.getAsJsonObject("turret"));

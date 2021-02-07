@@ -14,17 +14,17 @@ public class Tracker {
     private Odometry odometry;
     private IMU imu;
     private Turret turret;
-    private final int color; // Tells which side of the field (-1 = Blue, 1 = Red)
+    private final double starting_pos;
     private final double y_offset = -2.4;
     private double x_side;
     private double y_side;
 
-    public Tracker(Turret turret, Drivetrain drivetrain, int starting_pos, int color){
+    public Tracker(Turret turret, Drivetrain drivetrain, int starting_pos, int manual_pos){
         this.odometry = drivetrain.getOdometry();
         this.turret = turret;
         this.imu = odometry.getIMU();
-        this.color = color;
-        translateCoordinates(starting_pos);
+        this.starting_pos = starting_pos;
+        translateCoordinates(starting_pos, manual_pos);
     }
 
     /**
@@ -34,8 +34,8 @@ public class Tracker {
         final double kP = 0;
         odometry.updateDeltas();
         updateLegs();
-        double power = kP * Math.pow((getHypo()), 2); // Assuming regression is exponential for now
-        double rotation_distance = (getTurretHeading() / 360.0) * (turret.getTurretHome2() - turret.getTurretHome());
+        //double power = kP * Math.pow((getHypo()), 2); // Assuming regression is exponential for now
+        double rotation_distance = (getTargetHeading() / 360.0) * (turret.getTurretRotationSpan());
         // turret.shooter.setPower(power);
         turret.rotate(turret.getTurretHome() + rotation_distance);
     }
@@ -43,10 +43,12 @@ public class Tracker {
     /**
      * Starts robot on coordinate system where (0, 0) is the center of the field
      * Ensures that all starting points can match training data
-     * @param starting_pos Where the robot will start (1 = BlueLeft, 2 = BlueRight, 3 = RedLeft, 4 = RedRight)
+     * @param starting_pos Where the robot will start (1 = BlueLeft, 2 = BlueRight, 3 = RedLeft, 4 = RedRight, 5 = Manual Input)
      */
-    private void translateCoordinates(int starting_pos){
+    private void translateCoordinates(int starting_pos, int manual_pos){
         switch (starting_pos){
+            case 5:
+                this.odometry.setStartingPos(manual_pos);
             case 1:
                 this.odometry.setStartingPos(0);
             case 2:
@@ -60,7 +62,8 @@ public class Tracker {
 
     private void updateLegs(){
         x_side = odometry.getX() + 10;
-        y_side = (odometry.getY() + 10) * color;
+        if (starting_pos <= 2) y_side = (odometry.getY() + 10) * -1;
+        else if (starting_pos > 2) y_side = (odometry.getY() + 10) * 1;
     }
 
     /**
@@ -71,7 +74,7 @@ public class Tracker {
         return Math.sqrt(Math.pow(x_side, 2) + Math.pow(y_side, 2));
     }
 
-    public double getTurretHeading(){
+    public double getTargetHeading(){
         double robot_heading = odometry.getIMU().getHeading();
         double turret_heading = -Math.toDegrees(Math.atan2(y_side, x_side)) + robot_heading;
         turret_heading %= 360;

@@ -49,15 +49,12 @@ public class TestAuto extends LoggingOpMode {
 
         flow = new EventFlow(bus);
         flow.start(new Subscriber<>(AutoMoveEvent.class, (ev, bus, sub) -> {
-<<<<<<< HEAD
             }, "Forward 20", AutoMoveEvent.MOVED))
             .then(new Subscriber<>(AutoMoveEvent.class, (ev, bus, sub) -> {
-=======
                 // robot.drivetrain.setTargetPos(24);
             }, "Forward 20", AutoMoveEvent.MOVED))
             .then(new Subscriber<>(AutoMoveEvent.class, (ev, bus, sub) -> {
                 // robot.drivetrain.setTargetTurn(90);
->>>>>>> e18dcf62564ce15840a193a0df873ef656fca191
                 flow.stop();
             }, "Turn 90", AutoMoveEvent.MOVED));
 
@@ -68,10 +65,7 @@ public class TestAuto extends LoggingOpMode {
     @Override
     public void loop() {
         telemetry.addData("Target Pos", robot.drivetrain.l_target);
-<<<<<<< HEAD
-=======
         // robot.drivetrain.autoPIDUpdate();
->>>>>>> e18dcf62564ce15840a193a0df873ef656fca191
         scheduler.loop();
         bus.update();
         telemetry.update();
