@@ -29,6 +29,7 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.AxisEntry   ax_intake;
     private ControllerMap.AxisEntry   ax_intake_out;
     private ControllerMap.AxisEntry   ax_turret;
+    private ControllerMap.ButtonEntry btn_turret_reverse;
     private ControllerMap.ButtonEntry btn_shooter;
     private ControllerMap.ButtonEntry btn_pusher;
     private ControllerMap.ButtonEntry btn_wobble_up;
@@ -64,7 +65,7 @@ public class CurrentTele extends LoggingOpMode {
     public void init()
     {
         robot = new Robot(hardwareMap);
-        tracker = new Tracker(robot.turret, robot.drivetrain, 0, -1);
+        tracker = new Tracker(robot.turret, robot.drivetrain, 1, 0);
         evBus = new EventBus();
         scheduler = new Scheduler(evBus);
         
@@ -99,23 +100,24 @@ public class CurrentTele extends LoggingOpMode {
          -- shooter (1 motor + speed control, 1 button + toggle; telemetry for speed output)
          -- pusher (1 servo, 1 button)
          */
-        controllerMap.setAxisMap  ("drive_l",   "gamepad1", "left_stick_y" );
-        controllerMap.setAxisMap  ("drive_r",   "gamepad1", "right_stick_y");
-        controllerMap.setAxisMap  ("intake",    "gamepad1", "right_trigger");
-        controllerMap.setAxisMap  ("intake_out","gamepad1", "left_trigger");
-        controllerMap.setAxisMap  ("turret",    "gamepad2", "left_stick_x" );
-        controllerMap.setButtonMap("slow2",     "gamepad1", "right_bumper" );
-        controllerMap.setButtonMap("shooter",   "gamepad2", "y");
-        controllerMap.setButtonMap("pusher",    "gamepad2", "x");
-        controllerMap.setButtonMap("wobble_up", "gamepad2", "dpad_up");
-        controllerMap.setButtonMap("wobble_dn", "gamepad2", "dpad_down");
-        controllerMap.setButtonMap("wobble_o",  "gamepad2", "dpad_left");
-        controllerMap.setButtonMap("wobble_c",  "gamepad2", "dpad_right");
-        controllerMap.setButtonMap("slow",      "gamepad1", "left_bumper");
-        controllerMap.setButtonMap("wobble_i",  "gamepad2", "left_bumper");
-        controllerMap.setButtonMap("turr_home", "gamepad2", "a");
-        controllerMap.setButtonMap("shoot_pre", "gamepad2", "right_bumper");
-        controllerMap.setButtonMap("aim",       "gamepad2", "b");
+        controllerMap.setAxisMap  ("drive_l",     "gamepad1", "left_stick_y" );
+        controllerMap.setAxisMap  ("drive_r",     "gamepad1", "right_stick_y");
+        controllerMap.setAxisMap  ("intake",      "gamepad1", "right_trigger");
+        controllerMap.setAxisMap  ("intake_out",  "gamepad1", "left_trigger");
+        controllerMap.setAxisMap  ("turret",      "gamepad2", "left_stick_x" );
+        controllerMap.setButtonMap("slow2",       "gamepad1", "right_bumper" );
+        controllerMap.setButtonMap("turr_reverse","gamepad2", "left_trigger");
+        controllerMap.setButtonMap("shooter",     "gamepad2", "y");
+        controllerMap.setButtonMap("pusher",      "gamepad2", "x");
+        controllerMap.setButtonMap("wobble_up",   "gamepad2", "dpad_up");
+        controllerMap.setButtonMap("wobble_dn",   "gamepad2", "dpad_down");
+        controllerMap.setButtonMap("wobble_o",    "gamepad2", "dpad_left");
+        controllerMap.setButtonMap("wobble_c",    "gamepad2", "dpad_right");
+        controllerMap.setButtonMap("slow",        "gamepad1", "left_bumper");
+        controllerMap.setButtonMap("wobble_i",    "gamepad2", "left_bumper");
+        controllerMap.setButtonMap("turr_home",   "gamepad2", "a");
+        controllerMap.setButtonMap("shoot_pre",   "gamepad2", "right_bumper");
+        controllerMap.setButtonMap("aim",         "gamepad2", "b");
         
         ax_drive_l      = controllerMap.axes.get("drive_l");
         ax_drive_r      = controllerMap.axes.get("drive_r");
@@ -133,6 +135,7 @@ public class CurrentTele extends LoggingOpMode {
         btn_wobble_int  = controllerMap.buttons.get("wobble_i");
         btn_turret_home = controllerMap.buttons.get("turr_home");
         btn_shooter_preset = controllerMap.buttons.get("shoot_pre");
+        btn_turret_reverse = controllerMap.buttons.get("turr_reverse");
         btn_aim = controllerMap.buttons.get("aim");
     
         JsonObject config = robot.config.getAsJsonObject("teleop");
@@ -171,17 +174,13 @@ public class CurrentTele extends LoggingOpMode {
         robot.drivetrain.telemove(ax_drive_r.get() * speed,
                                  ax_drive_l.get() * speed);
         
-        /*
-        if (btn_intake.get())          robot.intake.intake();
-        else if (btn_intake_out.get()) robot.intake.outtake();
-        else                           robot.intake.stop();
-         */
+
         robot.intake.run(ax_intake.get() - ax_intake_out.get());
 
         //if (btn_aim.get()){
         //    tracker.updateVars();
         //}
-        double turret_adj = ax_turret.get() * 0.005;
+        double turret_adj = -ax_turret.get() * 0.003;
         robot.turret.rotate(robot.turret.getTarget() + turret_adj);
         
         if (btn_shooter.edge() > 0)
@@ -214,6 +213,7 @@ public class CurrentTele extends LoggingOpMode {
         else                  robot.turret.unpush();
         
         if (btn_turret_home.edge() > 0) robot.turret.home();
+        if (btn_turret_reverse.edge() > 0) robot.turret.rotate(robot.turret.getTurretShootPos());
         
         if (btn_wobble_up.get()) robot.wobble.up();
         if (btn_wobble_down.get()) robot.wobble.down();
@@ -227,9 +227,9 @@ public class CurrentTele extends LoggingOpMode {
         telemetry.addData("Shooter Velocity", "%.3f",
                 ((DcMotorEx)robot.turret.shooter.motor).getVelocity());
         telemetry.addData("Shooter speed preset", robot.turret.shooter.getCurrPreset());
-        telemetry.addData("Turret target heading", "%.3f", tracker.getTurretHeading());
+        telemetry.addData("Turret target heading", "%.3f", tracker.getTargetHeading());
         telemetry.addData("Odometry position", "%.3f,%.3f", robot.drivetrain.getOdometry().x, robot.drivetrain.getOdometry().y);
-        telemetry.addData("Turret Current Position", robot.turret.turret.getCurrentPosition());
+        telemetry.addData("Turret Current Position", robot.turret.turretFb.getCurrentPosition());
         scheduler.loop();
         evBus.update();
         // telemetry.addData("Turret power", "%.3f", robot.turret.turret.getPower());
