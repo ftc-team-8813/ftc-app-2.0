@@ -50,10 +50,10 @@ public class Robot {
         DcMotor top_right = hardwareMap.get(DcMotor.class, "top right");
         DcMotor bottom_right = hardwareMap.get(DcMotor.class, "bottom right");
         DcMotor l_enc = hardwareMap.get(DcMotor.class, "turret");
-        DcMotor r_enc = hardwareMap.get(DcMotor.class, "intake");
+        DcMotor r_enc = hardwareMap.get(DcMotor.class, "ramp");
         DcMotor turret_enc = hardwareMap.get(DcMotor.class, "bottom left");
         DcMotor shooter = hardwareMap.get(DcMotor.class, "shooter");
-        DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
+        DcMotor shooter2 = hardwareMap.get(DcMotor.class, "shooter2");
         DcMotor turret = hardwareMap.get(DcMotor.class, "turret");
         DcMotor ramp = hardwareMap.get(DcMotor.class, "ramp");
 
@@ -78,7 +78,7 @@ public class Robot {
                                  config.getAsJsonObject("shooter"),
                                  config.getAsJsonObject("turret_cal"),
                                  config.getAsJsonObject("turret"));
-        this.intake = new Intake(intake, ramp, puller);
+        this.intake = new Intake(ramp, puller);
         
         this.lift = new SimpleLift(lift_a, lift_b,
                                    config.getAsJsonObject("lift"));

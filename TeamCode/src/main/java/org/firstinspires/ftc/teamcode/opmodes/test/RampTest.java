@@ -20,7 +20,6 @@ public class RampTest extends LoggingOpMode
     @Override
     public void loop()
     {
-        robot.intake.intake.setPower(gamepad1.left_stick_y);
         robot.intake.ramp.setPower(gamepad1.left_stick_y);
     }
 }

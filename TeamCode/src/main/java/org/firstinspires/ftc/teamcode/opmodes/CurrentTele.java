@@ -163,11 +163,11 @@ public class CurrentTele extends LoggingOpMode {
          */
         robot.intake.run(ax_intake.get() - ax_intake_out.get());
 
-        if (btn_aim.get()){
-            tracker.updateVars();
-        }
-        //double turret_adj = Math.pow(ax_turret.get(), 3) * 0.001;
-        //robot.turret.rotate(robot.turret.getTarget() + turret_adj);
+        //if (btn_aim.get()){
+        //    tracker.updateVars();
+        //}
+        double turret_adj = ax_turret.get() * 0.3;
+        robot.turret.turret.setPower(turret_adj);
         
         if (btn_lift.edge() > 0)
         {
@@ -214,6 +214,7 @@ public class CurrentTele extends LoggingOpMode {
         telemetry.addData("Shooter speed preset", robot.turret.shooter.getCurrPreset());
         telemetry.addData("Turret target heading", "%.3f", tracker.getTurretHeading());
         telemetry.addData("Odometry position", "%.3f,%.3f", robot.drivetrain.getOdometry().x, robot.drivetrain.getOdometry().y);
+        telemetry.addData("Turret Current Position", robot.turret.turret.getCurrentPosition());
         scheduler.loop();
         evBus.update();
         // telemetry.addData("Turret power", "%.3f", robot.turret.turret.getPower());
