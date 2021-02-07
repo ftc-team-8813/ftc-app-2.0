@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.hardware.events.LiftEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
 import org.firstinspires.ftc.teamcode.hardware.tracking.Tracker;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Time;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -149,7 +150,9 @@ public class CurrentTele extends LoggingOpMode {
         
         robot.imu.initialize(evBus, scheduler);
         
-        robot.turret.startZeroFind();
+        if (Persistent.get("turret_zero_found") == null)
+            robot.turret.startZeroFind();
+            
     }
     
     @Override
@@ -162,6 +165,7 @@ public class CurrentTele extends LoggingOpMode {
     public void start()
     {
         lastUpdate = Time.now();
+        Persistent.clear();
     }
     
     @Override

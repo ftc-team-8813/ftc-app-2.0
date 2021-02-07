@@ -65,9 +65,6 @@ public class Turret {
         this.aim = aim;
         this.turretFb = rotateFeedback;
         this.zeroSw = zeroSw;
-        
-        rotateFeedback.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rotateFeedback.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     
         JsonObject root = turretConfig;
         turretHome = root.get("home").getAsDouble();
@@ -173,6 +170,8 @@ public class Turret {
     // Initialization
     public void startZeroFind()
     {
+        turretFb.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turretFb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         find_fail = false;
         find_stage = FIND_RAPID;
         revStart = 0;

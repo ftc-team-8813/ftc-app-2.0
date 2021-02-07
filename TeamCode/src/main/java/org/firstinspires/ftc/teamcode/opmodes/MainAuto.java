@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.NavPath;
 import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -68,6 +69,8 @@ public class MainAuto extends LoggingOpMode
     
     private ByteBuffer telemBuf;
     private boolean telemUsed = true;
+    
+    private boolean homeComplete = false;
     
     static
     {
@@ -163,12 +166,21 @@ public class MainAuto extends LoggingOpMode
                 autoPath.getConstant("powershot1"),
                 autoPath.getConstant("powershot2")
         };
-        
+    
+        Persistent.clear();
+        homeComplete = false;
+        robot.turret.startZeroFind();
     }
     
     @Override
     public void init_loop()
     {
+        robot.turret.updateInit(telemetry);
+        if (robot.turret.findComplete() && !homeComplete)
+        {
+            homeComplete = true;
+            Persistent.put("turret_zero_found", true);
+        }
         autoPath.loop(telemetry, false);
         scheduler.loop();
         bus.update();
