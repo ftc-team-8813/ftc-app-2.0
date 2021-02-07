@@ -96,14 +96,7 @@ public class Turret {
 
     public void home()
     {
-        if (Math.abs(lastPos - turretRotationSpan) < Math.abs(lastPos - turretHome))
-        {
-            target = turretHome2;
-        }
-        else
-        {
-            target = turretHome;
-        }
+        target = 0;
         sendEvent = true;
         // HACK: 70% power homing
         turretSpeed = 0.7;
