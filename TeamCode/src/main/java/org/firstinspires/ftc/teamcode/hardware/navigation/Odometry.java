@@ -15,8 +15,7 @@ public class Odometry {
     private IMU imu;
     public double x, y;
     public double past_l, past_r;
-    public final double TICKS = 512;
-    public final double CIRCUMFERENCE = 1.38 * Math.PI; // Inches
+    public final double TICKS_PER_INCH = 29.167;
     final double h = 7.5; // Half-Width of the robot in ticks
     public ImageDraw.Color drawColor = ImageDraw.BLUE;
     
@@ -55,13 +54,11 @@ public class Odometry {
     }
 
     public double ticksToInches(double ticks){
-        double ratio = ticks / TICKS;
-        return ratio * CIRCUMFERENCE;
+        return ticks / TICKS_PER_INCH;
     }
 
     public double inchesToTicks(double inches){
-        double rotations = inches / CIRCUMFERENCE;
-        return rotations * TICKS;
+        return inches * TICKS_PER_INCH;
     }
 
     public void resetEncoders(){

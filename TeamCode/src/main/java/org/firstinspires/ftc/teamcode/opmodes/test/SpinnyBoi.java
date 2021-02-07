@@ -56,7 +56,7 @@ public class SpinnyBoi extends LoggingOpMode
             
             double error = target - heading;
             double power = Range.clip(kp * error, -1, 1);
-            drivetrain.teleMove(power * 0.5, power * -0.5);
+            drivetrain.telemove(power * 0.5, power * -0.5);
         }
         else
         {

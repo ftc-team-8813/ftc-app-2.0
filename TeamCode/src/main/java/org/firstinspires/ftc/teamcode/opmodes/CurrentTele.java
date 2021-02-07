@@ -153,7 +153,7 @@ public class CurrentTele extends LoggingOpMode {
         lastUpdate = Time.now();
         // TODO -- HACK: axes swapped due to config problem
         double speed = slow ? slowSpeed : driveSpeed;
-        robot.drivetrain.teleMove(ax_drive_r.get() * speed,
+        robot.drivetrain.telemove(ax_drive_r.get() * speed,
                                  ax_drive_l.get() * speed);
         
         /*
@@ -168,6 +168,9 @@ public class CurrentTele extends LoggingOpMode {
         //}
         double turret_adj = ax_turret.get() * 0.3;
         robot.turret.turret.setPower(turret_adj);
+        if (btn_aim.get()){
+            tracker.updateVars();
+        }
         
         if (btn_lift.edge() > 0)
         {

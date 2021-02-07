@@ -26,9 +26,6 @@ public class Robot {
     
     public final JsonObject config;
 
-    @Deprecated
-    public final BNO055IMU bn;
-
     public final IMU imu;
     
     private Logger log = new Logger("Robot");
@@ -67,14 +64,13 @@ public class Robot {
         Servo lift_a = hardwareMap.get(Servo.class, "lift a");
         Servo lift_b = hardwareMap.get(Servo.class, "lift b");
         
-        this.bn = hardwareMap.get(BNO055IMU.class, "imu");
-        this.imu = new IMU(this.bn);
+        this.imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
 
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, new Odometry(l_enc, r_enc, this.imu));
         
         AnalogInput turretFeedback = hardwareMap.get(AnalogInput.class, "turret");
-        this.turret = new Turret(turret, shooter, pusher, aim, turret_enc,
+        this.turret = new Turret(turret, shooter, intake, pusher, aim, turret_enc,
                                  config.getAsJsonObject("shooter"),
                                  config.getAsJsonObject("turret_cal"),
                                  config.getAsJsonObject("turret"));

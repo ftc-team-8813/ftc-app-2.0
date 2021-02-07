@@ -96,7 +96,7 @@ public class NavPath
         labels = new HashMap<>();
         paths = new ArrayList<>();
         robot.drivetrain.resetEncoders();
-        this.angleHold = new AngleHold(new IMU(robot.bn), evBus, scheduler, navConfig);
+        this.angleHold = new AngleHold(robot.imu, evBus, scheduler, navConfig);
         this.kP = navConfig.get("dist_kp").getAsDouble();
         log.i("kP=%.3f", kP);
     }
@@ -132,7 +132,7 @@ public class NavPath
             evBus.pushEvent(new NavMoveEvent(NavMoveEvent.FORWARD_COMPLETE));
         }
         double turnPower = angleHold.getTurnPower();
-        if (run) robot.drivetrain.teleMove(fwdPower, -turnPower);
+        if (run) robot.drivetrain.telemove(fwdPower, -turnPower);
         navTelemetry[0] = fwdPower;
         navTelemetry[1] = turnPower;
         navTelemetry[2] = fwdPos;

@@ -10,7 +10,7 @@ public class Intake {
     public final DcMotor ramp;
     public final CRServo appendage;
 
-    public Intake(DcMotor ramp, CRServo appendage){
+    public Intake(DcMotor ramp, CRServo appendage) {
         this.ramp = ramp;
         this.appendage = appendage;
     }

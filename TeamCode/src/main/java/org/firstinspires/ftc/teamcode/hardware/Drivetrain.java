@@ -58,7 +58,7 @@ public class Drivetrain {
      * @param left_stick_y Left Wheel Velocity
      * @param right_stick_y Right Wheel Velocity
      */
-    public void teleMove(double left_stick_y, double right_stick_y){
+    public void telemove(double left_stick_y, double right_stick_y){
         //Subtracts power from forward based on the amount of rotation in the other stick
         double left_wheel_speed = -left_stick_y + right_stick_y;
         double right_wheel_speed = -left_stick_y - right_stick_y;
