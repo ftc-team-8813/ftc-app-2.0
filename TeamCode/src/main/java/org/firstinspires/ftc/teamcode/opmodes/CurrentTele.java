@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.hardware.events.LiftEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
 import org.firstinspires.ftc.teamcode.hardware.tracking.Tracker;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Time;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -29,8 +30,7 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.AxisEntry   ax_intake;
     private ControllerMap.AxisEntry   ax_intake_out;
     private ControllerMap.AxisEntry   ax_turret;
-    private ControllerMap.AxisEntry   ax_turret_reverse;
-    private ControllerMap.ButtonEntry btn_lift;
+    private ControllerMap.ButtonEntry btn_turret_reverse;
     private ControllerMap.ButtonEntry btn_shooter;
     private ControllerMap.ButtonEntry btn_pusher;
     private ControllerMap.ButtonEntry btn_wobble_up;
@@ -101,33 +101,30 @@ public class CurrentTele extends LoggingOpMode {
          -- shooter (1 motor + speed control, 1 button + toggle; telemetry for speed output)
          -- pusher (1 servo, 1 button)
          */
-        controllerMap.setAxisMap  ("drive_l",   "gamepad1", "left_stick_y" );
-        controllerMap.setAxisMap  ("drive_r",   "gamepad1", "right_stick_y");
-        controllerMap.setAxisMap  ("intake",    "gamepad1", "right_trigger");
-        controllerMap.setAxisMap  ("intake_out","gamepad1", "left_trigger");
-        controllerMap.setAxisMap  ("turret",    "gamepad2", "left_stick_x" );
-        controllerMap.setAxisMap  ("turr_reverse","gamepad2", "left_trigger");
-        controllerMap.setButtonMap("lift",      "gamepad1", "right_bumper" );
-        controllerMap.setButtonMap("slow2",     "gamepad1", "right_bumper" );
-        controllerMap.setButtonMap("shooter",   "gamepad2", "y");
-        controllerMap.setButtonMap("pusher",    "gamepad2", "x");
-        controllerMap.setButtonMap("wobble_up", "gamepad2", "dpad_up");
-        controllerMap.setButtonMap("wobble_dn", "gamepad2", "dpad_down");
-        controllerMap.setButtonMap("wobble_o",  "gamepad2", "dpad_left");
-        controllerMap.setButtonMap("wobble_c",  "gamepad2", "dpad_right");
-        controllerMap.setButtonMap("slow",      "gamepad1", "left_bumper");
-        controllerMap.setButtonMap("wobble_i",  "gamepad2", "left_bumper");
-        controllerMap.setButtonMap("turr_home", "gamepad2", "a");
-        controllerMap.setButtonMap("shoot_pre", "gamepad2", "right_bumper");
-        controllerMap.setButtonMap("aim",       "gamepad2", "b");
+        controllerMap.setAxisMap  ("drive_l",     "gamepad1", "left_stick_y" );
+        controllerMap.setAxisMap  ("drive_r",     "gamepad1", "right_stick_y");
+        controllerMap.setAxisMap  ("intake",      "gamepad1", "right_trigger");
+        controllerMap.setAxisMap  ("intake_out",  "gamepad1", "left_trigger");
+        controllerMap.setAxisMap  ("turret",      "gamepad2", "left_stick_x" );
+        controllerMap.setButtonMap("slow2",       "gamepad1", "right_bumper" );
+        controllerMap.setButtonMap("turr_reverse","gamepad2", "left_trigger");
+        controllerMap.setButtonMap("shooter",     "gamepad2", "y");
+        controllerMap.setButtonMap("pusher",      "gamepad2", "x");
+        controllerMap.setButtonMap("wobble_up",   "gamepad2", "dpad_up");
+        controllerMap.setButtonMap("wobble_dn",   "gamepad2", "dpad_down");
+        controllerMap.setButtonMap("wobble_o",    "gamepad2", "dpad_left");
+        controllerMap.setButtonMap("wobble_c",    "gamepad2", "dpad_right");
+        controllerMap.setButtonMap("slow",        "gamepad1", "left_bumper");
+        controllerMap.setButtonMap("wobble_i",    "gamepad2", "left_bumper");
+        controllerMap.setButtonMap("turr_home",   "gamepad2", "a");
+        controllerMap.setButtonMap("shoot_pre",   "gamepad2", "right_bumper");
+        controllerMap.setButtonMap("aim",         "gamepad2", "b");
         
         ax_drive_l      = controllerMap.axes.get("drive_l");
         ax_drive_r      = controllerMap.axes.get("drive_r");
         ax_intake       = controllerMap.axes.get("intake");
         ax_intake_out   = controllerMap.axes.get("intake_out");
         ax_turret       = controllerMap.axes.get("turret");
-        ax_turret_reverse  = controllerMap.axes.get("turr_reverse");
-        btn_lift        = controllerMap.buttons.get("lift");
         btn_shooter     = controllerMap.buttons.get("shooter");
         btn_pusher      = controllerMap.buttons.get("pusher");
         btn_wobble_up   = controllerMap.buttons.get("wobble_up");
@@ -139,6 +136,7 @@ public class CurrentTele extends LoggingOpMode {
         btn_wobble_int  = controllerMap.buttons.get("wobble_i");
         btn_turret_home = controllerMap.buttons.get("turr_home");
         btn_shooter_preset = controllerMap.buttons.get("shoot_pre");
+        btn_turret_reverse = controllerMap.buttons.get("turr_reverse");
         btn_aim = controllerMap.buttons.get("aim");
     
         JsonObject config = robot.config.getAsJsonObject("teleop");
@@ -153,6 +151,10 @@ public class CurrentTele extends LoggingOpMode {
         robot.imu.initialize(evBus, scheduler);
 
         robot.turret.startZeroFind();
+
+        if (Persistent.get("turret_zero_found") == null)
+            robot.turret.startZeroFind();
+
     }
 
     @Override
@@ -165,6 +167,7 @@ public class CurrentTele extends LoggingOpMode {
     public void start()
     {
         lastUpdate = Time.now();
+        Persistent.clear();
     }
     
     @Override
@@ -183,7 +186,7 @@ public class CurrentTele extends LoggingOpMode {
         //if (btn_aim.get()){
         //    tracker.updateVars();
         //}
-        double turret_adj = ax_turret.get() * 0.005;
+        double turret_adj = -ax_turret.get() * 0.003;
         robot.turret.rotate(robot.turret.getTarget() + turret_adj);
 
         if (btn_shooter.edge() > 0)
@@ -210,12 +213,13 @@ public class CurrentTele extends LoggingOpMode {
             if (slow == 0) slow = 2;
             else slow = 0;
         }
-
-
+        
+        
         if (btn_pusher.get()) robot.turret.push();
         else                  robot.turret.unpush();
         
         if (btn_turret_home.edge() > 0) robot.turret.home();
+        if (btn_turret_reverse.edge() > 0) robot.turret.rotate(robot.turret.getTurretShootPos());
         
         if (btn_wobble_up.get()) robot.wobble.up();
         if (btn_wobble_down.get()) robot.wobble.down();

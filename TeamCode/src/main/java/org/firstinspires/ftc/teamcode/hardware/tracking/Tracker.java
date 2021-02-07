@@ -35,7 +35,7 @@ public class Tracker {
         odometry.updateDeltas();
         updateLegs();
         //double power = kP * Math.pow((getHypo()), 2); // Assuming regression is exponential for now
-        double rotation_distance = (getTargetHeading() / 360.0) * (turret.getTurretHome());
+        double rotation_distance = -getTargetHeading() / 360.0;
         // turret.shooter.setPower(power);
         turret.rotate(turret.getTurretHome() + rotation_distance);
     }

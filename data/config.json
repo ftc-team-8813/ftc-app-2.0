@@ -4,23 +4,23 @@
     "maxPower": 0.40,
 
     "powershots": [
-      0.9,
-      0.9,
-      0.9
+      0.35,
+      0.25,
+      0.25
     ],
 
     "presets": [
-      {"power":  0.40, "color": [255, 255, 0]},
+      {"power":  0.38, "color": [255, 255, 0]},
       {"power":  0.30, "color": [64,  0,   128]}
     ]
   },
   "turret": {
-    "home":  -0.125,
-    "home2": -1.125,
+    "home":    -0.125,
+    "home180": -0.580,
     "min": 0,
     "max": 0.95,
     "maxSpeed": 0.4,
-    "kp":  15,
+    "kp":  7,
     "pusher": {
       "in": 0.82,
       "out": 0.52
@@ -36,7 +36,7 @@
     }
   },
   "teleop": {
-    "drive_speeds": [-0.8, -0.3, -0.5]
+    "drive_speeds": [-0.65, -0.4, -0.5]
   },
   "wobble": {
     "arm_up": 1,

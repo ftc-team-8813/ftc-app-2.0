@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.google.gson.JsonObject;
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -9,13 +8,8 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
-import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.util.Time;
-import org.firstinspires.ftc.teamcode.util.event.Event;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-
-import java.io.File;
 
 public class Turret {
     
@@ -73,12 +67,9 @@ public class Turret {
         this.turretFb = rotateFeedback;
         this.zeroSw = zeroSw;
 
-        rotateFeedback.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rotateFeedback.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         JsonObject root = turretConfig;
         turretHome = root.get("home").getAsDouble();
-        turretHome2= root.get("home2").getAsDouble();
+        turretHome2= root.get("home180").getAsDouble();
         turretKp   = root.get("kp").getAsDouble();
         turretMin  = root.get("min").getAsDouble();
         turretMax  = root.get("max").getAsDouble();
@@ -139,7 +130,8 @@ public class Turret {
         return turretHome;
     }
 
-    public double getTurretHome2(){
+    public double getTurretShootPos()
+    {
         return turretHome2;
     }
     
@@ -150,7 +142,6 @@ public class Turret {
         double pos = turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
         lastPos = pos;
         double error = target - pos;
-        log.i(String.valueOf(error));
 
         if (sendEvent && Math.abs(error) < 0.05 && evBus != null)
         {
@@ -180,6 +171,8 @@ public class Turret {
     // Initialization
     public void startZeroFind()
     {
+        turretFb.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turretFb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         find_fail = false;
         find_stage = FIND_RAPID;
         revStart = 0;

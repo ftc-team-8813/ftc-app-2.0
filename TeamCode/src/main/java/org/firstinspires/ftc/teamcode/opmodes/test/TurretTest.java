@@ -18,9 +18,26 @@ public class TurretTest extends LoggingOpMode
     }
     
     @Override
+    public void init_loop()
+    {
+        telemetry.addData("", "Press START to home the turret");
+    }
+    
+    @Override
+    public void start()
+    {
+        robot.turret.startZeroFind();
+    }
+    
+    @Override
     public void loop()
     {
-        telemetry.addData("Position", robot.turret.turretFb.getCurrentPosition());
-        robot.turret.turret.setPower(-gamepad1.left_stick_y * 0.3);
+        robot.turret.updateInit(telemetry);
+    
+        if (robot.turret.findComplete())
+        {
+            telemetry.addData("Position", "%.3f", robot.turret.getPosition());
+            robot.turret.turret.setPower(-gamepad1.left_stick_y * 0.3);
+        }
     }
 }
