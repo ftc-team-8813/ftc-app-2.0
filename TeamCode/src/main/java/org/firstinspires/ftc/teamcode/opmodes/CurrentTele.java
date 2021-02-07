@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -28,7 +29,6 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.AxisEntry   ax_intake;
     private ControllerMap.AxisEntry   ax_intake_out;
     private ControllerMap.AxisEntry   ax_turret;
-    private ControllerMap.ButtonEntry btn_lift;
     private ControllerMap.ButtonEntry btn_shooter;
     private ControllerMap.ButtonEntry btn_pusher;
     private ControllerMap.ButtonEntry btn_wobble_up;
@@ -36,6 +36,7 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.ButtonEntry btn_wobble_open;
     private ControllerMap.ButtonEntry btn_wobble_close;
     private ControllerMap.ButtonEntry btn_slow;
+    private ControllerMap.ButtonEntry btn_slow2;
     private ControllerMap.ButtonEntry btn_wobble_int;
     private ControllerMap.ButtonEntry btn_turret_home;
     private ControllerMap.ButtonEntry btn_shooter_preset;
@@ -47,7 +48,7 @@ public class CurrentTele extends LoggingOpMode {
     
     private boolean lift_up = false;
     private boolean shooter_on = false;
-    private boolean slow = false;
+    private int slow = 0;
     
     private EventBus evBus;
     private Scheduler scheduler; // just in case
@@ -56,6 +57,8 @@ public class CurrentTele extends LoggingOpMode {
     private int shooterPowerIdx;
     
     private static final int TRIGGER_LIFT_FLOW = 0;
+    
+    private double[] speeds;
     
     @Override
     public void init()
@@ -101,7 +104,7 @@ public class CurrentTele extends LoggingOpMode {
         controllerMap.setAxisMap  ("intake",    "gamepad1", "right_trigger");
         controllerMap.setAxisMap  ("intake_out","gamepad1", "left_trigger");
         controllerMap.setAxisMap  ("turret",    "gamepad2", "left_stick_x" );
-        controllerMap.setButtonMap("lift",      "gamepad1", "right_bumper" );
+        controllerMap.setButtonMap("slow2",     "gamepad1", "right_bumper" );
         controllerMap.setButtonMap("shooter",   "gamepad2", "y");
         controllerMap.setButtonMap("pusher",    "gamepad2", "x");
         controllerMap.setButtonMap("wobble_up", "gamepad2", "dpad_up");
@@ -119,7 +122,6 @@ public class CurrentTele extends LoggingOpMode {
         ax_intake       = controllerMap.axes.get("intake");
         ax_intake_out   = controllerMap.axes.get("intake_out");
         ax_turret       = controllerMap.axes.get("turret");
-        btn_lift        = controllerMap.buttons.get("lift");
         btn_shooter     = controllerMap.buttons.get("shooter");
         btn_pusher      = controllerMap.buttons.get("pusher");
         btn_wobble_up   = controllerMap.buttons.get("wobble_up");
@@ -127,17 +129,30 @@ public class CurrentTele extends LoggingOpMode {
         btn_wobble_open = controllerMap.buttons.get("wobble_o");
         btn_wobble_close= controllerMap.buttons.get("wobble_c");
         btn_slow        = controllerMap.buttons.get("slow");
+        btn_slow2       = controllerMap.buttons.get("slow2");
         btn_wobble_int  = controllerMap.buttons.get("wobble_i");
         btn_turret_home = controllerMap.buttons.get("turr_home");
         btn_shooter_preset = controllerMap.buttons.get("shoot_pre");
         btn_aim = controllerMap.buttons.get("aim");
     
         JsonObject config = robot.config.getAsJsonObject("teleop");
-        driveSpeed = config.get("drive_speed").getAsDouble();
-        slowSpeed  = config.get("slow_speed").getAsDouble();
+        JsonArray driveSpeeds = config.getAsJsonArray("drive_speeds");
+        speeds = new double[driveSpeeds.size()];
+        for (int i = 0; i < driveSpeeds.size(); i++)
+        {
+            speeds[i] = driveSpeeds.get(i).getAsDouble();
+        }
         robot.lift.down();
         
         robot.imu.initialize(evBus, scheduler);
+        
+        robot.turret.startZeroFind();
+    }
+    
+    @Override
+    public void init_loop()
+    {
+        robot.turret.updateInit(telemetry);
     }
     
     @Override
@@ -151,8 +166,8 @@ public class CurrentTele extends LoggingOpMode {
     {
         double dt = Time.since(lastUpdate);
         lastUpdate = Time.now();
-        // TODO -- HACK: axes swapped due to config problem
-        double speed = slow ? slowSpeed : driveSpeed;
+        double speed = speeds[slow];
+        // TODO unswap control axes
         robot.drivetrain.telemove(ax_drive_r.get() * speed,
                                  ax_drive_l.get() * speed);
         
@@ -166,15 +181,8 @@ public class CurrentTele extends LoggingOpMode {
         //if (btn_aim.get()){
         //    tracker.updateVars();
         //}
-        double turret_adj = ax_turret.get() * 0.001;
+        double turret_adj = ax_turret.get() * 0.005;
         robot.turret.rotate(robot.turret.getTarget() + turret_adj);
-        
-        if (btn_lift.edge() > 0)
-        {
-            lift_up = !lift_up;
-            if (lift_up) robot.lift.up();
-            else         robot.lift.down();
-        }
         
         if (btn_shooter.edge() > 0)
         {
@@ -192,8 +200,15 @@ public class CurrentTele extends LoggingOpMode {
         
         if (btn_slow.edge() > 0)
         {
-            slow = !slow;
+            if (slow == 0) slow = 1;
+            else slow = 0;
         }
+        if (btn_slow2.edge() > 0)
+        {
+            if (slow == 0) slow = 2;
+            else slow = 0;
+        }
+        
         
         if (btn_pusher.get()) robot.turret.push();
         else                  robot.turret.unpush();

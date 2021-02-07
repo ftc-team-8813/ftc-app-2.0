@@ -79,6 +79,11 @@ public class Shooter
         motor2.setPower(power);
     }
     
+    public boolean running()
+    {
+        return started;
+    }
+    
     public void update()
     {
         if (!started)
