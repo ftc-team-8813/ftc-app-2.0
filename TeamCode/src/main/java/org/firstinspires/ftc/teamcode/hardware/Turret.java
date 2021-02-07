@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
@@ -27,9 +28,8 @@ public class Turret {
     private Logger log = new Logger("Turret");
 
     private final double TICKS = 128;
-    private final double ENC_TO_TURRET_RATIO = 110.0/30.0;
-
-    private double turretRotationSpan = TICKS * ENC_TO_TURRET_RATIO;
+    private final double ENC_TO_TURRET_RATIO = TICKS * 110.0/30.0;
+    
     private double turretHome;
     private double turretHome2;
     private double turretKp;
@@ -47,15 +47,21 @@ public class Turret {
     private EventBus evBus;
     private boolean sendEvent = false;
     
+    private DigitalChannel zeroSw;
+    
     public Turret(DcMotor turret, DcMotor shooter, DcMotor shooter2, Servo pusher, Servo aim,
-                  DcMotor rotateFeedback, JsonObject shooterConfig, JsonObject fbConfig,
-                  JsonObject turretConfig)
+                  DcMotor rotateFeedback, JsonObject shooterConfig, JsonObject turretConfig,
+                  DigitalChannel zeroSw)
     {
         this.turret = turret;
         this.shooter = new Shooter(shooter, shooter2, shooterConfig);
         this.pusher = pusher;
         this.aim = aim;
         this.turretFb = rotateFeedback;
+        this.zeroSw = zeroSw;
+        
+        rotateFeedback.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rotateFeedback.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     
         JsonObject root = turretConfig;
         //turretHome = root.get("home").getAsDouble();
@@ -84,13 +90,13 @@ public class Turret {
     
     public void rotate(double position, boolean sendEvent)
     {
-        position = Range.clip(position, 0, turretRotationSpan);
+        position = Range.clip(position, 0, 1);
         target = position;
         if (sendEvent) this.sendEvent = true;
     }
 
     public double getHeading(){
-        double spin_ratio = turretFb.getCurrentPosition() / turretRotationSpan;
+        double spin_ratio = turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
         return spin_ratio * 360;
     }
 
@@ -128,7 +134,7 @@ public class Turret {
     {
         shooter.update();
         
-        double pos = turretFb.getCurrentPosition();
+        double pos = turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
         lastPos = pos;
         double error = target - pos;
         
@@ -144,6 +150,7 @@ public class Turret {
         telemetry.addData("target", "%.3f", target);
         telemetry.addData("error", "%.3f", error);
         telemetry.addData("power", "%.3f", power);
+        telemetry.addData("Zero sense", "%s", zeroSw.getState());
     }
     
     public void push()
