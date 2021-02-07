@@ -1,0 +1,435 @@
+{
+  "version": "1.0.2",
+  "defaultSpeed": 0.5,
+  "_comments": [
+
+  ],
+  "_uses": [
+    "condition ringsSeen -- get the total number of rings seen by the vision algorithm",
+
+    "actuator shooter -- {'action': 'start'} starts it, {'action': 'stop'} stops it",
+
+    "actuator turret:",
+    " {'action': 'rotatePs'} -- rotate to constant 'powershot0', 'powershot1', or 'powershot2' based on ringCount",
+    "   -> sends hardware.events.TurretEvent on channel 0",
+    " {'action': 'rotate', 'angle': num} -- rotate to specified angle",
+    "   -> sends hardware.events.TurretEvent on channel 0",
+    " {'action': 'push'} -- push ring in",
+    " {'action': 'unpush'} -- reset pusher",
+
+    "condition webcamState -- return the webcam state",
+
+    "actuator webcamDetect -- poke the image detector until it gives us something meaningful",
+    " -- retrieve the result of this with ringsSeen",
+
+    "condition incRingCount -- increment the counter of rings shot and return that value",
+
+    "actuator wobble -- {'action': 'down'} -> down, {'action': 'up'} -> up, {'action': 'close'} -> close, {'action': 'open'} -> open"
+  ],
+
+  "timers": {
+    "spinupDelay": 2,
+    "webcamDelay": 1,
+    "pushDelay": 0.8,
+    "re_spinupDelay": 1.5,
+    "wobbleDownDelay": 1,
+    "wobbleOpenDelay": 0.3
+  },
+
+  "constants": {
+    "shootFwd": -2200,
+    "powershot0": 0.044,
+    "powershot1": 0.031,
+    "powershot2": 0.02,
+
+    "near_rotate1": 68,
+    "near_forward1": -1550,
+    "near_rotate2": 120,
+    "near_forward2": 400,
+
+    "mid_rotate1": 38,
+    "mid_forward1": -1610,
+    "mid_rotate2": 60,
+    "mid_forward2": 400,
+
+    "far_rotate1": 40,
+    "far_forward1": -3180,
+    "far_rotate2": 60,
+    "far_forward2": 2000
+  },
+
+  "path": [
+    {
+      "_comment": "[00] Initial move: Start the shooter wheel right away to give it enough time to start",
+      "type": "actuator",
+
+      "actuator": {
+        "name": "shooter",
+        "params": {"action": "start"}
+      },
+
+      "_comment2": "-- Check if the webcam is already initialized; skip waiting for it if it is",
+      "condition": {
+        "name": "webcamState",
+        "cond": "==",
+        "value": 3,
+
+        "jumpTrue": "webcam-running"
+      }
+    },
+
+    {
+      "_comment": "[01] Wait until the webcam is running (state=3)",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.vision.webcam.WebcamEvent",
+        "channel": 3
+      },
+
+      "type": "nop"
+    },
+
+    {
+      "label": "webcam-running",
+
+      "_comment": "[02] Give the webcam a second or so to warm up, then run the vision algorithm",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "webcamDelay"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "webcamDetect",
+        "params": {}
+      }
+    },
+
+    {
+      "_comment": "[03] While the shooter is starting, move forward to the shoot position",
+      "type": "forward",
+      "dist": "shootFwd"
+    },
+
+    {
+      "_comment": "[04] Move the turret to the correct position",
+      "type": "actuator",
+
+      "actuator": {
+        "name": "turret",
+        "params": {"action": "rotatePs"}
+      }
+    },
+
+    {
+      "_comment": "[05] Wait for the turret to reach its target",
+
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.hardware.events.TurretEvent",
+        "channel": 0
+      },
+
+      "type": "nop"
+    },
+
+    {
+      "_comment": "[06] Delay for some time for the shooter to spin up, then run the pusher",
+
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "spinupDelay"
+      },
+
+      "type": "nop"
+    },
+
+    {
+      "label": "push-ring",
+      "_comment": "[07] Actually push the ring in (as a separate move so we can jump here)",
+
+      "type": "actuator",
+      "actuator": {
+        "name": "turret",
+        "params": {"action":  "push"}
+      }
+    },
+
+    {
+      "_comment": "[08] After allowing the pusher to move, reset it",
+
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "pushDelay"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "turret",
+        "params": {"action":  "unpush"}
+      }
+    },
+
+    {
+      "_comment": "[09] Once the pusher is back, decide what to do next",
+
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "pushDelay"
+      },
+
+      "type": "nop",
+
+      "condition": {
+        "name": "incRingCount",
+        "cond": "==",
+        "value": 3,
+        "jumpTrue": "shoot-complete"
+      }
+    },
+
+    {
+      "_comment": "[10] Rotate the turret (should complete before re_spinupDelay)",
+
+      "type": "actuator",
+      "actuator": {
+        "name": "turret",
+        "params": {"action": "rotatePs"}
+      }
+    },
+
+    {
+      "_comment": "[11] Wait for the shooter to spin up again, then jump back",
+
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "re_spinupDelay"
+      },
+
+      "type": "nop",
+
+      "condition": {
+        "name": "0",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": "push-ring"
+      }
+    },
+
+    {
+      "label": "shoot-complete",
+      "_comment": "[12] Shooting complete; stop shooter",
+
+      "type": "actuator",
+
+      "actuator": {
+        "name": "shooter",
+        "params": {"action": "stop"}
+      },
+
+      "condition": {
+        "name": "ringsSeen",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": "wobble-0"
+      }
+    },
+
+    {
+      "_comment": "[13] Is it 1 or 4?",
+      "type": "nop",
+
+      "condition": {
+        "name": "ringsSeen",
+        "cond": "==",
+        "value": 1,
+        "jumpTrue": "wobble-1",
+        "jumpFalse": "wobble-4"
+      }
+    },
+
+    {
+      "label": "wobble-0",
+      "_comment": "[14] 0 rings => nearest target",
+      "type": "turn",
+      "rotation": "near_rotate1"
+    },
+
+    {
+      "_comment": "[15] move forward",
+      "type": "forward",
+      "dist": "near_forward1"
+    },
+
+    {
+      "_comment": "[16] place wobble goal",
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+
+    {
+      "_comment": "[17] wait, open claw",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleDownDelay"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "open"}
+      }
+    },
+
+    {
+      "_comment": "[18] wait, turn robot",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleOpenDelay"
+      },
+
+      "type": "turn",
+      "absolute": true,
+      "rotation": "near_rotate2"
+    },
+
+    {
+      "_comment": "[19] back up",
+      "type": "forward",
+      "dist": "near_forward2",
+
+      "condition": {
+        "name": "0",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": "end"
+      }
+    },
+
+    {
+      "label": "wobble-1",
+      "_comment": "[20] 1 ring => mid target",
+      "type": "turn",
+      "rotation": "mid_rotate1"
+    },
+
+    {
+      "_comment": "[21] move forward",
+      "type": "forward",
+      "dist": "mid_forward1"
+    },
+
+    {
+      "_comment": "[22] place wobble goal",
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+
+    {
+      "_comment": "[23] wait, open claw",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleDownDelay"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "open"}
+      }
+    },
+
+    {
+      "_comment": "[24] wait, turn robot",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleOpenDelay"
+      },
+
+      "type": "turn",
+      "absolute": true,
+      "rotation": "mid_rotate2"
+    },
+
+    {
+      "_comment": "[25] back up",
+      "type": "forward",
+      "dist": "mid_forward2",
+
+      "condition": {
+        "name": "0",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": "end"
+      }
+    },
+
+    {
+      "label": "wobble-4",
+      "_comment": "[26] 4 rings => far target",
+      "type": "turn",
+      "rotation": "far_rotate1"
+    },
+
+    {
+      "_comment": "[27] move forward",
+      "type": "forward",
+      "dist": "far_forward1"
+    },
+
+    {
+      "_comment": "[28] place wobble goal",
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+
+    {
+      "_comment": "[29] wait, open claw",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleDownDelay"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "open"}
+      }
+    },
+
+    {
+      "_comment": "[30] wait, turn robot",
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleOpenDelay"
+      },
+
+      "type": "turn",
+      "absolute": true,
+      "rotation": "far_rotate2"
+    },
+
+    {
+      "_comment": "[31] back up",
+      "type": "forward",
+      "dist": "far_forward2"
+    },
+
+    {
+      "_comment": "[32] common program end, wobble up",
+      "label": "end",
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      }
+    }
+  ]
+}
