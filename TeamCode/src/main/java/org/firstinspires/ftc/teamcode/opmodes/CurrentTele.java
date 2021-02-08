@@ -1,162 +1,243 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.events.LiftEvent;
+import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
+import org.firstinspires.ftc.teamcode.hardware.tracking.Tracker;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
+import org.firstinspires.ftc.teamcode.util.Time;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
+import org.firstinspires.ftc.teamcode.util.event.EventBus.Subscriber;
 import org.firstinspires.ftc.teamcode.util.event.EventFlow;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
 
-@TeleOp(name="CurrentTele")
-public class CurrentTele extends OpMode {
+@TeleOp(name="!!THE TeleOp!!")
+public class CurrentTele extends LoggingOpMode {
     private Robot robot;
-    private EventBus eventBus;
-    private Scheduler taskScheduler;
+    private Tracker tracker;
     private ControllerMap controllerMap;
     
-    private ControllerMap.ButtonEntry btn_ring_find;
-    private ControllerMap.AxisEntry ax_forward;
-    private ControllerMap.AxisEntry ax_turn;
-
-    private int total_rings;
-    private boolean lift_moving;
+    private ControllerMap.AxisEntry   ax_drive_l;
+    private ControllerMap.AxisEntry   ax_drive_r;
+    private ControllerMap.AxisEntry   ax_intake;
+    private ControllerMap.AxisEntry   ax_intake_out;
+    private ControllerMap.AxisEntry   ax_turret;
+    private ControllerMap.ButtonEntry btn_turret_reverse;
+    private ControllerMap.ButtonEntry btn_shooter;
+    private ControllerMap.ButtonEntry btn_pusher;
+    private ControllerMap.ButtonEntry btn_wobble_up;
+    private ControllerMap.ButtonEntry btn_wobble_down;
+    private ControllerMap.ButtonEntry btn_wobble_open;
+    private ControllerMap.ButtonEntry btn_wobble_close;
+    private ControllerMap.ButtonEntry btn_slow;
+    private ControllerMap.ButtonEntry btn_slow2;
+    private ControllerMap.ButtonEntry btn_wobble_int;
+    private ControllerMap.ButtonEntry btn_turret_home;
+    private ControllerMap.ButtonEntry btn_shooter_preset;
+    private ControllerMap.ButtonEntry btn_aim;
+    
+    private double driveSpeed;
+    private double slowSpeed;
+    private double lastUpdate;
+    
+    private boolean lift_up = false;
+    private boolean shooter_on = false;
+    private int slow = 0;
+    
+    private EventBus evBus;
+    private Scheduler scheduler; // just in case
+    private EventFlow liftFlow;
+    
+    private int shooterPowerIdx;
+    
+    private static final int TRIGGER_LIFT_FLOW = 0;
+    
+    private double[] speeds;
 
     @Override
-    public void init() {
+    public void init()
+    {
         robot = new Robot(hardwareMap);
-        eventBus = new EventBus();
-        robot.turret.connectEventBus(eventBus);
-        taskScheduler = new Scheduler(eventBus);
+        tracker = new Tracker(robot.turret, robot.drivetrain, 1, 0);
+        evBus = new EventBus();
+        scheduler = new Scheduler(evBus);
+        
+        liftFlow = new EventFlow(evBus);
+        Scheduler.Timer liftTimer = scheduler.addPendingTrigger(0.2, "Lift Timer");
+        
+        liftFlow.start(new Subscriber<>(TriggerEvent.class, (ev, bus, sub) -> {
+                    robot.turret.home();
+                }, "Home Turret", TRIGGER_LIFT_FLOW))
+                .then(new Subscriber<>(TurretEvent.class, (ev, bus, sub) -> {
+                    robot.lift.up();
+                }, "Lift Up", TurretEvent.TURRET_MOVED))
+                .then(new Subscriber<>(LiftEvent.class, (ev, bus, sub) -> {
+                    liftTimer.reset();
+                }, "Lift Wait", LiftEvent.LIFT_MOVED))
+                .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
+                    robot.lift.down();
+                }, "Lift Down", liftTimer.eventChannel))
+                .then(new Subscriber<>(LiftEvent.class, (ev, bus, sub) -> {},
+                   "Lift Finished", LiftEvent.LIFT_MOVED)); // implicitly jump to beginning
+        
+        robot.lift.connectEventBus(evBus);
+        robot.turret.connectEventBus(evBus);
+        
         controllerMap = new ControllerMap(gamepad1, gamepad2);
-        // setup default button map
-        controllerMap.setButtonMap("ring_find", "gamepad1", "b");
-        controllerMap.setAxisMap("forward", "gamepad1", "left_stick_y");
-        controllerMap.setAxisMap("turn", "gamepad1", "right_stick_x");
-        // TODO load profile from file
-        // assign mappings to variables
-        btn_ring_find = controllerMap.buttons.get("ring_find");
-        ax_forward = controllerMap.axes.get("forward");
-        ax_turn = controllerMap.axes.get("turn");
-
         /*
-        Scheduler.Timer timer = taskScheduler.addRepeatingTrigger(0.5, "Example timer");
-        eventBus.subscribe(TimerEvent.class, (ev, bus, sub) -> telemetry.update(), "Telemetry update trigger", timer.eventChannel);
+         Hardware required:
+         -- drivetrain (4 motors, tank, 2 axes)
+         -- intake + ramp (2 motors, 1 button)
+         -- turret (1 motor + 1 potentiometer/encoder, 1 axis + closed loop control)
+         -- lift (2 servos, 1 button + toggle)
+         -- shooter (1 motor + speed control, 1 button + toggle; telemetry for speed output)
+         -- pusher (1 servo, 1 button)
          */
-        EventFlow liftPickup = new EventFlow(eventBus);
-        Scheduler.Timer grabber_pickup = taskScheduler.addFutureTrigger(1, "Grabber Pickup");
-        Scheduler.Timer grabber_dropoff = taskScheduler.addFutureTrigger(0.1, "Grabber Dropoff");
-        grabber_pickup.cancelled = true;
-        liftPickup.start(
-            new EventBus.Subscriber<>(TriggerEvent.class,                                     // # 0
-                (ev, bus, sub) ->
-                {
-                    robot.lift.moveLiftPreset("bottom");
-                }, "Lift Down", 0))
-            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 1
-                (ev, bus, sub) ->
-                {
-                    robot.turret.setGrabber(1);
-                    grabber_pickup.reset();
-                }, "Pick Ring", 1))
-            .then(new EventBus.Subscriber<>(TimerEvent.class,                                 // # 2
-                (ev, bus, sub) ->
-                {
-                    robot.turret.setGrabber(0);
-                    robot.lift.moveLiftPreset("middle");
-                }, "Lift Reset", grabber_pickup.eventChannel))
-            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 3
-                (ev, bus, sub) ->
-                {
-                    total_rings += 1;
-                    if (total_rings < 3)
-                    {
-                        liftPickup.jump(0);
-                    }
-                }, "Lift Pickup Complete", 1))
-            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 4
-                (ev, bus, sub) ->
-                {
-                    robot.lift.moveLiftPreset("top");
-                }, "Lift Up", 5))
-            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 5
-                (ev, bus, sub) ->
-                {
-                    robot.turret.setTransfer("catch");
-                    robot.turret.setGrabber(2);
-                    grabber_dropoff.reset();
-                }, "Finger Out", 6))
-            .then(new EventBus.Subscriber<>(TimerEvent.class,                                 // # 6
-                (ev, bus, sub) ->
-                {
-                    robot.turret.setGrabber(0);
-                }, "Release Ring", grabber_dropoff.eventChannel))
-            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 7
-                (ev, bus, sub) ->
-                {
-                    robot.turret.setTransfer("out");
-                }, "Push Into Shooter", 8))
-            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 8
-                (ev, bus, sub) ->
-                {
-                    robot.turret.setTransfer("catch");
-                    total_rings -= 1;
-                    if (total_rings > 0) liftPickup.jump(6);
-                }, "Push Into Shooter", 9))
-            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // # 9
-                (ev, bus, sub) ->
-                {
-                    robot.lift.moveLiftPreset("middle");
-                    lift_moving = false;
-                }, "Push Into Shooter", 9))
-            .then(new EventBus.Subscriber<>(TriggerEvent.class,                               // #10
-                (ev, bus, sub) -> {}, "Lift Dropoff Complete", 10));
-        robot.ring_detector.enableLed(false); // turn off the blindness hazard since we don't need it right now
+        controllerMap.setAxisMap  ("drive_l",     "gamepad1", "left_stick_y" );
+        controllerMap.setAxisMap  ("drive_r",     "gamepad1", "right_stick_y");
+        controllerMap.setAxisMap  ("intake",      "gamepad1", "right_trigger");
+        controllerMap.setAxisMap  ("intake_out",  "gamepad1", "left_trigger");
+        controllerMap.setAxisMap  ("turret",      "gamepad2", "left_stick_x" );
+        controllerMap.setButtonMap("slow2",       "gamepad1", "right_bumper" );
+        controllerMap.setButtonMap("turr_reverse","gamepad2", "left_trigger");
+        controllerMap.setButtonMap("shooter",     "gamepad2", "y");
+        controllerMap.setButtonMap("pusher",      "gamepad2", "x");
+        controllerMap.setButtonMap("wobble_up",   "gamepad2", "dpad_up");
+        controllerMap.setButtonMap("wobble_dn",   "gamepad2", "dpad_down");
+        controllerMap.setButtonMap("wobble_o",    "gamepad2", "dpad_left");
+        controllerMap.setButtonMap("wobble_c",    "gamepad2", "dpad_right");
+        controllerMap.setButtonMap("slow",        "gamepad1", "left_bumper");
+        controllerMap.setButtonMap("wobble_i",    "gamepad2", "left_bumper");
+        controllerMap.setButtonMap("turr_home",   "gamepad2", "a");
+        controllerMap.setButtonMap("shoot_pre",   "gamepad2", "right_bumper");
+        controllerMap.setButtonMap("aim",         "gamepad2", "b");
+        
+        ax_drive_l      = controllerMap.axes.get("drive_l");
+        ax_drive_r      = controllerMap.axes.get("drive_r");
+        ax_intake       = controllerMap.axes.get("intake");
+        ax_intake_out   = controllerMap.axes.get("intake_out");
+        ax_turret       = controllerMap.axes.get("turret");
+        btn_shooter     = controllerMap.buttons.get("shooter");
+        btn_pusher      = controllerMap.buttons.get("pusher");
+        btn_wobble_up   = controllerMap.buttons.get("wobble_up");
+        btn_wobble_down = controllerMap.buttons.get("wobble_dn");
+        btn_wobble_open = controllerMap.buttons.get("wobble_o");
+        btn_wobble_close= controllerMap.buttons.get("wobble_c");
+        btn_slow        = controllerMap.buttons.get("slow");
+        btn_slow2       = controllerMap.buttons.get("slow2");
+        btn_wobble_int  = controllerMap.buttons.get("wobble_i");
+        btn_turret_home = controllerMap.buttons.get("turr_home");
+        btn_shooter_preset = controllerMap.buttons.get("shoot_pre");
+        btn_turret_reverse = controllerMap.buttons.get("turr_reverse");
+        btn_aim = controllerMap.buttons.get("aim");
+    
+        JsonObject config = robot.config.getAsJsonObject("teleop");
+        JsonArray driveSpeeds = config.getAsJsonArray("drive_speeds");
+        speeds = new double[driveSpeeds.size()];
+        for (int i = 0; i < driveSpeeds.size(); i++)
+        {
+            speeds[i] = driveSpeeds.get(i).getAsDouble();
+        }
+        robot.lift.down();
+        
+        robot.imu.initialize(evBus, scheduler);
+
+        robot.turret.startZeroFind();
+
+        if (Persistent.get("turret_zero_found") == null)
+            robot.turret.startZeroFind();
+
     }
 
     @Override
-    public void loop() {
-        // Drivetrain (Normal Drive)
-        robot.drivetrain.telemove(0.5*(ax_forward.get()), 0.5*(ax_turn.get()));
+    public void init_loop()
+    {
+        robot.turret.updateInit(telemetry);
+    }
+    
+    @Override
+    public void start()
+    {
+        lastUpdate = Time.now();
+        Persistent.clear();
+    }
+    
+    @Override
+    public void loop()
+    {
+        double dt = Time.since(lastUpdate);
+        lastUpdate = Time.now();
+        double speed = speeds[slow];
+        // TODO unswap control axes
+        robot.drivetrain.telemove(ax_drive_r.get() * speed,
+                                 ax_drive_l.get() * speed);
+        
 
-        // Rotator Power
-        robot.turret.rotateTurret(gamepad2.left_stick_x);
+        robot.intake.run(ax_intake.get() - ax_intake_out.get());
 
-        // Adjust Aim
-        // TODO Find endpoints, direction, and increment
-        if (gamepad2.dpad_up){
-            robot.turret.aim.setPosition(robot.turret.aim.getPosition() + 0.0001);
-        } else if (gamepad2.dpad_down){
-            robot.turret.aim.setPosition(robot.turret.aim.getPosition() - 0.0001);
+        //if (btn_aim.get()){
+        //    tracker.updateVars();
+        //}
+        double turret_adj = -ax_turret.get() * 0.003;
+        robot.turret.rotate(robot.turret.getTarget() + turret_adj);
+
+        if (btn_shooter.edge() > 0)
+        {
+            shooter_on = !shooter_on;
+            if (shooter_on) robot.turret.shooter.start();
+            else            robot.turret.shooter.stop();
         }
-
-        // Update PID
+        
+        if (btn_shooter_preset.edge() > 0)
+        {
+            shooterPowerIdx += 1;
+            robot.turret.shooter.setPreset(shooterPowerIdx);
+            robot.controlHub.setLEDColor(robot.turret.shooter.getPresetColor());
+        }
+        
+        if (btn_slow.edge() > 0)
+        {
+            if (slow == 0) slow = 1;
+            else slow = 0;
+        }
+        if (btn_slow2.edge() > 0)
+        {
+            if (slow == 0) slow = 2;
+            else slow = 0;
+        }
+        
+        
+        if (btn_pusher.get()) robot.turret.push();
+        else                  robot.turret.unpush();
+        
+        if (btn_turret_home.edge() > 0) robot.turret.home();
+        if (btn_turret_reverse.edge() > 0) robot.turret.rotate(robot.turret.getTurretShootPos());
+        
+        if (btn_wobble_up.get()) robot.wobble.up();
+        if (btn_wobble_down.get()) robot.wobble.down();
+        if (btn_wobble_open.get()) robot.wobble.open();
+        if (btn_wobble_close.get()) robot.wobble.close();
+        if (btn_wobble_int.get()) robot.wobble.middle();
+        
         robot.lift.update(telemetry);
-
-        // Constants
-        robot.turret.setShooter(1);
-        robot.intake.setIntake(1);
-
-        // Lift Conditionals
-        int r = robot.ring_detector.red();
-        int g = robot.ring_detector.green();
-        int b = robot.ring_detector.blue();
-        int brightness = Math.max(r, Math.max(g, b));
-
-        boolean ring_found = brightness > 100;
-        if ((btn_ring_find.edge() > 0 || ring_found) && !lift_moving) {
-            eventBus.pushEvent(new TriggerEvent(0));
-            // total_rings += 1;
-        }
-
-        if (total_rings == 3 && !lift_moving){
-            eventBus.pushEvent(new TriggerEvent(5));
-            total_rings = 0;
-        }
-
-        taskScheduler.loop();
-        eventBus.update();
+        robot.turret.update(telemetry);
+        robot.drivetrain.getOdometry().updateDeltas();
+        telemetry.addData("Shooter Velocity", "%.3f",
+                ((DcMotorEx)robot.turret.shooter.motor).getVelocity());
+        telemetry.addData("Shooter speed preset", robot.turret.shooter.getCurrPreset());
+        telemetry.addData("Turret target heading", "%.3f", tracker.getTargetHeading());
+        telemetry.addData("Odometry position", "%.3f,%.3f", robot.drivetrain.getOdometry().x, robot.drivetrain.getOdometry().y);
+        telemetry.addData("Turret Current Position", robot.turret.turretFb.getCurrentPosition());
+        scheduler.loop();
+        evBus.update();
+        // telemetry.addData("Turret power", "%.3f", robot.turret.turret.getPower());
     }
 }

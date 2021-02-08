@@ -1,13 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes.util;
 
-import android.util.JsonReader;
-import android.util.JsonWriter;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.internal.bind.JsonTreeWriter;
 import com.qualcomm.hardware.lynx.LynxServoController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -17,14 +13,14 @@ import com.qualcomm.robotcore.hardware.ServoController;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.telemetry.HTMLString;
 import org.firstinspires.ftc.teamcode.telemetry.Scroll;
 import org.firstinspires.ftc.teamcode.util.Configuration;
-import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Storage;
+import org.firstinspires.ftc.teamcode.util.Time;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
@@ -33,7 +29,7 @@ import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.H
 
 @TeleOp(group="util", name="Differential Servo Positioner")
 // much of this code is copied from ServoPositioner.java (from commit ab4c65f)
-public class DiffyServoPositioner extends OpMode
+public class DiffyServoPositioner extends LoggingOpMode
 {
     
     private static final int SERVOS_PER_CONTROLLER = 6;
@@ -66,6 +62,7 @@ public class DiffyServoPositioner extends OpMode
     private ControllerMap.ButtonEntry btn_ok;
     private ControllerMap.ButtonEntry btn_stop_servo;
     private ControllerMap.ButtonEntry btn_exit_to_menu;
+    private ControllerMap.ButtonEntry btn_toggle_mode;
     private ControllerMap.AxisEntry ax_change_position_a;
     private ControllerMap.AxisEntry ax_change_position_b;
     
@@ -103,6 +100,7 @@ public class DiffyServoPositioner extends OpMode
         btn_ok =             controllerMap.buttons.get("ok");
         btn_stop_servo =     controllerMap.buttons.get("stop_servo");
         btn_exit_to_menu =   controllerMap.buttons.get("exit_to_menu");
+        btn_toggle_mode =    controllerMap.buttons.get("toggle_mode");
         ax_change_position_a = controllerMap.axes.get("change_pos_a");
         ax_change_position_b = controllerMap.axes.get("change_pos_b");
     }
@@ -145,6 +143,7 @@ public class DiffyServoPositioner extends OpMode
         controllerMap.setButtonMap("ok",           ControllerMap.Controller.gamepad1, ControllerMap.Button.b);
         controllerMap.setButtonMap("stop_servo",   ControllerMap.Controller.gamepad1, ControllerMap.Button.a);
         controllerMap.setButtonMap("exit_to_menu", ControllerMap.Controller.gamepad1, ControllerMap.Button.right_bumper);
+        controllerMap.setButtonMap("toggle_mode",  ControllerMap.Controller.gamepad1, ControllerMap.Button.back);
         controllerMap.setAxisMap  ("change_pos_a",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.left_stick_y);
         controllerMap.setAxisMap  ("change_pos_b",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.right_stick_y);
     }
@@ -233,6 +232,7 @@ public class DiffyServoPositioner extends OpMode
         private Scroll posList;
         private Telemetry.Item status;
         private double lastTick = 0;
+        private boolean differential = true;
         
         @Override
         void init()
@@ -270,21 +270,23 @@ public class DiffyServoPositioner extends OpMode
         @Override
         void loop()
         {
-            if (lastTick == 0) lastTick = Scheduler.getTime(); // avoid large jump from 0 to whenever we are now
+            if (lastTick == 0) lastTick = Time.now(); // avoid large jump from 0 to whenever we are now
             if (!started)
             {
                 status.setCaption("Press the PLAY button to start");
             }
-            double dt = Scheduler.getTime() - lastTick; // seconds per loop
-            lastTick = Scheduler.getTime();
+            double dt = Time.now() - lastTick; // seconds per loop
+            lastTick = Time.now();
             double step1 = Math.pow(-ax_change_position_a.get(), 3) * 0.3 * dt;
             double step2 = Math.pow(-ax_change_position_b.get(), 3) * 0.3 * dt;
             
-            posA += step1 + step2;
+            if (differential) posA += step1 + step2;
+            else posA += step1;
             if (posA > 1) posA = 1;
             else if (posA < 0) posA = 0;
             
-            posB += step1 - step2;
+            if (differential) posB += step1 - step2;
+            else posB += step2;
             if (posB > 1) posB = 1;
             else if (posB < 0) posB = 0;
             
@@ -336,6 +338,11 @@ public class DiffyServoPositioner extends OpMode
             }
             
             posList.render(telemetry);
+            
+            if (btn_toggle_mode.edge() > 0)
+            {
+                differential = !differential;
+            }
             
             if (btn_exit_to_menu.edge() > 0)
             {
@@ -401,6 +408,7 @@ public class DiffyServoPositioner extends OpMode
     @Override
     public void stop()
     {
+        super.stop();
         save();
     }
 }

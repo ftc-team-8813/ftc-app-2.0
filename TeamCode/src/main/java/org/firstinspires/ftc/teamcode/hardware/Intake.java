@@ -1,27 +1,38 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
  * Intake -- Control intake movement.
- * TODO: Do we need this?
  */
 public class Intake {
-    public final DcMotor intake;
     public final DcMotor ramp;
+    public final CRServo appendage;
 
-    public Intake(DcMotor intake, DcMotor ramp){
-        this.intake = intake;
+    public Intake(DcMotor ramp, CRServo appendage) {
         this.ramp = ramp;
+        this.appendage = appendage;
     }
-
-    @Deprecated
-    public void setIntake(int mode){
-        // TODO Find actual power values
-        if (mode == 0){
-            intake.setPower(0);
-        } else if (mode == 1){
-            intake.setPower(-1);
-        }
+    
+    public void intake()
+    {
+        run(1);
+    }
+    
+    public void outtake()
+    {
+        run(-1);
+    }
+    
+    public void run(double speed)
+    {
+        ramp.setPower(speed);
+        appendage.setPower(speed);
+    }
+    
+    public void stop()
+    {
+        run(0);
     }
 }

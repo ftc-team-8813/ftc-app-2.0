@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.telemetry;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.util.Scheduler;
+import org.firstinspires.ftc.teamcode.util.Time;
 
 import java.util.ArrayList;
 
@@ -173,7 +173,7 @@ public class Scroll
     
     public void press(int dir)
     {
-        holdStart = Scheduler.getTime();
+        holdStart = Time.now();
         holdDir = dir;
         holdTick = false;
         
@@ -184,19 +184,19 @@ public class Scroll
     {
         if (holdTick)
         {
-            if (Scheduler.getTime() - holdStart > holdTime)
+            if (Time.now() - holdStart > holdTime)
             {
                 setScrollPos(selected + holdDir);
-                holdStart = Scheduler.getTime();
+                holdStart = Time.now();
                 return true;
             }
         }
         else
         {
-            if (Scheduler.getTime() - holdStart > preHoldTime)
+            if (Time.now() - holdStart > preHoldTime)
             {
                 setScrollPos(selected + holdDir);
-                holdStart = Scheduler.getTime();
+                holdStart = Time.now();
                 holdTick = true;
                 return true;
             }

@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.util.event;
 
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Time;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * <pre>
@@ -59,6 +59,15 @@ public class EventBus
         }
     }
     
+    public static class TickEvent extends Event
+    {
+        protected TickEvent()
+        {
+            super(0);
+            this.suppressDebug = true;
+        }
+    }
+    
     private List<Event> events;
     private List<Subscriber<?>> subscribers;
     private Logger log = new Logger("Event Bus");
@@ -109,30 +118,48 @@ public class EventBus
     public void pushEvent(Event ev)
     {
         events.add(ev);
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        String callingClassName = stackTrace[1].getClassName();
-        log.d("Push %s on channel %d (from %s)", ev.getClass().getSimpleName(), ev.channel, callingClassName);
+        if (!ev.suppressDebug)
+        {
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            String callingClassName = stackTrace[3].getClassName();
+            log.d("Push %s on channel %d (from %s)", ev.getClass().getSimpleName(), ev.channel, callingClassName);
+        }
     }
     
     @SuppressWarnings("unchecked")
     public void update()
     {
+        pushEvent(new TickEvent()); // TickEvent subs will run on every loop cycle
+    
+    
         // copy the subscriber list so they can remove themselves if they wish
         List<Subscriber<?>> oldSubs = new ArrayList<>(subscribers);
-        for (Event ev : new ArrayList<>(events))
+        // same for the event list
+        List<Event> oldEvents = new ArrayList<>(events);
+        events.clear();
+        
+        // loop subs first, since there will most likely be more subs than events at any given time
+        for (Subscriber sub : oldSubs)
         {
-            log.v("Event: %s on channel %d: %s", ev.getClass().getSimpleName(), ev.channel, ev.toString());
-            // boolean remove = false; // TODO how to handle this better
-            for (Subscriber sub : oldSubs)
+            for (Event ev : oldEvents)
             {
                 if (ev.getClass() == sub.evClass && ev.channel == sub.channel)
                 {
-                    log.v(" -> Send to subscriber '%s'", sub.name);
+                    if (!ev.suppressDebug)
+                    {
+                        log.v("Event: %s on channel %d: %s", ev.getClass().getSimpleName(), ev.channel, ev.toString());
+                        log.v(" -> Send to subscriber '%s'", sub.name);
+                    }
+                    double execStart = Time.now();
                     sub.callback.run(ev, this, sub);
-                    // remove = true; // assume the subscriber always consumes the event
+                    double elapsed = Time.now() - execStart;
+                    if (elapsed > 0.25)
+                    {
+                        log.w("Subscriber %s took %.3fs to handle %s (ch=%d)",
+                                sub.name, elapsed, ev.getClass().getSimpleName(), ev.channel);
+                    }
                 }
             }
-            events.remove(ev);
         }
     }
 }

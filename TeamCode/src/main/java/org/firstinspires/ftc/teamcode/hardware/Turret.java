@@ -1,135 +1,278 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
-import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.CRServo;
+import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.util.Configuration;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
 import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
-
-import java.io.File;
-import java.util.HashMap;
 
 public class Turret {
-    private DcMotor rotator;
-    private DcMotor shooter_motor;
-    private AnalogInput left_potentiometer;
-    private AnalogInput right_potentiometer;
-    private AnalogInput rotate_potentiometer;
-    private CalibratedAnalogInput turret_pot;
-    private Servo finger;
-    public Servo aim;
-    private CRServo left_lift;
-    private CRServo right_lift;
     
-    private Shooter shooter;
-
-    HashMap<String, Double> positions;
-
-    private int lift_target_pos;
-    private boolean enable_lift_event = false;
+    public final DcMotor turret;
+    public final Shooter shooter;
+    public final Servo pusher;
+    private Servo aim;
+    public final DcMotor turretFb;
     
-    private EventBus ev_bus;
     private Logger log = new Logger("Turret");
 
-    public Turret(AnalogInput left_potentiometer, AnalogInput right_potentiometer,
-                  Servo finger, Servo aim,
-                  CRServo left_lift, CRServo right_lift,
-                  DcMotor shooter, DcMotor rotator,
-                  AnalogInput rotate_potentiometer){
-        this.left_potentiometer = left_potentiometer;
-        this.right_potentiometer = right_potentiometer;
-        this.rotate_potentiometer = rotate_potentiometer;
-        this.turret_pot = new CalibratedAnalogInput(rotate_potentiometer, Storage.getFile("turret_calib.json"));
-        this.finger = finger;
-        this.aim = aim;
-        this.left_lift = left_lift;
-        this.right_lift = right_lift;
-        this.rotator = rotator;
-        this.shooter_motor = shooter;
-        this.shooter = new Shooter(shooter, Storage.getFile("shooter.json"));
-        this.ev_bus = null;
+    private final double TICKS = 128;
+    private final double ENC_TO_TURRET_RATIO = 110.0/30.0;
 
-        String[] pos_keys = new String[]{"in", "catch", "out"};
-        positions = Configuration.readData(pos_keys, Storage.getFile("positions/finger.json"));
-    }
+    private double turretRotationSpan = TICKS * ENC_TO_TURRET_RATIO;
+    private double turretHome;
+    private double turretHome2;
+    private double turretKp;
+    private double turretMin;
+    private double turretMax;
+    private double turretSpeed;
+    private double pushIn;
+    private double pushOut;
     
-    public void update()
+    private double turretDefSpeed;
+    
+    private double target = 0;
+    private double lastPos;
+    
+    private EventBus evBus;
+    private boolean sendEvent = false;
+    
+    private DigitalChannel zeroSw;
+
+    private static final int FIND_IDLE      = 0;
+    private static final int FIND_RAPID     = 1;
+    private static final int FIND_RAPID_REV = 2;
+    private static final int FIND_REVERSE   = 3;
+    private static final int FIND_REVERSE_2 = 4;
+    private static final int FIND_SLOW      = 5;
+    private static final int FIND_COMPLETE  = 6;
+
+    private int find_stage = FIND_IDLE;
+    private boolean find_fail = false;
+    private double revStart = 0;
+
+    public Turret(DcMotor turret, DcMotor shooter, DcMotor shooter2, Servo pusher, Servo aim,
+                  DcMotor rotateFeedback, JsonObject shooterConfig, JsonObject turretConfig,
+                  DigitalChannel zeroSw)
     {
-        shooter.update();
+        this.turret = turret;
+        this.shooter = new Shooter(shooter, shooter2, shooterConfig);
+        this.pusher = pusher;
+        this.aim = aim;
+        this.turretFb = rotateFeedback;
+        this.zeroSw = zeroSw;
+
+        JsonObject root = turretConfig;
+        turretHome = root.get("home").getAsDouble();
+        turretHome2= root.get("home180").getAsDouble();
+        turretKp   = root.get("kp").getAsDouble();
+        turretMin  = root.get("min").getAsDouble();
+        turretMax  = root.get("max").getAsDouble();
+        turretSpeed= root.get("maxSpeed").getAsDouble();
+        turretDefSpeed = turretSpeed;
+        JsonObject pusherConf = root.getAsJsonObject("pusher");
+        pushIn  = pusherConf.get("in").getAsDouble();
+        pushOut = pusherConf.get("out").getAsDouble();
+        
+        target = turretHome;
     }
     
     public void connectEventBus(EventBus evBus)
     {
-        this.ev_bus = evBus;
-        log.d("Event bus connected");
+        this.evBus = evBus;
     }
-
-    public void setGrabber(int mode){
-        // TODO Find grabber power needed for keeping ring controlled
-        if (mode == 0){
-            left_lift.setPower(0);
-            right_lift.setPower(0);
-        } else if (mode == 1){
-            left_lift.setPower(-0.2);
-            right_lift.setPower(-0.2);
-        } else if (mode == 2){
-            left_lift.setPower(0.2);
-            right_lift.setPower(0.2);
-        }
-    }
-
-    public void setTransfer(String pos){
-        finger.setPosition(positions.get(pos));
-    }
-
-    public void setShooter(int mode){
-        // TODO Find shooter power
-        if (mode == 0){
-            shooter.stop();
-        } else if (mode == 1){
-            shooter.start();
-        }
-    }
-
-    public void rotateTurret(double rotation){
-        rotator.setPower(rotation);
-    }
-
-
-    public double[] getRawPos()
+    
+    public void rotate(double position)
     {
-        return new double[]{left_potentiometer.getVoltage(), right_potentiometer.getVoltage(), rotate_potentiometer.getVoltage()};
+        rotate(position, false);
+    }
+    
+    public void rotate(double position, boolean sendEvent)
+    {
+        position = Range.clip(position, -1, 0);
+        target = position;
+        if (sendEvent) this.sendEvent = true;
     }
 
-    @Deprecated
-    public void updateLiftPID(){
-        double kP = 0.1;
-        double[] voltage_positions = new double[] {0, 0.669, 0.776};
-        double voltage = getPotenPos()[0];
-        double error = voltage - voltage_positions[lift_target_pos];
-        left_lift.setPower(error * kP);
-        right_lift.setPower(-error * kP);
-        log.v("PID update: voltage=%.3f target=%.3f error=%.3f power=%.3f", voltage, voltage_positions[lift_target_pos], error, error * kP);
-        if (Math.abs(error) < 0.05 && enable_lift_event)
-        {
-            enable_lift_event = false;
-            if (ev_bus != null) ev_bus.pushEvent(new TriggerEvent(1));
-        }
+    public double getHeading(){
+        double spin_ratio = turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
+        return spin_ratio * 360;
     }
 
-    @Deprecated
-    public double[] getPotenPos(){
-        double lVoltage = left_potentiometer.getVoltage();
-        double rVoltage = right_potentiometer.getVoltage();
-        double lValue = lVoltage / 3.3;
-        double rValue = rVoltage / 3.3;
-        if (rValue <= 0) rValue = 0;
+    public void home()
+    {
+        target = turretHome;
+        sendEvent = true;
+        // HACK: 70% power homing
+        turretSpeed = 0.7;
+        evBus.subscribe(TurretEvent.class, (ev, bus, sub) -> {
+            turretSpeed = turretDefSpeed;
+            bus.unsubscribe(sub);
+        }, "Turret Speed Reset", TurretEvent.TURRET_MOVED);
+    }
+    
+    public double getTarget()
+    {
+        return target;
+    }
+    
+    public double getPosition()
+    {
+        return turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
+    }
+
+    public double getTurretHome(){
+        return turretHome;
+    }
+
+    public double getTurretShootPos()
+    {
+        return turretHome2;
+    }
+    
+    public void update(Telemetry telemetry)
+    {
+        shooter.update();
         
-        return new double[]{lValue, rValue};
+        double pos = turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
+        lastPos = pos;
+        double error = target - pos;
+
+        if (sendEvent && Math.abs(error) < 0.05 && evBus != null)
+        {
+            sendEvent = false;
+            evBus.pushEvent(new TurretEvent(TurretEvent.TURRET_MOVED));
+        }
+        
+        double power = Range.clip(error * turretKp, -turretSpeed, turretSpeed);
+        turret.setPower(power);
+        telemetry.addData("pos", "%.3f", pos);
+        telemetry.addData("target", "%.3f", target);
+        telemetry.addData("error", "%.3f", error);
+        telemetry.addData("power", "%.3f", power);
+        telemetry.addData("Zero sense", "%s", zeroSw.getState());
+    }
+    
+    public void push()
+    {
+        pusher.setPosition(pushOut);
+    }
+    
+    public void unpush()
+    {
+        pusher.setPosition(pushIn);
+    }
+
+    // Initialization
+    public void startZeroFind()
+    {
+        turretFb.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turretFb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        find_fail = false;
+        find_stage = FIND_RAPID;
+        revStart = 0;
+    }
+
+    public boolean findComplete()
+    {
+        return find_stage == FIND_COMPLETE;
+    }
+
+    public boolean findFailed()
+    {
+        return find_fail;
+    }
+
+    public void updateInit(Telemetry telemetry)
+    {
+        String state = "[unknown]";
+        double position = getPosition();
+        switch (find_stage)
+        {
+            case FIND_RAPID:
+            {
+                turret.setPower(0.3); // positive power -> increase in position
+                state = String.format("Rapid pos=%.3f", position);
+                if (position >= 1)
+                {
+                    find_stage = FIND_RAPID_REV;
+                    turret.setPower(0);
+                }
+                else if (!zeroSw.getState())
+                {
+                    find_stage = FIND_REVERSE;
+                    turret.setPower(0);
+                }
+                break;
+            }
+            case FIND_RAPID_REV:
+            {
+                turret.setPower(-0.2);
+                state = String.format("Rapid reverse pos=%.3f", position);
+                if (position <= 0)
+                {
+                    find_stage = FIND_COMPLETE;
+                    find_fail = true;
+                    turret.setPower(0);
+                }
+                else if (!zeroSw.getState())
+                {
+                    find_stage = FIND_REVERSE;
+                    turret.setPower(0);
+                }
+                break;
+            }
+            case FIND_REVERSE:
+            {
+                turret.setPower(-0.1);
+                state = "Back up";
+                if (zeroSw.getState())
+                {
+                    revStart = position;
+                    find_stage = FIND_REVERSE_2;
+                }
+                break;
+            }
+            case FIND_REVERSE_2:
+            {
+                turret.setPower(-0.1);
+                state = String.format("Back up 2 pos=%.3f err=%.3f", position, position-revStart);
+                if (Math.abs(position - revStart) > 0.05)
+                {
+                    find_stage = FIND_SLOW;
+                    turret.setPower(0);
+                }
+                break;
+            }
+            case FIND_SLOW:
+            {
+                turret.setPower(0.08);
+                state = "Slow detect";
+                if (!zeroSw.getState())
+                {
+                    find_stage = FIND_COMPLETE;
+                    turret.setPower(0);
+                    turretFb.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    turretFb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                }
+                break;
+            }
+            case FIND_IDLE:
+            {
+                state = "Idle";
+                break;
+            }
+            case FIND_COMPLETE:
+            {
+                state = String.format("Complete -- pos=%.3f", position);
+                break;
+            }
+        }
+        telemetry.addData("Zeroing Status", state);
     }
 }

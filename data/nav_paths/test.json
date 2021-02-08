@@ -1,0 +1,101 @@
+{
+  "version": "1.0.0",
+  "defaultSpeed": 0.5,
+  "timers": {
+    "shooterDelay": 3,
+    "pushTimer": 1,
+    "shootTimer": 0.5
+  },
+  "path": [
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "shooter",
+        "params": {"action": "start"}
+      }
+    },
+    {
+      "type": "forward",
+      "dist": 2200
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "shooterDelay"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "turret",
+        "params": {"action": "rotate"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.hardware.events.TurretEvent",
+        "channel": 0
+      },
+
+      "type": "nop"
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "pushTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "turret",
+        "params": {"action": "push"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "pushTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "turret",
+        "params": {"action": "unpush"}
+      },
+
+      "condition": {
+        "name": "incRingCount",
+        "cond": "==",
+        "value": 3,
+        "jumpTrue": 7
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "shootTimer"
+      },
+      "type": "actuator",
+      "actuator": {
+        "name": "turret",
+        "params": {"action": "rotate"}
+      },
+      "condition": {
+        "name": "0",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": 3
+      }
+    },
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "shooter",
+        "params": {"action": "stop"}
+      }
+    },
+    {
+      "type": "forward",
+      "dist": 1000
+    }
+  ]
+}

@@ -1,72 +1,75 @@
 package org.firstinspires.ftc.teamcode.vision;
+
+import org.firstinspires.ftc.teamcode.vision.ImageDraw.Color;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.security.SecureClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-public class RingDetector {
-    Mat image;
-    Mat result;
-
-    public RingDetector(Mat image){
-        this.image = image;
+public class RingDetector
+{
+    private Mat workImg;
+    private Mat workImg2;
+    private Mat binaryImg;
+    
+    private static final Scalar minColor = new Scalar(3,  18,  41);
+    private static final Scalar maxColor = new Scalar(19, 231, 255);
+    
+    public RingDetector(int width, int height)
+    {
+        workImg = new Mat(width, height, CvType.CV_8UC3);
+        workImg2 = new Mat(width, height, CvType.CV_8UC3);
+        binaryImg = new Mat(width, height, CvType.CV_8UC1);
     }
-
-    public void processImage(){
-        Mat hsv = new Mat();
-        Imgproc.cvtColor(image, hsv, Imgproc.COLOR_BGR2HSV);
-
-        Scalar lower_range = new Scalar(13, 50, 50);
-        Scalar upper_range = new Scalar(255, 255, 255);
-        Mat mask = new Mat();
-        Core.inRange(hsv, lower_range, upper_range, mask);
-
-        Mat masked = new Mat();
-        Core.bitwise_and(mask, mask, masked);
-
-        Mat result = new Mat();
-        Imgproc.cvtColor(masked, result, Imgproc.COLOR_HSV2BGR);
-
-        this.result = result;
-    }
-
-    public int findRing(){
-        Mat result = this.result;
-        final int[] one_top_corner = new int[]{265, 210};
-        final int[] one_bottom_corner = new int[]{279, 215};
-        final int[] four_top_corner = new int[]{153, 165};
-        final int[] four_bottom_corner = new int[]{270, 172};
-        int one_total_values = (one_bottom_corner[0] - one_top_corner[0]) * (one_bottom_corner[1] - one_top_corner[1]);
-        int four_total_values = (four_bottom_corner[0] - four_top_corner[0]) * (four_bottom_corner[1] - four_top_corner[1]);
-        int aggregator = 0;
-        for (int y = one_top_corner[0]; y <= one_bottom_corner[0]; y++){
-            for (int x = one_top_corner[1]; x <= one_bottom_corner[1]; y++){
-                if (!Arrays.equals(result.get(x, y), new double[]{0, 0, 0})){
-                    aggregator++;
-                }
+    
+    public double detect(Mat inputImg, ImageDraw draw)
+    {
+        Imgproc.cvtColor(inputImg, workImg, Imgproc.COLOR_RGBA2BGR);
+        Imgproc.cvtColor(workImg, workImg2, Imgproc.COLOR_BGR2HLS);
+        Imgproc.blur(workImg2, workImg, new Size(5, 5));
+        
+        Core.inRange(workImg, minColor, maxColor, binaryImg);
+    
+        List<MatOfPoint> contours = new ArrayList<>();
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(binaryImg, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+        hierarchy.release();
+        
+        double maxArea = -1;
+        int maxContourIndex = -1;
+        
+        for (int i = 0; i < contours.size(); i++)
+        {
+            double area = Imgproc.contourArea(contours.get(i));
+            if (area > maxArea)
+            {
+                maxContourIndex = i;
+                maxArea = area;
             }
         }
-        double one_or_none = aggregator/one_total_values;
-        aggregator = 0;
-        if (one_or_none >= 0.9){
-            for (int y = four_top_corner[0]; y <= four_bottom_corner[0]; y++){
-                for (int x = four_top_corner[1]; x <= four_bottom_corner[1]; y++){
-                    if (!Arrays.equals(result.get(x, y), new double[]{0, 0, 0})){
-                        aggregator++;
-                    }
-                }
+        
+        if (draw != null)
+        {
+            Color notChosen = ImageDraw.RED;
+            Color chosen = ImageDraw.GREEN;
+            for (int i = 0; i < contours.size(); i++)
+            {
+                Color c = notChosen;
+                if (i == maxContourIndex) c = chosen;
+                ImageDraw.Point[] contour = ImageDraw.Point.fromContour(contours.get(i));
+                if (contour.length >= 2) draw.draw(new ImageDraw.Lines(c, 2, contour));
             }
-            double one_or_four = aggregator/four_total_values;
-            if (one_or_four >= 0.9) {
-                return 2;
-            } else {
-                return 1;
-            }
-        } else {
-            return 0;
         }
+        
+        return maxArea;
     }
 }
