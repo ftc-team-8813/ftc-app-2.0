@@ -22,9 +22,8 @@ public class Turret {
     private Logger log = new Logger("Turret");
 
     private final double TICKS = 128;
-    private final double ENC_TO_TURRET_RATIO = 110.0/30.0;
+    private final double ENC_TO_TURRET_RATIO = 110.0/30.0 * TICKS;
 
-    private double turretRotationSpan = TICKS * ENC_TO_TURRET_RATIO;
     private double turretHome;
     private double turretHome2;
     private double turretKp;

@@ -61,6 +61,11 @@ public class Odometry {
         return inches * TICKS_PER_INCH;
     }
 
+    public void resetGlobalPos(){
+        this.x = -72;
+        this.y = 72;
+    }
+
     public void resetEncoders(){
         l_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         r_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
