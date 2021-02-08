@@ -39,8 +39,8 @@
   "constants": {
     "shootFwd": -2200,
     "powershot0": -0.074,
-    "powershot1": -0.051,
-    "powershot2": -0.04,
+    "powershot1": -0.0515,
+    "powershot2": -0.0365,
 
     "near_rotate1": 68,
     "near_forward1": -1550,

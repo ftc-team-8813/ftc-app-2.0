@@ -4,9 +4,9 @@
     "maxPower": 0.40,
 
     "powershots": [
+      0.309,
       0.308,
-      0.308,
-      0.312
+      0.311
     ],
 
     "presets": [
@@ -43,7 +43,7 @@
     "arm_mid": 0.56,
     "arm_down": 0,
     "claw_open": 0.14,
-    "claw_close": 0.55
+    "claw_close": 0.61
   },
   "nav": {
     "angle_kp": 0.02,
