@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.hardware.navigation;
 
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.hardware.IMU;
@@ -11,20 +10,19 @@ import org.firstinspires.ftc.teamcode.vision.ImageDraw;
  * Currently uses motor encoders for position feedback
  */
 public class Odometry {
-    public DcMotor top_left;
-    public DcMotor top_right;
+    public DcMotor l_enc;
+    public DcMotor r_enc;
+    private IMU imu;
     public double x, y;
     public double past_l, past_r;
-    final double TICKS = 537.6;
-    final double CIRCUMFERENCE = 2.83 * Math.PI; // Inches
+    public final double TICKS_PER_INCH = 29.167;
     final double h = 7.5; // Half-Width of the robot in ticks
     public ImageDraw.Color drawColor = ImageDraw.BLUE;
     
-    public IMU imu;
 
-    public Odometry(DcMotor top_left, DcMotor top_right, IMU imu){
-        this.top_left = top_left;
-        this.top_right = top_right;
+    public Odometry(DcMotor l_enc, DcMotor r_enc, IMU imu){
+        this.l_enc = l_enc;
+        this.r_enc = r_enc;
         this.imu = imu;
     }
 
@@ -33,58 +31,54 @@ public class Odometry {
      * x is forward/back and y is left/right
      */
     public void updateDeltas(){
-        double radius, leg_x, leg_y, deltax, deltay, chord;
-        double curr_l = getCurrentL();
-        double curr_r = getCurrentR();
-        double l = curr_l - past_l;
-        double r = curr_r - past_r;
-        double heading = Math.toRadians(imu.getHeading()); // (curr_r - curr_l)/(2 * h);
-        
+        double l = getCurrentL() - past_l;
+        double r = getCurrentR() - past_r;
+        double heading = Math.toRadians(imu.getHeading());
         double dist = (l + r) / 2;
-
-        leg_x = Math.cos(heading) * dist;
-        leg_y = Math.sin(heading) * dist;
-
-//        if (r > l){
-//            radius = l / delta_heading;
-//            leg_x = Math.cos(delta_heading) * (radius + h) - (radius + h);
-//            leg_y = Math.sin(delta_heading * (radius + h));
-//        } else if (l > r){
-//            radius = r / delta_heading;
-//            leg_x = (radius + h) - Math.cos(delta_heading) * (radius + h);
-//            leg_y = Math.sin(delta_heading * (radius + h));
-//        } else {
-//            leg_x = Math.cos(delta_heading) * l;
-//            leg_y = Math.sin(delta_heading) * l;
-//        }
-//
-//        chord = Math.sqrt(Math.pow(leg_x, 2) + Math.pow(leg_y, 2));
-//        deltax = chord * Math.sin(delta_heading);
-//        deltay = chord * Math.cos(delta_heading);
+        
+        double leg_x = Math.cos(heading) * dist;
+        double leg_y = Math.sin(heading) * dist;
 
         this.x += leg_x;
         this.y += leg_y;
-        // heading += delta_heading;
-        past_l = curr_l;
-        past_r = curr_r;
+        past_l = getCurrentL();
+        past_r = getCurrentR();
     }
 
     public double getCurrentL(){
-        return ticksToInches(top_left.getCurrentPosition());
+        return ticksToInches(l_enc.getCurrentPosition());
     }
 
     public double getCurrentR(){
-        return ticksToInches(top_right.getCurrentPosition());
+        return ticksToInches(r_enc.getCurrentPosition());
     }
 
     public double ticksToInches(double ticks){
-        return ticks / 16.528;
+        return ticks / TICKS_PER_INCH;
+    }
+
+    public double inchesToTicks(double inches){
+        return inches * TICKS_PER_INCH;
+    }
+
+    public void resetGlobalPos(){
+        this.x = -72;
+        this.y = 72;
+    }
+
+    public void resetEncoders(){
+        l_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        r_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        l_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        r_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void setStartingPos(double start_y){
-        this.x = -65;
+        this.x = 0;
         this.y = start_y;
     }
+
+    public IMU getIMU(){ return this.imu;}
 
     public double getX(){
         return this.x;
@@ -92,5 +86,9 @@ public class Odometry {
 
     public double getY(){
         return this.y;
+    }
+
+    public double getH(){
+        return this.h;
     }
 }

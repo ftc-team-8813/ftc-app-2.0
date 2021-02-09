@@ -7,12 +7,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * Intake -- Control intake movement.
  */
 public class Intake {
-    public final DcMotor intake;
     public final DcMotor ramp;
     public final CRServo appendage;
 
-    public Intake(DcMotor intake, DcMotor ramp, CRServo appendage){
-        this.intake = intake;
+    public Intake(DcMotor ramp, CRServo appendage) {
         this.ramp = ramp;
         this.appendage = appendage;
     }
@@ -29,7 +27,6 @@ public class Intake {
     
     public void run(double speed)
     {
-        intake.setPower(speed);
         ramp.setPower(speed);
         appendage.setPower(speed);
     }
