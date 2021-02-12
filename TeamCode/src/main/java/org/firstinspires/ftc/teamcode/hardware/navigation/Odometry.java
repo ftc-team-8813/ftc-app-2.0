@@ -13,13 +13,13 @@ public class Odometry {
     public DcMotor l_enc;
     public DcMotor r_enc;
     private IMU imu;
+    // TODO these variables should be private
     public double x, y;
     public double past_l, past_r;
     public final double TICKS_PER_INCH = 29.167;
     final double h = 7.5; // Half-Width of the robot in ticks
     public ImageDraw.Color drawColor = ImageDraw.BLUE;
     
-
     public Odometry(DcMotor l_enc, DcMotor r_enc, IMU imu){
         this.l_enc = l_enc;
         this.r_enc = r_enc;
@@ -46,7 +46,7 @@ public class Odometry {
     }
 
     public double getCurrentL(){
-        return ticksToInches(l_enc.getCurrentPosition());
+        return -ticksToInches(l_enc.getCurrentPosition());
     }
 
     public double getCurrentR(){
@@ -61,11 +61,6 @@ public class Odometry {
         return inches * TICKS_PER_INCH;
     }
 
-    public void resetGlobalPos(){
-        this.x = -72;
-        this.y = 72;
-    }
-
     public void resetEncoders(){
         l_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         r_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -73,9 +68,10 @@ public class Odometry {
         r_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void setStartingPos(double start_y){
-        this.x = 0;
-        this.y = start_y;
+    public void setPosition(double x, double y)
+    {
+        this.x = x;
+        this.y = y;
     }
 
     public IMU getIMU(){ return this.imu;}

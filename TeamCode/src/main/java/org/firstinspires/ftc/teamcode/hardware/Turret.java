@@ -93,7 +93,7 @@ public class Turret {
     
     public void rotate(double position, boolean sendEvent)
     {
-        position = Range.clip(position, -1, 0);
+        position = Range.clip(position, -1 + turretHome, 0);
         target = position;
         if (sendEvent) this.sendEvent = true;
     }

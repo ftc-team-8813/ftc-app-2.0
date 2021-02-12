@@ -49,6 +49,11 @@
     "angle_kp": 0.02,
     "dist_kp": 0.005
   },
+  "tracker": {
+    "offset": 135,
+    "target_x": 24,
+    "target_y": 24
+  },
 
   "turret_cal": {
     "xValues": [

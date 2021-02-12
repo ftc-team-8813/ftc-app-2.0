@@ -66,7 +66,8 @@ public class CurrentTele extends LoggingOpMode {
     public void init()
     {
         robot = new Robot(hardwareMap);
-        tracker = new Tracker(robot.turret, robot.drivetrain, 1, 0);
+        // TODO load configuration for tracker
+        tracker = new Tracker(robot.turret, robot.drivetrain, 135);
         evBus = new EventBus();
         scheduler = new Scheduler(evBus);
         
