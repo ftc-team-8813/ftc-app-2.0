@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes.util;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.hardware.tracking.TrainingDataLogger;
@@ -12,6 +14,7 @@ import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 public class TrainingDataCollector extends LoggingOpMode {
     private Robot robot;
     private Odometry odometry;
+    private IMU imu;
     private TrainingDataLogger logger;
     private ControllerMap controllerMap;
 
@@ -28,8 +31,8 @@ public class TrainingDataCollector extends LoggingOpMode {
     @Override
     public void init() {
         robot = new Robot(hardwareMap);
-        // odometry = new Odometry(robot.drivetrain.top_left, robot.drivetrain.top_right);
-        odometry.setStartingPos(1);
+        odometry = new Odometry(robot.drivetrain.top_left, robot.drivetrain.top_right, imu);
+        odometry.setPosition(0, 48);
         logger = new TrainingDataLogger();
         controllerMap = new ControllerMap(gamepad1, gamepad2);
 
@@ -53,14 +56,14 @@ public class TrainingDataCollector extends LoggingOpMode {
     public void loop() {
         robot.drivetrain.telemove(ax_drive_l.get(), ax_drive_r.get());
 
-        shooter_power = Math.max(ax_shooter.get(), turret_power);
+        shooter_power = Range.clip(shooter_power + ax_shooter.get() * 0.1, -1, 1);
         robot.turret.shooter.setPower(turret_power);
 
-        double turret_adj = Math.pow(ax_turret.get(), 3) * 0.025;
+        double turret_adj = Math.pow(ax_turret.get(), 3) * 0.001;
         robot.turret.rotate(robot.turret.getTarget() + turret_adj);
 
         if (btn_log.edge() > 0){
-            logger.addDataPoint(getHypo(), shooter_power, robot.turret.getHeading());
+            logger.addDataPoint(getHypo(), shooter_power);
         }
 
         if (btn_remove_log.edge() > 0){
@@ -74,8 +77,8 @@ public class TrainingDataCollector extends LoggingOpMode {
     }
 
     public double getHypo(){
-        double x_side = odometry.getX() + 72;
-        double y_side = odometry.getY() + 36;
+        double x_side = 72 - odometry.getX();
+        double y_side = 36 - odometry.getY();
         return Math.sqrt(Math.pow(x_side, 2) + Math.pow(y_side, 2));
     }
 }

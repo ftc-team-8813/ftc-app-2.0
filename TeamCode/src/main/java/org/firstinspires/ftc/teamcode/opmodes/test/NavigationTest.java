@@ -4,67 +4,71 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.events.AngleHoldEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.IMUEvent;
+import org.firstinspires.ftc.teamcode.hardware.navigation.Navigator;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
-import org.firstinspires.ftc.teamcode.util.event.Event;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 
 import java.nio.ByteBuffer;
 
-@TeleOp(name="Odometry Test")
-public class OdometryTest extends LoggingOpMode
+@TeleOp(name="Navigator Test")
+public class NavigationTest extends LoggingOpMode
 {
     private Robot robot;
     private Server server;
     private IMU imu;
     private EventBus evBus;
     private Scheduler scheduler;
-    
     private Odometry odometry;
+    
+    private Navigator nav;
+    
+    private int state = 0; // 0 = initialized, 1 = running
     
     @Override
     public void init()
     {
         robot = new Robot(hardwareMap);
-        server = new Server(19999);
-        
+        server = new Server(19998);
+    
         robot.drivetrain.resetEncoders();
         imu = robot.imu;
-
+    
         evBus = new EventBus();
         scheduler = new Scheduler(evBus);
-        
-        imu.setImmediateStart(true);
+    
         imu.initialize(evBus, scheduler);
-
-        Scheduler.Timer resetTimer = scheduler.addPendingTrigger(0.5, "Reset Delay");
-        evBus.subscribe(IMUEvent.class, (ev, bus, sub) -> {
-            if (ev.new_state == IMU.STARTED)
-                resetTimer.reset();
-        }, "Reset Heading -- Delay", 0);
-        evBus.subscribe(TimerEvent.class, (ev, bus, sub) -> {
-            imu.resetHeading();
-        }, "Reset Heading", resetTimer.eventChannel);
+    
+        odometry = robot.drivetrain.getOdometry();
         
-        
-        odometry = new Odometry(hardwareMap.dcMotor.get("turret"), hardwareMap.dcMotor.get("intake"), imu);
-        
+        nav = new Navigator(robot.drivetrain, odometry);
+        nav.connectEventBus(evBus);
+        state = 0;
+    
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
             // Get data
-            ByteBuffer buf = ByteBuffer.allocate(44);
-            buf.putDouble(odometry.past_l);
-            buf.putDouble(odometry.past_r);
-            buf.putDouble(imu.getHeading()); // imu heading
-            buf.putDouble(odometry.x);
-            buf.putDouble(odometry.y);
-            odometry.drawColor.write(buf);
+            ByteBuffer buf = ByteBuffer.allocate(64);
+            buf.putFloat((float)odometry.x); // 4
+            buf.putFloat((float)odometry.y); // 8
+            buf.putFloat((float)imu.getHeading()); // 12
+            buf.putFloat((float)0); // calculated odometry heading -- 16
+            buf.putInt(robot.drivetrain.top_left.getCurrentPosition()); // 20
+            buf.putInt(robot.drivetrain.top_right.getCurrentPosition()); // 24
+            buf.putFloat((float)odometry.past_l); // 28
+            buf.putFloat((float)odometry.past_r); // 32
+            buf.putFloat((float)nav.getTargetX()); // 36
+            buf.putFloat((float)nav.getTargetY()); // 40
+            buf.putFloat((float)nav.getTargetHeading()); // 44
+            buf.putFloat((float)nav.getTargetDistance()); // 48
+            buf.putFloat((float)nav.getFwdPower()); // 52
+            buf.putFloat((float)nav.getTurnPower()); // 56
+            buf.put((byte)state); // 57
             buf.flip();
-            
+        
             resp.respond(buf);
         });
         server.startServer();
@@ -85,12 +89,22 @@ public class OdometryTest extends LoggingOpMode
     }
     
     @Override
+    public void start()
+    {
+        nav.setForwardSpeed(0.5);
+        nav.setTurnSpeed(0.5);
+        nav.goTo(0, -30);
+        state = 1;
+    }
+    
+    @Override
     public void loop()
     {
-        loopTelem();
         odometry.updateDeltas();
+        nav.update(telemetry);
         scheduler.loop();
         evBus.update();
+        loopTelem();
     }
     
     @Override

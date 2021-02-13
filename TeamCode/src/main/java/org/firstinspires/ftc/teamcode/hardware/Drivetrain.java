@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
+import org.firstinspires.ftc.teamcode.hardware.events.AutoMoveEvent;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
@@ -17,30 +17,28 @@ public class Drivetrain {
     public final DcMotor bottom_left;
     public final DcMotor top_right;
     public final DcMotor bottom_right;
-    // public final Odometry odometry;
-    public IMU imu;
+    private Odometry odometry;
     private EventBus ev;
-    public int auto_id = -1;
-    final double TICKS = 537.6;
-    final double CIRCUMFERENCE = 2.83 * Math.PI; // Inches
-    double target_pos = 0;
+    private int auto_id = -1;
+    public double l_target = 0;
+    public double r_target = 0;
     boolean send_event = false;
 
-    public Drivetrain(DcMotor top_left, DcMotor bottom_left, DcMotor top_right, DcMotor bottom_right){
+    public Drivetrain(DcMotor top_left, DcMotor bottom_left, DcMotor top_right, DcMotor bottom_right, Odometry odometry){
         this.top_left = top_left;
         this.bottom_left = bottom_left;
         this.top_right = top_right;
         this.bottom_right = bottom_right;
-        // this.odometry = new Odometry(top_left, top_right);
+        this.odometry = odometry;
 
         //Reverses left side to match right side rotation and sets mode
         top_right.setDirection(REVERSE);
         bottom_right.setDirection(REVERSE);
-        // TODO drive motor encoders seem to be faulty right now
         top_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bottom_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         top_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bottom_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        odometry.resetEncoders();
     }
 
     public void resetEncoders(){
@@ -54,7 +52,7 @@ public class Drivetrain {
         top_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bottom_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
-    
+
     /**
      * Move the drivetrain based on gamepad-compatible inputs
      * @param left_stick_y Left Wheel Velocity
@@ -70,42 +68,16 @@ public class Drivetrain {
         bottom_right.setPower(right_wheel_speed);
     }
 
-    /**
-     * Updates target distance in ticks
-     * Appends to current position to account for previous movements
-     * @param distance Desired distance in inches
-     */
-    public void setTargetPos(double distance){
-        double rotations = distance / CIRCUMFERENCE;
-        double total_ticks = rotations * TICKS;
-        target_pos = total_ticks + top_left.getCurrentPosition();
-        send_event = true;
+    public void smartMove(double left_stick_y, double right_stick_y){
+
     }
 
-    /**
-     * Accelerates towards a set target position
-     */
-    public void autoPIDUpdate(){
-        // TODO Find PID constant
-        final double kP = 1;
-        double error = target_pos - top_left.getCurrentPosition();
-        double left_wheel_speed = -error * kP;
-        double right_wheel_speed = error * kP;
-        // TODO Increase deadband for error to make it possible to reach
-        if (error > 10 || error < -10){
-            top_left.setPower(left_wheel_speed);
-            bottom_left.setPower(left_wheel_speed);
-            top_right.setPower(right_wheel_speed);
-            bottom_right.setPower(right_wheel_speed);
-        } else {
-            if (ev != null && send_event){
-                send_event = false;
-                ev.pushEvent(new NavMoveEvent(NavMoveEvent.NAVIGATION_COMPLETE));
-            }
-        }
+    public Odometry getOdometry(){
+        return this.odometry;
     }
 
     public void connectEventBus(EventBus ev){
         this.ev = ev;
+
     }
 }

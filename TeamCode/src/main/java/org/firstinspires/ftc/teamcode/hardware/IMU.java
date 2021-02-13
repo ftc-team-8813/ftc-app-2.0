@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.hardware.events.AngleHoldEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.IMUEvent;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
@@ -88,16 +89,11 @@ public class IMU
         
         private float heading, roll, pitch;
         
-        private boolean immediateStart = false;
+        private Scheduler scheduler;
         
         protected Worker()
         {
             log = new Logger("IMU Worker");
-        }
-        
-        public void setImmediateStart(boolean immediateStart)
-        {
-            this.immediateStart = immediateStart;
         }
         
         private void update()
@@ -202,11 +198,17 @@ public class IMU
                             }
                             
                             detailStatus = "Initialized";
-                            if (immediateStart) setState(STARTED);
-                            else setState(INITIALIZED);
+                            setState(INITIALIZED);
+                            
+                            Scheduler.Timer resetTimer = scheduler.addFutureTrigger(0.5, "Reset Delay");
+                            evBus.subscribe(TimerEvent.class, (ev2, bus2, sub2) -> {
+                                resetHeading();
+                                setState(STARTED);
+                            }, "Reset Heading", resetTimer.eventChannel);
                         }
                         break;
                     }
+                    case INITIALIZED:
                     case STARTED:
                     {
                         update();
@@ -272,13 +274,15 @@ public class IMU
         params.mode = BNO055IMU.SensorMode.IMU;
         
         this.evBus = evBus;
+        worker.scheduler = scheduler;
         workerInterval = scheduler.addRepeatingTrigger(0.05, "IMU Worker Timer");
         workerSub = evBus.subscribe(TimerEvent.class, worker, "IMU Worker", workerInterval.eventChannel);
     }
     
+    @Deprecated
     public void setImmediateStart(boolean immediateStart)
     {
-        if (worker.getState() < INITIALIZED) worker.setImmediateStart(immediateStart);
+    
     }
     
     public void start()

@@ -28,12 +28,12 @@ public class WhereAmI extends LoggingOpMode
         evBus = new EventBus();
         scheduler = new Scheduler(evBus);
         
-        hold = new AngleHold(new IMU(robot.bn), evBus, scheduler, robot.config.getAsJsonObject("nav"));
+        hold = new AngleHold(robot.imu, evBus, scheduler, robot.config.getAsJsonObject("nav"));
         drivetrain.top_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drivetrain.top_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drivetrain.bottom_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drivetrain.bottom_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        odo_r = hardwareMap.dcMotor.get("intake");
+        odo_r = hardwareMap.dcMotor.get("ramp");
         odo_l = hardwareMap.dcMotor.get("turret");
         odo_l.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         odo_r.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
