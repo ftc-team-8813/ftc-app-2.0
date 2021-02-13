@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.navigation.AngleHold;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -15,20 +14,21 @@ import org.firstinspires.ftc.teamcode.util.event.EventBus;
 public class WhereAmI extends LoggingOpMode
 {
     private Drivetrain drivetrain;
-    private AngleHold hold;
     private EventBus evBus;
     private Scheduler scheduler;
     private DcMotor odo_l, odo_r;
+    private IMU imu;
     
     @Override
     public void init()
     {
         Robot robot = new Robot(hardwareMap);
         drivetrain = robot.drivetrain;
+        imu = robot.imu;
         evBus = new EventBus();
         scheduler = new Scheduler(evBus);
         
-        hold = new AngleHold(robot.imu, evBus, scheduler, robot.config.getAsJsonObject("nav"));
+        imu.initialize(evBus, scheduler);
         drivetrain.top_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drivetrain.top_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drivetrain.bottom_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -48,7 +48,7 @@ public class WhereAmI extends LoggingOpMode
         telemetry.addData("Back R", drivetrain.bottom_right.getCurrentPosition());
         telemetry.addData("Odo L", odo_l.getCurrentPosition());
         telemetry.addData("Odo R", odo_r.getCurrentPosition());
-        telemetry.addData("IMU status", hold.getStatus());
+        telemetry.addData("IMU status", imu.getStatus() + " -- " + imu.getDetailStatus());
         
         scheduler.loop();
         evBus.update();
