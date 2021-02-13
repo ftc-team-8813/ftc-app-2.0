@@ -39,11 +39,11 @@
     "drive_speeds": [-0.65, -0.4, -0.5]
   },
   "wobble": {
-    "arm_up": 1,
-    "arm_mid": 0.56,
-    "arm_down": 0,
-    "claw_open": 0.14,
-    "claw_close": 0.61
+    "arm_up": 0.22,
+    "arm_mid": 0.41,
+    "arm_down": 1,
+    "claw_open": 0.83,
+    "claw_close": 0.5
   },
   "nav": {
     "angle_kp": 0.02,

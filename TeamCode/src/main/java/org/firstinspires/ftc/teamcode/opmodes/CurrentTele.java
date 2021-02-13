@@ -147,7 +147,7 @@ public class CurrentTele extends LoggingOpMode {
         {
             speeds[i] = driveSpeeds.get(i).getAsDouble();
         }
-        robot.lift.down();
+        robot.wobble.up();
         
         robot.imu.initialize(evBus, scheduler);
 
