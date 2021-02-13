@@ -72,6 +72,8 @@ public class TrackerTest extends LoggingOpMode {
     public void init_loop()
     {
         robot.turret.updateInit(telemetry);
+        scheduler.loop();
+        ev.update();
     }
 
     @Override

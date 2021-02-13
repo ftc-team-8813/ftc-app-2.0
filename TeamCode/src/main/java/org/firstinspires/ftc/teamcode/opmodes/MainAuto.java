@@ -3,14 +3,11 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.NavPath;
-import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
@@ -65,7 +62,7 @@ public class MainAuto extends LoggingOpMode
     
     private Logger log = new Logger("Autonomous");
     
-    private static final String serial = "3522DE6F";
+    private static final String WEBCAM_SERIAL = "3522DE6F";
     
     private ByteBuffer telemBuf;
     private boolean telemUsed = true;
@@ -149,8 +146,8 @@ public class MainAuto extends LoggingOpMode
             detectStage = DETECT_REQUEST_FRAME;
         });
         
-        webcam = Webcam.forSerial(serial);
-        if (webcam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + serial);
+        webcam = Webcam.forSerial(WEBCAM_SERIAL);
+        if (webcam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + WEBCAM_SERIAL);
         frameHandler = new Webcam.SimpleFrameHandler();
         webcam.open(ImageFormat.YUY2, 800, 448, 30, frameHandler);
     
@@ -181,7 +178,8 @@ public class MainAuto extends LoggingOpMode
             homeComplete = true;
             Persistent.put("turret_zero_found", true);
         }
-        autoPath.loop(telemetry, false);
+        telemetry.addData("IMU status", robot.imu.getStatus() + " -- " + robot.imu.getDetailStatus());
+        telemetry.addData("IMU heading", robot.imu.getHeading());
         scheduler.loop();
         bus.update();
     }
@@ -220,10 +218,7 @@ public class MainAuto extends LoggingOpMode
         if (telemUsed)
         {
             telemBuf.clear();
-            for (double d : autoPath.navTelemetry)
-            {
-                telemBuf.putDouble(d);
-            }
+            // TODO add navigation data
             telemBuf.putDouble(robot.turret.getPosition());
             telemBuf.putDouble(robot.turret.getTarget());
             telemBuf.putDouble(robot.turret.shooter.motor.getPower());
@@ -233,7 +228,7 @@ public class MainAuto extends LoggingOpMode
         }
         
         webcam.loop(bus);
-        autoPath.loop(telemetry, true);
+        autoPath.loop(telemetry);
         robot.turret.update(telemetry);
         scheduler.loop();
         bus.update();
@@ -257,7 +252,7 @@ public class MainAuto extends LoggingOpMode
     
     private void initServer()
     {
-        server = new Server(8813);
+        server = new Server(8814);
         Logger.serveLogs(server, 0x01);
         
         server.registerProcessor(0x02, (cmd, payload, resp) -> {

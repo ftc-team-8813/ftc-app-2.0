@@ -16,8 +16,6 @@ public class Navigator
     private Odometry odometry;
     private IMU imu;
     private EventBus ev;
-
-    private EventFlow goTo;
     
     private double fwdError;
     private double angleTarget;
@@ -42,7 +40,6 @@ public class Navigator
         this.drivetrain = drivetrain;
         this.odometry = odo;
         imu = odo.getIMU();
-        goTo = new EventFlow(ev);
         
         forwardKp = 0.5;
         turnKp = 0.01;
@@ -87,7 +84,7 @@ public class Navigator
                 if (distanceError < 0.5)
                 {
                     navigating = false;
-                    ev.pushEvent(new NavMoveEvent(NavMoveEvent.NAVIGATION_COMPLETE));
+                    ev.pushEvent(new NavMoveEvent(NavMoveEvent.MOVE_COMPLETE));
                 }
                 telemetry.addData("Distance error", "%.1f", distanceError);
             }
@@ -125,11 +122,13 @@ public class Navigator
     public void turn(double angle)
     {
         angleTarget += angle;
+        sendEvent_turn = true;
     }
     
     public void turnAbs(double angle)
     {
         angleTarget = angle;
+        sendEvent_turn = true;
     }
     
     public void goTo(double x, double y)
