@@ -32,6 +32,7 @@ public class TrackerTest extends LoggingOpMode {
         double off = trackerConf.get("offset").getAsDouble();
         double target_x = trackerConf.get("target_x").getAsDouble();
         double target_y = trackerConf.get("target_y").getAsDouble();
+        robot.drivetrain.getOdometry().setPosition(66, 48);
         
         tracker = new Tracker(robot.turret, robot.drivetrain, off);
         tracker.setTarget(target_x, target_y);
