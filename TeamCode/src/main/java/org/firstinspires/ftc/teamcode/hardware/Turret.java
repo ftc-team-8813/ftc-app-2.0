@@ -94,6 +94,7 @@ public class Turret {
     
     public void rotate(double position, boolean sendEvent)
     {
+        if (sendEvent) log.d("Rotate -> %.3f", position);
         position = Range.clip(position, -1 + turretHome, 0);
         target = position;
         if (sendEvent) this.sendEvent = true;
@@ -147,7 +148,6 @@ public class Turret {
         {
             sendEvent = false;
             evBus.pushEvent(new TurretEvent(TurretEvent.TURRET_MOVED));
-            evBus.pushEvent(new PowershotEvent(PowershotEvent.SHOOT_RING));
         }
         
         double power = Range.clip(error * turretKp, -turretSpeed, turretSpeed);

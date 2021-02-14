@@ -64,6 +64,12 @@ public class Shooter
     
     public void start()
     {
+        start(maxPower);
+    }
+    
+    public void start(double power)
+    {
+        maxPower = power;
         if (!started)
         {
             startTime = System.nanoTime();

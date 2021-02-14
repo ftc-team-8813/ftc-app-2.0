@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.Turret;
 import org.firstinspires.ftc.teamcode.hardware.events.LiftEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.PowershotEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
@@ -67,6 +68,9 @@ public class CurrentTele extends LoggingOpMode {
     private double[] speeds;
     private double[] powershot_angles;
     private  double[] powershot_powers;
+    
+    private boolean autoPowershotRunning = false;
+    private int ringCount = 0;
 
     @Override
     public void init()
@@ -79,7 +83,7 @@ public class CurrentTele extends LoggingOpMode {
         
         liftFlow = new EventFlow(evBus);
         powershotFlow = new EventFlow(evBus);
-        Scheduler.Timer powershotTimer = scheduler.addPendingTrigger(0.2, "powershotTimer");
+        Scheduler.Timer powershotTimer = scheduler.addPendingTrigger(1, "powershotTimer");
         Scheduler.Timer shooterTimer = scheduler.addPendingTrigger(3, "shooterTimer");
 
         JsonObject config = robot.config.getAsJsonObject("teleop");
@@ -97,38 +101,42 @@ public class CurrentTele extends LoggingOpMode {
         }
 
         powershotFlow.start(new Subscriber<>(PowershotEvent.class, (ev, bus, sub) -> {
+                    autoPowershotRunning = true;
+                    ringCount = 0;
                     robot.turret.unpush();
-                    robot.turret.shooter.setPower(powershot_powers[0]);
+                    robot.turret.shooter.start(powershot_powers[0]);
                     shooterTimer.reset();
                 }, "Start Up Shooter", PowershotEvent.TRIGGER_POWERSHOT))
                 .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
                     robot.turret.rotate(powershot_angles[0], true);
-                }, "Turn Powershot 1", shooterTimer.eventChannel))
-                .then(new Subscriber<>(PowershotEvent.class, (ev, bus, sub) -> {
+                }, "Turn Powershot", shooterTimer.eventChannel))
+                .then(new Subscriber<>(TurretEvent.class, (ev, bus, sub) -> {
+                    powershotTimer.reset();
+                }, "Wait for rotate", TurretEvent.TURRET_MOVED))
+                .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
                     robot.turret.push();
                     powershotTimer.reset();
-                }, "Shoot Powershot 1", PowershotEvent.SHOOT_RING))
+                }, "Shoot Powershot", powershotTimer.eventChannel))
                 .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
                     robot.turret.unpush();
-                    robot.turret.shooter.setPower(powershot_powers[1]);
-                    robot.turret.rotate(powershot_angles[1], true);
-                }, "Turn Powershot 2", powershotTimer.eventChannel))
-                .then(new Subscriber<>(PowershotEvent.class, (ev, bus, sub) -> {
-                    robot.turret.push();
                     powershotTimer.reset();
-                }, "Shoot Powershot 2", PowershotEvent.SHOOT_RING))
+                }, "Unpush", powershotTimer.eventChannel))
                 .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
-                    robot.turret.unpush();
-                    robot.turret.shooter.setPower(powershot_powers[2]);
-                    robot.turret.rotate(powershot_angles[2], true);
-                }, "Turn Powershot 3", powershotTimer.eventChannel))
-                .then(new Subscriber<>(PowershotEvent.class, (ev, bus, sub) -> {
-                    robot.turret.push();
-                    powershotTimer.reset();
-                }, "Shoot Powershot 3", PowershotEvent.SHOOT_RING))
-                .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
-                    robot.turret.unpush();
-                }, "Reset Pusher", powershotTimer.eventChannel));
+                    ringCount += 1;
+                    if (ringCount < 3)
+                    {
+                        robot.turret.shooter.start(powershot_powers[ringCount]);
+                        robot.turret.rotate(powershot_angles[ringCount], true);
+                        powershotFlow.jump(2);
+                    }
+                    else
+                    {
+                        robot.turret.unpush();
+                        robot.turret.shooter.stop();
+                        autoPowershotRunning = false;
+                        powershotFlow.stop();
+                    }
+                }, "Turn Powershot 2", powershotTimer.eventChannel));
         
         robot.lift.connectEventBus(evBus);
         robot.turret.connectEventBus(evBus);
@@ -229,11 +237,27 @@ public class CurrentTele extends LoggingOpMode {
         //if (btn_aim.get()){
         //    tracker.updateVars();
         //}
-        double turret_adj = -ax_turret.get() * 0.003;
-        robot.turret.rotate(robot.turret.getTarget() + turret_adj);
+        if (autoPowershotRunning)
+        {
+            if (ax_turret.get() > 0.1)
+            {
+                powershotFlow.stop();
+                autoPowershotRunning = false;
+            }
+        }
+        else
+        {
+            double turret_adj = -ax_turret.get() * 0.003;
+            robot.turret.rotate(robot.turret.getTarget() + turret_adj);
+        }
 
         if (btn_shooter.edge() > 0)
         {
+            if (autoPowershotRunning)
+            {
+                powershotFlow.stop();
+                autoPowershotRunning = false;
+            }
             shooter_on = !shooter_on;
             if (shooter_on) robot.turret.shooter.start();
             else            robot.turret.shooter.stop();
@@ -241,6 +265,11 @@ public class CurrentTele extends LoggingOpMode {
         
         if (btn_shooter_preset.edge() > 0)
         {
+            if (autoPowershotRunning)
+            {
+                powershotFlow.stop();
+                autoPowershotRunning = false;
+            }
             shooterPowerIdx += 1;
             robot.turret.shooter.setPreset(shooterPowerIdx);
             robot.controlHub.setLEDColor(robot.turret.shooter.getPresetColor());
@@ -257,12 +286,38 @@ public class CurrentTele extends LoggingOpMode {
             else slow = 0;
         }
         
+        if (autoPowershotRunning)
+        {
+            if (btn_pusher.get())
+            {
+                powershotFlow.stop();
+                autoPowershotRunning = false;
+            }
+        }
+        else
+        {
+            if (btn_pusher.get()) robot.turret.push();
+            else robot.turret.unpush();
+        }
         
-        if (btn_pusher.get()) robot.turret.push();
-        else                  robot.turret.unpush();
-        
-        if (btn_turret_home.edge() > 0) robot.turret.home();
-        if (btn_turret_reverse.edge() > 0) robot.turret.rotate(robot.turret.getTurretShootPos());
+        if (btn_turret_home.edge() > 0)
+        {
+            if (autoPowershotRunning)
+            {
+                powershotFlow.stop();
+                autoPowershotRunning = false;
+            }
+            robot.turret.home();
+        }
+        if (btn_turret_reverse.edge() > 0)
+        {
+            if (autoPowershotRunning)
+            {
+                powershotFlow.stop();
+                autoPowershotRunning = false;
+            }
+            robot.turret.rotate(robot.turret.getTurretShootPos());
+        }
         
         if (btn_wobble_up.get()) robot.wobble.up();
         if (btn_wobble_down.get()) robot.wobble.down();
