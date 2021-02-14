@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.events.PowershotEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -145,7 +146,7 @@ public class Turret {
         if (sendEvent && Math.abs(error) < 0.05 && evBus != null)
         {
             sendEvent = false;
-            evBus.pushEvent(new TurretEvent(TurretEvent.TURRET_MOVED));
+            evBus.pushEvent(new PowershotEvent(PowershotEvent.TURRET_AIMED));
         }
         
         double power = Range.clip(error * turretKp, -turretSpeed, turretSpeed);
@@ -160,6 +161,7 @@ public class Turret {
     public void push()
     {
         pusher.setPosition(pushOut);
+        evBus.pushEvent(new PowershotEvent(PowershotEvent.TURRET_AIMED));
     }
     
     public void unpush()

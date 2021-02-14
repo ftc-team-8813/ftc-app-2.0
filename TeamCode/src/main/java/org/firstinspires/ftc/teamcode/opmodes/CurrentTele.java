@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.events.LiftEvent;
+import org.firstinspires.ftc.teamcode.hardware.events.PowershotEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
 import org.firstinspires.ftc.teamcode.hardware.tracking.Tracker;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
@@ -43,6 +44,7 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.ButtonEntry btn_turret_home;
     private ControllerMap.ButtonEntry btn_shooter_preset;
     private ControllerMap.ButtonEntry btn_aim;
+    private ControllerMap.ButtonEntry btn_powershot;
     
     private double driveSpeed;
     private double slowSpeed;
@@ -55,12 +57,16 @@ public class CurrentTele extends LoggingOpMode {
     private EventBus evBus;
     private Scheduler scheduler; // just in case
     private EventFlow liftFlow;
+    private EventFlow powershotFlow;
     
     private int shooterPowerIdx;
     
     private static final int TRIGGER_LIFT_FLOW = 0;
+    private static final int TRIGGER_POWERSHOT_FLOW = 0;
     
     private double[] speeds;
+    private double[] powershot_angle;
+    private  double[] powershot_powers;
 
     @Override
     public void init()
@@ -72,8 +78,24 @@ public class CurrentTele extends LoggingOpMode {
         scheduler = new Scheduler(evBus);
         
         liftFlow = new EventFlow(evBus);
+        powershotFlow = new EventFlow(evBus);
+
         Scheduler.Timer liftTimer = scheduler.addPendingTrigger(0.2, "Lift Timer");
-        
+
+        JsonObject config = robot.config.getAsJsonObject("teleop");
+        JsonArray powershotAngle = config.getAsJsonArray("powershot_angles");
+        JsonArray powershotPowers = config.getAsJsonArray("powershot_powers");
+        powershot_angle = new double[powershotAngle.size()];
+        for (int i = 0; i < powershotAngle.size(); i++)
+        {
+            speeds[i] = powershotAngle.get(i).getAsDouble();
+        }
+        powershot_powers = new double[powershotPowers.size()];
+        for (int i = 0; i < powershotPowers.size(); i++)
+        {
+            speeds[i] = powershotPowers.get(i).getAsDouble();
+        }
+
         liftFlow.start(new Subscriber<>(TriggerEvent.class, (ev, bus, sub) -> {
                     robot.turret.home();
                 }, "Home Turret", TRIGGER_LIFT_FLOW))
@@ -88,6 +110,31 @@ public class CurrentTele extends LoggingOpMode {
                 }, "Lift Down", liftTimer.eventChannel))
                 .then(new Subscriber<>(LiftEvent.class, (ev, bus, sub) -> {},
                    "Lift Finished", LiftEvent.LIFT_MOVED)); // implicitly jump to beginning
+
+        powershotFlow.start(new Subscriber<>(PowershotEvent.class, (ev, bus, sub) -> {
+                    robot.turret.unpush();
+                    robot.turret.shooter.setPower(powershot_powers[0]);
+                    robot.turret.rotate(powershot_angle[0]);
+                }, "Turn Powershot 1", PowershotEvent.TRIGGER_POWERSHOT))
+                .then(new Subscriber<>(PowershotEvent.class, (ev, bus, sub) -> {
+                    robot.turret.push();
+                }, "Shoot Powershot 1", PowershotEvent.TURRET_AIMED))
+                .then(new Subscriber<>(PowershotEvent.class, (ev, bus, sub) -> {
+                    robot.turret.unpush();
+                    robot.turret.shooter.setPower(powershot_powers[1]);
+                    robot.turret.rotate(powershot_angle[1]);
+                }, "Turn Powershot 2", PowershotEvent.RING_SHOT))
+                .then(new Subscriber<>(PowershotEvent.class, (ev, bus, sub) -> {
+                    robot.turret.push();
+                }, "Shoot Powershot 2", PowershotEvent.TURRET_AIMED))
+                .then(new Subscriber<>(PowershotEvent.class, (ev, bus, sub) -> {
+                    robot.turret.unpush();
+                    robot.turret.shooter.setPower(powershot_powers[2]);
+                    robot.turret.rotate(powershot_angle[2]);
+                }, "Turn Powershot 3", PowershotEvent.RING_SHOT))
+                .then(new Subscriber<>(PowershotEvent.class, (ev, bus, sub) -> {
+                    robot.turret.push();
+                }, "Shoot Powershot 3", PowershotEvent.TURRET_AIMED));
         
         robot.lift.connectEventBus(evBus);
         robot.turret.connectEventBus(evBus);
@@ -120,6 +167,7 @@ public class CurrentTele extends LoggingOpMode {
         controllerMap.setButtonMap("turr_home",   "gamepad2", "a");
         controllerMap.setButtonMap("shoot_pre",   "gamepad2", "right_bumper");
         controllerMap.setButtonMap("aim",         "gamepad2", "b");
+        controllerMap.setButtonMap("powershot",   "gamepad1", "a");
         
         ax_drive_l      = controllerMap.axes.get("drive_l");
         ax_drive_r      = controllerMap.axes.get("drive_r");
@@ -139,8 +187,7 @@ public class CurrentTele extends LoggingOpMode {
         btn_shooter_preset = controllerMap.buttons.get("shoot_pre");
         btn_turret_reverse = controllerMap.buttons.get("turr_reverse");
         btn_aim = controllerMap.buttons.get("aim");
-    
-        JsonObject config = robot.config.getAsJsonObject("teleop");
+
         JsonArray driveSpeeds = config.getAsJsonArray("drive_speeds");
         speeds = new double[driveSpeeds.size()];
         for (int i = 0; i < driveSpeeds.size(); i++)
@@ -227,6 +274,10 @@ public class CurrentTele extends LoggingOpMode {
         if (btn_wobble_open.get()) robot.wobble.open();
         if (btn_wobble_close.get()) robot.wobble.close();
         if (btn_wobble_int.get()) robot.wobble.middle();
+
+        if (btn_powershot.edge() > 0){
+            evBus.pushEvent(new PowershotEvent(PowershotEvent.TRIGGER_POWERSHOT));
+        }
         
         robot.lift.update(telemetry);
         robot.turret.update(telemetry);

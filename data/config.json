@@ -36,7 +36,9 @@
     }
   },
   "teleop": {
-    "drive_speeds": [-0.5, -0.35, -0.75]
+    "drive_speeds": [-0.5, -0.35, -0.75],
+    "powershot_angles": [0.1, 0.2, 0.3],
+    "powershot_powers": [0.5, 0.5, 0.5]
   },
   "wobble": {
     "arm_up": 0.20,
