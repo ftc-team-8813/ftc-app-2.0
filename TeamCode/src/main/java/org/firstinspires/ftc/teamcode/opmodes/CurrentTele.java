@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.events.LiftEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.PowershotEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
-import org.firstinspires.ftc.teamcode.hardware.tracking.Tracker;
+import org.firstinspires.ftc.teamcode.hardware.autoshoot.Tracker;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;

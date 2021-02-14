@@ -5,17 +5,17 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.autoshoot.ShooterDataLogger;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
-import org.firstinspires.ftc.teamcode.hardware.tracking.TrainingDataLogger;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
-@TeleOp(name="TrainingDataCollector")
-public class TrainingDataCollector extends LoggingOpMode {
+@TeleOp(name="ShooterDataCollector")
+public class ShooterDataCollector extends LoggingOpMode {
     private Robot robot;
     private Odometry odometry;
     private IMU imu;
-    private TrainingDataLogger logger;
+    private ShooterDataLogger logger;
     private ControllerMap controllerMap;
 
     private ControllerMap.AxisEntry ax_drive_l;
@@ -33,7 +33,7 @@ public class TrainingDataCollector extends LoggingOpMode {
         robot = new Robot(hardwareMap);
         odometry = new Odometry(robot.drivetrain.top_left, robot.drivetrain.top_right, imu);
         odometry.setPosition(0, 48);
-        logger = new TrainingDataLogger();
+        logger = new ShooterDataLogger();
         controllerMap = new ControllerMap(gamepad1, gamepad2);
 
 
@@ -69,6 +69,10 @@ public class TrainingDataCollector extends LoggingOpMode {
         if (btn_remove_log.edge() > 0){
             logger.removeLastPoint();
         }
+
+        telemetry.addData("Turret Position: ", robot.turret.getTarget());
+        telemetry.addData("Shooter Power: ", shooter_power);
+        telemetry.update();
     }
 
     public void stop(){
