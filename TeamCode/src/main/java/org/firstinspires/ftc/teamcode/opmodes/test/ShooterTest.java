@@ -38,7 +38,11 @@ public class ShooterTest extends LoggingOpMode
             out.putFloat((float)((DcMotorEx)turret.shooter.motor).getVelocity(AngleUnit.RADIANS));
             out.putFloat((float)((DcMotorEx)turret.shooter.motor2).getVelocity(AngleUnit.RADIANS));
             out.put((byte)(turret.shooter.running() ? 1 : 0));
+            
+            out.flip();
+            resp.respond(out);
         });
+        server.startServer();
     }
     
     @Override

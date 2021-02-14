@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.hardware.events.AngleHoldEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.IMUEvent;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
