@@ -21,6 +21,9 @@ public class ShooterDataLogger {
     }
 
     public void removeLastPoint(){
+        if (hypos.isEmpty() && powers.isEmpty()){
+            return;
+        }
         int last_index = hypos.size() - 1;
         hypos.remove(last_index);
         powers.remove(last_index);

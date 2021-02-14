@@ -146,7 +146,8 @@ public class Turret {
         if (sendEvent && Math.abs(error) < 0.05 && evBus != null)
         {
             sendEvent = false;
-            evBus.pushEvent(new PowershotEvent(PowershotEvent.TURRET_AIMED));
+            evBus.pushEvent(new TurretEvent(TurretEvent.TURRET_MOVED));
+            evBus.pushEvent(new PowershotEvent(PowershotEvent.SHOOT_RING));
         }
         
         double power = Range.clip(error * turretKp, -turretSpeed, turretSpeed);
@@ -161,7 +162,6 @@ public class Turret {
     public void push()
     {
         pusher.setPosition(pushOut);
-        evBus.pushEvent(new PowershotEvent(PowershotEvent.TURRET_AIMED));
     }
     
     public void unpush()
