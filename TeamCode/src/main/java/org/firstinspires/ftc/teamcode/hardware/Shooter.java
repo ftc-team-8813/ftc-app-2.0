@@ -4,7 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.util.Configuration;
 
 import java.io.File;
@@ -54,8 +56,8 @@ public class Shooter
         this.motor2 = motor2;
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         powers = new ArrayList<>();
         loadConfiguration(config);
     }
@@ -88,15 +90,18 @@ public class Shooter
     {
         if (!started)
         {
-            setPower(0);
-            return;
+            double vel = ((DcMotorEx)motor).getVelocity(AngleUnit.RADIANS);
+            double power = -vel * 0.05;
+            setPower(power);
         }
-        
-        double time = (double)(System.nanoTime() - startTime) / 1_000_000_000;
-        double power;
-        if (time >= rampTime) power = maxPower;
-        else                  power = (time / rampTime) * maxPower;
-        setPower(power);
+        else
+        {
+            double time = (double) (System.nanoTime() - startTime) / 1_000_000_000;
+            double power;
+            if (time >= rampTime) power = maxPower;
+            else power = (time / rampTime) * maxPower;
+            setPower(power);
+        }
     }
     
     private void loadConfiguration(JsonObject root)
