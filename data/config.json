@@ -1,7 +1,7 @@
 {
   "shooter": {
     "rampTime": 1,
-    "maxPower": 0.45,
+    "maxPower": 0.41,
 
     "powershots": [
       0.309,
@@ -37,8 +37,8 @@
   },
   "teleop": {
     "drive_speeds": [-0.5, -0.35, -0.75],
-    "powershot_angles": [0.1, 0.2, 0.3],
-    "powershot_powers": [0.5, 0.5, 0.5]
+    "powershot_angles": [-0.622, -0.61125, -0.607],
+    "powershot_powers": [0.4555, 0.4535, 0.445]
   },
   "wobble": {
     "arm_up": 0.20,

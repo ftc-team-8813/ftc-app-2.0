@@ -87,7 +87,7 @@ public class MainAuto extends LoggingOpMode
         
         robot.wobble.close();
         
-        autoPath = new NavPath(Storage.getFile("nav_paths/auto_v2.json"), bus, scheduler, robot, robot.config.getAsJsonObject("nav"));
+        autoPath = new NavPath(Storage.getFile("nav_paths/auto_v1.json"), bus, scheduler, robot, robot.config.getAsJsonObject("nav"));
         autoPath.addActuator("turret", (params) -> {
             String action = params.get("action").getAsString();
             switch (action)

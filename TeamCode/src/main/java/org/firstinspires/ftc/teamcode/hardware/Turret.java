@@ -138,7 +138,7 @@ public class Turret {
     
     public void update(Telemetry telemetry)
     {
-        shooter.update();
+        shooter.update(telemetry);
         
         double pos = turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
         lastPos = pos;
@@ -153,9 +153,9 @@ public class Turret {
         double power = Range.clip(error * turretKp, -turretSpeed, turretSpeed);
         turret.setPower(power);
         telemetry.addData("pos", "%.3f", pos);
-        telemetry.addData("target", "%.3f", target);
+        telemetry.addData("target", "%.4f", target);
         telemetry.addData("error", "%.3f", error);
-        telemetry.addData("power", "%.3f", power);
+        telemetry.addData("tuuret_power", "%.3f", power);
         telemetry.addData("Zero sense", "%s", zeroSw.getState());
     }
     

@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.util.Configuration;
 
@@ -92,7 +93,7 @@ public class Shooter
         return started;
     }
     
-    public void update()
+    public void update(Telemetry telemetry)
     {
         if (!started)
         {
@@ -108,6 +109,7 @@ public class Shooter
             else power = (time / rampTime) * maxPower;
             setPower(power);
         }
+        telemetry.addData("shooter_power", "%.4f", maxPower);
     }
     
     private void loadConfiguration(JsonObject root)

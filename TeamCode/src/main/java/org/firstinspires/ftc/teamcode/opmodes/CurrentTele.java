@@ -104,15 +104,15 @@ public class CurrentTele extends LoggingOpMode {
                     autoPowershotRunning = true;
                     ringCount = 0;
                     robot.turret.unpush();
-                    robot.turret.shooter.start(powershot_powers[0]);
+                    robot.turret.shooter.start(powershot_powers[ringCount]);
                     shooterTimer.reset();
                 }, "Start Up Shooter", PowershotEvent.TRIGGER_POWERSHOT))
                 .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
-                    robot.turret.rotate(powershot_angles[0], true);
+                    robot.turret.rotate(powershot_angles[ringCount], true);
                 }, "Turn Powershot", shooterTimer.eventChannel))
                 .then(new Subscriber<>(TurretEvent.class, (ev, bus, sub) -> {
                     powershotTimer.reset();
-                }, "Wait for rotate", TurretEvent.TURRET_MOVED))
+                }, "Pause Powershot", TurretEvent.TURRET_MOVED))
                 .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
                     robot.turret.push();
                     powershotTimer.reset();
@@ -169,7 +169,7 @@ public class CurrentTele extends LoggingOpMode {
         controllerMap.setButtonMap("turr_home",   "gamepad2", "a");
         controllerMap.setButtonMap("shoot_pre",   "gamepad2", "right_bumper");
         controllerMap.setButtonMap("aim",         "gamepad2", "b");
-        controllerMap.setButtonMap("powershot",   "gamepad1", "a");
+        controllerMap.setButtonMap("powershot",   "gamepad1", "dpad_down");
         
         ax_drive_l      = controllerMap.axes.get("drive_l");
         ax_drive_r      = controllerMap.axes.get("drive_r");
@@ -338,6 +338,7 @@ public class CurrentTele extends LoggingOpMode {
         telemetry.addData("Turret target heading", "%.3f", tracker.getTargetHeading());
         telemetry.addData("Odometry position", "%.3f,%.3f", robot.drivetrain.getOdometry().x, robot.drivetrain.getOdometry().y);
         telemetry.addData("Turret Current Position", robot.turret.turretFb.getCurrentPosition());
+        telemetry.addData("Turret Target Position", robot.turret.getTarget());
         scheduler.loop();
         evBus.update();
         // telemetry.addData("Turret power", "%.3f", robot.turret.turret.getPower());
