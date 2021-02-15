@@ -468,10 +468,13 @@ public class NavPath
         int maj = Integer.parseInt(split[0]);
         int min = Integer.parseInt(split[1]);
         int patch = Integer.parseInt(split[2]);
-        if (maj > formatVersion[0] || min > formatVersion[1] || patch > formatVersion[2])
+        if (maj > formatVersion[0]
+            || (min > formatVersion[1] && maj <= formatVersion[0])
+            || (patch > formatVersion[2] && min <= formatVersion[1] && maj <= formatVersion[0]))
             throw new IllegalArgumentException(String.format("Unsupported future version -- %d.%d.%d > %d.%d.%d",
                     maj, min, patch, formatVersion[0], formatVersion[1], formatVersion[2]));
-        if (maj < formatVersion[0] || min < formatVersion[1])
+        if (maj < formatVersion[0]
+            || min < formatVersion[1])
             throw new IllegalArgumentException(String.format("Incompatible past version -- %d.%d.%d < %d.%d.%d",
                     maj, min, patch, formatVersion[0], formatVersion[1], formatVersion[2]));
     }
