@@ -26,8 +26,10 @@ import java.util.Map;
 // NavPath objects load path data from a JSON file
 public class NavPath
 {
-    private static final int[] formatVersion = {1, 1, 0};
+    private static final int[] formatVersion = {1, 0, 2};
     private double defaultSpeed;
+    // private PositionSrc positionSrc;
+    // private AngleSrc angleSrc;
     private HashMap<String, Timer> timers;
     private HashMap<String, Actuator> actuators;
     private HashMap<String, ConditionProducer> conditions;
@@ -37,8 +39,11 @@ public class NavPath
     private ArrayList<PathEntry> paths;
     private int currPath;
     
-    private Navigator navigator;
-    private double lastTargetAngle;
+    private AngleHold angleHold;
+    private double fwdTarget = 0;
+    private double speed = 0;
+    private boolean sendEvent = false;
+    private double kP;
     
     private static final String[] comparisons = {
             "==", "!=", "<", ">", "<=", ">="
@@ -48,6 +53,8 @@ public class NavPath
     private Scheduler scheduler;
     private Robot robot;
     private File jsonFile;
+    
+    public double[] navTelemetry = new double[6];
     
     private Logger log = new Logger("Nav Path");
     private boolean pathComplete;
@@ -88,13 +95,10 @@ public class NavPath
         constants = new HashMap<>();
         labels = new HashMap<>();
         paths = new ArrayList<>();
-        
-        navigator = new Navigator(robot.drivetrain, robot.drivetrain.getOdometry());
-    }
-    
-    public Navigator getNavigator()
-    {
-        return navigator;
+        robot.drivetrain.resetEncoders();
+        this.angleHold = new AngleHold(robot.imu, evBus, scheduler, navConfig);
+        this.kP = navConfig.get("dist_kp").getAsDouble();
+        log.i("kP=%.3f", kP);
     }
     
     public void addActuator(String name, Actuator actuator)
@@ -117,28 +121,45 @@ public class NavPath
         return pathComplete;
     }
     
-    public void loop(Telemetry telemetry)
+    public void loop(Telemetry telemetry, boolean run)
     {
-        navigator.update(telemetry);
+        double fwdPos = (robot.drivetrain.top_right.getCurrentPosition() + robot.drivetrain.top_left.getCurrentPosition()) / 2.0;
+        double fwdError = fwdTarget - fwdPos;
+        double fwdPower = Range.clip(kP * fwdError * speed, -speed, speed);
+        if (Math.abs(fwdPower) < 0.07 && sendEvent)
+        {
+            sendEvent = false;
+            evBus.pushEvent(new NavMoveEvent(NavMoveEvent.FORWARD_COMPLETE));
+        }
+        double turnPower = angleHold.getTurnPower();
+        if (run) robot.drivetrain.telemove(fwdPower, -turnPower);
+        navTelemetry[0] = fwdPower;
+        navTelemetry[1] = turnPower;
+        navTelemetry[2] = fwdPos;
+        navTelemetry[3] = angleHold.getHeading();
+        navTelemetry[4] = currPath;
+        navTelemetry[5] = speed;
+        telemetry.addData("Forward target", "%.3f", fwdTarget);
+        telemetry.addData("Turn target", "%.3f", angleHold.getTarget());
+        telemetry.addData("Forward position", "%.3f", fwdPos);
+        telemetry.addData("Power", fwdPower);
+        telemetry.addData("Heading", "%.3f", angleHold.getHeading());
+        telemetry.addData("Path", currPath);
     }
     
-    private void setXYTarget(double x, double y, double speed)
+    private void setFwdTarget(double target, double speed)
     {
-        navigator.setForwardSpeed(speed);
-        navigator.setTurnSpeed(speed);
-        navigator.goTo(x, y);
-    }
-    
-    private void setAngleTarget(double angle)
-    {
-        lastTargetAngle = angle;
-        navigator.turnAbs(angle);
+        this.speed = speed;
+        fwdTarget = target;
+        sendEvent = true;
     }
     
     /*
          {
-           "version": "1.1.0",
+           "version": "1.0.2",
            "defaultSpeed": default speed,
+           "positionSrc": "drive", [or odometry] // for future implementation
+           "angleSrc": "imu", [or drive, or odometry] // for future implementation
            "timers": {
              timer name: delay
            }
@@ -147,11 +168,11 @@ public class NavPath
            }
            "path": [
              {
-               "type": drive/turn/actuator/nop,
-               "x": target x position (if drive) {or constant}
-               "y": target y position (if drive) {or constant}
-               "rotation": target heading, in degrees (if turn) {or constant}
-               "speed": [optional, if forward or turn] non-default speed, {or constant}
+               "type": forward/turn/actuator/nop,
+               "dist": [if forward] distance to move, {or constant name}
+               "rotation": [if turn] angle to rotate, {or constant name}
+               "ensure": make sure the position is correct, [unused]
+               "speed": [optional, if forward or turn] non-default speed, {or constant name}
                "absolute": if true, set position instead of adding
                
                "actuator": { [if external]
@@ -159,13 +180,13 @@ public class NavPath
                  "params": { actuator parameters },
                },
                
-               [nop can only have trigger and condition]
+               [only trigger and condition available for nop]
                
                // if not present, jump immediately to this path entry
                "trigger": {
                  "class": full class name of event,
                  "channel": event channel,
-                 "timer": timer name (instead of channel), if class is TimerEvent
+                 "timer": timer name (instead of channel)
                },
                
                
@@ -193,6 +214,8 @@ public class NavPath
         
         defaultSpeed = root.get("defaultSpeed").getAsDouble();
         log.d("-> Default speed: %.3f", defaultSpeed);
+        // positionSrc = PositionSrc.valueOf(root.get("positionSrc").getAsString());
+        // angleSrc = AngleSrc.valueOf(root.get("angleSrc").getAsString());
         if (root.has("timers"))
         {
             JsonObject timers = root.getAsJsonObject("timers");
@@ -274,7 +297,7 @@ public class NavPath
     private class PathEntry
     {
         PathType type;
-        double x, y;
+        double distance;
         double rotation;
         boolean ensure;
         boolean absolute;
@@ -296,11 +319,10 @@ public class NavPath
             log.d("  -> Path entry %d:", index);
             type = PathType.valueOf(entry.get("type").getAsString());
             log.d("    -> Type: %s", type.name());
-            if (type == PathType.drive)
+            if (type == PathType.forward)
             {
-                x = getNumOrConstant(entry.get("x"));
-                y = getNumOrConstant(entry.get("y"));
-                log.d("    -> Displacement: <%.2f, %.2f>", x, y);
+                distance = getNumOrConstant(entry.get("dist"));
+                log.d("    -> Distance: %.1f", distance);
             }
             else if (type == PathType.turn)
             {
@@ -423,24 +445,24 @@ public class NavPath
         
         private void actuallyRun()
         {
-            if (type == PathType.drive)
+            if (type == PathType.forward)
             {
-                if (absolute) setXYTarget(x, y, speed);
-                else setXYTarget(navigator.getTargetX() + x, navigator.getTargetY() + y, speed);
-                log.d("-> Actually run path -> Move (abs=%s) <%.2f,%.2f> inches @ power=%.3f",
-                        absolute, x, y, speed);
-                log.d("  -> Target position: <%.2f,%.2f>", navigator.getTargetX(), navigator.getTargetY());
+                if (absolute) setFwdTarget(distance, speed);
+                else setFwdTarget(fwdTarget + distance, speed);
+                log.d("-> Actually run path -> Move forward (abs=%s) %.1f ticks @ power=%.3f",
+                        absolute, distance, speed);
+                log.d("  -> Target position: %.1f", fwdTarget);
                 evBus.subscribe(NavMoveEvent.class, (ev, bus, sub) -> {
                     runNextPath();
                     bus.unsubscribe(sub);
-                }, "Move Complete", NavMoveEvent.MOVE_COMPLETE);
+                }, "Forward Move Complete", NavMoveEvent.FORWARD_COMPLETE);
             }
             else if (type == PathType.turn)
             {
-                if (absolute) setAngleTarget(rotation);
-                else setAngleTarget(lastTargetAngle + rotation);
+                if (absolute) angleHold.setTarget(rotation);
+                else angleHold.setTarget(angleHold.getTarget() + rotation);
                 log.d("-> Actually run path -> Turn (abs=%s) %.3f degrees", absolute, rotation);
-                log.d("  -> Target angle: %.3f", lastTargetAngle);
+                log.d("  -> Target angle: %.3f", angleHold.getTarget());
                 evBus.subscribe(NavMoveEvent.class, (ev, bus, sub) -> {
                     runNextPath();
                     bus.unsubscribe(sub);
@@ -465,8 +487,8 @@ public class NavPath
     private static void validateVersion(String version)
     {
         String[] split = version.split("\\.");
-        int maj = Integer.parseInt(split[0]);
-        int min = Integer.parseInt(split[1]);
+        int maj   = Integer.parseInt(split[0]);
+        int min   = Integer.parseInt(split[1]);
         int patch = Integer.parseInt(split[2]);
         if (maj > formatVersion[0] || min > formatVersion[1] || patch > formatVersion[2])
             throw new IllegalArgumentException(String.format("Unsupported future version -- %d.%d.%d > %d.%d.%d",
@@ -476,9 +498,22 @@ public class NavPath
                     maj, min, patch, formatVersion[0], formatVersion[1], formatVersion[2]));
     }
     
-    private enum PathType
+    private enum PositionSrc
     {
         drive,
+        odometry
+    }
+    
+    private enum AngleSrc
+    {
+        imu,
+        drive,
+        odometry
+    }
+    
+    private enum PathType
+    {
+        forward,
         turn,
         actuator,
         nop

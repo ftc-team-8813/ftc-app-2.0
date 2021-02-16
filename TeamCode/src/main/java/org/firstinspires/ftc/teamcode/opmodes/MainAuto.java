@@ -87,7 +87,7 @@ public class MainAuto extends LoggingOpMode
         
         robot.wobble.close();
         
-        autoPath = new NavPath(Storage.getFile("nav_paths/auto_v3.json"), bus, scheduler, robot, robot.config.getAsJsonObject("nav"));
+        autoPath = new NavPath(Storage.getFile("nav_paths/auto_v2.json"), bus, scheduler, robot, robot.config.getAsJsonObject("nav"));
         autoPath.addActuator("turret", (params) -> {
             String action = params.get("action").getAsString();
             switch (action)
@@ -228,7 +228,7 @@ public class MainAuto extends LoggingOpMode
         }
         
         webcam.loop(bus);
-        autoPath.loop(telemetry);
+        autoPath.loop(telemetry, true);
         robot.turret.update(telemetry);
         scheduler.loop();
         bus.update();
