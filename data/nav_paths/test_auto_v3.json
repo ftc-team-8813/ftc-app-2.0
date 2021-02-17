@@ -1,0 +1,49 @@
+{
+  "version": "1.1.0",
+  "defaultSpeed": 0.5,
+  "_comments": [
+
+  ],
+
+  "_uses": [
+
+  ],
+
+  "timers": {
+
+  },
+
+  "constants": {
+
+  },
+
+  "path": [
+    {
+      "type": "drive",
+      "absolute": true,
+
+      "x": -58.2,
+      "y": 0
+    },
+
+    {
+      "type": "turn",
+      "absolute": true,
+      "rotation": 0
+    },
+
+    {
+      "type": "drive",
+      "absolute": true,
+      "x": -67.3,
+      "y": -34.9
+    },
+
+    {
+      "type": "turn",
+      "absolute": true,
+      "rotation": 85
+    }
+  ]
+
+}

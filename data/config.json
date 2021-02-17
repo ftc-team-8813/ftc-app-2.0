@@ -1,7 +1,7 @@
 {
   "shooter": {
     "rampTime": 1,
-    "maxPower": 0.45,
+    "maxPower": 0.41,
 
     "powershots": [
       0.309,
@@ -10,7 +10,7 @@
     ],
 
     "presets": [
-      {"power":  0.45, "color": [255, 255, 0]},
+      {"power":  0.41, "color": [255, 255, 0]},
       {"power":  0.37, "color": [64,  0,   128]}
     ]
   },
