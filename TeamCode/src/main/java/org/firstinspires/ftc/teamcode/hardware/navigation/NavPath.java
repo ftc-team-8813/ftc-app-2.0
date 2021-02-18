@@ -26,8 +26,9 @@ import java.util.Map;
 // NavPath objects load path data from a JSON file
 public class NavPath
 {
-    private static final int[] formatVersion = {1, 1, 0};
+    private static final int[] formatVersion = {1, 1, 1};
     private double defaultSpeed;
+    private boolean defaultBackwards = false;
     private HashMap<String, Timer> timers;
     private HashMap<String, Actuator> actuators;
     private HashMap<String, ConditionProducer> conditions;
@@ -122,11 +123,11 @@ public class NavPath
         navigator.update(telemetry);
     }
     
-    private void setXYTarget(double x, double y, double speed)
+    private void setXYTarget(double x, double y, double speed, boolean backwards)
     {
         navigator.setForwardSpeed(speed);
         navigator.setTurnSpeed(speed);
-        navigator.goTo(x, y);
+        navigator.goTo(x, y, backwards);
     }
     
     private void setAngleTarget(double angle)
@@ -137,8 +138,9 @@ public class NavPath
     
     /*
          {
-           "version": "1.1.0",
+           "version": "1.1.1",
            "defaultSpeed": default speed,
+           "defaultDir": "forwards" or "backwards" (optional, forwards by default)
            "timers": {
              timer name: delay
            }
@@ -150,6 +152,7 @@ public class NavPath
                "type": drive/turn/actuator/nop,
                "x": target x position (if drive) {or constant}
                "y": target y position (if drive) {or constant}
+               "direction": "forwards" or "backwards" (or default) (if drive)
                "rotation": target heading, in degrees (if turn) {or constant}
                "speed": [optional, if forward or turn] non-default speed, {or constant}
                "absolute": if true, set position instead of adding
@@ -193,6 +196,11 @@ public class NavPath
         
         defaultSpeed = root.get("defaultSpeed").getAsDouble();
         log.d("-> Default speed: %.3f", defaultSpeed);
+        if (root.has("defaultDir"))
+        {
+            defaultBackwards = Direction.valueOf(root.get("defaultDir").getAsString()).val;
+            log.d("-> Default direction: %s", root.get("defaultDir").getAsString());
+        }
         if (root.has("timers"))
         {
             JsonObject timers = root.getAsJsonObject("timers");
@@ -278,6 +286,7 @@ public class NavPath
         double rotation;
         boolean ensure;
         boolean absolute;
+        boolean backwards;
         double speed;
         JsonObject actuatorParams;
         Actuator actuator;
@@ -301,6 +310,11 @@ public class NavPath
                 x = getNumOrConstant(entry.get("x"));
                 y = getNumOrConstant(entry.get("y"));
                 log.d("    -> Displacement: <%.2f, %.2f>", x, y);
+                
+                if (entry.has("direction"))
+                    backwards = Direction.valueOf(entry.get("direction").getAsString()).val;
+                else
+                    backwards = defaultBackwards;
             }
             else if (type == PathType.turn)
             {
@@ -425,10 +439,10 @@ public class NavPath
         {
             if (type == PathType.drive)
             {
-                if (absolute) setXYTarget(x, y, speed);
-                else setXYTarget(navigator.getTargetX() + x, navigator.getTargetY() + y, speed);
-                log.d("-> Actually run path -> Move (abs=%s) <%.2f,%.2f> inches @ power=%.3f",
-                        absolute, x, y, speed);
+                if (absolute) setXYTarget(x, y, speed, backwards);
+                else setXYTarget(navigator.getTargetX() + x, navigator.getTargetY() + y, speed, backwards);
+                log.d("-> Actually run path -> Move (abs=%s) <%.2f,%.2f> inches back=%s @ power=%.3f",
+                        absolute, x, y, backwards, speed);
                 log.d("  -> Target position: <%.2f,%.2f>", navigator.getTargetX(), navigator.getTargetY());
                 evBus.subscribe(NavMoveEvent.class, (ev, bus, sub) -> {
                     runNextPath();
@@ -485,5 +499,17 @@ public class NavPath
         turn,
         actuator,
         nop
+    }
+    
+    private enum Direction
+    {
+        forwards(false),
+        backwards(true);
+        
+        public final boolean val;
+        Direction(boolean val)
+        {
+            this.val = val;
+        }
     }
 }

@@ -84,8 +84,6 @@ public class MainAuto extends LoggingOpMode
         telemBuf = ByteBuffer.allocate(65535);
         robot.imu.initialize(bus, scheduler);
         
-        initServer();
-        
         robot.wobble.close();
         
         autoPath = new NavPath(Storage.getFile("nav_paths/test_auto_v3.json"),
@@ -172,6 +170,8 @@ public class MainAuto extends LoggingOpMode
     
         Persistent.clear();
         homeComplete = false;
+    
+        initServer();
         // robot.turret.startZeroFind();
     }
     
@@ -263,6 +263,7 @@ public class MainAuto extends LoggingOpMode
     {
         server = new Server(8814);
         Logger.serveLogs(server, 0x01);
+        autoPath.getNavigator().serve(server, 0x05);
         
         server.registerProcessor(0x02, (cmd, payload, resp) -> {
             if (serverFrame != null)

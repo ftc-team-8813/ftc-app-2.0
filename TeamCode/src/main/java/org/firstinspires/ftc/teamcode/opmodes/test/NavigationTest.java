@@ -50,10 +50,12 @@ public class NavigationTest extends LoggingOpMode
         nav.connectEventBus(evBus);
         state = 0;
         
+        /*
         evBus.subscribe(NavMoveEvent.class, (ev, bus, sub) -> {
             state = 2;
             nav.turnAbs(0);
         }, "Nav finished", NavMoveEvent.MOVE_COMPLETE);
+         */
     
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
             // Get data
@@ -100,8 +102,9 @@ public class NavigationTest extends LoggingOpMode
     {
         nav.setForwardSpeed(0.3);
         nav.setTurnSpeed(0.5);
+        nav.goTo(48, 0, true);
         // nav.goTo(0, -48);
-        nav.turnAbs(360);
+        // nav.turnAbs(360);
         state = 1;
     }
     
