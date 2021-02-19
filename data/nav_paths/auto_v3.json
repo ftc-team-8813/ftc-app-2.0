@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
+  "version": "1.1.0",
   "defaultSpeed": 0.5,
   "_comments": [
 
@@ -33,30 +33,35 @@
     "pushDelay": 0.8,
     "re_spinupDelay": 1.5,
     "wobbleDownDelay": 1,
-    "wobbleOpenDelay": 0.3,
-    "wobbleUpDelay": 0.5
+    "wobbleOpenDelay": 0.3
   },
 
   "constants": {
-    "shootFwd": -2200,
+    "shootX": 1,
     "powershot0": -0.074,
     "powershot1": -0.0545,
     "powershot2": -0.0372,
 
-    "near_rotate1": 68,
-    "near_forward1": -1550,
-    "near_rotate2": 120,
-    "near_forward2": 400,
+    "near_rotate1": 91,
+    "near_X1": 1890,
+    "near_Y1": 800,
+    "near_rotate2": 91,
+    "near_X2": 1890,
+    "near_Y2": 800,
 
-    "mid_rotate1": 38,
-    "mid_forward1": -1610,
-    "mid_rotate2": 60,
-    "mid_forward2": 400,
+    "mid_rotate1": 48,
+    "mid_X1": 2760,
+    "mid_Y1": 345,
+    "mid_rotate2": 48,
+    "mid_X2": 2760,
+    "mid_Y2": 345,
 
-    "far_rotate1": 40,
-    "far_forward1": -3180,
-    "far_rotate2": 60,
-    "far_forward2": 2000
+    "far_rotate1": 50,
+    "far_X1": 3450,
+    "far_Y1": 1380,
+    "far_rotate2": 50,
+    "far_X2": 3450,
+    "far_Y2": 1380
   },
 
   "path": [
@@ -107,8 +112,10 @@
 
     {
       "_comment": "[03] While the shooter is starting, move forward to the shoot position",
-      "type": "forward",
-      "dist": "shootFwd"
+      "type": "drive",
+      "x": "shootX",
+      "y": 0,
+      "absolute": true
     },
 
     {
@@ -256,8 +263,10 @@
 
     {
       "_comment": "[15] move forward",
-      "type": "forward",
-      "dist": "near_forward1"
+      "type": "drive",
+      "x": "near_X1",
+      "y": "near_Y1",
+      "absolute": true
     },
 
     {
@@ -284,22 +293,23 @@
     },
 
     {
-      "_comment": "[18] wait, lift claw",
+      "_comment": "[18] wait, turn robot",
       "trigger": {
         "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
-        "timer": "wobbleUpDelay"
+        "timer": "wobbleOpenDelay"
       },
-      "type": "actuator",
-      "actuator": {
-        "name": "wobble",
-        "params": {"action": "up"}
-      }
+
+      "type": "turn",
+      "absolute": true,
+      "rotation": "near_rotate2"
     },
 
     {
       "_comment": "[19] back up",
-      "type": "forward",
-      "dist": "near_forward2",
+      "type": "drive",
+      "x": "near_X2",
+      "y": "near_Y2",
+      "absolute": true,
 
       "condition": {
         "name": "0",
@@ -318,8 +328,10 @@
 
     {
       "_comment": "[21] move forward",
-      "type": "forward",
-      "dist": "mid_forward1"
+      "type": "drive",
+      "x": "mid_X1",
+      "y": "mid_Y1",
+      "absolute": "true"
     },
 
     {
@@ -346,22 +358,24 @@
     },
 
     {
-      "_comment": "[24] wait, lift claw",
+      "_comment": "[24] wait, turn robot",
       "trigger": {
         "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
-        "timer": "wobbleUpDelay"
+        "timer": "wobbleOpenDelay"
       },
-      "type": "actuator",
-      "actuator": {
-        "name": "wobble",
-        "params": {"action": "up"}
-      }
+
+      "type": "turn",
+      "absolute": true,
+      "rotation": "mid_rotate2"
     },
 
     {
       "_comment": "[25] back up",
-      "type": "forward",
-      "dist": "mid_forward2",
+      "type": "drive",
+      "x": "mid_X2",
+      "y": "mid_Y2",
+      "absolute": "true",
+
 
       "condition": {
         "name": "0",
@@ -380,8 +394,10 @@
 
     {
       "_comment": "[27] move forward",
-      "type": "forward",
-      "dist": "far_forward1"
+      "type": "drive",
+      "x": "far_X1",
+      "y": "far_Y1",
+      "absolute": "true"
     },
 
     {
@@ -408,22 +424,23 @@
     },
 
     {
-      "_comment": "[30] wait, lift claw",
+      "_comment": "[30] wait, turn robot",
       "trigger": {
         "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
-        "timer": "wobbleUpDelay"
+        "timer": "wobbleOpenDelay"
       },
-      "type": "actuator",
-      "actuator": {
-        "name": "wobble",
-        "params": {"action": "up"}
-      }
+
+      "type": "turn",
+      "absolute": true,
+      "rotation": "far_rotate2"
     },
 
     {
       "_comment": "[31] back up",
-      "type": "forward",
-      "dist": "far_forward2"
+      "type": "drive",
+      "x": "far_X2",
+      "y": "far_Y2",
+      "absolute": "true"
     },
 
     {

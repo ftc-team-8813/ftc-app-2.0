@@ -53,7 +53,7 @@ public class ShooterTest extends LoggingOpMode
         // TODO new numbers, put them in the official config file
         if (gamepad1.b) turret.push();
         else turret.unpush();
-        turret.shooter.update();
+        turret.shooter.update(telemetry);
     }
     
     @Override
