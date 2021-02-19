@@ -42,12 +42,19 @@ public class WhereAmI extends LoggingOpMode
     @Override
     public void loop()
     {
+        drivetrain.getOdometry().updateDeltas();
+        double x = drivetrain.getOdometry().x;
+        double y = drivetrain.getOdometry().y;
+        
         telemetry.addData("Front L", drivetrain.top_left.getCurrentPosition());
         telemetry.addData("Front R", drivetrain.top_right.getCurrentPosition());
         telemetry.addData("Back L", drivetrain.bottom_left.getCurrentPosition());
         telemetry.addData("Back R", drivetrain.bottom_right.getCurrentPosition());
         telemetry.addData("Odo L", odo_l.getCurrentPosition());
         telemetry.addData("Odo R", odo_r.getCurrentPosition());
+        telemetry.addData("Odo X", "%.3f", x);
+        telemetry.addData("Odo Y", "%.3f", y);
+        telemetry.addData("Heading", "%.3f", imu.getHeading());
         telemetry.addData("IMU status", imu.getStatus() + " -- " + imu.getDetailStatus());
         
         scheduler.loop();

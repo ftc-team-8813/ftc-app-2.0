@@ -82,16 +82,20 @@ public class MainAuto extends LoggingOpMode
         scheduler = new Scheduler(bus);
         robot.turret.connectEventBus(bus);
         telemBuf = ByteBuffer.allocate(65535);
-        
-        initServer();
+        robot.imu.initialize(bus, scheduler);
         
         robot.wobble.close();
         
-        autoPath = new NavPath(Storage.getFile("nav_paths/auto_v2.json"), bus, scheduler, robot, robot.config.getAsJsonObject("nav"));
+        autoPath = new NavPath(Storage.getFile("nav_paths/test_auto_v3.json"),
+                bus, scheduler, robot, robot.config.getAsJsonObject("nav"));
         autoPath.addActuator("turret", (params) -> {
             String action = params.get("action").getAsString();
             switch (action)
             {
+                case "rotate":
+                    double angle = params.get("angle").getAsDouble();
+                    robot.turret.rotate(angle, true);
+                    break;
                 case "rotatePs":
                     robot.turret.rotate(turretPos[ringCount], true);
                     robot.turret.shooter.powershot(ringCount);
@@ -146,10 +150,12 @@ public class MainAuto extends LoggingOpMode
             detectStage = DETECT_REQUEST_FRAME;
         });
         
+        /*
         webcam = Webcam.forSerial(WEBCAM_SERIAL);
         if (webcam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + WEBCAM_SERIAL);
         frameHandler = new Webcam.SimpleFrameHandler();
         webcam.open(ImageFormat.YUY2, 800, 448, 30, frameHandler);
+         */
     
         detectorFrame = new Mat(800, 448, CV_8UC4);
     
@@ -158,26 +164,32 @@ public class MainAuto extends LoggingOpMode
         autoPath.load();
         
         // load config
+        /*
         turretPos = new double[] {
                 autoPath.getConstant("powershot0"),
                 autoPath.getConstant("powershot1"),
                 autoPath.getConstant("powershot2")
         };
+         */
     
         Persistent.clear();
         homeComplete = false;
+    
+        initServer();
         robot.turret.startZeroFind();
     }
     
     @Override
     public void init_loop()
     {
+        
         robot.turret.updateInit(telemetry);
         if (robot.turret.findComplete() && !homeComplete)
         {
             homeComplete = true;
             Persistent.put("turret_zero_found", true);
         }
+        
         telemetry.addData("IMU status", robot.imu.getStatus() + " -- " + robot.imu.getDetailStatus());
         telemetry.addData("IMU heading", robot.imu.getHeading());
         scheduler.loop();
@@ -227,8 +239,9 @@ public class MainAuto extends LoggingOpMode
             telemUsed = false;
         }
         
-        webcam.loop(bus);
-        autoPath.loop(telemetry, true);
+        robot.drivetrain.getOdometry().updateDeltas();
+        // webcam.loop(bus);
+        autoPath.loop(telemetry);
         robot.turret.update(telemetry);
         scheduler.loop();
         bus.update();
@@ -239,7 +252,7 @@ public class MainAuto extends LoggingOpMode
     @Override
     public void stop()
     {
-        webcam.close();
+        // webcam.close();
         if (server != null) server.close();
         super.stop();
     }
@@ -254,6 +267,7 @@ public class MainAuto extends LoggingOpMode
     {
         server = new Server(8814);
         Logger.serveLogs(server, 0x01);
+        autoPath.getNavigator().serve(server, 0x05);
         
         server.registerProcessor(0x02, (cmd, payload, resp) -> {
             if (serverFrame != null)

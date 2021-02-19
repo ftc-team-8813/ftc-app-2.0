@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.events.IMUEvent;
+import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Navigator;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
@@ -27,7 +28,7 @@ public class NavigationTest extends LoggingOpMode
     
     private Navigator nav;
     
-    private int state = 0; // 0 = initialized, 1 = running
+    private int state = 0; // 0 = initialized, 1 = running, 2 = done
     
     @Override
     public void init()
@@ -45,9 +46,16 @@ public class NavigationTest extends LoggingOpMode
     
         odometry = robot.drivetrain.getOdometry();
         
-        nav = new Navigator(robot.drivetrain, odometry);
+        nav = new Navigator(robot.drivetrain, odometry, evBus);
         nav.connectEventBus(evBus);
         state = 0;
+        
+        /*
+        evBus.subscribe(NavMoveEvent.class, (ev, bus, sub) -> {
+            state = 2;
+            nav.turnAbs(0);
+        }, "Nav finished", NavMoveEvent.MOVE_COMPLETE);
+         */
     
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
             // Get data
@@ -83,6 +91,7 @@ public class NavigationTest extends LoggingOpMode
     @Override
     public void init_loop()
     {
+        odometry.updateDeltas();
         scheduler.loop();
         evBus.update();
         loopTelem();
@@ -91,9 +100,11 @@ public class NavigationTest extends LoggingOpMode
     @Override
     public void start()
     {
-        nav.setForwardSpeed(0.5);
+        nav.setForwardSpeed(0.3);
         nav.setTurnSpeed(0.5);
-        nav.goTo(0, -30);
+        nav.goTo(48, 0, true);
+        // nav.goTo(0, -48);
+        // nav.turnAbs(360);
         state = 1;
     }
     
