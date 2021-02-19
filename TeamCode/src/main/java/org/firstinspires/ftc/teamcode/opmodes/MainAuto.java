@@ -92,6 +92,10 @@ public class MainAuto extends LoggingOpMode
             String action = params.get("action").getAsString();
             switch (action)
             {
+                case "rotate":
+                    double angle = params.get("angle").getAsDouble();
+                    robot.turret.rotate(angle, true);
+                    break;
                 case "rotatePs":
                     robot.turret.rotate(turretPos[ringCount], true);
                     robot.turret.shooter.powershot(ringCount);
@@ -172,20 +176,20 @@ public class MainAuto extends LoggingOpMode
         homeComplete = false;
     
         initServer();
-        // robot.turret.startZeroFind();
+        robot.turret.startZeroFind();
     }
     
     @Override
     public void init_loop()
     {
-        /*
+        
         robot.turret.updateInit(telemetry);
         if (robot.turret.findComplete() && !homeComplete)
         {
             homeComplete = true;
             Persistent.put("turret_zero_found", true);
         }
-         */
+        
         telemetry.addData("IMU status", robot.imu.getStatus() + " -- " + robot.imu.getDetailStatus());
         telemetry.addData("IMU heading", robot.imu.getHeading());
         scheduler.loop();
@@ -238,7 +242,7 @@ public class MainAuto extends LoggingOpMode
         robot.drivetrain.getOdometry().updateDeltas();
         // webcam.loop(bus);
         autoPath.loop(telemetry);
-        // robot.turret.update(telemetry);
+        robot.turret.update(telemetry);
         scheduler.loop();
         bus.update();
         

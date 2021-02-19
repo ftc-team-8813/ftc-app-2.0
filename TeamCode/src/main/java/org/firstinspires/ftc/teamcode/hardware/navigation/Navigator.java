@@ -29,9 +29,11 @@ public class Navigator
     public double forwardKp = 0; // TODO load from config
     public double turnKp = 0; // TODO load from config
     public double turnKi = 0; // TODO load from config
+    public double fwdKi = 0; // TODO load from config
     
     private double lastDistance = Double.NaN;
     private double turnInt = 0;
+    private double fwdInt = 0;
     private double lastSample = 0;
     
     private Vec2 targetPos;
@@ -65,8 +67,9 @@ public class Navigator
         this.odometry = odo;
         imu = odo.getIMU();
         
-        forwardKp = 0.5;
+        forwardKp = 0.15;
         turnKp = 0.01;
+        fwdKi = 0.001;
         turnKi = 0.001;
         this.eventBus = eventBus;
     }
@@ -142,12 +145,12 @@ public class Navigator
                 fwdError = worldErrorVec.dot(headingVec);
     
                 distanceError = worldErrorVec.magnitude();
-                if (distanceError < 0.5 && Math.abs(distanceError - lastDistance) < 0.01)
+                if (distanceError < 1 && Math.abs(distanceError - lastDistance) < 0.01)
                 {
                     navigating = false;
                     eventBus.pushEvent(new NavMoveEvent(NavMoveEvent.MOVE_COMPLETE));
                 }
-                if (distanceError < 5)
+                if (distanceError < 4)
                 {
                     angleTarget = theta;
                 }
@@ -164,12 +167,21 @@ public class Navigator
         }
         
         // Forward
-        double fwdPower = Range.clip(fwdError * forwardKp, -fwdSpeed, fwdSpeed);
+        if (Math.abs(fwdError) < 10 && navigating)
+        {
+            fwdInt += fwdError * fwdKi;
+            fwdInt = Range.clip(fwdInt, -1, 1);
+        }
+        else
+        {
+            fwdInt = 0;
+        }
+        double fwdPower = Range.clip(fwdError * forwardKp + fwdInt, -fwdSpeed, fwdSpeed);
         
         // Turn
         double turnError = Math.toDegrees(angleTarget - theta); // convert to degrees to keep kP and kI the same
         // if (backwards) turnError = -turnError;
-        if (Math.abs(turnError) < 5)
+        if (Math.abs(turnError) < 10)
         {
             turnInt += turnError * turnKi;
             turnInt = Range.clip(turnInt, -1, 1);
@@ -181,7 +193,7 @@ public class Navigator
         double turnPower = Range.clip(turnError * turnKp + turnInt, -turnSpeed, turnSpeed);
 
         if (eventBus != null){
-            if (Math.abs(turnError) < 0.1 && sendEvent_turn) {
+            if (Math.abs(turnError) < 0.5 && sendEvent_turn) {
                 sendEvent_turn = false;
                 eventBus.pushEvent(new NavMoveEvent(NavMoveEvent.TURN_COMPLETE));
             }
@@ -222,7 +234,7 @@ public class Navigator
     public void turnAbs(double angle)
     {
         angleTarget = angle;
-        if (backwards) angleTarget = -(angle + PI);
+        if (backwards) angleTarget = angle + PI;
         sendEvent_turn = true;
     }
     

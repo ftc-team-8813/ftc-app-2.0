@@ -41,6 +41,8 @@ public class NavPath
     private Navigator navigator;
     private double lastTargetAngle;
     
+    private double startTime;
+    
     private static final String[] comparisons = {
             "==", "!=", "<", ">", "<=", ">="
     };
@@ -111,6 +113,7 @@ public class NavPath
     public void start()
     {
         paths.get(0).run();
+        startTime = Time.now();
     }
     
     public boolean complete()
@@ -132,8 +135,9 @@ public class NavPath
     
     private void setAngleTarget(double angle)
     {
+        double rad = Math.toRadians(angle);
         lastTargetAngle = angle;
-        navigator.turnAbs(angle);
+        navigator.turnAbs(rad);
     }
     
     /*
@@ -425,7 +429,7 @@ public class NavPath
             currPath = jumpTo;
             if (currPath >= paths.size())
             {
-                log.d("-> Complete!");
+                log.d("-> Complete! (%.3f seconds)", Time.since(startTime));
                 pathComplete = true;
                 evBus.pushEvent(new NavMoveEvent(NavMoveEvent.NAVIGATION_COMPLETE));
             }

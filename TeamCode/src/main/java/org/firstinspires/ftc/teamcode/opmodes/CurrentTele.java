@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
@@ -334,6 +335,7 @@ public class CurrentTele extends LoggingOpMode {
         robot.drivetrain.getOdometry().updateDeltas();
         telemetry.addData("Shooter Velocity", "%.3f",
                 ((DcMotorEx)robot.turret.shooter.motor).getVelocity());
+        telemetry.addData("Shooter power", "%.3f", robot.turret.shooter.motor.getPower());
         telemetry.addData("Shooter speed preset", robot.turret.shooter.getCurrPreset());
         telemetry.addData("Turret target heading", "%.3f", tracker.getTargetHeading());
         telemetry.addData("Odometry position", "%.3f,%.3f", robot.drivetrain.getOdometry().x, robot.drivetrain.getOdometry().y);
