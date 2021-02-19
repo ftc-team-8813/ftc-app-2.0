@@ -54,6 +54,7 @@ public class WhereAmI extends LoggingOpMode
         telemetry.addData("Odo R", odo_r.getCurrentPosition());
         telemetry.addData("Odo X", "%.3f", x);
         telemetry.addData("Odo Y", "%.3f", y);
+        telemetry.addData("Heading", "%.3f", imu.getHeading());
         telemetry.addData("IMU status", imu.getStatus() + " -- " + imu.getDetailStatus());
         
         scheduler.loop();
