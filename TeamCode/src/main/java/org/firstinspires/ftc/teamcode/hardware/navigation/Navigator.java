@@ -36,7 +36,7 @@ public class Navigator
     private double fwdInt = 0;
     private double lastSample = 0;
     
-    private Vec2 targetPos;
+    private Vec2 targetPos = new Vec2(0, 0);
     private boolean navigating = false;
     private boolean preTurnComplete = false;
     

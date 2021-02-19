@@ -6,6 +6,7 @@ import android.graphics.ImageFormat;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.NavPath;
 import org.firstinspires.ftc.teamcode.util.Logger;
@@ -84,6 +85,7 @@ public class MainAuto extends LoggingOpMode
         telemBuf = ByteBuffer.allocate(65535);
         robot.imu.initialize(bus, scheduler);
         
+        robot.wobble.up();
         robot.wobble.close();
         
         autoPath = new NavPath(Storage.getFile("nav_paths/test_auto_v3.json"),
@@ -150,12 +152,10 @@ public class MainAuto extends LoggingOpMode
             detectStage = DETECT_REQUEST_FRAME;
         });
         
-        /*
         webcam = Webcam.forSerial(WEBCAM_SERIAL);
         if (webcam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + WEBCAM_SERIAL);
         frameHandler = new Webcam.SimpleFrameHandler();
         webcam.open(ImageFormat.YUY2, 800, 448, 30, frameHandler);
-         */
     
         detectorFrame = new Mat(800, 448, CV_8UC4);
     
@@ -234,13 +234,13 @@ public class MainAuto extends LoggingOpMode
             telemBuf.putDouble(robot.turret.getPosition());
             telemBuf.putDouble(robot.turret.getTarget());
             telemBuf.putDouble(robot.turret.shooter.motor.getPower());
-            telemBuf.putDouble(((DcMotorEx)robot.turret.shooter.motor).getVelocity());
+            telemBuf.putDouble(((DcMotorEx)robot.turret.shooter.motor).getVelocity(AngleUnit.RADIANS));
             telemBuf.putDouble(ringsDetected);
             telemUsed = false;
         }
         
         robot.drivetrain.getOdometry().updateDeltas();
-        // webcam.loop(bus);
+        webcam.loop(bus);
         autoPath.loop(telemetry);
         robot.turret.update(telemetry);
         scheduler.loop();
@@ -252,7 +252,7 @@ public class MainAuto extends LoggingOpMode
     @Override
     public void stop()
     {
-        // webcam.close();
+        webcam.close();
         if (server != null) server.close();
         super.stop();
     }

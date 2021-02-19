@@ -1,6 +1,6 @@
 {
   "version": "1.1.1",
-  "defaultSpeed": 0.5,
+  "defaultSpeed": 0.65,
   "defaultDir": "backwards",
   "_comments": [
 
@@ -35,22 +35,25 @@
     "r0-drop2a": 135,
 
 
-    "r1-drop1x": 0,
-    "r1-drop1y": 0,
-    "r1-drop1a": 0,
+    "r1-drop1x": -84,
+    "r1-drop1y": -17,
+    "r1-drop1a": 33,
 
-    "r1-drop2x": 0,
-    "r1-drop2y": 0,
-    "r1-drop2a": 0,
+    "r1-drop2x": -76,
+    "r1-drop2y": -21,
+    "r1-drop2a": -8,
 
 
-    "r4-drop1x": 0,
-    "r4-drop1y": 0,
-    "r4-drop1a": 0,
+    "r4-drop1x": -109,
+    "r4-drop1y": -41,
+    "r4-drop1a": 14,
 
-    "r4-drop2x": 0,
-    "r4-drop2y": 0,
-    "r4-drop2a": 0
+    "r4-drop2x": -100,
+    "r4-drop2y": -42,
+    "r4-drop2a": 6,
+
+    "r4-park-x": -73,
+    "r4-park-y": -39
   },
 
   "path": [
@@ -67,7 +70,7 @@
       "type": "actuator",
       "actuator": {
         "name": "turret",
-        "params": {"action": "rotate", "angle": -0.01}
+        "params": {"action": "rotate", "angle": -0.015}
       }
     },
 
@@ -316,6 +319,13 @@
       "actuator": {
         "name": "wobble",
         "params": {"action": "up"}
+      },
+
+      "condition": {
+        "name": "0",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": "end"
       }
     },
 
@@ -470,6 +480,13 @@
       "actuator": {
         "name": "wobble",
         "params": {"action": "up"}
+      },
+
+      "condition": {
+        "name": "0",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": "end"
       }
     },
 
@@ -625,6 +642,20 @@
         "name": "wobble",
         "params": {"action": "up"}
       }
+    },
+
+    {
+      "type": "drive",
+      "absolute": true,
+      "direction": "forwards",
+      "power": 0.7,
+      "x": "r4-park-x",
+      "y": "r4-park-y"
+    },
+
+    {
+      "label": "end",
+      "type": "nop"
     }
   ]
 

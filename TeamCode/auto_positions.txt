@@ -1,0 +1,8 @@
+1ring
+Wobble 1: x=-84 y=-17 a=33
+Wobble 2: x=-76 y=-21 a=-8
+
+4ring
+Wobble 1: x=-109 y=-41 a=14
+Wobble 2: x=-100 y=-42 a=6
+Park    : x=-73  y=-39 a=6

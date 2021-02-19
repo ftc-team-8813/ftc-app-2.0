@@ -40,7 +40,7 @@ public class ShooterDataCollector extends LoggingOpMode {
         controllerMap.setAxisMap("drive_l",   "gamepad1", "left_stick_y" );
         controllerMap.setAxisMap("drive_r",   "gamepad1", "right_stick_y");
         controllerMap.setAxisMap("turret",    "gamepad2", "left_stick_x" );
-        controllerMap.setButtonMap("shooter",   "gamepad2", "left_stick_y");
+        controllerMap.setAxisMap("shooter",   "gamepad2", "left_stick_y");
         controllerMap.setButtonMap("log", "gamepad1", "a");
         controllerMap.setButtonMap("remove_log", "gamepad1", "b");
 
@@ -56,7 +56,7 @@ public class ShooterDataCollector extends LoggingOpMode {
     public void loop() {
         robot.drivetrain.telemove(ax_drive_l.get(), ax_drive_r.get());
 
-        shooter_power = Range.clip(shooter_power + ax_shooter.get() * 0.1, -1, 1);
+        shooter_power = Range.clip(shooter_power + ax_shooter.get() * 0.001, 0, 1);
         robot.turret.shooter.setPower(turret_power);
 
         double turret_adj = Math.pow(ax_turret.get(), 3) * 0.001;
