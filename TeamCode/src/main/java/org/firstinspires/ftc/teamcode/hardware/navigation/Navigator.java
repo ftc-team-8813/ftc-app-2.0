@@ -48,6 +48,8 @@ public class Navigator
     private double fwdPower;
     private double turnPower;
     
+    private double speedAdj;
+    
     // 0: Odo X
     // 1: Odo Y
     // 2: Heading
@@ -74,6 +76,11 @@ public class Navigator
         this.eventBus = eventBus;
     }
     
+    public void adjForVoltage(double voltage)
+    {
+        speedAdj = 0.15 * (12-voltage);
+    }
+    
     public void serve(Server server, int cmdid)
     {
         server.registerProcessor(cmdid, (cmd, payload, resp) -> {
@@ -92,7 +99,7 @@ public class Navigator
     
     public void setForwardSpeed(double fwdSpeed)
     {
-        this.fwdSpeed = fwdSpeed;
+        this.fwdSpeed = fwdSpeed + speedAdj;
     }
     
     public void setTurnSpeed(double turnSpeed)

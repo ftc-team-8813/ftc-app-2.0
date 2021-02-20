@@ -85,13 +85,13 @@ public class ShooterDataCollector extends LoggingOpMode {
 
     @Override
     public void loop() {
-        robot.drivetrain.telemove(ax_drive_r.get(), ax_drive_l.get());
+        robot.drivetrain.telemove(ax_drive_r.get() * 0.5, ax_drive_l.get() * 0.5);
 
         shooter_power = Range.clip(shooter_power + -ax_shooter.get() * 0.005, 0, 1);
         robot.turret.shooter.start(shooter_power);
 
 
-        double turret_adj = -ax_turret.get() * 0.0001;
+        double turret_adj = -ax_turret.get() * 0.001;
         robot.turret.rotate(robot.turret.getTarget() + turret_adj);
 
         if (btn_turret_home.edge() > 0){

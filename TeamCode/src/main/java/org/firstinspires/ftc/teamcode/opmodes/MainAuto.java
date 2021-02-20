@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 
+import com.qualcomm.hardware.lynx.LynxVoltageSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
@@ -176,6 +177,11 @@ public class MainAuto extends LoggingOpMode
         homeComplete = false;
     
         initServer();
+        LynxVoltageSensor voltageSensor = hardwareMap.get(LynxVoltageSensor.class, "Control Hub");
+        double voltage = voltageSensor.getVoltage();
+        log.d("Battery voltage: %.3f", voltage);
+        autoPath.getNavigator().adjForVoltage(voltage);
+        
         robot.turret.startZeroFind();
     }
     

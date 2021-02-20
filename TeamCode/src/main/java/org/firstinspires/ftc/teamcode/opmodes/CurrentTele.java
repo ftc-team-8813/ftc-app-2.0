@@ -84,8 +84,8 @@ public class CurrentTele extends LoggingOpMode {
         
         liftFlow = new EventFlow(evBus);
         powershotFlow = new EventFlow(evBus);
-        Scheduler.Timer powershotTimer = scheduler.addPendingTrigger(1, "powershotTimer");
-        Scheduler.Timer shooterTimer = scheduler.addPendingTrigger(3, "shooterTimer");
+        Scheduler.Timer powershotTimer = scheduler.addPendingTrigger(0.4, "powershotTimer");
+        Scheduler.Timer shooterTimer = scheduler.addPendingTrigger(2, "shooterTimer");
 
         JsonObject config = robot.config.getAsJsonObject("teleop");
         JsonArray powershotAngle = config.getAsJsonArray("powershot_angles");
@@ -105,15 +105,13 @@ public class CurrentTele extends LoggingOpMode {
                     autoPowershotRunning = true;
                     ringCount = 0;
                     robot.turret.unpush();
+                    robot.turret.rotate(powershot_angles[ringCount], false);
                     robot.turret.shooter.start(powershot_powers[ringCount]);
                     shooterTimer.reset();
                 }, "Start Up Shooter", PowershotEvent.TRIGGER_POWERSHOT))
                 .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
-                    robot.turret.rotate(powershot_angles[ringCount], true);
-                }, "Turn Powershot", shooterTimer.eventChannel))
-                .then(new Subscriber<>(TurretEvent.class, (ev, bus, sub) -> {
                     powershotTimer.reset();
-                }, "Pause Powershot", TurretEvent.TURRET_MOVED))
+                }, "Turn Powershot", shooterTimer.eventChannel))
                 .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
                     robot.turret.push();
                     powershotTimer.reset();
@@ -127,7 +125,8 @@ public class CurrentTele extends LoggingOpMode {
                     if (ringCount < 3)
                     {
                         robot.turret.shooter.start(powershot_powers[ringCount]);
-                        robot.turret.rotate(powershot_angles[ringCount], true);
+                        robot.turret.rotate(powershot_angles[ringCount], false);
+                        powershotTimer.reset();
                         powershotFlow.jump(2);
                     }
                     else
@@ -135,7 +134,6 @@ public class CurrentTele extends LoggingOpMode {
                         robot.turret.unpush();
                         robot.turret.shooter.stop();
                         autoPowershotRunning = false;
-                        powershotFlow.stop();
                     }
                 }, "Turn Powershot 2", powershotTimer.eventChannel));
         

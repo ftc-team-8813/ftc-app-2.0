@@ -1,7 +1,7 @@
 {
   "shooter": {
     "rampTime": 1,
-    "maxPower": 0.41,
+    "maxPower": 0.43,
 
     "powershots": [
       0.309,
@@ -10,7 +10,7 @@
     ],
 
     "presets": [
-      {"power":  0.41, "color": [255, 255, 0]},
+      {"power":  0.44, "color": [255, 255, 0]},
       {"power":  0.365, "color": [64,  0,   128]}
     ]
   },
@@ -37,8 +37,8 @@
   },
   "teleop": {
     "drive_speeds": [-0.5, -0.35, -0.75],
-    "powershot_angles": [0.1, 0.2, 0.3],
-    "powershot_powers": [0.5, 0.5, 0.5]
+    "powershot_angles": [-0.729, -0.7465, -0.756],
+    "powershot_powers": [0.373, 0.365, 0.358]
   },
   "wobble": {
     "arm_up": 0.20,
