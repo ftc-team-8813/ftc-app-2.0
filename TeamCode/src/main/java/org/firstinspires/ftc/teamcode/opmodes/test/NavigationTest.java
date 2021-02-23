@@ -74,10 +74,52 @@ public class NavigationTest extends LoggingOpMode
             buf.putFloat((float)nav.getTargetDistance()); // 48
             buf.putFloat((float)nav.getFwdPower()); // 52
             buf.putFloat((float)nav.getTurnPower()); // 56
-            buf.put((byte)state); // 57
+            buf.put((byte)(nav.navigating() ? 1 : 0)); // 57
             buf.flip();
         
             resp.respond(buf);
+        });
+        server.registerProcessor(0x2, (cmd, payload, resp) -> {
+            byte status = (byte)0;
+            if (payload.limit() < 8) status = (byte)1;
+            else if (state < 1) status = (byte)2;
+            else
+            {
+                float x = payload.getFloat();
+                float y = payload.getFloat();
+                nav.goTo(x, y);
+            }
+            ByteBuffer buf = ByteBuffer.allocate(1);
+            buf.put(status);
+            buf.flip();
+            resp.respond(buf);
+        });
+        server.registerProcessor(0x3, (cmd, payload, resp) -> {
+            byte status = (byte)0;
+            if (payload.limit() < 24) status = (byte)1;
+            else if (state < 1) status = (byte)2;
+            else
+            {
+                float fspeed = payload.getFloat();
+                float tspeed = payload.getFloat();
+                float fkp = payload.getFloat();
+                float fki = payload.getFloat();
+                float tkp = payload.getFloat();
+                float tki = payload.getFloat();
+                nav.setForwardSpeed(fspeed);
+                nav.setTurnSpeed(tspeed);
+                nav.forwardKp = fkp;
+                nav.forwardKi = fki;
+                nav.turnKp = tkp;
+                nav.turnKi = tki;
+            }
+            ByteBuffer buf = ByteBuffer.allocate(1);
+            buf.put(status);
+            buf.flip();
+            resp.respond(buf);
+        });
+        server.registerProcessor(0x4, (cmd, paylod, resp) -> {
+            requestOpModeStop();
         });
         server.startServer();
     }
@@ -100,11 +142,6 @@ public class NavigationTest extends LoggingOpMode
     @Override
     public void start()
     {
-        nav.setForwardSpeed(0.3);
-        nav.setTurnSpeed(0.5);
-        nav.goTo(48, 0, true);
-        // nav.goTo(0, -48);
-        // nav.turnAbs(360);
         state = 1;
     }
     
