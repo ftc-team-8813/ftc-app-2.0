@@ -29,7 +29,7 @@ public class Navigator
     public double forwardKp = 0; // TODO load from config
     public double turnKp = 0; // TODO load from config
     public double turnKi = 0; // TODO load from config
-    public double fwdKi = 0; // TODO load from config
+    public double forwardKi = 0; // TODO load from config
     
     private double lastDistance = Double.NaN;
     private double turnInt = 0;
@@ -71,7 +71,7 @@ public class Navigator
         
         forwardKp = 0.15;
         turnKp = 0.01;
-        fwdKi = 0.001;
+        forwardKi = 0.001;
         turnKi = 0.001;
         this.eventBus = eventBus;
     }
@@ -176,7 +176,7 @@ public class Navigator
         // Forward
         if (Math.abs(fwdError) < 10 && navigating)
         {
-            fwdInt += fwdError * fwdKi;
+            fwdInt += fwdError * forwardKi;
             fwdInt = Range.clip(fwdInt, -1, 1);
         }
         else
