@@ -212,6 +212,8 @@ public class Navigator
         telemetry.addData("Nav Turn", "%.2f", turnPower);
         telemetry.addData("Nav FwdError", "%.2f", fwdError);
         telemetry.addData("Nav TurnError", "%.2f", turnError);
+        telemetry.addData("Nav FwdPower", "%.2f", fwdPower);
+        telemetry.addData("Nav TurnPower", "%.2f", turnPower);
         telemetry.addData("Heading", "%.2f", heading);
         telemetry.addData("Target heading", "%.2f", angleTarget);
         telemetry.addData("Odometry X", "%.2f", odometry.x);

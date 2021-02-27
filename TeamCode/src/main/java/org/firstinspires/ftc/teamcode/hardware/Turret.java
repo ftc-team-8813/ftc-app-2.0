@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.hardware.events.PowershotEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -26,7 +25,7 @@ public class Turret {
     private final double ENC_TO_TURRET_RATIO = 110.0/30.0 * TICKS;
 
     private double turretHome;
-    private double turretHome2;
+    private double turretHomeReverse;
     private double turretKp;
     private double turretMin;
     private double turretMax;
@@ -69,7 +68,7 @@ public class Turret {
 
         JsonObject root = turretConfig;
         turretHome = root.get("home").getAsDouble();
-        turretHome2= root.get("home180").getAsDouble();
+        turretHomeReverse = root.get("home180").getAsDouble();
         turretKp   = root.get("kp").getAsDouble();
         turretMin  = root.get("min").getAsDouble();
         turretMax  = root.get("max").getAsDouble();
@@ -133,7 +132,7 @@ public class Turret {
 
     public double getTurretShootPos()
     {
-        return turretHome2;
+        return turretHomeReverse;
     }
     
     public void update(Telemetry telemetry)

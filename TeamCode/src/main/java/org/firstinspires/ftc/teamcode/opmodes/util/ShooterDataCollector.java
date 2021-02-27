@@ -53,10 +53,10 @@ public class ShooterDataCollector extends LoggingOpMode {
         controllerMap.setAxisMap("drive_r",   "gamepad1", "right_stick_y");
         controllerMap.setAxisMap("turret",    "gamepad2", "right_stick_x" );
         controllerMap.setAxisMap("shooter",   "gamepad2", "left_stick_y");
-        controllerMap.setButtonMap("reset_shooter", "gamepad2", "x");
+        controllerMap.setButtonMap("reset_shooter", "gamepad2", "y");
         controllerMap.setButtonMap("turret_home", "gamepad2", "dpad_up");
         controllerMap.setButtonMap("turret_reverse", "gamepad2", "dpad_down");
-        controllerMap.setButtonMap("pusher", "gamepad2", "y");
+        controllerMap.setButtonMap("pusher", "gamepad2", "x");
         controllerMap.setButtonMap("log", "gamepad2", "a");
         controllerMap.setButtonMap("remove_log", "gamepad2", "b");
 

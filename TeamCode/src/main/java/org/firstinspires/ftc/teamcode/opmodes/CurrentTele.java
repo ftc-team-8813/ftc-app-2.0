@@ -3,16 +3,15 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.Turret;
-import org.firstinspires.ftc.teamcode.hardware.events.LiftEvent;
+import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.PowershotEvent;
-import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
 import org.firstinspires.ftc.teamcode.hardware.autoshoot.Tracker;
+import org.firstinspires.ftc.teamcode.hardware.navigation.Navigator;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Time;
@@ -20,13 +19,14 @@ import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.EventBus.Subscriber;
 import org.firstinspires.ftc.teamcode.util.event.EventFlow;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
-import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
 
 @TeleOp(name="!!THE TeleOp!!")
 public class CurrentTele extends LoggingOpMode {
     private Robot robot;
+    private Navigator navigator;
     private Tracker tracker;
     private ControllerMap controllerMap;
+    private Logger logger;
     
     private ControllerMap.AxisEntry   ax_drive_l;
     private ControllerMap.AxisEntry   ax_drive_r;
@@ -47,6 +47,7 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.ButtonEntry btn_shooter_preset;
     private ControllerMap.ButtonEntry btn_aim;
     private ControllerMap.ButtonEntry btn_powershot;
+    private ControllerMap.ButtonEntry btn_shooter_move;
     
     private double driveSpeed;
     private double slowSpeed;
@@ -58,8 +59,8 @@ public class CurrentTele extends LoggingOpMode {
     
     private EventBus evBus;
     private Scheduler scheduler; // just in case
-    private EventFlow liftFlow;
     private EventFlow powershotFlow;
+    private EventFlow shooterFlow;
     
     private int shooterPowerIdx;
     
@@ -71,19 +72,25 @@ public class CurrentTele extends LoggingOpMode {
     private  double[] powershot_powers;
     
     private boolean autoPowershotRunning = false;
+    private boolean autoShooterMove = false;
     private int ringCount = 0;
 
     @Override
     public void init()
     {
         robot = new Robot(hardwareMap);
+        robot.drivetrain.getOdometry().setPosition(-48, 48);
+        logger = new Logger("CurrentTele");
         // TODO load configuration for tracker
         tracker = new Tracker(robot.turret, robot.drivetrain, 135);
         evBus = new EventBus();
         scheduler = new Scheduler(evBus);
-        
-        liftFlow = new EventFlow(evBus);
+        navigator = new Navigator(robot.drivetrain, robot.drivetrain.getOdometry(), evBus);
+        navigator.setForwardSpeed(0.5);
+        navigator.setTurnSpeed(0.5);
+
         powershotFlow = new EventFlow(evBus);
+        shooterFlow = new EventFlow(evBus);
         Scheduler.Timer powershotTimer = scheduler.addPendingTrigger(0.4, "powershotTimer");
         Scheduler.Timer shooterTimer = scheduler.addPendingTrigger(2, "shooterTimer");
 
@@ -169,6 +176,7 @@ public class CurrentTele extends LoggingOpMode {
         controllerMap.setButtonMap("shoot_pre",   "gamepad2", "right_bumper");
         controllerMap.setButtonMap("aim",         "gamepad2", "b");
         controllerMap.setButtonMap("powershot",   "gamepad1", "dpad_down");
+        controllerMap.setButtonMap("shooter_pos", "gamepad2", "left_stick_button");
         
         ax_drive_l      = controllerMap.axes.get("drive_l");
         ax_drive_r      = controllerMap.axes.get("drive_r");
@@ -189,6 +197,7 @@ public class CurrentTele extends LoggingOpMode {
         btn_turret_reverse = controllerMap.buttons.get("turr_reverse");
         btn_powershot = controllerMap.buttons.get("powershot");
         btn_aim = controllerMap.buttons.get("aim");
+        btn_shooter_move = controllerMap.buttons.get("shooter_pos");
 
         JsonArray driveSpeeds = config.getAsJsonArray("drive_speeds");
         speeds = new double[driveSpeeds.size()];
@@ -227,9 +236,12 @@ public class CurrentTele extends LoggingOpMode {
         lastUpdate = Time.now();
         double speed = speeds[slow];
         // TODO unswap control axes
-        robot.drivetrain.telemove(ax_drive_r.get() * speed,
-                                 ax_drive_l.get() * speed);
-        
+        if (!autoShooterMove) {
+            robot.drivetrain.telemove(ax_drive_r.get() * speed,
+                                     ax_drive_l.get() * speed);
+        } else if (ax_drive_l.get() > 0.1){
+            autoShooterMove = false;
+        }
 
         robot.intake.run(ax_intake.get() - ax_intake_out.get());
 
@@ -242,6 +254,7 @@ public class CurrentTele extends LoggingOpMode {
             {
                 powershotFlow.stop();
                 autoPowershotRunning = false;
+                autoShooterMove = false;
             }
         }
         else
@@ -317,7 +330,13 @@ public class CurrentTele extends LoggingOpMode {
             }
             robot.turret.rotate(robot.turret.getTurretShootPos());
         }
-        
+
+        if (btn_shooter_move.edge() > 0){
+            logger.i("Moving to Shoot");
+            navigator.goTo(0, 0);
+            autoShooterMove = true;
+        }
+
         if (btn_wobble_up.get()) robot.wobble.up();
         if (btn_wobble_down.get()) robot.wobble.down();
         if (btn_wobble_open.get()) robot.wobble.open();
@@ -330,6 +349,18 @@ public class CurrentTele extends LoggingOpMode {
         
         robot.lift.update(telemetry);
         robot.turret.update(telemetry);
+        if (autoShooterMove){
+            navigator.update(telemetry);
+            try {
+                if (evBus.checkEvent(new NavMoveEvent(NavMoveEvent.MOVE_COMPLETE))){
+                    logger.i("Finished Moving to Shoot");
+                    autoShooterMove = false;
+                }
+            } catch (NullPointerException e){
+                logger.i("No Nav Event");
+            }
+
+        }
         robot.drivetrain.getOdometry().updateDeltas();
         telemetry.addData("Shooter Velocity", "%.3f",
                 ((DcMotorEx)robot.turret.shooter.motor).getVelocity());

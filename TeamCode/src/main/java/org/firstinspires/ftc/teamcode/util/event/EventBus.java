@@ -125,6 +125,13 @@ public class EventBus
             log.d("Push %s on channel %d (from %s)", ev.getClass().getSimpleName(), ev.channel, callingClassName);
         }
     }
+
+    public boolean checkEvent(Event ev){
+        if (events.contains(ev)){
+            return true;
+        }
+        return false;
+    }
     
     @SuppressWarnings("unchecked")
     public void update()
