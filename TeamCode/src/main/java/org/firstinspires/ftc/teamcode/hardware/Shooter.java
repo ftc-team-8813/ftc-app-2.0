@@ -97,12 +97,14 @@ public class Shooter
     {
         if (!started)
         {
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             double vel = ((DcMotorEx)motor).getVelocity(AngleUnit.RADIANS);
             double power = -vel * 0.05;
             setPower(power);
         }
         else
         {
+            motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             double time = (double) (System.nanoTime() - startTime) / 1_000_000_000;
             double power;
             if (time >= rampTime) power = maxPower;
