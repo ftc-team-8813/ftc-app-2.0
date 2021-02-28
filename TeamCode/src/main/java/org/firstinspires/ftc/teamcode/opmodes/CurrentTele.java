@@ -2,12 +2,14 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.qualcomm.hardware.ams.AMSColorSensor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.events.AutoShooterEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
-import org.firstinspires.ftc.teamcode.hardware.events.PowershotEvent;
+import org.firstinspires.ftc.teamcode.hardware.events.AutoPowershotEvent;
 import org.firstinspires.ftc.teamcode.hardware.autoshoot.Tracker;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Navigator;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
@@ -70,6 +72,9 @@ public class CurrentTele extends LoggingOpMode {
     private double[] speeds;
     private double[] powershot_angles;
     private  double[] powershot_powers;
+
+    private double past_x = -48;
+    private double past_y = 48;
     
     private boolean autoPowershotRunning = false;
     private boolean autoShooterMove = false;
@@ -79,7 +84,6 @@ public class CurrentTele extends LoggingOpMode {
     public void init()
     {
         robot = new Robot(hardwareMap);
-        robot.drivetrain.getOdometry().setPosition(-48, 48);
         logger = new Logger("CurrentTele");
         // TODO load configuration for tracker
         tracker = new Tracker(robot.turret, robot.drivetrain, 135);
@@ -108,14 +112,14 @@ public class CurrentTele extends LoggingOpMode {
             powershot_powers[i] = powershotPowers.get(i).getAsDouble();
         }
 
-        powershotFlow.start(new Subscriber<>(PowershotEvent.class, (ev, bus, sub) -> {
+        powershotFlow.start(new Subscriber<>(AutoPowershotEvent.class, (ev, bus, sub) -> {
                     autoPowershotRunning = true;
                     ringCount = 0;
                     robot.turret.unpush();
                     robot.turret.rotate(powershot_angles[ringCount], false);
                     robot.turret.shooter.start(powershot_powers[ringCount]);
                     shooterTimer.reset();
-                }, "Start Up Shooter", PowershotEvent.TRIGGER_POWERSHOT))
+                }, "Start Up Shooter", AutoPowershotEvent.TRIGGER_AUTO_POWERSHOT))
                 .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
                     powershotTimer.reset();
                 }, "Turn Powershot", shooterTimer.eventChannel))
@@ -143,6 +147,17 @@ public class CurrentTele extends LoggingOpMode {
                         autoPowershotRunning = false;
                     }
                 }, "Turn Powershot 2", powershotTimer.eventChannel));
+
+        shooterFlow.start(new Subscriber<>(AutoShooterEvent.class, (ev, bus, sub) -> {
+                        autoShooterMove = true;
+                        navigator.goTo(0, 0);
+                    }, "Moving to Shoot", AutoShooterEvent.TRIGGER_AUTO_SHOOTER))
+                    .then(new Subscriber<>(NavMoveEvent.class, (ev, bus, sub) -> {
+                        navigator.turn(180);
+                    }, "Adjusting Heading", NavMoveEvent.MOVE_COMPLETE))
+                    .then(new Subscriber<>(NavMoveEvent.class, (ev, bus, sub) -> {
+                        autoShooterMove = false;
+                    }, "Finished Moving for Shooting", NavMoveEvent.TURN_COMPLETE));
         
         robot.lift.connectEventBus(evBus);
         robot.turret.connectEventBus(evBus);
@@ -211,9 +226,14 @@ public class CurrentTele extends LoggingOpMode {
 
         robot.turret.startZeroFind();
 
+        if (Persistent.get("odo_x") != null && Persistent.get("odo_y") !=null){
+            past_x = (double) Persistent.get("odo_x");
+            past_y = (double) Persistent.get("odo_y");
+        }
+        robot.drivetrain.getOdometry().setPosition(past_x, past_y);
+
         if (Persistent.get("turret_zero_found") == null)
             robot.turret.startZeroFind();
-
     }
 
     @Override
@@ -239,7 +259,7 @@ public class CurrentTele extends LoggingOpMode {
         if (!autoShooterMove) {
             robot.drivetrain.telemove(ax_drive_r.get() * speed,
                                      ax_drive_l.get() * speed);
-        } else if (ax_drive_l.get() > 0.1){
+        } else if (ax_drive_r.get() > 0.1){
             autoShooterMove = false;
         }
 
@@ -332,9 +352,7 @@ public class CurrentTele extends LoggingOpMode {
         }
 
         if (btn_shooter_move.edge() > 0){
-            logger.i("Moving to Shoot");
-            navigator.goTo(0, 0);
-            autoShooterMove = true;
+            evBus.pushEvent(new AutoShooterEvent(AutoShooterEvent.TRIGGER_AUTO_SHOOTER));
         }
 
         if (btn_wobble_up.get()) robot.wobble.up();
@@ -344,22 +362,13 @@ public class CurrentTele extends LoggingOpMode {
         if (btn_wobble_int.get()) robot.wobble.middle();
 
         if (btn_powershot.edge() > 0){
-            evBus.pushEvent(new PowershotEvent(PowershotEvent.TRIGGER_POWERSHOT));
+            evBus.pushEvent(new AutoPowershotEvent(AutoPowershotEvent.TRIGGER_AUTO_POWERSHOT));
         }
         
         robot.lift.update(telemetry);
         robot.turret.update(telemetry);
         if (autoShooterMove){
             navigator.update(telemetry);
-            try {
-                if (evBus.checkEvent(new NavMoveEvent(NavMoveEvent.MOVE_COMPLETE))){
-                    logger.i("Finished Moving to Shoot");
-                    autoShooterMove = false;
-                }
-            } catch (NullPointerException e){
-                logger.i("No Nav Event");
-            }
-
         }
         robot.drivetrain.getOdometry().updateDeltas();
         telemetry.addData("Shooter Velocity", "%.3f",
