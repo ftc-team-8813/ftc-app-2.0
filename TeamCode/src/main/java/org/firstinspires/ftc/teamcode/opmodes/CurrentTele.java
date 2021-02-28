@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.qualcomm.hardware.ams.AMSColorSensor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.events.AutoShooterEvent;
@@ -36,6 +37,7 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.AxisEntry   ax_intake;
     private ControllerMap.AxisEntry   ax_intake_out;
     private ControllerMap.AxisEntry   ax_turret;
+    private ControllerMap.AxisEntry   ax_shooter;
     private ControllerMap.ButtonEntry btn_turret_reverse;
     private ControllerMap.ButtonEntry btn_shooter;
     private ControllerMap.ButtonEntry btn_pusher;
@@ -77,6 +79,7 @@ public class CurrentTele extends LoggingOpMode {
 
     private double past_x = -48;
     private double past_y = 48;
+    private double shooter_power = 0;
 
     private boolean autoPowershotRunning = false;
     private boolean autoShooterMove = false;
@@ -94,8 +97,8 @@ public class CurrentTele extends LoggingOpMode {
         evBus = new EventBus();
         scheduler = new Scheduler(evBus);
         navigator = new Navigator(robot.drivetrain, robot.drivetrain.getOdometry(), evBus);
-        navigator.setForwardSpeed(0.5);
-        navigator.setTurnSpeed(0.5);
+        navigator.setForwardSpeed(0.8);
+        navigator.setTurnSpeed(0.6);
 
         powershotFlow = new EventFlow(evBus);
         shooterFlow = new EventFlow(evBus);
@@ -199,6 +202,7 @@ public class CurrentTele extends LoggingOpMode {
         controllerMap.setAxisMap  ("intake",      "gamepad1", "right_trigger");
         controllerMap.setAxisMap  ("intake_out",  "gamepad1", "left_trigger");
         controllerMap.setAxisMap  ("turret",      "gamepad2", "left_stick_x" );
+        controllerMap.setAxisMap("shooter_adj",   "gamepad2", "left_stick_y");
         controllerMap.setButtonMap("slow2",       "gamepad1", "right_bumper" );
         controllerMap.setButtonMap("turr_reverse","gamepad2", "left_trigger");
         controllerMap.setButtonMap("shooter",     "gamepad2", "y");
@@ -220,6 +224,7 @@ public class CurrentTele extends LoggingOpMode {
         ax_intake       = controllerMap.axes.get("intake");
         ax_intake_out   = controllerMap.axes.get("intake_out");
         ax_turret       = controllerMap.axes.get("turret");
+        ax_shooter      = controllerMap.axes.get("shooter_adj");
         btn_shooter     = controllerMap.buttons.get("shooter");
         btn_pusher      = controllerMap.buttons.get("pusher");
         btn_wobble_up   = controllerMap.buttons.get("wobble_up");
@@ -248,10 +253,12 @@ public class CurrentTele extends LoggingOpMode {
 
         robot.turret.startZeroFind();
 
-        if (Persistent.get("odo_x") != null && Persistent.get("odo_y") !=null){
+        if (Persistent.get("odo_x") != null && Persistent.get("odo_y") != null){
             past_x = (double) Persistent.get("odo_x");
             past_y = (double) Persistent.get("odo_y");
         }
+        logger.i("Start X", past_x);
+        logger.i("Start Y", past_y);
         robot.drivetrain.getOdometry().setPosition(past_x, past_y);
 
         if (Persistent.get("turret_zero_found") == null)
@@ -293,11 +300,16 @@ public class CurrentTele extends LoggingOpMode {
             autoShooterMove = false;
         }
 
+        // ONLY FOR TESTING PURPOSES
+        //shooter_power = Range.clip(shooter_power + -ax_shooter.get() * 0.005, 0, 1);
+        //robot.turret.shooter.start(shooter_power);
+
         robot.intake.run(ax_intake.get() - ax_intake_out.get());
 
         //if (btn_aim.get()){
         //    tracker.updateVars();
-        //}
+        //
+
         if (autoPowershotRunning)
         {
             if (ax_turret.get() > 0.1) stopAutoPowershot();

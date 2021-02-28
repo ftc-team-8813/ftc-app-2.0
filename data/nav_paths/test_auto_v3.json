@@ -225,12 +225,6 @@
     },
 
     {
-      "type": "turn",
-      "absolute": true,
-      "rotation": "wobble2-a"
-    },
-
-    {
       "type": "actuator",
       "actuator": {
         "name": "wobble",
@@ -243,14 +237,6 @@
         "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
         "timer": "wobbleTimer"
       },
-
-      "type": "drive",
-      "absolute": true,
-      "x": "wobble2-x2",
-      "y": "wobble2-y"
-    },
-
-    {
 
       "type": "actuator",
       "actuator": {
@@ -272,11 +258,6 @@
     },
 
     {
-      "trigger": {
-        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
-        "timer": "wobbleTimer"
-      },
-
       "type": "drive",
       "absolute": true,
       "direction": "forwards",

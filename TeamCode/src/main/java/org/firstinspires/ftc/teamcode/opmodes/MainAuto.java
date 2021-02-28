@@ -259,8 +259,6 @@ public class MainAuto extends LoggingOpMode
     public void stop()
     {
         webcam.close();
-        Persistent.put("odo_x", robot.drivetrain.getOdometry().x);
-        Persistent.put("odo_y", robot.drivetrain.getOdometry().y);
         if (server != null) server.close();
         super.stop();
     }

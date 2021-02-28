@@ -152,7 +152,7 @@ public class Navigator
                 fwdError = worldErrorVec.dot(headingVec);
     
                 distanceError = worldErrorVec.magnitude();
-                if (distanceError < 1 && Math.abs(distanceError - lastDistance) < 0.01)
+                if (distanceError < 1 && Math.abs(distanceError - lastDistance) < 1)
                 {
                     navigating = false;
                     eventBus.pushEvent(new NavMoveEvent(NavMoveEvent.MOVE_COMPLETE));
@@ -200,7 +200,7 @@ public class Navigator
         double turnPower = Range.clip(turnError * turnKp + turnInt, -turnSpeed, turnSpeed);
 
         if (eventBus != null){
-            if (Math.abs(turnError) < 0.5 && sendEvent_turn) {
+            if (Math.abs(turnError) < 5 && sendEvent_turn) {
                 sendEvent_turn = false;
                 eventBus.pushEvent(new NavMoveEvent(NavMoveEvent.TURN_COMPLETE));
             }
