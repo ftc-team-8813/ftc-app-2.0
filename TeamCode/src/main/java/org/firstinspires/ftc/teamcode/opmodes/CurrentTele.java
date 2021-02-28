@@ -142,8 +142,8 @@ public class CurrentTele extends LoggingOpMode {
                     }
                 }, "Turn Powershot 2", powershotTimer.eventChannel));
     
-        Scheduler.Timer pushDelay = scheduler.addPendingTrigger(0.3, "Push delay");
-        Scheduler.Timer unpushDelay = scheduler.addPendingTrigger(1, "Unpush delay");
+        Scheduler.Timer pushDelay = scheduler.addPendingTrigger(0.1, "Push delay");
+        Scheduler.Timer unpushDelay = scheduler.addPendingTrigger(0.1, "Unpush delay");
         
         pusherFlow.start(new Subscriber<>(ButtonEvent.class, (ev, bus, sub) -> {
                     robot.turret.push();
