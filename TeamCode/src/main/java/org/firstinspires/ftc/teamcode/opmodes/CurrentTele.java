@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Time;
+import org.firstinspires.ftc.teamcode.util.event.ButtonEvent;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.EventBus.Subscriber;
 import org.firstinspires.ftc.teamcode.util.event.EventFlow;
@@ -60,6 +61,7 @@ public class CurrentTele extends LoggingOpMode {
     private Scheduler scheduler; // just in case
     private EventFlow liftFlow;
     private EventFlow powershotFlow;
+    private EventFlow pusherFlow;
     
     private int shooterPowerIdx;
     
@@ -72,6 +74,8 @@ public class CurrentTele extends LoggingOpMode {
     
     private boolean autoPowershotRunning = false;
     private int ringCount = 0;
+    
+    private static final int BUTTON_EVENT_PUSHER = 0;
 
     @Override
     public void init()
@@ -84,6 +88,7 @@ public class CurrentTele extends LoggingOpMode {
         
         liftFlow = new EventFlow(evBus);
         powershotFlow = new EventFlow(evBus);
+        pusherFlow = new EventFlow(evBus);
         Scheduler.Timer powershotTimer = scheduler.addPendingTrigger(0.4, "powershotTimer");
         Scheduler.Timer shooterTimer = scheduler.addPendingTrigger(2, "shooterTimer");
 
@@ -136,6 +141,23 @@ public class CurrentTele extends LoggingOpMode {
                         autoPowershotRunning = false;
                     }
                 }, "Turn Powershot 2", powershotTimer.eventChannel));
+    
+        Scheduler.Timer pushDelay = scheduler.addPendingTrigger(0.3, "Push delay");
+        Scheduler.Timer unpushDelay = scheduler.addPendingTrigger(1, "Unpush delay");
+        
+        pusherFlow.start(new Subscriber<>(ButtonEvent.class, (ev, bus, sub) -> {
+                    robot.turret.push();
+                    pushDelay.reset();
+                }, "Button Trigger", BUTTON_EVENT_PUSHER))
+                .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
+                    robot.turret.unpush();
+                    unpushDelay.reset();
+                }, "Unpush", pushDelay.eventChannel))
+                .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
+                    robot.turret.push();
+                    pushDelay.reset();
+                    pusherFlow.jump(1);
+                }, "Push", unpushDelay.eventChannel));
         
         robot.lift.connectEventBus(evBus);
         robot.turret.connectEventBus(evBus);
@@ -220,6 +242,14 @@ public class CurrentTele extends LoggingOpMode {
         Persistent.clear();
     }
     
+    private void stopAutoPowershot()
+    {
+        powershotFlow.forceJump(0);
+        robot.turret.unpush();
+        robot.turret.shooter.stop();
+        autoPowershotRunning = false;
+    }
+    
     @Override
     public void loop()
     {
@@ -238,11 +268,7 @@ public class CurrentTele extends LoggingOpMode {
         //}
         if (autoPowershotRunning)
         {
-            if (ax_turret.get() > 0.1)
-            {
-                powershotFlow.stop();
-                autoPowershotRunning = false;
-            }
+            if (ax_turret.get() > 0.1) stopAutoPowershot();
         }
         else
         {
@@ -252,11 +278,7 @@ public class CurrentTele extends LoggingOpMode {
 
         if (btn_shooter.edge() > 0)
         {
-            if (autoPowershotRunning)
-            {
-                powershotFlow.stop();
-                autoPowershotRunning = false;
-            }
+            if (autoPowershotRunning) stopAutoPowershot();
             shooter_on = !shooter_on;
             if (shooter_on) robot.turret.shooter.start();
             else            robot.turret.shooter.stop();
@@ -264,11 +286,7 @@ public class CurrentTele extends LoggingOpMode {
         
         if (btn_shooter_preset.edge() > 0)
         {
-            if (autoPowershotRunning)
-            {
-                powershotFlow.stop();
-                autoPowershotRunning = false;
-            }
+            if (autoPowershotRunning) stopAutoPowershot();
             shooterPowerIdx += 1;
             robot.turret.shooter.setPreset(shooterPowerIdx);
             robot.controlHub.setLEDColor(robot.turret.shooter.getPresetColor());
@@ -287,34 +305,27 @@ public class CurrentTele extends LoggingOpMode {
         
         if (autoPowershotRunning)
         {
-            if (btn_pusher.get())
-            {
-                powershotFlow.stop();
-                autoPowershotRunning = false;
-            }
+            if (btn_pusher.get()) stopAutoPowershot();
         }
         else
         {
-            if (btn_pusher.get()) robot.turret.push();
-            else robot.turret.unpush();
+            int pushEdge = btn_pusher.edge();
+            if (pushEdge > 0) evBus.pushEvent(new ButtonEvent(BUTTON_EVENT_PUSHER));
+            else if (pushEdge < 0)
+            {
+                robot.turret.unpush();
+                pusherFlow.forceJump(0);
+            }
         }
         
         if (btn_turret_home.edge() > 0)
         {
-            if (autoPowershotRunning)
-            {
-                powershotFlow.stop();
-                autoPowershotRunning = false;
-            }
+            if (autoPowershotRunning) stopAutoPowershot();
             robot.turret.home();
         }
         if (btn_turret_reverse.edge() > 0)
         {
-            if (autoPowershotRunning)
-            {
-                powershotFlow.stop();
-                autoPowershotRunning = false;
-            }
+            if (autoPowershotRunning) stopAutoPowershot();
             robot.turret.rotate(robot.turret.getTurretShootPos());
         }
         

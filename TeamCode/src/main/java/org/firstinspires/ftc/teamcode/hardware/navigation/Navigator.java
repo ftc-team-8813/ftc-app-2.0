@@ -69,10 +69,10 @@ public class Navigator
         this.odometry = odo;
         imu = odo.getIMU();
         
-        forwardKp = 0.15;
+        forwardKp = 0.04;
+        forwardKi = 0.0001;
         turnKp = 0.01;
-        forwardKi = 0.001;
-        turnKi = 0.001;
+        turnKi = 0.0001;
         this.eventBus = eventBus;
     }
     
