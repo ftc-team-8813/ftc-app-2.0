@@ -8,11 +8,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  */
 public class Intake {
     public final DcMotor ramp;
-    public final CRServo appendage;
+    public final CRServo roller;
 
-    public Intake(DcMotor ramp, CRServo appendage) {
+    public Intake(DcMotor ramp, CRServo roller) {
         this.ramp = ramp;
-        this.appendage = appendage;
+        this.roller = roller;
     }
     
     public void intake()
@@ -28,7 +28,7 @@ public class Intake {
     public void run(double speed)
     {
         ramp.setPower(speed);
-        appendage.setPower(speed);
+        roller.setPower(-speed);
     }
     
     public void stop()
