@@ -31,9 +31,9 @@ public class TrackerTest extends LoggingOpMode {
         double off = trackerConf.get("offset").getAsDouble();
         double target_x = trackerConf.get("target_x").getAsDouble();
         double target_y = trackerConf.get("target_y").getAsDouble();
-        robot.drivetrain.getOdometry().setPosition(66, 48);
+        robot.drivetrain.getOdometry().setPosition(0, 0);
         
-        tracker = new Tracker(robot.turret, robot.drivetrain, off);
+        tracker = new Tracker(robot.turret, robot.drivetrain);
         tracker.setTarget(target_x, target_y);
         ev = new EventBus();
         scheduler = new Scheduler(ev);
@@ -81,15 +81,14 @@ public class TrackerTest extends LoggingOpMode {
         robot.drivetrain.telemove(-gamepad1.left_stick_y * 0.3,
                                  -gamepad1.right_stick_y * 0.3);
         robot.drivetrain.getOdometry().updateDeltas();
-        tracker.update();
-        robot.turret.update(telemetry);
 
         telemetry.addData("Turret Current Heading", tracker.getTargetHeading());
         telemetry.addData("Odo X", robot.drivetrain.getOdometry().x);
         telemetry.addData("Odo Y", robot.drivetrain.getOdometry().y);
         telemetry.addData("Odo L", robot.drivetrain.getOdometry().past_l);
         telemetry.addData("Odo R", robot.drivetrain.getOdometry().past_r);
-        telemetry.update();
+        tracker.update();
+        robot.turret.update(telemetry);
         scheduler.loop();
         ev.update();
     }

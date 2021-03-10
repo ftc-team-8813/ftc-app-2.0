@@ -13,14 +13,11 @@ public class Tracker {
     private double x_target;
     private double y_target;
     private double heading_target;
-    
-    private double heading_offset;
 
-    public Tracker(Turret turret, Drivetrain drivetrain, double heading_offset){
+    public Tracker(Turret turret, Drivetrain drivetrain){
         this.odometry = drivetrain.getOdometry();
         this.turret = turret;
         this.imu = odometry.getIMU();
-        this.heading_offset = heading_offset;
     }
     
     public void setTarget(double xTarget, double yTarget)

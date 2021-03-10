@@ -1,18 +1,23 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import android.graphics.ImageFormat;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.qualcomm.hardware.ams.AMSColorSensor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.Turret;
 import org.firstinspires.ftc.teamcode.hardware.events.AutoShooterEvent;
+import org.firstinspires.ftc.teamcode.hardware.events.CameraEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.AutoPowershotEvent;
 import org.firstinspires.ftc.teamcode.hardware.autoshoot.Tracker;
+import org.firstinspires.ftc.teamcode.hardware.events.RingEvent;
+import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Navigator;
+import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Persistent;
@@ -23,14 +28,24 @@ import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.EventBus.Subscriber;
 import org.firstinspires.ftc.teamcode.util.event.EventFlow;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
+import org.firstinspires.ftc.teamcode.vision.RingDetector;
+import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
+import org.firstinspires.ftc.teamcode.vision.webcam.Webcam.SimpleFrameHandler;
+import org.opencv.core.Mat;
+
+import static org.opencv.core.CvType.CV_8UC4;
 
 @TeleOp(name="!!THE TeleOp!!")
 public class CurrentTele extends LoggingOpMode {
     private Robot robot;
     private Navigator navigator;
+    private Odometry odometry;
     private Tracker tracker;
     private ControllerMap controllerMap;
     private Logger logger;
+
+    private RingDetector detector;
+    private Mat detectorFrame;
 
     private ControllerMap.AxisEntry   ax_drive_l;
     private ControllerMap.AxisEntry   ax_drive_r;
@@ -57,49 +72,63 @@ public class CurrentTele extends LoggingOpMode {
     private double driveSpeed;
     private double slowSpeed;
     private double lastUpdate;
-    
+
+    private boolean tracking = true;
     private boolean lift_up = false;
     private boolean shooter_on = false;
     private int slow = 0;
     
     private EventBus evBus;
     private Scheduler scheduler; // just in case
+    private EventFlow ringFlow;
     private EventFlow powershotFlow;
     private EventFlow shooterFlow;
     private EventFlow pusherFlow;
 
     private int shooterPowerIdx;
-    
-    private static final int TRIGGER_LIFT_FLOW = 0;
-    private static final int TRIGGER_POWERSHOT_FLOW = 0;
+
+    private static final int TRIGGER_PUSHER_FLOW = 0;
+
+    // TODO Find serial
+    private static final String WEBCAM_SERIAL = "1234567890";
+
+    private double ring_count;
     
     private double[] speeds;
     private double[] powershot_angles;
-    private  double[] powershot_powers;
+    private double[] powershot_powers;
 
-    private double past_x = -48;
-    private double past_y = 48;
+    private double past_x = 48;
+    private double past_y = -48;
     private double shooter_power = 0;
 
     private boolean autoPowershotRunning = false;
     private boolean autoShooterMove = false;
     private int ringCount = 0;
 
-    private static final int BUTTON_EVENT_PUSHER = 0;
-
     @Override
     public void init()
     {
         robot = new Robot(hardwareMap);
+        odometry = robot.drivetrain.getOdometry();
         logger = new Logger("CurrentTele");
         // TODO load configuration for tracker
-        tracker = new Tracker(robot.turret, robot.drivetrain, 135);
+        tracker = new Tracker(robot.turret, robot.drivetrain);
         evBus = new EventBus();
         scheduler = new Scheduler(evBus);
         navigator = new Navigator(robot.drivetrain, robot.drivetrain.getOdometry(), evBus);
         navigator.setForwardSpeed(0.8);
         navigator.setTurnSpeed(0.6);
 
+        /* Webcam webcam = Webcam.forSerial(WEBCAM_SERIAL);
+        if (webcam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + WEBCAM_SERIAL);
+        SimpleFrameHandler frameHandler = new SimpleFrameHandler();
+        webcam.open(ImageFormat.YUY2, 800, 448, 30, frameHandler);
+        detectorFrame = new Mat(800, 448, CV_8UC4);
+        detector = new RingDetector(800, 448);
+        */
+
+        ringFlow = new EventFlow(evBus);
         powershotFlow = new EventFlow(evBus);
         shooterFlow = new EventFlow(evBus);
         pusherFlow = new EventFlow(evBus);
@@ -119,6 +148,46 @@ public class CurrentTele extends LoggingOpMode {
         {
             powershot_powers[i] = powershotPowers.get(i).getAsDouble();
         }
+
+        /*
+            Turns on Intake
+            Waits for Ring 1
+            Schooches forward and back
+            Waits for Ring 2
+            Schooches forward and back
+            Waits for Ring 3
+            Schooches forward and back
+            Turn on Shooter
+            Turn off Intake
+            Enable Tracking (Heading Only)
+            Rapid Shoot (Time?)
+
+            Diable Tracking
+            Turn Shooter to Slow
+            Home Turret
+
+            Repeat
+         */
+        ringFlow.start(new Subscriber<>(RingEvent.class, (ev, bus, sub) -> {
+                    robot.intake.intake();
+                    if (ring_count == 3){
+                        evBus.pushEvent(new RingEvent(RingEvent.BUCKET_FULL));
+                    }
+                }, "Start Ring Flow", RingEvent.TRIGGER_AUTO_RING))
+                .then(new Subscriber<>(CameraEvent.class, (ev, bus, sub) -> {
+                    navigator.goTo(odometry.getX() + 10, odometry.getY());
+                }, "Scooch Forward for Ring", CameraEvent.FRAME_CAUGHT))
+                .then(new Subscriber<>(NavMoveEvent.class, (ev, bus, sub) -> {
+                    navigator.goTo(odometry.getX() - 10, odometry.getY());
+                }, "Scooch Backward for Ring", NavMoveEvent.MOVE_COMPLETE))
+                .then(new Subscriber<>(CameraEvent.class, (ev, bus, sub) -> {
+                    ring_count++;
+                    ringFlow.jump(0);
+                }, "Repeat Scooching for More Rings", CameraEvent.FRAME_CAUGHT))
+                .then(new Subscriber<>(RingEvent.class, (ev, bus, sub) -> {
+                    robot.turret.shooter.start();
+                    tracking = true;
+                }, "Start Shooter", RingEvent.BUCKET_FULL));
 
         powershotFlow.start(new Subscriber<>(AutoPowershotEvent.class, (ev, bus, sub) -> {
                     autoPowershotRunning = true;
@@ -173,7 +242,7 @@ public class CurrentTele extends LoggingOpMode {
         pusherFlow.start(new Subscriber<>(ButtonEvent.class, (ev, bus, sub) -> {
                     robot.turret.push();
                     pushDelay.reset();
-                }, "Button Trigger", BUTTON_EVENT_PUSHER))
+                }, "Button Trigger", TRIGGER_PUSHER_FLOW))
                 .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
                     robot.turret.unpush();
                     unpushDelay.reset();
@@ -247,6 +316,7 @@ public class CurrentTele extends LoggingOpMode {
         {
             speeds[i] = driveSpeeds.get(i).getAsDouble();
         }
+
         robot.wobble.up();
         
         robot.imu.initialize(evBus, scheduler);
@@ -257,9 +327,14 @@ public class CurrentTele extends LoggingOpMode {
             past_x = (double) Persistent.get("odo_x");
             past_y = (double) Persistent.get("odo_y");
         }
-        logger.i("Start X", past_x);
-        logger.i("Start Y", past_y);
+        logger.i("Start X: %.1f", past_x);
+        logger.i("Start Y: %.1f", past_y);
         robot.drivetrain.getOdometry().setPosition(past_x, past_y);
+
+        JsonObject trackerConf = robot.config.getAsJsonObject("tracker");
+        double target_x = trackerConf.get("target_x").getAsDouble();
+        double target_y = trackerConf.get("target_y").getAsDouble();
+        tracker.setTarget(target_x, target_y);
 
         if (Persistent.get("turret_zero_found") == null)
             robot.turret.startZeroFind();
@@ -310,7 +385,7 @@ public class CurrentTele extends LoggingOpMode {
         //    tracker.updateVars();
         //
 
-        if (autoPowershotRunning)
+        if (autoPowershotRunning || tracking)
         {
             if (ax_turret.get() > 0.1) stopAutoPowershot();
         }
@@ -354,7 +429,7 @@ public class CurrentTele extends LoggingOpMode {
         else
         {
             int pushEdge = btn_pusher.edge();
-            if (pushEdge > 0) evBus.pushEvent(new ButtonEvent(BUTTON_EVENT_PUSHER));
+            if (pushEdge > 0) evBus.pushEvent(new ButtonEvent(TRIGGER_PUSHER_FLOW));
             else if (pushEdge < 0)
             {
                 robot.turret.unpush();
@@ -365,7 +440,9 @@ public class CurrentTele extends LoggingOpMode {
         if (btn_turret_home.edge() > 0)
         {
             if (autoPowershotRunning) stopAutoPowershot();
-            robot.turret.home();
+            tracking = true;
+        } else{
+            tracking = false;
         }
         if (btn_turret_reverse.edge() > 0)
         {
@@ -391,6 +468,9 @@ public class CurrentTele extends LoggingOpMode {
         robot.turret.update(telemetry);
         if (autoShooterMove){
             navigator.update(telemetry);
+        }
+        if (tracking){
+            tracker.update();
         }
         robot.drivetrain.getOdometry().updateDeltas();
         telemetry.addData("Shooter Velocity", "%.3f",
