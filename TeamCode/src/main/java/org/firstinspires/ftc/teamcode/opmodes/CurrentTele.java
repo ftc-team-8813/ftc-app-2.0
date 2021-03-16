@@ -1,30 +1,33 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.Turret;
-import org.firstinspires.ftc.teamcode.hardware.events.LiftEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.PowershotEvent;
-import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
 import org.firstinspires.ftc.teamcode.hardware.autoshoot.Tracker;
+import org.firstinspires.ftc.teamcode.input.ButtonEvent;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
+import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.Time;
-import org.firstinspires.ftc.teamcode.util.event.ButtonEvent;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.EventBus.Subscriber;
 import org.firstinspires.ftc.teamcode.util.event.EventFlow;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
-import org.firstinspires.ftc.teamcode.util.event.TriggerEvent;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 @TeleOp(name="!!THE TeleOp!!")
-public class CurrentTele extends LoggingOpMode {
+public class CurrentTele extends LoggingOpMode
+{
     private Robot robot;
     private Tracker tracker;
     private ControllerMap controllerMap;
@@ -80,11 +83,11 @@ public class CurrentTele extends LoggingOpMode {
     @Override
     public void init()
     {
-        robot = new Robot(hardwareMap);
+        robot = Robot.initialize(hardwareMap, "Main TeleOp");
         // TODO load configuration for tracker
         tracker = new Tracker(robot.turret, robot.drivetrain, 135);
-        evBus = new EventBus();
-        scheduler = new Scheduler(evBus);
+        evBus = robot.eventBus;
+        scheduler = robot.scheduler;
         
         liftFlow = new EventFlow(evBus);
         powershotFlow = new EventFlow(evBus);
@@ -146,9 +149,15 @@ public class CurrentTele extends LoggingOpMode {
         Scheduler.Timer unpushDelay = scheduler.addPendingTrigger(0.1, "Unpush delay");
         
         pusherFlow.start(new Subscriber<>(ButtonEvent.class, (ev, bus, sub) -> {
+                    if (ev.edge < 0 || autoPowershotRunning)
+                    {
+                        // TODO HACK: don't advance the event flow
+                        pusherFlow.jump(0);
+                        return;
+                    }
                     robot.turret.push();
                     pushDelay.reset();
-                }, "Button Trigger", BUTTON_EVENT_PUSHER))
+                }, "Button Trigger", btn_pusher.getEventID()))
                 .then(new Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
                     robot.turret.unpush();
                     unpushDelay.reset();
@@ -162,7 +171,7 @@ public class CurrentTele extends LoggingOpMode {
         robot.lift.connectEventBus(evBus);
         robot.turret.connectEventBus(evBus);
         
-        controllerMap = new ControllerMap(gamepad1, gamepad2);
+        controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         /*
          Hardware required:
          -- drivetrain (4 motors, tank, 2 axes)
@@ -192,6 +201,19 @@ public class CurrentTele extends LoggingOpMode {
         controllerMap.setButtonMap("aim",         "gamepad2", "b");
         controllerMap.setButtonMap("powershot",   "gamepad1", "dpad_down");
         
+        JsonObject defaultsMap = controllerMap.saveMap();
+        File outfile = Storage.createFile("teleop-controls.json");
+        String data = new GsonBuilder().setPrettyPrinting().create().toJson(defaultsMap);
+        try (FileWriter w = new FileWriter(outfile))
+        {
+            w.write(data);
+            w.write("\n");
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        // TODO load controller map from config
+    
         ax_drive_l      = controllerMap.axes.get("drive_l");
         ax_drive_r      = controllerMap.axes.get("drive_r");
         ax_intake       = controllerMap.axes.get("intake");
@@ -253,6 +275,8 @@ public class CurrentTele extends LoggingOpMode {
     @Override
     public void loop()
     {
+        controllerMap.update();
+        
         double dt = Time.since(lastUpdate);
         lastUpdate = Time.now();
         double speed = speeds[slow];
@@ -310,8 +334,7 @@ public class CurrentTele extends LoggingOpMode {
         else
         {
             int pushEdge = btn_pusher.edge();
-            if (pushEdge > 0) evBus.pushEvent(new ButtonEvent(BUTTON_EVENT_PUSHER));
-            else if (pushEdge < 0)
+            if (pushEdge < 0)
             {
                 robot.turret.unpush();
                 pusherFlow.forceJump(0);

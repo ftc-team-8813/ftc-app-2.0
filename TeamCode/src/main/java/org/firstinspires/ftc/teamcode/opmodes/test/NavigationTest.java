@@ -4,14 +4,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.events.IMUEvent;
-import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Navigator;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 
 import java.nio.ByteBuffer;
@@ -33,14 +30,14 @@ public class NavigationTest extends LoggingOpMode
     @Override
     public void init()
     {
-        robot = new Robot(hardwareMap);
+        robot = Robot.initialize(hardwareMap, "Navigation Test");
         server = new Server(19998);
     
         robot.drivetrain.resetEncoders();
         imu = robot.imu;
     
-        evBus = new EventBus();
-        scheduler = new Scheduler(evBus);
+        evBus = robot.eventBus;
+        scheduler = robot.scheduler;
     
         imu.initialize(evBus, scheduler);
     

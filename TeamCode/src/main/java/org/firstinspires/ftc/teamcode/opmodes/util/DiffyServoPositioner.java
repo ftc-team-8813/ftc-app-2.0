@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.qualcomm.hardware.lynx.LynxServoController;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -19,6 +18,7 @@ import org.firstinspires.ftc.teamcode.telemetry.Scroll;
 import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.Time;
+import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -71,6 +71,7 @@ public class DiffyServoPositioner extends LoggingOpMode
         private boolean firstLoop = true;
         abstract void init();
         abstract void loop();
+        void exit() {}
     }
     
     private Scene currScene;
@@ -79,6 +80,7 @@ public class DiffyServoPositioner extends LoggingOpMode
     private int servoA;
     private int servoB;
     private ServoController[] servoControllers;
+    private EventBus evBus;
     
     private String fileName;
     
@@ -88,7 +90,9 @@ public class DiffyServoPositioner extends LoggingOpMode
         Storage.createDirs("servo_positions");
         telemetry.setDisplayFormat(HTML);
         currScene = new SceneChoose();
-        controllerMap = new ControllerMap(gamepad1, gamepad2);
+        
+        evBus = new EventBus();
+        controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         started = false;
         
         setDefaultButtons();
@@ -120,8 +124,10 @@ public class DiffyServoPositioner extends LoggingOpMode
     @Override
     public void loop()
     {
+        controllerMap.update();
         if (currScene != null)
         {
+            Scene oldScene = currScene;
             if (currScene.firstLoop)
             {
                 currScene.firstLoop = false;
@@ -130,6 +136,11 @@ public class DiffyServoPositioner extends LoggingOpMode
                 currScene.init();
             }
             else currScene.loop();
+            
+            if (currScene != oldScene)
+            {
+                oldScene.exit();
+            }
             telemetry.update();
         }
     }
@@ -150,7 +161,7 @@ public class DiffyServoPositioner extends LoggingOpMode
     
     private class SceneChoose extends Scene
     {
-        private Telemetry.Item status;
+        private Telemetry.Line status;
         private Scroll servoChooser;
         private int numPicked = 0;
         private final String[] indexes = {"first", "second"};
@@ -158,7 +169,7 @@ public class DiffyServoPositioner extends LoggingOpMode
         @Override
         public void init()
         {
-            status = telemetry.addLine().addData("", "");
+            status = telemetry.addLine();
             servoChooser = new Scroll(8);
             Servo[] servos = enumerateServos(hardwareMap);
             for (int i = 0; i < servos.length; i++)
@@ -187,7 +198,7 @@ public class DiffyServoPositioner extends LoggingOpMode
         @Override
         public void loop()
         {
-            status.setCaption(String.format("Choose the %s servo", indexes[numPicked]));
+            status.addData(String.format("Choose the %s servo", indexes[numPicked]), "");
             int up_edge = btn_up_arrow.edge();
             int dn_edge = btn_down_arrow.edge();
             if (up_edge > 0)      servoChooser.press(-1);

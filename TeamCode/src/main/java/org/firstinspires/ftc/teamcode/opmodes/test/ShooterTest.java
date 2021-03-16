@@ -1,20 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmodes.test;
 
-import com.google.gson.JsonObject;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.Shooter;
 import org.firstinspires.ftc.teamcode.hardware.Turret;
-import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
-import org.firstinspires.ftc.teamcode.util.Configuration;
-import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 
 import java.nio.ByteBuffer;
@@ -29,7 +21,7 @@ public class ShooterTest extends LoggingOpMode
     @Override
     public void init()
     {
-        Robot robot = new Robot(hardwareMap);
+        Robot robot = Robot.initialize(hardwareMap, "Shooter Test");
         this.turret = robot.turret;
         
         server = new Server(17777);

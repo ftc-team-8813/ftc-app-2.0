@@ -1,10 +1,14 @@
 package org.firstinspires.ftc.teamcode.input;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.telemetry.HTMLString;
+import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -14,25 +18,26 @@ public class ControllerMap
     
     private Gamepad gamepad1;
     private Gamepad gamepad2;
+    private EventBus evBus;
     
     private int[] oldButtons = {0, 0};
+    private int[] edges = {0, 0, 0, 0};
     private static final float triggerThreshold = 0.8f;
     public final Map<String, ButtonEntry> buttons;
     public final Map<String, AxisEntry> axes;
     
-    public ControllerMap(Gamepad gamepad1, Gamepad gamepad2)
+    public ControllerMap(Gamepad gamepad1, Gamepad gamepad2, EventBus evBus)
     {
         this.gamepad1 = gamepad1;
         this.gamepad2 = gamepad2;
         this.buttons = new HashMap<>();
         this.axes = new HashMap<>();
+        this.evBus = evBus;
     }
-    
-    // TODO: Add configuration tool for this
     
     public void setButtonMap(String name, Controller c, Button b)
     {
-        buttons.put(name, new ButtonEntry(c, b));
+        buttons.put(name, new ButtonEntry(c, b, name));
     }
     
     public void setButtonMap(String name, String c, String b)
@@ -42,12 +47,58 @@ public class ControllerMap
     
     public void setAxisMap(String name, Controller c, Axis a)
     {
-        axes.put(name, new AxisEntry(c, a));
+        axes.put(name, new AxisEntry(c, a, name));
     }
     
     public void setAxisMap(String name, String c, String a)
     {
         setAxisMap(name, Controller.valueOf(c), Axis.valueOf(a));
+    }
+    
+    public void loadMap(JsonObject obj)
+    {
+        JsonObject buttons = obj.getAsJsonObject("buttons");
+        JsonObject axes = obj.getAsJsonObject("axes");
+        
+        for (Map.Entry<String, JsonElement> entry : buttons.entrySet())
+        {
+            String name = entry.getKey();
+            String[] value = entry.getValue().getAsString().split("\\.");
+            if (value.length != 2) throw new IllegalArgumentException("Invalid button identifier: " + entry.getValue().getAsString());
+            
+            setButtonMap(name, value[0], value[1]);
+        }
+        
+        for (Map.Entry<String, JsonElement> entry : axes.entrySet())
+        {
+            String name = entry.getKey();
+            String[] value = entry.getValue().getAsString().split("\\.");
+            if (value.length != 2) throw new IllegalArgumentException("Invalid button identifier: " + entry.getValue().getAsString());
+    
+            setAxisMap(name, value[0], value[1]);
+        }
+    }
+    
+    public JsonObject saveMap()
+    {
+        JsonObject root = new JsonObject();
+        JsonObject buttons = new JsonObject();
+        JsonObject axes = new JsonObject();
+        
+        root.add("buttons", buttons);
+        root.add("axes", axes);
+        
+        for (ButtonEntry entry : this.buttons.values())
+        {
+            buttons.addProperty(entry.name, String.format("%s.%s", entry.controller.name(), entry.button.name()));
+        }
+        
+        for (AxisEntry entry : this.axes.values())
+        {
+            axes.addProperty(entry.name, String.format("%s.%s", entry.controller.name(), entry.axis.name()));
+        }
+        
+        return root;
     }
     
     public Gamepad getController(Controller c)
@@ -113,30 +164,43 @@ public class ControllerMap
     
     public boolean getButton(Controller gamepad, Button button)
     {
-        return (getButtons(gamepad) & (1 << button.ordinal())) != 0;
+        return (oldButtons[gamepad.ordinal()] & (1 << button.ordinal())) != 0;
     }
     
     public int getEdge(Controller gamepad, Button button)
     {
-        int buttonVal = getButtons(gamepad) & (1 << button.ordinal());
         int padnum = gamepad.ordinal();
-        if (buttonVal != 0)
+        if      ((edges[2*padnum]     & 1 << button.ordinal()) != 0) return 1;
+        else if ((edges[2*padnum + 1] & 1 << button.ordinal()) != 0) return -1;
+        return 0;
+    }
+    
+    public void update()
+    {
+        int buttons1 = getButtons(Controller.gamepad1);
+        int buttons2 = getButtons(Controller.gamepad2);
+        int old1 = oldButtons[0];
+        int old2 = oldButtons[1];
+        
+        int posedge1 =  buttons1 & ~old1;
+        int negedge1 = ~buttons1 &  old1;
+        int posedge2 =  buttons2 & ~old2;
+        int negedge2 = ~buttons2 &  old2;
+        edges[0] = posedge1;
+        edges[1] = negedge1;
+        edges[2] = posedge2;
+        edges[3] = negedge2;
+        
+        oldButtons[0] = buttons1;
+        oldButtons[1] = buttons2;
+        
+        for (ButtonEntry entry : buttons.values())
         {
-            if ((oldButtons[padnum] & (1 << button.ordinal())) == 0)
+            int edge = entry.edge();
+            if (edge != 0)
             {
-                oldButtons[padnum] |= (1 << button.ordinal());
-                return 1;
+                evBus.pushEvent(new ButtonEvent(entry, edge));
             }
-            else return 0;
-        }
-        else
-        {
-            if ((oldButtons[padnum] & (1 << button.ordinal())) != 0)
-            {
-                oldButtons[padnum] &= ~(1 << button.ordinal());
-                return -1;
-            }
-            else return 0;
         }
     }
     
@@ -200,11 +264,13 @@ public class ControllerMap
     {
         public final Controller controller;
         public final Button button;
+        public final String name;
         
-        public ButtonEntry(Controller controller, Button button)
+        ButtonEntry(Controller controller, Button button, String name)
         {
             this.controller = controller;
             this.button = button;
+            this.name = name;
         }
         
         public boolean get()
@@ -220,6 +286,11 @@ public class ControllerMap
         public String toString()
         {
             return controller.name() + "." + button.name();
+        }
+        
+        public int getEventID()
+        {
+            return controller.ordinal() * 0x20 + button.ordinal();
         }
         
         public String toStyledString()
@@ -242,11 +313,18 @@ public class ControllerMap
     {
         public final Controller controller;
         public final Axis axis;
+        public final String name;
         
-        public AxisEntry(Controller controller, Axis axis)
+        AxisEntry(Controller controller, Axis axis, String name)
         {
             this.controller = controller;
             this.axis = axis;
+            this.name = name;
+        }
+        
+        public int getEventID()
+        {
+            return controller.ordinal() * 0x20 + axis.ordinal();
         }
         
         public float get()

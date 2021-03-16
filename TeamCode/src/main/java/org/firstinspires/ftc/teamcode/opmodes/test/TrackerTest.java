@@ -13,8 +13,9 @@ import org.firstinspires.ftc.teamcode.util.websocket.Server;
 
 import java.nio.ByteBuffer;
 
-@TeleOp(name="TrackerTest")
-public class TrackerTest extends LoggingOpMode {
+@TeleOp(name="Tracker Test")
+public class TrackerTest extends LoggingOpMode
+{
     private Robot robot;
     private IMU imu;
     private Tracker tracker;
@@ -25,7 +26,7 @@ public class TrackerTest extends LoggingOpMode {
 
     @Override
     public void init() {
-        robot = new Robot(hardwareMap);
+        robot = Robot.initialize(hardwareMap, "Tracker Test");
         
         JsonObject trackerConf = robot.config.getAsJsonObject("tracker");
         double off = trackerConf.get("offset").getAsDouble();

@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opmodes.util;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.hardware.CalibratedAnalogInput;
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.autoshoot.ShooterDataLogger;
@@ -13,10 +12,9 @@ import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
-import java.util.ResourceBundle;
-
 @TeleOp(name="ShooterDataCollector")
-public class ShooterDataCollector extends LoggingOpMode {
+public class ShooterDataCollector extends LoggingOpMode
+{
     private Robot robot;
     private Odometry odometry;
     private IMU imu;
@@ -40,13 +38,13 @@ public class ShooterDataCollector extends LoggingOpMode {
 
     @Override
     public void init() {
-        robot = new Robot(hardwareMap);
+        robot = Robot.initialize(hardwareMap, "Shooter Data Collector");
         odometry = new Odometry(robot.drivetrain.top_left, robot.drivetrain.top_right, imu);
         odometry.setPosition(0, 48);
-        ev = new EventBus();
-        scheduler = new Scheduler(ev);
+        ev = robot.eventBus;
+        scheduler = robot.scheduler;
         logger = new ShooterDataLogger();
-        controllerMap = new ControllerMap(gamepad1, gamepad2);
+        controllerMap = new ControllerMap(gamepad1, gamepad2, ev);
 
 
         controllerMap.setAxisMap("drive_l",   "gamepad1", "left_stick_y" );

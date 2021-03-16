@@ -28,27 +28,16 @@ public class OdometryTest extends LoggingOpMode
     @Override
     public void init()
     {
-        robot = new Robot(hardwareMap);
+        robot = Robot.initialize(hardwareMap, "Odometry Test");
         server = new Server(19999);
         
         robot.drivetrain.resetEncoders();
         imu = robot.imu;
 
-        evBus = new EventBus();
-        scheduler = new Scheduler(evBus);
+        evBus = robot.eventBus;
+        scheduler = robot.scheduler;
         
-        imu.setImmediateStart(true);
         imu.initialize(evBus, scheduler);
-
-        Scheduler.Timer resetTimer = scheduler.addPendingTrigger(0.5, "Reset Delay");
-        evBus.subscribe(IMUEvent.class, (ev, bus, sub) -> {
-            if (ev.new_state == IMU.STARTED)
-                resetTimer.reset();
-        }, "Reset Heading -- Delay", 0);
-        evBus.subscribe(TimerEvent.class, (ev, bus, sub) -> {
-            imu.resetHeading();
-        }, "Reset Heading", resetTimer.eventChannel);
-        
         
         odometry = new Odometry(hardwareMap.dcMotor.get("turret"), hardwareMap.dcMotor.get("intake"), imu);
         

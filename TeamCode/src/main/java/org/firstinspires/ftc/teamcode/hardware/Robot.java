@@ -11,9 +11,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
+import org.firstinspires.ftc.teamcode.util.BuildInfo;
 import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Storage;
+import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 public class Robot {
     public final Drivetrain drivetrain;
@@ -27,16 +30,50 @@ public class Robot {
 
     public final IMU imu;
     
-    private Logger log = new Logger("Robot");
+    public final EventBus eventBus;
+    public final Scheduler scheduler;
     
-    public Robot(HardwareMap hardwareMap){
+    private final Logger log = new Logger("Robot");
+    
+    ///////////////////////////////
+    // Singleton things          //
+    private static Robot instance;
+    
+    public static Robot initialize(HardwareMap hardwareMap, String initMessage)
+    {
+        instance = new Robot(hardwareMap, initMessage);
+        return instance;
+    }
+    
+    public static void close()
+    {
+        instance = null;
+    }
+    
+    public static Robot instance()
+    {
+        return instance;
+    }
+    //                           //
+    ///////////////////////////////
+    
+    private Robot(HardwareMap hardwareMap, String initMessage){
+        log.i("ROBOT INIT -- %s", initMessage);
+        BuildInfo buildInfo = new BuildInfo(Storage.getFile("buildinfo.json"));
+        buildInfo.logInfo();
+        
         config = Configuration.readJson(Storage.getFile("config.json"));
+        
+        eventBus = new EventBus();
+        scheduler = new Scheduler(eventBus);
+        /*
         log.d("Hardware Map");
         for (HardwareDevice dev : hardwareMap.getAll(HardwareDevice.class))
         {
             String name = hardwareMap.getNamesOf(dev).iterator().next();
             log.d("%s: %s -- %s", name, dev.getClass().getSimpleName(), dev.getConnectionInfo());
         }
+        */
         
         controlHub = new REVHub(hardwareMap.get(LynxModule.class, "Control Hub"));
         
