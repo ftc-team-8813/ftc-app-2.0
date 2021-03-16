@@ -1,21 +1,17 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import android.graphics.ImageFormat;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.Turret;
 import org.firstinspires.ftc.teamcode.hardware.events.AutoShooterEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.CameraEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.AutoPowershotEvent;
 import org.firstinspires.ftc.teamcode.hardware.autoshoot.Tracker;
 import org.firstinspires.ftc.teamcode.hardware.events.RingEvent;
-import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Navigator;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
@@ -29,11 +25,7 @@ import org.firstinspires.ftc.teamcode.util.event.EventBus.Subscriber;
 import org.firstinspires.ftc.teamcode.util.event.EventFlow;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 import org.firstinspires.ftc.teamcode.vision.RingDetector;
-import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
-import org.firstinspires.ftc.teamcode.vision.webcam.Webcam.SimpleFrameHandler;
 import org.opencv.core.Mat;
-
-import static org.opencv.core.CvType.CV_8UC4;
 
 @TeleOp(name="!!THE TeleOp!!")
 public class CurrentTele extends LoggingOpMode {
@@ -53,7 +45,7 @@ public class CurrentTele extends LoggingOpMode {
     private ControllerMap.AxisEntry   ax_intake_out;
     private ControllerMap.AxisEntry   ax_turret;
     private ControllerMap.AxisEntry   ax_shooter;
-    private ControllerMap.ButtonEntry btn_turret_reverse;
+    private ControllerMap.AxisEntry   ax_track;
     private ControllerMap.ButtonEntry btn_shooter;
     private ControllerMap.ButtonEntry btn_pusher;
     private ControllerMap.ButtonEntry btn_wobble_up;
@@ -271,9 +263,9 @@ public class CurrentTele extends LoggingOpMode {
         controllerMap.setAxisMap  ("intake",      "gamepad1", "right_trigger");
         controllerMap.setAxisMap  ("intake_out",  "gamepad1", "left_trigger");
         controllerMap.setAxisMap  ("turret",      "gamepad2", "left_stick_x" );
-        controllerMap.setAxisMap("shooter_adj",   "gamepad2", "left_stick_y");
+        controllerMap.setAxisMap  ("shooter_adj", "gamepad2", "left_stick_y");
+        controllerMap.setAxisMap  ("tracking",    "gamepad2","right_trigger");
         controllerMap.setButtonMap("slow2",       "gamepad1", "right_bumper" );
-        controllerMap.setButtonMap("turr_reverse","gamepad2", "left_trigger");
         controllerMap.setButtonMap("shooter",     "gamepad2", "y");
         controllerMap.setButtonMap("pusher",      "gamepad2", "x");
         controllerMap.setButtonMap("wobble_up",   "gamepad2", "dpad_up");
@@ -294,6 +286,7 @@ public class CurrentTele extends LoggingOpMode {
         ax_intake_out   = controllerMap.axes.get("intake_out");
         ax_turret       = controllerMap.axes.get("turret");
         ax_shooter      = controllerMap.axes.get("shooter_adj");
+        ax_track        = controllerMap.axes.get("tracking");
         btn_shooter     = controllerMap.buttons.get("shooter");
         btn_pusher      = controllerMap.buttons.get("pusher");
         btn_wobble_up   = controllerMap.buttons.get("wobble_up");
@@ -305,7 +298,6 @@ public class CurrentTele extends LoggingOpMode {
         btn_wobble_int  = controllerMap.buttons.get("wobble_i");
         btn_turret_home = controllerMap.buttons.get("turr_home");
         btn_shooter_preset = controllerMap.buttons.get("shoot_pre");
-        btn_turret_reverse = controllerMap.buttons.get("turr_reverse");
         btn_powershot = controllerMap.buttons.get("powershot");
         btn_aim = controllerMap.buttons.get("aim");
         btn_shooter_move = controllerMap.buttons.get("shooter_pos");
@@ -320,8 +312,6 @@ public class CurrentTele extends LoggingOpMode {
         robot.wobble.up();
         
         robot.imu.initialize(evBus, scheduler);
-
-        robot.turret.startZeroFind();
 
         if (Persistent.get("odo_x") != null && Persistent.get("odo_y") != null){
             past_x = (double) Persistent.get("odo_x");
@@ -385,7 +375,7 @@ public class CurrentTele extends LoggingOpMode {
         //    tracker.updateVars();
         //
 
-        if (autoPowershotRunning || tracking)
+        if (autoPowershotRunning)
         {
             if (ax_turret.get() > 0.1) stopAutoPowershot();
         }
@@ -437,18 +427,13 @@ public class CurrentTele extends LoggingOpMode {
             }
         }
         
-        if (btn_turret_home.edge() > 0)
+        if (btn_turret_home.edge() > 0 && !tracking)
         {
             if (autoPowershotRunning) stopAutoPowershot();
-            tracking = true;
-        } else{
-            tracking = false;
+            robot.turret.home();
         }
-        if (btn_turret_reverse.edge() > 0)
-        {
-            if (autoPowershotRunning) stopAutoPowershot();
-            robot.turret.rotate(robot.turret.getTurretShootPos());
-        }
+
+        tracking = ax_track.get() > 0.5;
 
         if (btn_shooter_move.edge() > 0){
             evBus.pushEvent(new AutoShooterEvent(AutoShooterEvent.TRIGGER_AUTO_SHOOTER));
@@ -470,7 +455,8 @@ public class CurrentTele extends LoggingOpMode {
             navigator.update(telemetry);
         }
         if (tracking){
-            tracker.update();
+            double position = tracker.update(telemetry);
+            telemetry.addData("Tracker Target Position: ", position);
         }
         robot.drivetrain.getOdometry().updateDeltas();
         telemetry.addData("Shooter Velocity", "%.3f",
@@ -480,7 +466,8 @@ public class CurrentTele extends LoggingOpMode {
         telemetry.addData("Turret target heading", "%.3f", tracker.getTargetHeading());
         telemetry.addData("Odometry position", "%.3f,%.3f", robot.drivetrain.getOdometry().x, robot.drivetrain.getOdometry().y);
         telemetry.addData("Turret Current Position", robot.turret.turretFb.getCurrentPosition());
-        telemetry.addData("Turret Target Position", robot.turret.getTarget());
+        telemetry.addData("IMU Heading: ", robot.drivetrain.getOdometry().getIMU().getHeading());
+        telemetry.addData("Testing: ", tracking);
         scheduler.loop();
         evBus.update();
         // telemetry.addData("Turret power", "%.3f", robot.turret.turret.getPower());

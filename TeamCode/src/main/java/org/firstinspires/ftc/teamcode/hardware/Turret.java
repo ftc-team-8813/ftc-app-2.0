@@ -22,13 +22,11 @@ public class Turret {
     private Logger log = new Logger("Turret");
 
     private final double TICKS = 128;
-    private final double ENC_TO_TURRET_RATIO = 110.0/30.0 * TICKS;
+    private final double ENC_TO_TURRET_RATIO = 74.0/10.0 * TICKS;
 
     private double turretHome;
-    private double turretHomeReverse;
+    private double turretFullRotation;
     private double turretKp;
-    private double turretMin;
-    private double turretMax;
     private double turretSpeed;
     private double pushIn;
     private double pushOut;
@@ -68,10 +66,8 @@ public class Turret {
 
         JsonObject root = turretConfig;
         turretHome = root.get("home").getAsDouble();
-        turretHomeReverse = root.get("home180").getAsDouble();
+        turretFullRotation = root.get("full_rotation").getAsDouble();
         turretKp   = root.get("kp").getAsDouble();
-        turretMin  = root.get("min").getAsDouble();
-        turretMax  = root.get("max").getAsDouble();
         turretSpeed= root.get("maxSpeed").getAsDouble();
         turretDefSpeed = turretSpeed;
         JsonObject pusherConf = root.getAsJsonObject("pusher");
@@ -90,11 +86,15 @@ public class Turret {
     {
         rotate(position, false);
     }
-    
+
+    /***
+     * Rotates the turret left and right from the home position
+     * @param position Absolute encoder values (named eUnits). Clipped half-rotation left and right from home
+     */
     public void rotate(double position, boolean sendEvent)
     {
-        if (sendEvent) log.d("Rotate -> %.3f", position);
-        position = Range.clip(position, -1 + turretHome, 0);
+        if (sendEvent) log.i("Rotate -> %.3f", position);
+        position = Range.clip(position, turretHome - (turretFullRotation/2), turretHome + (turretFullRotation/2));
         target = position;
         if (sendEvent) this.sendEvent = true;
     }
@@ -130,10 +130,7 @@ public class Turret {
         return turretHome;
     }
 
-    public double getTurretShootPos()
-    {
-        return turretHomeReverse;
-    }
+    public double getTurretFullRotation() {return turretFullRotation;}
     
     public void update(Telemetry telemetry)
     {
@@ -143,7 +140,7 @@ public class Turret {
         lastPos = pos;
         double error = target - pos;
 
-        if (sendEvent && Math.abs(error) < 0.05 && evBus != null)
+        if (sendEvent && Math.abs(error) < 0.03 && evBus != null)
         {
             sendEvent = false;
             evBus.pushEvent(new TurretEvent(TurretEvent.TURRET_MOVED));
@@ -191,14 +188,15 @@ public class Turret {
     public void updateInit(Telemetry telemetry)
     {
         String state = "[unknown]";
+        telemetry.addData("Magnet Found: ", zeroSw.getState());
         double position = getPosition();
         switch (find_stage)
         {
             case FIND_RAPID:
             {
-                turret.setPower(0.3); // positive power -> increase in position
+                turret.setPower(0.2); // positive power -> increase in position
                 state = String.format("Rapid pos=%.3f", position);
-                if (position >= 1)
+                if (position >= 2)
                 {
                     find_stage = FIND_RAPID_REV;
                     turret.setPower(0);
@@ -251,7 +249,7 @@ public class Turret {
             }
             case FIND_SLOW:
             {
-                turret.setPower(0.08);
+                turret.setPower(0.1);
                 state = "Slow detect";
                 if (!zeroSw.getState())
                 {

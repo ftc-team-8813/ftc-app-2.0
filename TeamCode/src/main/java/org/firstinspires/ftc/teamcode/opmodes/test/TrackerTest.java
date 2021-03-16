@@ -87,7 +87,7 @@ public class TrackerTest extends LoggingOpMode {
         telemetry.addData("Odo Y", robot.drivetrain.getOdometry().y);
         telemetry.addData("Odo L", robot.drivetrain.getOdometry().past_l);
         telemetry.addData("Odo R", robot.drivetrain.getOdometry().past_r);
-        tracker.update();
+        tracker.update(telemetry);
         robot.turret.update(telemetry);
         scheduler.loop();
         ev.update();

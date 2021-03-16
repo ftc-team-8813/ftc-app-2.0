@@ -10,15 +10,13 @@
     ],
 
     "presets": [
-      {"power":  0.4355, "color": [255, 255, 0]},
-      {"power":  0.37, "color": [64,  0,   128]}
+      {"power":  0.774, "color": [255, 255, 0]},
+      {"power":  0.65, "color": [64,  0,   128]}
     ]
   },
   "turret": {
-    "home":    -0.100,
-    "home180": -0.5173,
-    "min": 0,
-    "max": 0.95,
+    "home":    -0.413,
+    "full_rotation": 0,
     "maxSpeed": 0.4,
     "kp":  7,
     "pusher": {
