@@ -40,22 +40,26 @@ public class Tracker {
         return y_target;
     }
 
-    public double update(Telemetry telemetry){
+    public void update(Telemetry telemetry){
         double x_dist = x_target - odometry.x;
         double y_dist = y_target - odometry.y;
 
         // calculate target heading
-        double robot_heading = odometry.getIMU().getHeading();
-        double turret_heading = robot_heading - Math.toDegrees(Math.atan(y_dist/x_dist));
-        turret_heading %= 360;
-        if (turret_heading < 0) turret_heading += 360;
+        // CCW for imu is positive
+        double robot_heading = odometry.getIMU().getHeading() % 360;
+        if (Math.abs(robot_heading) > 180){
+            robot_heading = (180 - Math.abs((robot_heading % 180))) * -Math.signum(robot_heading);
+        }
+        double field_heading = Math.toDegrees(Math.atan2(y_dist, x_dist));
+        double turret_heading = robot_heading + (180 - Math.abs(field_heading)) * Math.signum(field_heading);
+        System.out.println(turret_heading);
 
-        heading_target = turret_heading;
-
-        double offset = (turret_heading / 360.0) * turret.getTurretFullRotation();
+        double offset = turret_heading / 360.0;
         double rotation_pos = turret.getTurretHome() + offset;
-        turret.rotate(rotation_pos);
-        return rotation_pos;
+        System.out.print(rotation_pos);
+
+        telemetry.addData("Tracker Target Heading: ", turret_heading);
+        telemetry.addData("Tracker Target Position: ", rotation_pos);
     }
     
     

@@ -25,7 +25,6 @@ public class Turret {
     private final double ENC_TO_TURRET_RATIO = 74.0/10.0 * TICKS;
 
     private double turretHome;
-    private double turretFullRotation;
     private double turretKp;
     private double turretSpeed;
     private double pushIn;
@@ -66,7 +65,6 @@ public class Turret {
 
         JsonObject root = turretConfig;
         turretHome = root.get("home").getAsDouble();
-        turretFullRotation = root.get("full_rotation").getAsDouble();
         turretKp   = root.get("kp").getAsDouble();
         turretSpeed= root.get("maxSpeed").getAsDouble();
         turretDefSpeed = turretSpeed;
@@ -94,7 +92,7 @@ public class Turret {
     public void rotate(double position, boolean sendEvent)
     {
         if (sendEvent) log.i("Rotate -> %.3f", position);
-        position = Range.clip(position, turretHome - (turretFullRotation/2), turretHome + (turretFullRotation/2));
+        position = Range.clip(position, -1 + turretHome, 0);
         target = position;
         if (sendEvent) this.sendEvent = true;
     }
@@ -129,8 +127,6 @@ public class Turret {
     public double getTurretHome(){
         return turretHome;
     }
-
-    public double getTurretFullRotation() {return turretFullRotation;}
     
     public void update(Telemetry telemetry)
     {

@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.hardware.events.RingEvent;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Navigator;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.util.ControlSystemsChecker;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
@@ -34,6 +35,7 @@ public class CurrentTele extends LoggingOpMode {
     private Odometry odometry;
     private Tracker tracker;
     private ControllerMap controllerMap;
+    private ControlSystemsChecker checker;
     private Logger logger;
 
     private RingDetector detector;
@@ -103,6 +105,7 @@ public class CurrentTele extends LoggingOpMode {
     {
         robot = new Robot(hardwareMap);
         odometry = robot.drivetrain.getOdometry();
+        checker = new ControlSystemsChecker(robot);
         logger = new Logger("CurrentTele");
         // TODO load configuration for tracker
         tracker = new Tracker(robot.turret, robot.drivetrain);
@@ -228,8 +231,8 @@ public class CurrentTele extends LoggingOpMode {
                         autoShooterMove = false;
                     }, "Finished Moving for Shooting", NavMoveEvent.TURN_COMPLETE));
 
-        Scheduler.Timer pushDelay = scheduler.addPendingTrigger(0.1, "Push delay");
-        Scheduler.Timer unpushDelay = scheduler.addPendingTrigger(0.1, "Unpush delay");
+        Scheduler.Timer pushDelay = scheduler.addPendingTrigger(0.15, "Push delay");
+        Scheduler.Timer unpushDelay = scheduler.addPendingTrigger(0.15, "Unpush delay");
 
         pusherFlow.start(new Subscriber<>(ButtonEvent.class, (ev, bus, sub) -> {
                     robot.turret.push();
@@ -369,11 +372,13 @@ public class CurrentTele extends LoggingOpMode {
         //shooter_power = Range.clip(shooter_power + -ax_shooter.get() * 0.005, 0, 1);
         //robot.turret.shooter.start(shooter_power);
 
-        robot.intake.run(ax_intake.get() - ax_intake_out.get());
-
-        //if (btn_aim.get()){
-        //    tracker.updateVars();
-        //
+        if (ax_intake.get() > 0.5){
+            robot.intake.intake();
+        } else if (ax_intake_out.get() > 0.5){
+            robot.intake.outtake();
+        } else{
+            robot.intake.stop();
+        }
 
         if (autoPowershotRunning)
         {
@@ -381,7 +386,7 @@ public class CurrentTele extends LoggingOpMode {
         }
         else
         {
-            double turret_adj = -ax_turret.get() * 0.003;
+            double turret_adj = ax_turret.get() * 0.003;
             robot.turret.rotate(robot.turret.getTarget() + turret_adj);
         }
 
@@ -455,8 +460,7 @@ public class CurrentTele extends LoggingOpMode {
             navigator.update(telemetry);
         }
         if (tracking){
-            double position = tracker.update(telemetry);
-            telemetry.addData("Tracker Target Position: ", position);
+            tracker.update(telemetry);
         }
         robot.drivetrain.getOdometry().updateDeltas();
         telemetry.addData("Shooter Velocity", "%.3f",
@@ -467,7 +471,6 @@ public class CurrentTele extends LoggingOpMode {
         telemetry.addData("Odometry position", "%.3f,%.3f", robot.drivetrain.getOdometry().x, robot.drivetrain.getOdometry().y);
         telemetry.addData("Turret Current Position", robot.turret.turretFb.getCurrentPosition());
         telemetry.addData("IMU Heading: ", robot.drivetrain.getOdometry().getIMU().getHeading());
-        telemetry.addData("Testing: ", tracking);
         scheduler.loop();
         evBus.update();
         // telemetry.addData("Turret power", "%.3f", robot.turret.turret.getPower());

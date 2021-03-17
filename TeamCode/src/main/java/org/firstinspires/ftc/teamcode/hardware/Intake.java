@@ -21,22 +21,22 @@ public class Intake {
     
     public void intake()
     {
-        run(1);
+        run(1, 0.5);
     }
     
     public void outtake()
     {
-        run(-1);
+        run(-1, -0.5);
     }
     
-    public void run(double speed)
+    public void run(double ramp_speed, double appendage_speed)
     {
-        ramp.setPower(speed);
-        appendage.setPower(speed);
+        ramp.setPower(ramp_speed);
+        appendage.setPower(appendage_speed);
     }
     
     public void stop()
     {
-        run(0);
+        run(0, 0);
     }
 }
