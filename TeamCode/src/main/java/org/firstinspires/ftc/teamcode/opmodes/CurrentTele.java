@@ -1,16 +1,11 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.events.PowershotEvent;
 import org.firstinspires.ftc.teamcode.hardware.autoshoot.Tracker;
-import org.firstinspires.ftc.teamcode.input.ButtonEvent;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
@@ -22,11 +17,7 @@ import org.firstinspires.ftc.teamcode.opmodes.teleop.WobbleControl;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Storage;
-import org.firstinspires.ftc.teamcode.util.Time;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.util.event.EventBus.Subscriber;
-import org.firstinspires.ftc.teamcode.util.event.EventFlow;
-import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -49,7 +40,7 @@ public class CurrentTele extends LoggingOpMode
     {
         robot = Robot.initialize(hardwareMap, "Main TeleOp");
         // TODO load configuration for tracker
-        tracker = new Tracker(robot.turret, robot.drivetrain, 135);
+        tracker = new Tracker(robot.turret, robot.drivetrain);
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
     

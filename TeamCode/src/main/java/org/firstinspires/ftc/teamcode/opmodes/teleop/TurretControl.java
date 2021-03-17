@@ -54,7 +54,7 @@ public class TurretControl extends ControlModule
         
         if (btn_turret_home.edge() > 0)
         {
-            turret.rotate(turret.getTurretHome());
+            turret.home();
         }
         
         if (btn_turret_reverse.edge() > 0)
