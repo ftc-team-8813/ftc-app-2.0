@@ -51,6 +51,16 @@ public class TurretControl extends ControlModule
     {
         double turret_adj = -ax_turret.get() * turretAdjSpeed;
         turret.rotate(turret.getTarget() + turret_adj);
+        
+        if (btn_turret_home.edge() > 0)
+        {
+            turret.rotate(turret.getTurretHome());
+        }
+        
+        if (btn_turret_reverse.edge() > 0)
+        {
+            turret.rotate(turret.getTurretShootPos());
+        }
     }
     
     @Override

@@ -49,8 +49,8 @@ public class DriveControl extends ControlModule
     public void update(Telemetry telemetry)
     {
         double speed = speeds[speedSetting];
-        drivetrain.telemove(-ax_drive_r.get() * speed,
-                           -ax_drive_l.get() * speed);
+        drivetrain.telemove(ax_drive_r.get() * speed,
+                           ax_drive_l.get() * speed);
         
         if (btn_slow.edge() > 0)
         {
@@ -62,6 +62,16 @@ public class DriveControl extends ControlModule
             if (speedSetting == 0) speedSetting = 2;
             else speedSetting = 0;
         }
+    }
+    
+    @Override
+    public void alwaysUpdate(Telemetry telemetry)
+    {
+        drivetrain.getOdometry().updateDeltas();
+        
+        telemetry.addData("Odo X", drivetrain.getOdometry().x);
+        telemetry.addData("Odo Y", drivetrain.getOdometry().y);
+       
     }
     
     @Override

@@ -20,7 +20,7 @@
     "min": 0,
     "max": 0.95,
     "maxSpeed": 0.2,
-    "kp":  3.5,
+    "kp":  6,
     "pusher": {
       "unpush": 0.52,
       "push": 0.7

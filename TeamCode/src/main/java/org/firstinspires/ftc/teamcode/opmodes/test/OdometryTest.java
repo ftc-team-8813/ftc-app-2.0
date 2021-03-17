@@ -6,7 +6,10 @@ import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.events.IMUEvent;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
+import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
@@ -25,6 +28,10 @@ public class OdometryTest extends LoggingOpMode
     
     private Odometry odometry;
     
+    private ControlMgr controlMgr;
+    
+    private ControllerMap controllerMap;
+    
     @Override
     public void init()
     {
@@ -39,7 +46,14 @@ public class OdometryTest extends LoggingOpMode
         
         imu.initialize(evBus, scheduler);
         
-        odometry = new Odometry(hardwareMap.dcMotor.get("turret"), hardwareMap.dcMotor.get("intake"), imu);
+        odometry = robot.drivetrain.getOdometry();
+        
+        controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
+        
+        controlMgr = new ControlMgr(robot, controllerMap);
+        controlMgr.addModule(new DriveControl());
+        
+        controlMgr.initModules();
         
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
             // Get data
@@ -66,6 +80,7 @@ public class OdometryTest extends LoggingOpMode
     @Override
     public void init_loop()
     {
+        controlMgr.init_loop(telemetry);
         scheduler.loop();
         evBus.update();
         loopTelem();
@@ -74,6 +89,8 @@ public class OdometryTest extends LoggingOpMode
     @Override
     public void loop()
     {
+        controllerMap.update();
+        controlMgr.loop(telemetry);
         loopTelem();
         odometry.updateDeltas();
         scheduler.loop();
@@ -83,6 +100,7 @@ public class OdometryTest extends LoggingOpMode
     @Override
     public void stop()
     {
+        controlMgr.stop();
         server.close();
         super.stop();
     }
