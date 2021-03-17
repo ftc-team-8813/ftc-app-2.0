@@ -35,24 +35,54 @@ public class ControllerMap
         this.evBus = evBus;
     }
     
-    public void setButtonMap(String name, Controller c, Button b)
+    /** @deprecated will be made private; use getButtonMap with default values instead **/
+    @Deprecated
+    public ButtonEntry setButtonMap(String name, Controller c, Button b)
     {
-        buttons.put(name, new ButtonEntry(c, b, name));
+        ButtonEntry entry = new ButtonEntry(c, b, name);
+        buttons.put(name, entry);
+        return entry;
     }
     
-    public void setButtonMap(String name, String c, String b)
+    /** @deprecated will be made private; use getButtonMap with default values instead **/
+    @Deprecated
+    public ButtonEntry setButtonMap(String name, String c, String b)
     {
-        setButtonMap(name, Controller.valueOf(c), Button.valueOf(b));
+        return setButtonMap(name, Controller.valueOf(c), Button.valueOf(b));
     }
     
-    public void setAxisMap(String name, Controller c, Axis a)
+    /** @deprecated will be made private; use getAxisMap with default values instead **/
+    @Deprecated
+    public AxisEntry setAxisMap(String name, Controller c, Axis a)
     {
-        axes.put(name, new AxisEntry(c, a, name));
+        AxisEntry entry = new AxisEntry(c, a, name);
+        axes.put(name, entry);
+        return entry;
     }
     
-    public void setAxisMap(String name, String c, String a)
+    /** @deprecated will be made private; use getAxisMap with default values instead **/
+    @Deprecated
+    public AxisEntry setAxisMap(String name, String c, String a)
     {
-        setAxisMap(name, Controller.valueOf(c), Axis.valueOf(a));
+        return setAxisMap(name, Controller.valueOf(c), Axis.valueOf(a));
+    }
+    
+    public ButtonEntry getButtonMap(String name, String defController, String defButton)
+    {
+        if (!buttons.containsKey(name))
+        {
+            return setButtonMap(name, defController, defButton);
+        }
+        return buttons.get(name);
+    }
+    
+    public AxisEntry getAxisMap(String name, String defController, String defAxis)
+    {
+        if (!axes.containsKey(name))
+        {
+            return setAxisMap(name, defController, defAxis);
+        }
+        return axes.get(name);
     }
     
     public void loadMap(JsonObject obj)

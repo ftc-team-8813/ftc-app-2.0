@@ -1,16 +1,13 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.util.Configuration;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +25,7 @@ public class Shooter
     private boolean started;
     
     private List<ShooterPower> powers;
-    private int currPower = -1;
+    private int currPreset = -1;
     
     private static class ShooterPower
     {
@@ -144,18 +141,18 @@ public class Shooter
     {
         int x = i % powers.size();
         if (x < 0) x += powers.size();
-        currPower = x;
-        maxPower = powers.get(currPower).power;
+        currPreset = x;
+        maxPower = powers.get(currPreset).power;
     }
     
     public int getPresetColor()
     {
-        if (currPower < 0) return 0;
-        return powers.get(currPower).color;
+        if (currPreset < 0) return 0;
+        return powers.get(currPreset).color;
     }
     
     public int getCurrPreset()
     {
-        return currPower;
+        return currPreset;
     }
 }

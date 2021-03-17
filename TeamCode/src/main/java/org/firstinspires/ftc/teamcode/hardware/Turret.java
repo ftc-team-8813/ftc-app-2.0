@@ -23,7 +23,7 @@ public class Turret {
     private Logger log = new Logger("Turret");
 
     private final double TICKS = 128;
-    private final double ENC_TO_TURRET_RATIO = 110.0/30.0 * TICKS;
+    private final double ENC_TO_TURRET_RATIO = 74.0/10.0 * TICKS;
 
     private double turretHome;
     private double turretHome2;
@@ -76,8 +76,8 @@ public class Turret {
         turretSpeed= root.get("maxSpeed").getAsDouble();
         turretDefSpeed = turretSpeed;
         JsonObject pusherConf = root.getAsJsonObject("pusher");
-        pushIn  = pusherConf.get("in").getAsDouble();
-        pushOut = pusherConf.get("out").getAsDouble();
+        pushIn  = pusherConf.get("unpush").getAsDouble();
+        pushOut = pusherConf.get("push").getAsDouble();
         
         target = turretHome;
     }

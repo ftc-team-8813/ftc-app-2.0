@@ -15,15 +15,15 @@
     ]
   },
   "turret": {
-    "home":    -0.100,
-    "home180": -0.580,
+    "home":    -0.41,
+    "home180": -0.91,
     "min": 0,
     "max": 0.95,
-    "maxSpeed": 0.4,
-    "kp":  7,
+    "maxSpeed": 0.2,
+    "kp":  3.5,
     "pusher": {
-      "in": 0.52,
-      "out": 0.66
+      "unpush": 0.52,
+      "push": 0.7
     }
   },
   "lift": {
@@ -38,7 +38,9 @@
   "teleop": {
     "drive_speeds": [-0.5, -0.35, -0.75],
     "powershot_angles": [-0.73, -0.7465, -0.758],
-    "powershot_powers": [0.3735, 0.3655, 0.3585]
+    "powershot_powers": [0.3735, 0.3655, 0.3585],
+
+    "turret_adj_rate": 0.01
   },
   "wobble": {
     "arm_up": 0.20,
