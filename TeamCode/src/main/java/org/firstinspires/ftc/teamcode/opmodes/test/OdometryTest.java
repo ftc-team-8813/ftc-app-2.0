@@ -92,7 +92,11 @@ public class OdometryTest extends LoggingOpMode
         controllerMap.update();
         controlMgr.loop(telemetry);
         loopTelem();
-        odometry.updateDeltas();
+        telemetry.addData("Odo L", odometry.getCurrentL());
+        telemetry.addData("Odo R", odometry.getCurrentR());
+        telemetry.addData("Odo Heading", Math.toDegrees(odometry.calc_heading));
+        telemetry.addData("IMU Heading", imu.getHeading());
+        
         scheduler.loop();
         evBus.update();
     }

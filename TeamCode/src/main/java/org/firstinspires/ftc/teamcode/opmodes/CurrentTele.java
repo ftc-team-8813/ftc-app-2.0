@@ -5,8 +5,9 @@ import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.autoshoot.Tracker;
+import org.firstinspires.ftc.teamcode.hardware.autoshoot.AutoAim;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.AutoAimControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
@@ -27,7 +28,6 @@ import java.io.IOException;
 public class CurrentTele extends LoggingOpMode
 {
     private Robot robot;
-    private Tracker tracker;
     private ControllerMap controllerMap;
     
     private ControlMgr controlMgr;
@@ -39,8 +39,6 @@ public class CurrentTele extends LoggingOpMode
     public void init()
     {
         robot = Robot.initialize(hardwareMap, "Main TeleOp");
-        // TODO load configuration for tracker
-        tracker = new Tracker(robot.turret, robot.drivetrain);
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
     
@@ -49,12 +47,16 @@ public class CurrentTele extends LoggingOpMode
         robot.imu.initialize(evBus, scheduler);
         
         controlMgr = new ControlMgr(robot, controllerMap);
+        // base modules
         controlMgr.addModule(new DriveControl());
         controlMgr.addModule(new IntakeControl());
         controlMgr.addModule(new TurretControl());
         controlMgr.addModule(new PusherControl());
         controlMgr.addModule(new ShooterControl());
         controlMgr.addModule(new WobbleControl());
+        
+        // automation
+        controlMgr.addModule(new AutoAimControl());
         
         controlMgr.initModules();
     

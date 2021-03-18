@@ -278,29 +278,6 @@ public class IMU
         workerSub = evBus.subscribe(TimerEvent.class, worker, "IMU Worker", workerInterval.eventChannel);
     }
     
-    @Deprecated
-    public void setImmediateStart(boolean immediateStart)
-    {
-    
-    }
-    
-    public void start()
-    {
-        worker.inRadians = false; // radians mode is most likely broken
-        if (worker.getState() < INITIALIZED)
-        {
-            log.f("start() called before initialization complete!");
-            throw new IllegalStateException("start() called before initialization complete!");
-        }
-        if (worker.getState() == STARTED)
-        {
-            log.d("Trying to start IMU even though it is already running");
-            // understandable; have a nice day
-            return;
-        }
-        worker.setState(STARTED);
-    }
-    
     public int getStatus()
     {
         return worker.getState();

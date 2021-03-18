@@ -99,16 +99,16 @@ public class Robot {
         
         Servo lift_a = hardwareMap.get(Servo.class, "lift a");
         Servo lift_b = hardwareMap.get(Servo.class, "lift b");
-        
-        this.imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
 
         // Sub-Assemblies
-        this.drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, new Odometry(l_enc, r_enc, this.imu));
+        this.drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, new Odometry(l_enc, r_enc));
+        this.imu = this.drivetrain.getOdometry().getIMU();
         
         DigitalChannel turretZero = hardwareMap.digitalChannel.get("turret_switch");
         this.turret = new Turret(turret, shooter, shooter2, pusher, aim, turret_enc,
                                  config.getAsJsonObject("shooter"),
                                  config.getAsJsonObject("turret"), turretZero);
+        this.turret.connectEventBus(eventBus);
         this.intake = new Intake(ramp, puller);
         
         this.lift = new SimpleLift(lift_a, lift_b,

@@ -7,21 +7,21 @@ import org.firstinspires.ftc.teamcode.hardware.Turret;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.util.Logger;
 
-public class Tracker {
+public class AutoAim
+{
     private Odometry odometry;
     private IMU imu;
-    private Turret turret;
+    private double turretHome;
     
     private double x_target;
     private double y_target;
-    private double heading_target;
     private Logger log;
 
-    public Tracker(Turret turret, Drivetrain drivetrain){
-        this.odometry = drivetrain.getOdometry();
-        this.turret = turret;
+    public AutoAim(Odometry odometry, double turretHome){
+        this.odometry = odometry;
         this.imu = odometry.getIMU();
-        this.log = new Logger("Tracker");
+        this.turretHome = turretHome;
+        this.log = new Logger("Auto Aim");
     }
     
     public void setTarget(double xTarget, double yTarget)
@@ -40,30 +40,26 @@ public class Tracker {
         return y_target;
     }
 
-    public void update(Telemetry telemetry){
+    public double getTurretRotation(Telemetry telemetry){
         double x_dist = x_target - odometry.x;
         double y_dist = y_target - odometry.y;
 
         // calculate target heading
         // CCW for imu is positive
-        double robot_heading = odometry.getIMU().getHeading() % 360;
-        if (Math.abs(robot_heading) > 180){
-            robot_heading = (180 - Math.abs((robot_heading % 180))) * -Math.signum(robot_heading);
-        }
+        double robot_heading = imu.getHeading();
         double field_heading = Math.toDegrees(Math.atan2(y_dist, x_dist));
-        double turret_heading = robot_heading + (180 - Math.abs(field_heading)) * Math.signum(field_heading);
-        System.out.println(turret_heading);
-
-        double offset = turret_heading / 360.0;
-        double rotation_pos = turret.getTurretHome() + offset;
-        System.out.print(rotation_pos);
+        
+        double turret_heading = field_heading - robot_heading + 180;
+        double rotation = turret_heading / 360.0;
+        double rotation_pos = turretHome + rotation;
+        
+        // wrap to between 0 and 1
+        rotation_pos %= 1; // -1 to 1
+        if (rotation_pos < 0) rotation_pos += 1; // 0 to 1
 
         telemetry.addData("Tracker Target Heading: ", turret_heading);
         telemetry.addData("Tracker Target Position: ", rotation_pos);
-    }
-    
-    
-    public double getTargetHeading(){
-        return heading_target;
+        
+        return rotation_pos;
     }
 }

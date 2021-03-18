@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
@@ -94,14 +95,13 @@ public class Turret {
     public void rotate(double position, boolean sendEvent)
     {
         if (sendEvent) log.i("Rotate -> %.3f", position);
-        position = Range.clip(position, -1 + turretHome, 0);
+        position = Range.clip(position, 0, 1);
         target = position;
         if (sendEvent) this.sendEvent = true;
     }
 
     public double getHeading(){
-        double spin_ratio = turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
-        return spin_ratio * 360;
+        return getPosition() * 360;
     }
 
     public void home()
@@ -123,7 +123,7 @@ public class Turret {
     
     public double getPosition()
     {
-        return turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
+        return -turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
     }
 
     public double getTurretHome(){
@@ -139,7 +139,7 @@ public class Turret {
     {
         shooter.update(telemetry);
         
-        double pos = turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
+        double pos = getPosition();
         lastPos = pos;
         double error = target - pos;
 
@@ -150,7 +150,7 @@ public class Turret {
         }
         
         double power = Range.clip(error * turretKp, -turretSpeed, turretSpeed);
-        turret.setPower(power);
+        turret.setPower(-power);
         telemetry.addData("pos", "%.3f", pos);
         telemetry.addData("target", "%.4f", target);
         telemetry.addData("error", "%.3f", error);
@@ -197,7 +197,7 @@ public class Turret {
         {
             case FIND_RAPID:
             {
-                turret.setPower(0.2); // positive power -> increase in position
+                turret.setPower(0.3); // positive power -> increase in position
                 state = String.format("Rapid pos=%.3f", position);
                 if (position >= 2)
                 {
@@ -213,7 +213,7 @@ public class Turret {
             }
             case FIND_RAPID_REV:
             {
-                turret.setPower(-0.2);
+                turret.setPower(-0.3);
                 state = String.format("Rapid reverse pos=%.3f", position);
                 if (position <= 0)
                 {
@@ -230,7 +230,7 @@ public class Turret {
             }
             case FIND_REVERSE:
             {
-                turret.setPower(-0.1);
+                turret.setPower(-0.2);
                 state = "Back up";
                 if (zeroSw.getState())
                 {
@@ -241,7 +241,7 @@ public class Turret {
             }
             case FIND_REVERSE_2:
             {
-                turret.setPower(-0.1);
+                turret.setPower(-0.2);
                 state = String.format("Back up 2 pos=%.3f err=%.3f", position, position-revStart);
                 if (Math.abs(position - revStart) > 0.05)
                 {
@@ -252,7 +252,7 @@ public class Turret {
             }
             case FIND_SLOW:
             {
-                turret.setPower(0.1);
+                turret.setPower(0.15);
                 state = "Slow detect";
                 if (!zeroSw.getState())
                 {

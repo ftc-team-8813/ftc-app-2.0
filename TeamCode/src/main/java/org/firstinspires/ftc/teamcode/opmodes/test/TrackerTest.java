@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.autoshoot.Tracker;
+import org.firstinspires.ftc.teamcode.hardware.autoshoot.AutoAim;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -18,7 +18,7 @@ public class TrackerTest extends LoggingOpMode
 {
     private Robot robot;
     private IMU imu;
-    private Tracker tracker;
+    private AutoAim autoAim;
     private EventBus ev;
     private Scheduler scheduler;
     
@@ -34,8 +34,8 @@ public class TrackerTest extends LoggingOpMode
         double target_y = trackerConf.get("target_y").getAsDouble();
         robot.drivetrain.getOdometry().setPosition(0, 0);
         
-        tracker = new Tracker(robot.turret, robot.drivetrain);
-        tracker.setTarget(target_x, target_y);
+        autoAim = new AutoAim(robot.drivetrain.getOdometry(), robot.turret.getTurretHome());
+        autoAim.setTarget(target_x, target_y);
         ev = new EventBus();
         scheduler = new Scheduler(ev);
         imu = robot.drivetrain.getOdometry().getIMU();
@@ -50,7 +50,7 @@ public class TrackerTest extends LoggingOpMode
             buf.putFloat((float)robot.drivetrain.getOdometry().x);
             buf.putFloat((float)robot.drivetrain.getOdometry().y);
             buf.putFloat((float)robot.imu.getHeading());
-            buf.putFloat((float)-(tracker.getTargetHeading() + 180));
+            buf.putFloat((float)robot.turret.getHeading());
             
             buf.flip();
             resp.respond(buf);
@@ -83,12 +83,11 @@ public class TrackerTest extends LoggingOpMode
                                  -gamepad1.right_stick_y * 0.3);
         robot.drivetrain.getOdometry().updateDeltas();
 
-        telemetry.addData("Turret Current Heading", tracker.getTargetHeading());
         telemetry.addData("Odo X", robot.drivetrain.getOdometry().x);
         telemetry.addData("Odo Y", robot.drivetrain.getOdometry().y);
         telemetry.addData("Odo L", robot.drivetrain.getOdometry().past_l);
         telemetry.addData("Odo R", robot.drivetrain.getOdometry().past_r);
-        tracker.update(telemetry);
+        robot.turret.rotate(autoAim.getTurretRotation(telemetry));
         robot.turret.update(telemetry);
         scheduler.loop();
         ev.update();

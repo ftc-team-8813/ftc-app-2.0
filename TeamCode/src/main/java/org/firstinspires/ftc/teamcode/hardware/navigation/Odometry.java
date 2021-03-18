@@ -16,14 +16,16 @@ public class Odometry {
     // TODO these variables should be private
     public double x, y;
     public double past_l, past_r;
-    public final double TICKS_PER_INCH = 29.167;
-    final double h = 7.5; // Half-Width of the robot in ticks
+    public double calc_heading;
+    public static final double TICKS_PER_INCH = 29.167;
+    public static final double h = 7.5; // Half-Width of the robot in ticks
+    public static final double TURN_FACTOR = 0.9945; // adjustment factor for something or another
     public ImageDraw.Color drawColor = ImageDraw.BLUE;
     
-    public Odometry(DcMotor l_enc, DcMotor r_enc, IMU imu){
+    public Odometry(DcMotor l_enc, DcMotor r_enc){
         this.l_enc = l_enc;
         this.r_enc = r_enc;
-        this.imu = imu;
+        this.imu = new OdoIMU(this);
     }
 
     /**
@@ -33,13 +35,16 @@ public class Odometry {
     public void updateDeltas(){
         double new_l = getCurrentL();
         double new_r = getCurrentR();
-        double l = new_l - past_l;
-        double r = new_r - past_r;
+        double dl = new_l - past_l;
+        double dr = new_r - past_r;
+        
+        double rotation_amt = TURN_FACTOR * (new_r - new_l) / 2;
         
         past_l = new_l;
         past_r = new_r;
-        double heading = Math.toRadians(imu.getHeading());
-        double dist = (l + r) / 2;
+        double heading = rotation_amt / h;
+        calc_heading = heading;
+        double dist = (dl + dr) / 2;
         
         double leg_x = Math.cos(heading) * dist;
         double leg_y = Math.sin(heading) * dist;
