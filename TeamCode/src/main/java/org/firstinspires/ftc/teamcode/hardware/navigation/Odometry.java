@@ -17,8 +17,8 @@ public class Odometry {
     public double x, y;
     public double past_l, past_r;
     public double calc_heading;
-    public static final double TICKS_PER_INCH = 29.167;
-    public static final double h = 7.5; // Half-Width of the robot in ticks
+    public static final double TICKS_PER_INCH = 29.10196;
+    public static final double h = 7.5; // Half-Width of the robot in inches
     public static final double TURN_FACTOR = 0.9945; // adjustment factor for something or another
     public ImageDraw.Color drawColor = ImageDraw.BLUE;
     

@@ -23,7 +23,7 @@
     "kp":  6,
     "pusher": {
       "unpush": 0.52,
-      "push": 0.7
+      "push": 0.75
     }
   },
   "lift": {
