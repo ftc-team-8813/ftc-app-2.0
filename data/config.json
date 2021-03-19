@@ -10,8 +10,8 @@
     ],
 
     "presets": [
-      {"power":  0.79, "color": [255, 255, 0]},
-      {"power":  0.5, "color": [64,  0,   128]}
+      {"power":  0.83, "color": [255, 255, 0]},
+      {"power":  0.7, "color": [64,  0,   128]}
     ]
   },
   "turret": {
@@ -19,7 +19,7 @@
     "home180": 0.91,
     "min": 0,
     "max": 0.95,
-    "maxSpeed": 0.2,
+    "maxSpeed": 0.3,
     "kp":  6,
     "pusher": {
       "unpush": 0.52,
@@ -40,7 +40,7 @@
     "powershot_angles": [-0.73, -0.7465, -0.758],
     "powershot_powers": [0.3735, 0.3655, 0.3585],
 
-    "turret_adj_rate": 0.01
+    "turret_adj_rate": 0.005
   },
   "wobble": {
     "arm_up": 0.20,

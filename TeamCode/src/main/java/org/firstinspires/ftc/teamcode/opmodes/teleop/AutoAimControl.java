@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.REVHub;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.Turret;
 import org.firstinspires.ftc.teamcode.hardware.autoshoot.AutoAim;
@@ -20,6 +21,7 @@ public class AutoAimControl extends ControlModule
     
     private Turret turret;
     private AutoAim autoAim;
+    private REVHub hub;
     
     private ControllerMap.ButtonEntry btn_auto_toggle;
     private boolean auto_aim_enabled = false;
@@ -28,8 +30,9 @@ public class AutoAimControl extends ControlModule
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager)
     {
         turret = robot.turret;
+        hub = robot.controlHub;
         autoAim = new AutoAim(robot.drivetrain.getOdometry(), robot.turret.getTurretHome());
-        autoAim.setTarget(30, 0);
+        autoAim.setTarget(-140, 10);
         
         btn_auto_toggle = controllerMap.getButtonMap("auto_aim::toggle", "gamepad2", "right_trigger");
     
@@ -42,6 +45,7 @@ public class AutoAimControl extends ControlModule
     @Override
     public void update(Telemetry telemetry)
     {
+        boolean prevEnabled = auto_aim_enabled;
         if (btn_auto_toggle.edge() > 0)
         {
             auto_aim_enabled = !auto_aim_enabled;
@@ -58,15 +62,22 @@ public class AutoAimControl extends ControlModule
             {
                 auto_aim_enabled = false;
                 turretControl.enable();
-                return;
             }
-            
-            telemetry.addData("Auto Aim", "ENGAGED");
-            turret.rotate(autoAim.getTurretRotation(telemetry));
+            else
+            {
+                telemetry.addData("Auto Aim", "ENGAGED");
+                turret.rotate(autoAim.getTurretRotation(telemetry));
+            }
         }
         else
         {
             telemetry.addData("Auto Aim", "DISENGAGED");
+        }
+        
+        if (auto_aim_enabled != prevEnabled)
+        {
+            if (auto_aim_enabled) hub.setLEDColor(0xFF0000);
+            else hub.setLEDColor(0x00FFFF);
         }
     }
     

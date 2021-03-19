@@ -29,8 +29,8 @@ public class PusherControl extends ControlModule
         turret = robot.turret;
         turret.unpush();
     
-        Scheduler.Timer pushDelay   = robot.scheduler.addPendingTrigger(0.1, "Push delay");
-        Scheduler.Timer unpushDelay = robot.scheduler.addPendingTrigger(0.1, "Unpush delay");
+        Scheduler.Timer pushDelay   = robot.scheduler.addPendingTrigger(0.15, "Push delay");
+        Scheduler.Timer unpushDelay = robot.scheduler.addPendingTrigger(0.15, "Unpush delay");
     
         btn_pusher = controllerMap.getButtonMap("pusher::push", "gamepad2", "x");
         
