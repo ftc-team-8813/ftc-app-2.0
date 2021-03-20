@@ -8,10 +8,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -57,7 +59,13 @@ public class WebsocketTest extends LoggingOpMode
     @Override
     public void init()
     {
-        server = new Server(23456);
+        try
+        {
+            server = new Server(new InetSocketServer(23456));
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
         connectedWebcams = Webcam.getConnected();
         // register commands here
         server.registerProcessor(0x01, (cmd, payload, resp) -> { // GET_WEBCAMS

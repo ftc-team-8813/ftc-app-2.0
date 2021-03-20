@@ -9,8 +9,10 @@ import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
+import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 @TeleOp(name="Navigator Test")
@@ -31,7 +33,13 @@ public class NavigationTest extends LoggingOpMode
     public void init()
     {
         robot = Robot.initialize(hardwareMap, "Navigation Test");
-        server = new Server(19998);
+        try
+        {
+            server = new Server(new InetSocketServer(19998));
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     
         robot.drivetrain.resetEncoders();
         imu = robot.imu;

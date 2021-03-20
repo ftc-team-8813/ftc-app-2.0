@@ -13,8 +13,10 @@ import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
+import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 @TeleOp(name="Odometry Test")
@@ -36,8 +38,14 @@ public class OdometryTest extends LoggingOpMode
     public void init()
     {
         robot = Robot.initialize(hardwareMap, "Odometry Test");
-        server = new Server(19999);
-        
+        try
+        {
+            server = new Server(new InetSocketServer(19999));
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    
         robot.drivetrain.resetEncoders();
         imu = robot.imu;
 

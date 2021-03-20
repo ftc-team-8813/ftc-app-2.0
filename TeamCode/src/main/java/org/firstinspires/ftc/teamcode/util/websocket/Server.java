@@ -20,7 +20,7 @@ public class Server
 {
 
     private Thread workerThread;
-    private SocketWorker worker;
+    protected SocketWorker worker;
     
     public static final int STATE_CONNECTING     = 0;
     public static final int STATE_RECV_COMMAND   = 1;
@@ -39,10 +39,10 @@ public class Server
     
     private Logger log = new Logger("Websocket control");
     
-    public Server(int port)
+    public Server(ServerIO server)
     {
         processors = new HashMap<>();
-        worker = new SocketWorker(port);
+        worker = new SocketWorker(server);
         workerThread = new Thread(worker);
     }
     
@@ -69,7 +69,7 @@ public class Server
     {
         try
         {
-            ServerSocket server = worker.server.get();
+            ServerIO server = worker.server;
             if (server != null && !server.isClosed())
             {
                 log.d("Closing server");
@@ -77,7 +77,7 @@ public class Server
             }
             if (worker.connection != null)
             {
-                Socket conn = worker.connection.get();
+                SocketIO conn = worker.connection.get();
                 if (conn != null && !conn.isClosed())
                 {
                     log.d("Closing connection");
@@ -128,8 +128,8 @@ public class Server
         private Logger log = new Logger("Websocket worker");
         
         private int port;
-        private WeakReference<ServerSocket> server;
-        private WeakReference<Socket> connection;
+        private ServerIO server;
+        private WeakReference<SocketIO> connection;
         /*
            Protocol: Command/response format
            - user sends a command (1 byte + some payload)
@@ -168,9 +168,9 @@ public class Server
         
         private Responder resp;
         
-        public SocketWorker(int port)
+        public SocketWorker(ServerIO server)
         {
-            this.port = port;
+            this.server = server;
             log.d("Initialized worker for port %d", port);
             resp = new Responder(this);
         }
@@ -180,18 +180,16 @@ public class Server
         {
             recvBuffer = ByteBuffer.allocate(65535);
             sendBuffer = ByteBuffer.allocate(65535);
-            try (ServerSocket server = new ServerSocket(port))
+            try (ServerIO server = this.server)
             {
-                // GC the server when it is closed
-                this.server = new WeakReference<>(server);
                 while (true)
                 {
                     state = STATE_CONNECTING;
                     log.d("Waiting for connection on port %d...", port);
-                    try (Socket sock = server.accept())
+                    try (SocketIO sock = server.accept())
                     {
                         connection = new WeakReference<>(sock);
-                        log.d("Connection from %s", sock.getInetAddress().getHostAddress());
+                        log.d("Connection from %s", sock.getConnectionInfo());
                         InputStream in = sock.getInputStream();
                         OutputStream out = sock.getOutputStream();
                         boolean closeConnection = false;
@@ -315,6 +313,7 @@ public class Server
             }
             finally
             {
+                this.server = null;
                 state = STATE_CLOSED;
             }
         }

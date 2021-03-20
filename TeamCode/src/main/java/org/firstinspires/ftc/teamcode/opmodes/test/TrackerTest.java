@@ -9,8 +9,10 @@ import org.firstinspires.ftc.teamcode.hardware.autoshoot.AutoAim;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
+import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 @TeleOp(name="Tracker Test")
@@ -42,9 +44,15 @@ public class TrackerTest extends LoggingOpMode
 
         imu.initialize(ev, scheduler);
         robot.turret.startZeroFind();
-        
-        server = new Server(19997);
-        
+    
+        try
+        {
+            server = new Server(new InetSocketServer(19997));
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    
         server.registerProcessor(0x01, (cmd, payload, resp) -> {
             ByteBuffer buf = ByteBuffer.allocate(16);
             buf.putFloat((float)robot.drivetrain.getOdometry().x);

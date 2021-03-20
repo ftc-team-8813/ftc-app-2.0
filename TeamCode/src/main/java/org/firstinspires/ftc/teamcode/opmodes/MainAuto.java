@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.EventFlow;
+import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 import org.firstinspires.ftc.teamcode.vision.ImageDraw;
 import org.firstinspires.ftc.teamcode.vision.RingDetector;
@@ -26,6 +27,7 @@ import org.opencv.core.Mat;
 
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import static org.opencv.core.CvType.CV_8UC4;
@@ -271,7 +273,15 @@ public class MainAuto extends LoggingOpMode
     
     private void initServer()
     {
-        server = new Server(8814);
+        try
+        {
+            server = new Server(new InetSocketServer(8814));
+        }
+        catch (IOException e)
+        {
+            server = null;
+            return;
+        }
         Logger.serveLogs(server, 0x01);
         autoPath.getNavigator().serve(server, 0x05);
         
