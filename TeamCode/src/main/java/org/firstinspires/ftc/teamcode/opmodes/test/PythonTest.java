@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 @TeleOp(name="Python Test")
 public class PythonTest extends LoggingOpMode
 {
-    private Process pyProc;
+    private Python python;
     private Server server;
     private String status = "";
     private int requests = 0;
@@ -37,8 +37,8 @@ public class PythonTest extends LoggingOpMode
             });
             server.startServer();
             
-            Python py = new Python("test.py");
-            pyProc = py.start(path.getPath());
+            python = new Python("test.py");
+            python.start(path.getPath());
         }
         catch (IOException e)
         {
@@ -55,22 +55,7 @@ public class PythonTest extends LoggingOpMode
     @Override
     public void stop()
     {
-        Thread reaper = new Thread(() -> {
-            try
-            {
-                Thread.sleep(2000);
-            } catch (InterruptedException e)
-            {
-            
-            } finally
-            {
-                log.i("Reaping process");
-                pyProc.destroy();
-            }
-        }, "Python reaper thread");
-        reaper.setDaemon(true);
-        reaper.start();
-        
+        python.stop();
         server.close();
         super.stop();
     }

@@ -15,6 +15,11 @@ public class REVHub
         this.hub = hub;
     }
     
+    public int getAddress()
+    {
+        return hub.getModuleAddress();
+    }
+    
     public void setLEDColor(int color)
     {
         hub.setConstant(color);

@@ -84,6 +84,7 @@ public class Server
                     conn.close();
                 }
             }
+            workerThread.interrupt();
         }
         catch (IOException e)
         {

@@ -20,8 +20,8 @@ public class Python
     
     private File workDir = Storage.getFile("python");
     private final String scriptFile;
-    private Thread reader, reader2;
     private boolean started;
+    private Process proc;
     
     public Python(String scriptFile)
     {
@@ -43,8 +43,35 @@ public class Python
         builder.command().add(scriptFile);
         builder.command().addAll(Arrays.asList(args));
         builder.directory(workDir);
+        
+        proc = builder.start();
     
-        return builder.start();
+        return proc;
+    }
+    
+    public Process getProc()
+    {
+        return proc;
+    }
+    
+    public void stop()
+    {
+        Thread reaper = new Thread(() -> {
+            Logger log = new Logger("Python reaper");
+            try
+            {
+                Thread.sleep(2000);
+            } catch (InterruptedException e)
+            {
+            
+            } finally
+            {
+                log.i("Reaping process");
+                proc.destroy();
+            }
+        }, "Python reaper thread");
+        reaper.setDaemon(true);
+        reaper.start();
     }
     
     public static File getSocketFile()
