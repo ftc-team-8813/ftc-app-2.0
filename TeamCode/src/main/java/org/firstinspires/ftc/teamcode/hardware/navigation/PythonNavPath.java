@@ -9,6 +9,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
@@ -95,6 +96,11 @@ public class PythonNavPath
         }
     }
     
+    public Navigator getNavigator()
+    {
+        return nav;
+    }
+    
     public void start() throws IOException
     {
         registerProcessors();
@@ -107,7 +113,7 @@ public class PythonNavPath
         python.start(newArgs);
     }
     
-    public void update()
+    public void update(Telemetry telemetry)
     {
         // event bus is not thread safe so we want to make sure that we subscribe things on the
         // main thread
@@ -122,6 +128,13 @@ public class PythonNavPath
                 }
             }
         }
+        nav.update(telemetry);
+    }
+    
+    public void stop()
+    {
+        pyServer.close();
+        python.stop();
     }
     
     public void addProcessor(int id, Class<? extends NavCommand> cmdClass)
