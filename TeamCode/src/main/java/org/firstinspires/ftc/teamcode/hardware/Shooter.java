@@ -15,7 +15,6 @@ public class Shooter
 {
     
     public final DcMotor motor;
-    public final DcMotor motor2;
     private double rampTime;
     private double maxPower;
     private double[] powershot_power;
@@ -48,14 +47,11 @@ public class Shooter
         }
     }
     
-    public Shooter(DcMotor motor, DcMotor motor2, JsonObject config)
+    public Shooter(DcMotor motor, JsonObject config)
     {
         this.motor = motor;
-        this.motor2 = motor2;
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         powers = new ArrayList<>();
         loadConfiguration(config);
     }
@@ -82,7 +78,6 @@ public class Shooter
 
     public void setPower(double power){
         motor.setPower(power);
-        motor2.setPower(power);
     }
     
     public boolean running()

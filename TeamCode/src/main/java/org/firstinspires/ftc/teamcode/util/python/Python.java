@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.util.python;
 
+import android.text.TextUtils;
+
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
@@ -28,6 +30,8 @@ public class Python
         this.scriptFile = scriptFile;
     }
     
+    private Logger log = new Logger("Python");
+    
     public Python setWorkDir(File workDir)
     {
         this.workDir = workDir;
@@ -43,6 +47,9 @@ public class Python
         builder.command().add(scriptFile);
         builder.command().addAll(Arrays.asList(args));
         builder.directory(workDir);
+        log.d("Starting Python (in %s):", workDir);
+        String cmdString = TextUtils.join(" ", builder.command());
+        log.d(cmdString);
         
         proc = builder.start();
     
@@ -63,7 +70,7 @@ public class Python
                 Thread.sleep(2000);
             } catch (InterruptedException e)
             {
-            
+                log.w("[interrupted]");
             } finally
             {
                 log.i("Reaping process");

@@ -94,6 +94,7 @@ public class PythonNavPath
         {
             throw new IllegalStateException(e.getMessage(), e);
         }
+        log.d("Created Python server at %s", sockFile.getPath());
     }
     
     public Navigator getNavigator()
@@ -103,6 +104,7 @@ public class PythonNavPath
     
     public void start() throws IOException
     {
+        log.v("Starting Python connection");
         registerProcessors();
         pyServer.startServer();
         
@@ -124,6 +126,7 @@ public class PythonNavPath
                 while (!commandQueue.isEmpty())
                 {
                     NavCmdWrapper wrapper = commandQueue.remove();
+                    log.v("Main thread got command: %s", wrapper.cmd.getClass().getSimpleName());
                     wrapper.cmd.run(robot, eventBus, nav, wrapper.counter);
                 }
             }

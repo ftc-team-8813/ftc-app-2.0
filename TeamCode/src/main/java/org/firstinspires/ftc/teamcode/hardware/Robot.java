@@ -22,7 +22,6 @@ public class Robot {
     public final Drivetrain drivetrain;
     public final Intake intake;
     public final Turret turret;
-    public final SimpleLift lift;
     public final Wobble wobble;
     public final REVHub controlHub;
     
@@ -86,33 +85,28 @@ public class Robot {
         DcMotor r_enc = hardwareMap.get(DcMotor.class, "ramp");
         DcMotor turret_enc = hardwareMap.get(DcMotor.class, "bottom left");
         DcMotor shooter = hardwareMap.get(DcMotor.class, "shooter");
-        DcMotor shooter2 = hardwareMap.get(DcMotor.class, "shooter2");
+        // DcMotor shooter2 = hardwareMap.get(DcMotor.class, "shooter2");
         DcMotor turret = hardwareMap.get(DcMotor.class, "turret");
         DcMotor ramp = hardwareMap.get(DcMotor.class, "ramp");
+        DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
 
         CRServo puller = hardwareMap.get(CRServo.class, "puller");
         Servo pusher = hardwareMap.get(Servo.class, "pusher");
-        Servo aim = null; // hardwareMap.get(Servo.class, "aim");
+        Servo pivot = hardwareMap.get(Servo.class, "pivot");
         
         Servo wobble_arm = hardwareMap.get(Servo.class, "wobble a");
         Servo wobble_claw = hardwareMap.get(Servo.class, "wobble claw");
-        
-        Servo lift_a = hardwareMap.get(Servo.class, "lift a");
-        Servo lift_b = hardwareMap.get(Servo.class, "lift b");
 
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, new Odometry(l_enc, r_enc));
         this.imu = this.drivetrain.getOdometry().getIMU();
         
         DigitalChannel turretZero = hardwareMap.digitalChannel.get("turret_switch");
-        this.turret = new Turret(turret, shooter, shooter2, pusher, aim, turret_enc,
+        this.turret = new Turret(turret, shooter, pusher, null, turret_enc,
                                  config.getAsJsonObject("shooter"),
                                  config.getAsJsonObject("turret"), turretZero);
         this.turret.connectEventBus(eventBus);
-        this.intake = new Intake(ramp, puller);
-        
-        this.lift = new SimpleLift(lift_a, lift_b,
-                                   config.getAsJsonObject("lift"));
+        this.intake = new Intake(ramp, intake, puller, pivot, config.getAsJsonObject("intake"));
         
         this.wobble = new Wobble(wobble_arm, wobble_claw,
                                  config.getAsJsonObject("wobble"));

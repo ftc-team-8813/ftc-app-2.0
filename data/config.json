@@ -59,6 +59,10 @@
     "target_x": -72,
     "target_y": -48
   },
+  "intake": {
+    "pivot_in": 0.13,
+    "pivot_out": 0.7
+  },
 
   "turret_cal": {
     "xValues": [

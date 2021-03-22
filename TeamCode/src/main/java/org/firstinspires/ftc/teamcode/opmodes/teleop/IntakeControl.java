@@ -14,21 +14,24 @@ public class IntakeControl extends ControlModule
     
     private Intake intake;
     private ControllerMap.AxisEntry ax_intake;
-    private ControllerMap.AxisEntry ax_intake_out;
+    private ControllerMap.ButtonEntry btn_pivot;
     
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager)
     {
         this.intake = robot.intake;
         
-        ax_intake     = controllerMap.getAxisMap("intake::intake",     "gamepad1", "right_trigger");
-        ax_intake_out = controllerMap.getAxisMap("intake::intake_out", "gamepad1", "left_trigger");
+        ax_intake = controllerMap.getAxisMap  ("intake::intake", "gamepad2", "right_stick_y");
+        btn_pivot = controllerMap.getButtonMap("intake::pivot",  "gamepad1", "right_trigger");
+        
+        intake.pivotIn();
     }
     
     @Override
     public void update(Telemetry telemetry)
     {
-        intake.run(ax_intake.get() - ax_intake_out.get());
+        intake.run(ax_intake.get());
+        if (btn_pivot.edge() > 0) intake.pivotToggle();
     }
     
     @Override
@@ -41,6 +44,6 @@ public class IntakeControl extends ControlModule
     @Override
     public boolean shouldEnable()
     {
-        return Math.abs(ax_intake.get()) > 0.2 || Math.abs(ax_intake_out.get()) > 0.2;
+        return Math.abs(ax_intake.get()) > 0.2;
     }
 }

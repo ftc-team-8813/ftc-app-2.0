@@ -36,7 +36,7 @@ public class ShooterTest extends LoggingOpMode
         server.registerProcessor(0x01, (cmd, payload, resp) -> {
             ByteBuffer out = ByteBuffer.allocate(16);
             out.putFloat((float)((DcMotorEx)turret.shooter.motor).getVelocity(AngleUnit.RADIANS));
-            out.putFloat((float)((DcMotorEx)turret.shooter.motor2).getVelocity(AngleUnit.RADIANS));
+            out.putFloat((float)0);
             out.put((byte)(turret.shooter.running() ? 1 : 0));
             
             out.flip();

@@ -77,6 +77,7 @@ public class ServoPositioner extends LoggingOpMode
     {
         telemetry.setDisplayFormat(HTML);
         currScene = new SceneChoose();
+        evBus = new EventBus();
         controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         started = false;
         
@@ -117,6 +118,7 @@ public class ServoPositioner extends LoggingOpMode
                 currScene.init();
             }
             else currScene.loop();
+            controllerMap.update();
             telemetry.update();
         }
     }

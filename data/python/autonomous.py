@@ -11,8 +11,11 @@ def run_auto(nav):
 
 def main():
     log.redirect_output()
+    if len(sys.argv) < 2:
+        print("not enough arguments; expected socket file")
+        sys.exit(1)
 
-    conn = client.Connection(sys.argv[0])
+    conn = client.Connection(sys.argv[1])
     conn.connect()
 
     nav = navigator.Navigator(conn)

@@ -54,12 +54,12 @@ public class Turret {
     private boolean find_fail = false;
     private double revStart = 0;
 
-    public Turret(DcMotor turret, DcMotor shooter, DcMotor shooter2, Servo pusher, Servo aim,
+    public Turret(DcMotor turret, DcMotor shooter, Servo pusher, Servo aim,
                   DcMotor rotateFeedback, JsonObject shooterConfig, JsonObject turretConfig,
                   DigitalChannel zeroSw)
     {
         this.turret = turret;
-        this.shooter = new Shooter(shooter, shooter2, shooterConfig);
+        this.shooter = new Shooter(shooter, shooterConfig);
         this.pusher = pusher;
         this.aim = aim;
         this.turretFb = rotateFeedback;
