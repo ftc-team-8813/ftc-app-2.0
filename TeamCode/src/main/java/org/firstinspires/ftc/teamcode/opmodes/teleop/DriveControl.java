@@ -5,7 +5,9 @@ import com.google.gson.JsonObject;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
+import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
 public class DriveControl extends ControlModule
@@ -23,6 +25,12 @@ public class DriveControl extends ControlModule
     private ControllerMap.AxisEntry ax_drive_r;
     private ControllerMap.ButtonEntry btn_slow;
     private ControllerMap.ButtonEntry btn_slow2;
+    
+    private IMU imu;
+    private double lastHeadingTarget;
+    public boolean enableHeadingLock = true;
+    
+    private double headingLockKp = 0.01; // TODO make config variable
     
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager)
@@ -43,14 +51,30 @@ public class DriveControl extends ControlModule
         ax_drive_r = controllerMap.getAxisMap(  "drive::right", "gamepad1", "right_stick_y");
         btn_slow   = controllerMap.getButtonMap("drive::slow",  "gamepad1", "left_bumper");
         btn_slow2  = controllerMap.getButtonMap("drive::slow2", "gamepad1", "right_bumper");
+        
+        imu = robot.imu;
+        lastHeadingTarget = imu.getHeading();
     }
     
     @Override
     public void update(Telemetry telemetry)
     {
         double speed = speeds[speedSetting];
+        
+        double turn = ax_drive_l.get() * speed;
+        
+        if (Math.abs(ax_drive_l.get()) < 0.01 && enableHeadingLock)
+        {
+            double err = imu.getHeading() - lastHeadingTarget;
+            turn = err * headingLockKp;
+        }
+        else
+        {
+            lastHeadingTarget = imu.getHeading();
+        }
+        
         drivetrain.telemove(ax_drive_r.get() * speed,
-                           ax_drive_l.get() * speed);
+                turn);
         
         if (btn_slow.edge() > 0)
         {

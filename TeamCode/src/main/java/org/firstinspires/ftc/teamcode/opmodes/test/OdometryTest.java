@@ -59,7 +59,9 @@ public class OdometryTest extends LoggingOpMode
         controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         
         controlMgr = new ControlMgr(robot, controllerMap);
-        controlMgr.addModule(new DriveControl());
+        DriveControl dc = new DriveControl();
+        dc.enableHeadingLock = false;
+        controlMgr.addModule(dc);
         
         controlMgr.initModules();
         

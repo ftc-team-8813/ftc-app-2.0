@@ -58,7 +58,7 @@ public class Odometry {
     }
 
     public double getCurrentR(){
-        return ticksToInches(r_enc.getCurrentPosition());
+        return -ticksToInches(r_enc.getCurrentPosition());
     }
 
     public double ticksToInches(double ticks){
