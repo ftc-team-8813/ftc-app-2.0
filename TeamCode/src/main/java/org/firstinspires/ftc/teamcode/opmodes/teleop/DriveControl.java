@@ -30,7 +30,7 @@ public class DriveControl extends ControlModule
     private double lastHeadingTarget;
     public boolean enableHeadingLock = true;
     
-    private double headingLockKp = 0.01; // TODO make config variable
+    private double headingLockKp = 0.005; // TODO make config variable
     
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager)
@@ -63,7 +63,7 @@ public class DriveControl extends ControlModule
         
         double turn = ax_drive_l.get() * speed;
         
-        if (Math.abs(ax_drive_l.get()) < 0.01 && enableHeadingLock)
+        if (Math.abs(ax_drive_l.get()) < 0.001 && enableHeadingLock)
         {
             double err = imu.getHeading() - lastHeadingTarget;
             turn = err * headingLockKp;
