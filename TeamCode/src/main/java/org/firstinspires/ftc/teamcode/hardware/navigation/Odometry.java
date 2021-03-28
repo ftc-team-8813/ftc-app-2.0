@@ -33,24 +33,31 @@ public class Odometry {
      * x is forward/back and y is left/right
      */
     public void updateDeltas(){
-        double new_l = getCurrentL();
-        double new_r = getCurrentR();
-        double dl = new_l - past_l;
-        double dr = new_r - past_r;
-        
-        double rotation_amt = TURN_FACTOR * (new_r - new_l) / 2;
-        
-        past_l = new_l;
-        past_r = new_r;
-        double heading = rotation_amt / h;
-        calc_heading = heading;
-        double dist = (dl + dr) / 2;
-        
-        double leg_x = Math.cos(heading) * dist;
-        double leg_y = Math.sin(heading) * dist;
+        double curr_l = getCurrentL();
+        double curr_r = getCurrentR();
+        double l = curr_l - past_l;
+        double r = curr_r - past_r;
+        double deltax, deltay;
 
-        this.x += leg_x;
-        this.y += leg_y;
+        double delta_heading = (r - l)/(2 * h) * TURN_FACTOR;
+        double rotation_amt = TURN_FACTOR * (curr_r - curr_l) / 2;
+        calc_heading = rotation_amt / h;
+
+        if (r > l){
+            double x = l / delta_heading;
+            deltax = Math.cos(delta_heading) * (x + h) - (x + h);
+            deltay = Math.sin(delta_heading * (x + h));
+        } else if (l > r){
+            double x = r / delta_heading;
+            deltax = (x + h) - Math.cos(delta_heading) * (x + h);
+            deltay = Math.sin(delta_heading * (x + h));
+        } else {
+            deltax = Math.cos(delta_heading) * l;
+            deltay = Math.sin(delta_heading) * l;
+        }
+
+        this.x += deltax;
+        this.y += deltay;
     }
 
     public double getCurrentL(){
