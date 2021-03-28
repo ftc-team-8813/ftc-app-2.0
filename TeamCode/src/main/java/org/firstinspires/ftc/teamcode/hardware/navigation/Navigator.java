@@ -70,7 +70,7 @@ public class Navigator
         imu = odo.getIMU();
         
         forwardKp = 0.04;
-        forwardKi = 0.0001;
+        forwardKi = 0.001;
         turnKp = 0.01;
         turnKi = 0.0001;
         this.eventBus = eventBus;

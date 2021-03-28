@@ -113,6 +113,9 @@ public class MainAuto extends LoggingOpMode
                 case "unpush":
                     robot.turret.unpush();
                     break;
+                case "home":
+                    robot.turret.home();
+                    break;
             }
         });
         autoPath.addActuator("shooter", (params) -> {
@@ -146,6 +149,26 @@ public class MainAuto extends LoggingOpMode
                 case "open":
                     log.v("Wobble OPEN");
                     robot.wobble.open();
+                    break;
+            }
+        });
+        autoPath.addActuator("intake", (params) -> {
+            String action = params.get("action").getAsString();
+            switch (action)
+            {
+                case "intake":
+                    if (params.has("speed"))
+                    {
+                        double speed = params.get("speed").getAsDouble();
+                        robot.intake.run(speed);
+                    }
+                    else robot.intake.intake();
+                    break;
+                case "outtake":
+                    robot.intake.outtake();
+                    break;
+                case "stop":
+                    robot.intake.stop();
                     break;
             }
         });
@@ -264,6 +287,7 @@ public class MainAuto extends LoggingOpMode
     @Override
     public void stop()
     {
+        autoPath.stop();
         webcam.close();
         if (server != null) server.close();
         super.stop();

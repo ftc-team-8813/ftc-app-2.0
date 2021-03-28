@@ -1,6 +1,9 @@
 import struct
 import json
 
+NAV_MOVE_COMPLETE = 2
+NAV_TURN_COMPLETE = 1
+
 class NavControl:
     def __init__(self, conn):
         self.conn = conn
@@ -25,7 +28,7 @@ class NavControl:
             raise ValueError("Class '%s' not an event class" % ev)
         return rval
 
-    def move(self, x, y, absolute=False, reverse=False, speed=-1):
+    def move(self, x, y, absolute=True, reverse=False, speed=-1, wait=True):
         if speed < 0: speed = self.default_speed
         print("Move: (%.3f, %.3f) abs=%s rev=%s speed=%.3f" % (x, y, absolute, reverse, speed))
         flags = (reverse << 1) | absolute
@@ -35,9 +38,11 @@ class NavControl:
         if resp is None: raise RuntimeError("disconnected")
         rval = resp[0]
         self.__check_rval(rval)
+        if wait:
+            self.wait_event('org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent', NAV_MOVE_COMPLETE)
         return rval
 
-    def turn(self, r, absolute=False, speed=-1):
+    def turn(self, r, absolute=True, speed=-1, wait=True):
         if speed < 0: speed = self.default_speed
         print("Turn: %.3f abs=%s speed=%.3f" % (r, absolute, speed))
         flags = absolute << 0
@@ -47,6 +52,8 @@ class NavControl:
         if resp is None: raise RuntimeError("disconnected")
         rval = resp[0]
         self.__check_rval(rval)
+        if wait:
+            self.wait_event('org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent', NAV_TURN_COMPLETE)
         return rval
 
     def actuator(self, name, params):
@@ -75,6 +82,6 @@ class NavControl:
         if rval == 0x01:
             raise ValueError("'%s' is not a sensor" % name)
         elif rval != 0:
-            return rval
+            raise RuntimeError("Sense error: %d" % rval)
         else:
             return resp[1:]

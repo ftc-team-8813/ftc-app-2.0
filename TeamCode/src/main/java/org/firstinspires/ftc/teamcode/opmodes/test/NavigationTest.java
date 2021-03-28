@@ -86,7 +86,7 @@ public class NavigationTest extends LoggingOpMode
         });
         server.registerProcessor(0x2, (cmd, payload, resp) -> {
             byte status = (byte)0;
-            if (payload.limit() < 8) status = (byte)1;
+            if (payload.remaining() < 8) status = (byte)1;
             else if (state < 1) status = (byte)2;
             else
             {
@@ -101,7 +101,7 @@ public class NavigationTest extends LoggingOpMode
         });
         server.registerProcessor(0x3, (cmd, payload, resp) -> {
             byte status = (byte)0;
-            if (payload.limit() < 24) status = (byte)1;
+            if (payload.remaining() < 24) status = (byte)1;
             else if (state < 1) status = (byte)2;
             else
             {

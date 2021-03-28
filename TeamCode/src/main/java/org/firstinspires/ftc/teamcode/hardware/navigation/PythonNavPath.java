@@ -23,6 +23,7 @@ import org.json.JSONException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
@@ -166,10 +167,12 @@ public class PythonNavPath
         for (int i = 0; i < 256; i++)
         {
             final Class<? extends NavCommand> command = commandClasses.get(i);
+            if (command == null) continue;
             pyServer.registerProcessor(i, (cmd, payload, resp) -> {
                 try
                 {
-                    NavCommand instance = command.newInstance();
+                    NavCommand instance = command.getDeclaredConstructor(PythonNavPath.class)
+                            .newInstance(PythonNavPath.this);
                     instance.recv(payload);
                     NavCmdWrapper wrapper = new NavCmdWrapper(instance);
                     synchronized (cmdLock)
@@ -179,10 +182,11 @@ public class PythonNavPath
                     wrapper.counter.await();
                     instance.send(resp);
                 }
-                catch (IllegalAccessException | InstantiationException e)
+                catch (IllegalAccessException | InstantiationException | NoSuchMethodException
+                        | InvocationTargetException e)
                 {
                     log.e("Error creating %s", command.getSimpleName());
-                    log.e("The class should not have a user-defined constructor.");
+                    log.e("The class should have a constructor taking a PythonNavPath instance.");
                     log.e(e);
                     resp.respond(ByteBuffer.wrap(new byte[] {(byte)0xFF}));
                 }
@@ -195,23 +199,31 @@ public class PythonNavPath
         }
     }
     
-    private class CmdSensor implements NavCommand
+    public static class CmdSensor implements NavCommand
     {
         private String name;
         private ByteBuffer data;
         private int retval = 0;
+        private PythonNavPath path;
+        
+        public CmdSensor(PythonNavPath p)
+        {
+            path = p;
+        }
         
         @Override
         public void recv(ByteBuffer payload)
         {
-            byte[] data = new byte[payload.limit()];
+            byte[] data = new byte[payload.remaining()];
+            payload.get(data);
             name = new String(data, StandardCharsets.UTF_8);
+            path.log.d("Sensor name: %s", name);
         }
     
         @Override
         public void run(Robot robot, EventBus bus, Navigator nav, CountDownLatch latch)
         {
-            Sensor sensor = sensors.get(name);
+            Sensor sensor = path.sensors.get(name);
             if (sensor == null) retval = 0x01;
             else data = sensor.getData();
             
@@ -224,31 +236,37 @@ public class PythonNavPath
             if (data == null) resp.respond(ByteBuffer.wrap(new byte[] {(byte)retval}));
             else
             {
-                byte[] ndata = new byte[data.limit() + 1];
+                byte[] ndata = new byte[data.remaining() + 1];
                 ndata[0] = (byte)retval;
-                data.get(ndata, 1, data.limit());
+                data.get(ndata, 1, data.remaining());
                 resp.respond(ByteBuffer.wrap(ndata));
             }
         }
     }
     
-    private class CmdActuator implements NavCommand
+    public static class CmdActuator implements NavCommand
     {
         private String name;
         private JsonObject params;
         private int retval = 0;
+        private PythonNavPath path;
+        
+        public CmdActuator(PythonNavPath p)
+        {
+            path = p;
+        }
         
         @Override
         public void recv(ByteBuffer payload)
         {
-            byte[] s = new byte[payload.limit()];
+            byte[] s = new byte[payload.remaining()];
             payload.get(s);
             String combined = new String(s, StandardCharsets.UTF_8);
             String[] fields = combined.split("\0");
             if (fields.length != 2)
             {
                 retval = 0x01;
-                log.w("Bad data string: %d strings sent", fields.length);
+                path.log.w("Bad data string: %d strings sent", fields.length);
             }
             else
             {
@@ -261,7 +279,7 @@ public class PythonNavPath
                 catch (JsonParseException | IllegalStateException e)
                 {
                     retval = 0x01;
-                    log.w("Bad JSON: %s", fields[1]);
+                    path.log.w("Bad JSON: %s", fields[1]);
                 }
             }
         }
@@ -275,7 +293,7 @@ public class PythonNavPath
                 return;
             }
             
-            NavPath.Actuator actuator = actuators.get(name);
+            NavPath.Actuator actuator = path.actuators.get(name);
             if (actuator == null) retval = 0x02;
             else actuator.move(params);
             latch.countDown();
@@ -288,16 +306,18 @@ public class PythonNavPath
         }
     }
     
-    private static class CmdTurn implements NavCommand
+    public static class CmdTurn implements NavCommand
     {
         private double rotation;
         private double speed;
         private boolean absolute = false;
         
+        public CmdTurn(PythonNavPath p) {}
+        
         @Override
         public void recv(ByteBuffer payload)
         {
-            rotation = payload.getFloat();
+            rotation = Math.toRadians(payload.getFloat());
             speed = payload.getFloat();
             byte flags = payload.get();
             absolute = (flags & 0x1) != 0;
@@ -319,13 +339,15 @@ public class PythonNavPath
         }
     }
     
-    private static class CmdMove implements NavCommand
+    public static class CmdMove implements NavCommand
     {
         private double x;
         private double y;
         private double speed;
         private boolean absolute = false;
         private boolean reverse = false;
+        
+        public CmdMove(PythonNavPath p) {}
         
         @Override
         public void recv(ByteBuffer payload)
@@ -358,17 +380,19 @@ public class PythonNavPath
         }
     }
     
-    private static class CmdWaitEvent implements NavCommand
+    public static class CmdWaitEvent implements NavCommand
     {
         private int channel;
         private String evClass;
         private int retval;
         
+        public CmdWaitEvent(PythonNavPath p) {}
+        
         @Override
         public void recv(ByteBuffer payload)
         {
             channel = payload.getInt();
-            byte[] data = new byte[payload.limit()];
+            byte[] data = new byte[payload.remaining()];
             payload.get(data);
             evClass = new String(data, StandardCharsets.UTF_8);
             retval = 0x0;
