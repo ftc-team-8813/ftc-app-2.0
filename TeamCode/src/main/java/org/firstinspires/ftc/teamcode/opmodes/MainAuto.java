@@ -84,6 +84,7 @@ public class MainAuto extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         robot = Robot.initialize(hardwareMap, "Autonomous");
         bus = robot.eventBus;
         scheduler = robot.scheduler;

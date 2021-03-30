@@ -50,6 +50,7 @@ public class VisionTest extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         cam = Webcam.forSerial(serial);
         if (cam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + serial);
         frameHandler = new Webcam.SimpleFrameHandler();

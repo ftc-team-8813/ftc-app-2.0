@@ -22,6 +22,7 @@ public class OdometryDriveTest extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         robot = Robot.initialize(hardwareMap, "Odometry Drive Test");
         odometry = robot.drivetrain.getOdometry();
         imu = odometry.getIMU();

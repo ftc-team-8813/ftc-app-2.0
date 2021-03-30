@@ -59,6 +59,7 @@ public class WebsocketTest extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         try
         {
             server = new Server(new InetSocketServer(23456));

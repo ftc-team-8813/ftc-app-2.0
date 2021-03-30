@@ -25,6 +25,7 @@ public class PythonTest extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         try
         {
             File path = Python.getSocketFile();

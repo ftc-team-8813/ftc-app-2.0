@@ -16,6 +16,7 @@ public class ButtonTest extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         map = new ControllerMap(gamepad1, gamepad2, new EventBus());
     }
     

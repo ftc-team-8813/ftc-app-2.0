@@ -38,6 +38,7 @@ public class CurrentTele extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         robot = Robot.initialize(hardwareMap, "Main TeleOp");
         evBus = robot.eventBus;
         scheduler = robot.scheduler;

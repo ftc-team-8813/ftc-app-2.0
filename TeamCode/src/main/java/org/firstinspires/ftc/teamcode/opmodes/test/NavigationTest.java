@@ -32,6 +32,7 @@ public class NavigationTest extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         robot = Robot.initialize(hardwareMap, "Navigation Test");
         try
         {

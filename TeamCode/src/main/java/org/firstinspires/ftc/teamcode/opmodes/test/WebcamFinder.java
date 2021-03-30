@@ -15,6 +15,7 @@ public class WebcamFinder extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         Webcam[] webcams = Webcam.getConnected();
         
         String[] serials = new String[webcams.length];

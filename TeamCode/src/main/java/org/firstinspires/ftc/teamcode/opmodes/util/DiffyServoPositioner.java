@@ -87,6 +87,7 @@ public class DiffyServoPositioner extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         Storage.createDirs("servo_positions");
         telemetry.setDisplayFormat(HTML);
         currScene = new SceneChoose();

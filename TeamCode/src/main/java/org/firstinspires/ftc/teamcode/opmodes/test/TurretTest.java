@@ -13,6 +13,7 @@ public class TurretTest extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         robot = Robot.initialize(hardwareMap, "Turret Test");
     }
     

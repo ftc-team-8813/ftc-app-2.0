@@ -75,6 +75,7 @@ public class ServoPositioner extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         telemetry.setDisplayFormat(HTML);
         currScene = new SceneChoose();
         evBus = new EventBus();

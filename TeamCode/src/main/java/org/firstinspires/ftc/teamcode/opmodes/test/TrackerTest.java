@@ -28,6 +28,7 @@ public class TrackerTest extends LoggingOpMode
 
     @Override
     public void init() {
+        super.init();
         robot = Robot.initialize(hardwareMap, "Tracker Test");
         
         JsonObject trackerConf = robot.config.getAsJsonObject("tracker");

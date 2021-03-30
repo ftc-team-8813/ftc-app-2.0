@@ -37,6 +37,7 @@ public class OdometryTest extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         robot = Robot.initialize(hardwareMap, "Odometry Test");
         try
         {
