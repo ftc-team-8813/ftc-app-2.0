@@ -252,7 +252,7 @@ public class Turret {
             }
             case FIND_SLOW:
             {
-                turret.setPower(0.15);
+                turret.setPower(0.2);
                 state = "Slow detect";
                 if (!zeroSw.getState())
                 {

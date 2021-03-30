@@ -125,6 +125,11 @@ public class Shooter
         }
     }
     
+    public void setMaxPower(double power)
+    {
+        this.maxPower = power;
+    }
+    
     @Deprecated
     public void powershot(int i)
     {

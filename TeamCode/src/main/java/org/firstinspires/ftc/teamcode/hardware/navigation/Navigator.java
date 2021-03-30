@@ -71,8 +71,8 @@ public class Navigator
         
         forwardKp = 0.04;
         forwardKi = 0.001;
-        turnKp = 0.01;
-        turnKi = 0.0001;
+        turnKp = 0.02;
+        turnKi = 0.001;
         this.eventBus = eventBus;
     }
     
@@ -143,7 +143,7 @@ public class Navigator
             if (!preTurnComplete)
             {
                 double angleError = Math.toDegrees(angleTarget - theta);
-                if (Math.abs(angleError) < 10) preTurnComplete = true;
+                if (Math.abs(angleError) < 5) preTurnComplete = true;
             }
             else
             {

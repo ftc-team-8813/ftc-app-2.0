@@ -28,32 +28,28 @@ class NavControl:
             raise ValueError("Class '%s' not an event class" % ev)
         return rval
 
-    def move(self, x, y, absolute=True, reverse=False, speed=-1, wait=True):
+    def move(self, x, y, absolute=True, reverse=True, speed=-1, wait=True):
         if speed < 0: speed = self.default_speed
         print("Move: (%.3f, %.3f) abs=%s rev=%s speed=%.3f" % (x, y, absolute, reverse, speed))
-        flags = (reverse << 1) | absolute
+        flags = (wait << 2) | (reverse << 1) | absolute
 
         data = struct.pack('>fffB', x, y, speed, flags)
         resp = self.conn.send_recv(0xfc, data)
         if resp is None: raise RuntimeError("disconnected")
         rval = resp[0]
         self.__check_rval(rval)
-        if wait:
-            self.wait_event('org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent', NAV_MOVE_COMPLETE)
         return rval
 
     def turn(self, r, absolute=True, speed=-1, wait=True):
         if speed < 0: speed = self.default_speed
         print("Turn: %.3f abs=%s speed=%.3f" % (r, absolute, speed))
-        flags = absolute << 0
+        flags = (wait << 1) | absolute
 
         data = struct.pack('>ffB', r, speed, flags)
         resp = self.conn.send_recv(0xfb, data)
         if resp is None: raise RuntimeError("disconnected")
         rval = resp[0]
         self.__check_rval(rval)
-        if wait:
-            self.wait_event('org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent', NAV_TURN_COMPLETE)
         return rval
 
     def actuator(self, name, params):

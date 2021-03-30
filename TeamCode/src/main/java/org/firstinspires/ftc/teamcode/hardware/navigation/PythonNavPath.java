@@ -11,6 +11,7 @@ import com.google.gson.JsonSyntaxException;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.Event;
@@ -311,6 +312,7 @@ public class PythonNavPath
         private double rotation;
         private double speed;
         private boolean absolute = false;
+        private boolean wait = false;
         
         public CmdTurn(PythonNavPath p) {}
         
@@ -321,6 +323,7 @@ public class PythonNavPath
             speed = payload.getFloat();
             byte flags = payload.get();
             absolute = (flags & 0x1) != 0;
+            wait     = (flags & 0x2) != 0;
         }
     
         @Override
@@ -329,7 +332,17 @@ public class PythonNavPath
             nav.setTurnSpeed(speed);
             if (absolute) nav.turnAbs(rotation);
             else nav.turn(rotation);
-            latch.countDown();
+            if (!wait)
+            {
+                latch.countDown();
+            }
+            else
+            {
+                bus.subscribe(NavMoveEvent.class, (ev, _bus, _sub) -> {
+                    latch.countDown();
+                    _bus.unsubscribe(_sub);
+                }, "Wait for turn", NavMoveEvent.TURN_COMPLETE);
+            }
         }
     
         @Override
@@ -346,6 +359,7 @@ public class PythonNavPath
         private double speed;
         private boolean absolute = false;
         private boolean reverse = false;
+        private boolean wait = false;
         
         public CmdMove(PythonNavPath p) {}
         
@@ -358,6 +372,7 @@ public class PythonNavPath
             byte flags = payload.get();
             absolute = (flags & 0x1) != 0;
             reverse  = (flags & 0x2) != 0;
+            wait     = (flags & 0x4) != 0;
         }
     
         @Override
@@ -367,10 +382,20 @@ public class PythonNavPath
             nav.setTurnSpeed(speed);
             double currX = nav.getTargetX();
             double currY = nav.getTargetY();
-            
+    
             if (absolute) nav.goTo(x, y, reverse);
             else nav.goTo(currX + x, currY + y, reverse);
-            latch.countDown();
+            if (!wait)
+            {
+                latch.countDown();
+            }
+            else
+            {
+                bus.subscribe(NavMoveEvent.class, (ev, _bus, _sub) -> {
+                    latch.countDown();
+                    _bus.unsubscribe(_sub);
+                }, "Wait for move", NavMoveEvent.MOVE_COMPLETE);
+            }
         }
     
         @Override

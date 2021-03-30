@@ -85,9 +85,8 @@ public class MainAuto extends LoggingOpMode
     public void init()
     {
         robot = Robot.initialize(hardwareMap, "Autonomous");
-        bus = new EventBus();
-        scheduler = new Scheduler(bus);
-        robot.turret.connectEventBus(bus);
+        bus = robot.eventBus;
+        scheduler = robot.scheduler;
         telemBuf = ByteBuffer.allocate(65535);
         robot.imu.initialize(bus, scheduler);
         
@@ -123,6 +122,10 @@ public class MainAuto extends LoggingOpMode
             switch (action)
             {
                 case "start":
+                    if (params.has("speed"))
+                    {
+                        robot.turret.shooter.setMaxPower(params.get("speed").getAsDouble());
+                    }
                     robot.turret.shooter.start();
                     break;
                 case "stop":
@@ -255,7 +258,7 @@ public class MainAuto extends LoggingOpMode
             serverDraw = new ImageDraw();
             Utils.bitmapToMat(frameHandler.currFramebuffer, detectorFrame);
             double area = detector.detect(detectorFrame, serverDraw);
-            if      (area < 700)   ringsDetected = 0;
+            if      (area < 1200)   ringsDetected = 0;
             else if (area < 2500)  ringsDetected = 1;
             else if (area < 10000) ringsDetected = 4;
             else                   ringsDetected = -1;
