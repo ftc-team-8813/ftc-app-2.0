@@ -49,18 +49,28 @@ def run_auto(nav):
     rings_seen = data[0]
     log.d("Got ring data: %d", rings_seen)
 
-    # Wobble
-    nav.move(-6,    0)
-    nav.move(-28, -12)
-    nav.move(-59, -15)
-    nav.turn(30)
+    # Wobble 1
+    nav.move(-6,    0) # Move off the wall so we don't hit it
+    if rings_seen != 0:
+        # Go around the ring stack
+        nav.move(-28, -12)
+
+    if rings_seen == 0:
+        nav.move(-59, -15)
+        nav.turn(30)
+    elif rings_seen == 1:
+        nav.move(-84, 0)
+        nav.turn(7)
+    elif rings_seen == 4:
+        nav.move(-111, -19)
+        nav.turn(25)
 
     nav.actuator('shooter', {'action': 'start', 'speed': 0.66})
     place_wobble(nav)
 
     # Line up for shooting
     nav.move(-58, 1, reverse=False)
-    nav.actuator('turret', {'action': 'rotate', 'angle': 0.16})
+    nav.actuator('turret', {'action': 'rotate', 'angle': 0.17})
     nav.turn(90)
     time.sleep(0.75)
 
@@ -83,9 +93,21 @@ def run_auto(nav):
     time.sleep(0.75)
     pick_wobble(nav)
 
-    nav.move(-55, -10)
-    nav.turn(35)
+    if rings_seen == 0:
+        nav.move(-55, -10)
+        nav.turn(40)
+    elif rings_seen == 1:
+        nav.move(-80, -1)
+        nav.turn(-9)
+    elif rings_seen == 4:
+        nav.move(-103, -16)
+        nav.turn(37)
     place_wobble(nav)
+
+    if rings_seen != 0:
+        nav.move(-76, -3)
+
+    log.i("Path complete")
 
     # Return home
     nav.move(-6, 0, reverse=False)
