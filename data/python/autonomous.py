@@ -76,7 +76,7 @@ def run_auto(nav):
 
     shoot_rings(nav, 3)
 
-    if rings_seen != 0:
+    if rings_seen == 1:
         # Intake [experimental]
         nav.actuator('turret', {'action': 'home'})
         nav.actuator('intake', {'action': 'intake'})
@@ -87,18 +87,22 @@ def run_auto(nav):
         # nav.actuator('turret', {'action': 'home'})
         nav.move(-58, 1)
         nav.turn(0)
-        if rings_seen == 1:
-            shoot_rings(nav, 1)
-        else:
-            shoot_rings(nav, 3)
+        shoot_rings(nav, 1)
         nav.turn(90)
 
     nav.actuator('shooter', {'action': 'stop'})
 
-    # second wobble
-    nav.move(-28.5, 16)
-    nav.turn(192)
-    time.sleep(0.75)
+    if rings_seen == 4:
+        # second wobble
+        nav.move(-41, 24)
+        nav.move(-25, 23)
+        nav.turn(-195)
+    else:
+        # second wobble
+        nav.move(-28.5, 16)
+        nav.turn(192)
+        time.sleep(0.75)
+
     pick_wobble(nav)
 
     if rings_seen == 0:
@@ -108,6 +112,7 @@ def run_auto(nav):
         nav.move(-80, -1)
         nav.turn(-9)
     elif rings_seen == 4:
+        nav.move(-47, 22)
         nav.move(-103, -16)
         nav.turn(37)
     place_wobble(nav)
