@@ -93,6 +93,7 @@ public class MainAuto extends LoggingOpMode
         
         robot.wobble.up();
         robot.wobble.close();
+        robot.intake.pivotIn();
         
         autoPath = new PythonNavPath("autonomous.py", bus, robot);
         autoPath.addActuator("turret", (params) -> {

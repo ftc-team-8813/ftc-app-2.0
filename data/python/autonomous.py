@@ -59,8 +59,8 @@ def run_auto(nav):
         nav.move(-59, -15)
         nav.turn(30)
     elif rings_seen == 1:
-        nav.move(-84, 0)
-        nav.turn(7)
+        nav.move(-87, 0)
+        nav.turn(0)
     elif rings_seen == 4:
         nav.move(-111, -19)
         nav.turn(25)
@@ -70,22 +70,30 @@ def run_auto(nav):
 
     # Line up for shooting
     nav.move(-58, 1, reverse=False)
-    nav.actuator('turret', {'action': 'rotate', 'angle': 0.17})
+    nav.actuator('turret', {'action': 'rotate', 'angle': 0.165})
     nav.turn(90)
-    time.sleep(0.75)
+    time.sleep(1.5)
 
     shoot_rings(nav, 3)
-    nav.actuator('shooter', {'action': 'stop'})
 
-    # Intake [experimental]
-    # nav.actuator('intake', {'action': 'intake'})
-    # nav.turn(10)
-    # nav.move(-41, 5, reverse=False, speed=0.4)
-    # time.sleep(1)
-    # nav.actuator('intake', {'action': 'stop'})
-    # nav.actuator('turret', {'action': 'home'})
-    # nav.move(-58, 1)
-    # shoot_rings(nav, 3)
+    if rings_seen != 0:
+        # Intake [experimental]
+        nav.actuator('turret', {'action': 'home'})
+        nav.actuator('intake', {'action': 'intake'})
+        nav.turn(10)
+        nav.move(-41, 5, reverse=False, speed=0.5)
+        time.sleep(1)
+        nav.actuator('intake', {'action': 'stop'})
+        # nav.actuator('turret', {'action': 'home'})
+        nav.move(-58, 1)
+        nav.turn(0)
+        if rings_seen == 1:
+            shoot_rings(nav, 1)
+        else:
+            shoot_rings(nav, 3)
+        nav.turn(90)
+
+    nav.actuator('shooter', {'action': 'stop'})
 
     # second wobble
     nav.move(-28.5, 16)
@@ -105,7 +113,7 @@ def run_auto(nav):
     place_wobble(nav)
 
     if rings_seen != 0:
-        nav.move(-76, -3)
+        nav.move(-76, -3, reverse=False)
 
     log.i("Path complete")
 
