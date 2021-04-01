@@ -118,10 +118,9 @@ public class ImageDraw
             return new Point((int)pt.x, (int)pt.y);
         }
     
-        public static Point[] fromContour(MatOfPoint contour)
+        public static Point[] fromContour(org.opencv.core.Point[] contourPoints)
         {
-            Point[] points = new Point[contour.size(0)];
-            org.opencv.core.Point[] contourPoints = contour.toArray();
+            Point[] points = new Point[contourPoints.length];
             for (int i = 0; i < points.length; i++)
             {
                 points[i] = fromCvPoint(contourPoints[i]);

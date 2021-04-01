@@ -25,12 +25,13 @@ public class PythonTest extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         try
         {
             File path = Python.getSocketFile();
             server = new Server(new UnixSocketServer(path.getPath()));
             server.registerProcessor(0x01, (cmd, payload, resp) -> {
-                byte[] data = new byte[payload.limit()];
+                byte[] data = new byte[payload.remaining()];
                 payload.get(data);
                 status = new String(data, StandardCharsets.UTF_8);
                 requests++;

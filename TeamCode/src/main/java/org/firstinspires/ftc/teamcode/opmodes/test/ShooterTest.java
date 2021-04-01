@@ -23,6 +23,7 @@ public class ShooterTest extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         Robot robot = Robot.initialize(hardwareMap, "Shooter Test");
         this.turret = robot.turret;
     

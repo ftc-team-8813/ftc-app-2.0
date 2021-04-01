@@ -41,8 +41,8 @@ public class Intake {
     
     public void run(double speed)
     {
-        ramp.setPower(speed);
-        intake.setPower(speed);
+        ramp.setPower(speed * 0.85);
+        intake.setPower(-speed);
         roller.setPower(speed);
     }
     

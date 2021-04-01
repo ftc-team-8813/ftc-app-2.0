@@ -202,6 +202,7 @@ public class Logger
                 serverWriter.print(base);
                 t.printStackTrace(serverWriter);
             }
+            RobotLog.ww(tag, t, "");
         }
     }
     

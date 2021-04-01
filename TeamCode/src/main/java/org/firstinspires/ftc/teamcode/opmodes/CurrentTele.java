@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.autoshoot.AutoAim;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.AutoAimControl;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.AutoPowershotControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
@@ -38,6 +39,7 @@ public class CurrentTele extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         robot = Robot.initialize(hardwareMap, "Main TeleOp");
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
@@ -57,6 +59,7 @@ public class CurrentTele extends LoggingOpMode
         
         // automation
         controlMgr.addModule(new AutoAimControl());
+        controlMgr.addModule(new AutoPowershotControl());
         
         controlMgr.initModules();
     

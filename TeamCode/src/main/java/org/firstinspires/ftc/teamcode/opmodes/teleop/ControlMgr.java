@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Time;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ControlMgr
@@ -28,6 +29,11 @@ public class ControlMgr
         log.v("Add module: %s (%s)", module.name, module.getClass().getName());
         modules.add(module);
         return module;
+    }
+    
+    public List<ControlModule> getModules()
+    {
+        return Collections.unmodifiableList(modules);
     }
     
     public <T extends ControlModule> List<T> getModules(Class<T> type)

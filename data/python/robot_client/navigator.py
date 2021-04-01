@@ -1,6 +1,9 @@
 import struct
 import json
 
+NAV_MOVE_COMPLETE = 2
+NAV_TURN_COMPLETE = 1
+
 class NavControl:
     def __init__(self, conn):
         self.conn = conn
@@ -25,10 +28,10 @@ class NavControl:
             raise ValueError("Class '%s' not an event class" % ev)
         return rval
 
-    def move(self, x, y, absolute=False, reverse=False, speed=-1):
+    def move(self, x, y, absolute=True, reverse=True, speed=-1, wait=True):
         if speed < 0: speed = self.default_speed
         print("Move: (%.3f, %.3f) abs=%s rev=%s speed=%.3f" % (x, y, absolute, reverse, speed))
-        flags = (reverse << 1) | absolute
+        flags = (wait << 2) | (reverse << 1) | absolute
 
         data = struct.pack('>fffB', x, y, speed, flags)
         resp = self.conn.send_recv(0xfc, data)
@@ -37,10 +40,10 @@ class NavControl:
         self.__check_rval(rval)
         return rval
 
-    def turn(self, r, absolute=False, speed=-1):
+    def turn(self, r, absolute=True, speed=-1, wait=True):
         if speed < 0: speed = self.default_speed
         print("Turn: %.3f abs=%s speed=%.3f" % (r, absolute, speed))
-        flags = absolute << 0
+        flags = (wait << 1) | absolute
 
         data = struct.pack('>ffB', r, speed, flags)
         resp = self.conn.send_recv(0xfb, data)
@@ -75,6 +78,6 @@ class NavControl:
         if rval == 0x01:
             raise ValueError("'%s' is not a sensor" % name)
         elif rval != 0:
-            return rval
+            raise RuntimeError("Sense error: %d" % rval)
         else:
             return resp[1:]

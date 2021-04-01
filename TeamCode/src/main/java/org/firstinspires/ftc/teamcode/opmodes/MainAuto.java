@@ -84,15 +84,16 @@ public class MainAuto extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         robot = Robot.initialize(hardwareMap, "Autonomous");
-        bus = new EventBus();
-        scheduler = new Scheduler(bus);
-        robot.turret.connectEventBus(bus);
+        bus = robot.eventBus;
+        scheduler = robot.scheduler;
         telemBuf = ByteBuffer.allocate(65535);
         robot.imu.initialize(bus, scheduler);
         
         robot.wobble.up();
         robot.wobble.close();
+        robot.intake.pivotIn();
         
         autoPath = new PythonNavPath("autonomous.py", bus, robot);
         autoPath.addActuator("turret", (params) -> {
@@ -113,6 +114,9 @@ public class MainAuto extends LoggingOpMode
                 case "unpush":
                     robot.turret.unpush();
                     break;
+                case "home":
+                    robot.turret.home();
+                    break;
             }
         });
         autoPath.addActuator("shooter", (params) -> {
@@ -120,6 +124,10 @@ public class MainAuto extends LoggingOpMode
             switch (action)
             {
                 case "start":
+                    if (params.has("speed"))
+                    {
+                        robot.turret.shooter.setMaxPower(params.get("speed").getAsDouble());
+                    }
                     robot.turret.shooter.start();
                     break;
                 case "stop":
@@ -139,6 +147,10 @@ public class MainAuto extends LoggingOpMode
                     log.v("Wobble UP");
                     robot.wobble.up();
                     break;
+                case "mid":
+                    log.v("Wobble MID");
+                    robot.wobble.middle();
+                    break;
                 case "close":
                     log.v("Wobble CLOSE");
                     robot.wobble.close();
@@ -146,6 +158,26 @@ public class MainAuto extends LoggingOpMode
                 case "open":
                     log.v("Wobble OPEN");
                     robot.wobble.open();
+                    break;
+            }
+        });
+        autoPath.addActuator("intake", (params) -> {
+            String action = params.get("action").getAsString();
+            switch (action)
+            {
+                case "intake":
+                    if (params.has("speed"))
+                    {
+                        double speed = params.get("speed").getAsDouble();
+                        robot.intake.run(speed);
+                    }
+                    else robot.intake.intake();
+                    break;
+                case "outtake":
+                    robot.intake.outtake();
+                    break;
+                case "stop":
+                    robot.intake.stop();
                     break;
             }
         });
@@ -232,7 +264,7 @@ public class MainAuto extends LoggingOpMode
             serverDraw = new ImageDraw();
             Utils.bitmapToMat(frameHandler.currFramebuffer, detectorFrame);
             double area = detector.detect(detectorFrame, serverDraw);
-            if      (area < 700)   ringsDetected = 0;
+            if      (area < 1200)   ringsDetected = 0;
             else if (area < 2500)  ringsDetected = 1;
             else if (area < 10000) ringsDetected = 4;
             else                   ringsDetected = -1;
@@ -264,6 +296,7 @@ public class MainAuto extends LoggingOpMode
     @Override
     public void stop()
     {
+        autoPath.stop();
         webcam.close();
         if (server != null) server.close();
         super.stop();
