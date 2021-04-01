@@ -4,9 +4,9 @@
     "maxPower": 0.79,
 
     "powershots": [
-      0.309,
-      0.3075,
-      0.3105
+      0.65,
+      0.66,
+      0.67
     ],
 
     "presets": [
@@ -60,8 +60,8 @@
     "target_y": -48
   },
   "intake": {
-    "pivot_in": 0.21,
-    "pivot_out": 0.6
+    "pivot_in": 0.35,
+    "pivot_out": 0.8
   },
 
   "turret_cal": {

@@ -147,6 +147,10 @@ public class MainAuto extends LoggingOpMode
                     log.v("Wobble UP");
                     robot.wobble.up();
                     break;
+                case "mid":
+                    log.v("Wobble MID");
+                    robot.wobble.middle();
+                    break;
                 case "close":
                     log.v("Wobble CLOSE");
                     robot.wobble.close();

@@ -7,13 +7,15 @@ LIFECYCLE_EVENT_INIT = 0
 LIFECYCLE_EVENT_START = 1
 LIFECYCLE_EVENT_STOP = 2
 
+SHOOT_SPEED = 0.66
+
 def place_wobble(nav):
-    # nav.actuator('wobble', {'action': 'down'})
-    # time.sleep(0.5)
+    nav.actuator('wobble', {'action': 'down'})
+    time.sleep(0.5)
     nav.actuator('wobble', {'action': 'open'})
     time.sleep(0.5)
-    # nav.actuator('wobble', {'action': 'up'})
-    # time.sleep(0.5)
+    nav.actuator('wobble', {'action': 'up'})
+    time.sleep(0.5)
 
 def pick_wobble(nav):
     nav.actuator('wobble', {'action': 'open'}) # should be already open but make sure
@@ -21,7 +23,7 @@ def pick_wobble(nav):
     time.sleep(0.8)
     nav.actuator('wobble', {'action': 'close'})
     time.sleep(0.5)
-    nav.actuator('wobble', {'action': 'up'})
+    nav.actuator('wobble', {'action': 'mid'})
     time.sleep(0.6)
 
 def shoot_rings(nav, rings):
@@ -59,13 +61,13 @@ def run_auto(nav):
         nav.move(-59, -15)
         nav.turn(30)
     elif rings_seen == 1:
-        nav.move(-87, 0)
+        nav.move(-84, 0)
         nav.turn(0)
     elif rings_seen == 4:
         nav.move(-111, -19)
         nav.turn(25)
 
-    nav.actuator('shooter', {'action': 'start', 'speed': 0.66})
+    nav.actuator('shooter', {'action': 'start', 'speed': SHOOT_SPEED})
     place_wobble(nav)
 
     # Line up for shooting
@@ -86,7 +88,7 @@ def run_auto(nav):
         nav.actuator('intake', {'action': 'stop'})
         # nav.actuator('turret', {'action': 'home'})
         nav.move(-58, 1)
-        nav.turn(0)
+        nav.turn(3)
         shoot_rings(nav, 1)
         nav.turn(90)
 
@@ -95,8 +97,8 @@ def run_auto(nav):
     if rings_seen == 4:
         # second wobble
         nav.move(-41, 24)
-        nav.move(-25, 23)
-        nav.turn(-195)
+        nav.move(-27, 23)
+        nav.turn(165)
     else:
         # second wobble
         nav.move(-28.5, 16)
@@ -109,7 +111,7 @@ def run_auto(nav):
         nav.move(-55, -10)
         nav.turn(40)
     elif rings_seen == 1:
-        nav.move(-80, -1)
+        nav.move(-74, -1)
         nav.turn(-9)
     elif rings_seen == 4:
         nav.move(-47, 22)
@@ -117,13 +119,25 @@ def run_auto(nav):
         nav.turn(37)
     place_wobble(nav)
 
-    if rings_seen != 0:
+    if rings_seen == 4:
+        nav.actuator('shooter', {'action': 'start', 'speed': SHOOT_SPEED})
+        nav.actuator('turret', {'action': 'home'})
+        nav.actuator('intake', {'action': 'intake'})
+        nav.move(-37, 5, reverse=False)
+        time.sleep(1)
+        nav.actuator('intake', {'action': 'stop'})
+        nav.move(-58, 1)
+        nav.turn(3)
+        shoot_rings(nav, 3)
+        nav.actuator('shooter', {'action': 'stop'})
+        nav.move(-76, -3)
+    elif rings_seen == 1:
         nav.move(-76, -3, reverse=False)
 
     log.i("Path complete")
 
     # Return home
-    nav.move(-6, 0, reverse=False)
+    # nav.move(-6, 0, reverse=False)
 
 
 def main():

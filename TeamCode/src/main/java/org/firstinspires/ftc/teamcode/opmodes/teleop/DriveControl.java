@@ -28,7 +28,7 @@ public class DriveControl extends ControlModule
     
     private IMU imu;
     private double lastHeadingTarget;
-    public boolean enableHeadingLock = true;
+    public boolean enableHeadingLock = false;
     
     private double headingLockKp = 0.005; // TODO make config variable
     
