@@ -6,7 +6,10 @@ import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Navigator;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
+import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
@@ -26,6 +29,9 @@ public class NavigationTest extends LoggingOpMode
     private Odometry odometry;
     
     private Navigator nav;
+    
+    private ControlMgr controlMgr;
+    private ControllerMap controllerMap;
     
     private int state = 0; // 0 = initialized, 1 = running, 2 = done
     
@@ -55,6 +61,12 @@ public class NavigationTest extends LoggingOpMode
         nav = new Navigator(robot.drivetrain, odometry, evBus);
         nav.connectEventBus(evBus);
         state = 0;
+        
+        controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
+        
+        controlMgr = new ControlMgr(robot, controllerMap);
+        controlMgr.addModule(new DriveControl());
+        controlMgr.initModules();
         
         /*
         evBus.subscribe(NavMoveEvent.class, (ev, bus, sub) -> {
@@ -139,6 +151,7 @@ public class NavigationTest extends LoggingOpMode
     @Override
     public void init_loop()
     {
+        controlMgr.init_loop(telemetry);
         odometry.updateDeltas();
         scheduler.loop();
         evBus.update();
@@ -154,8 +167,12 @@ public class NavigationTest extends LoggingOpMode
     @Override
     public void loop()
     {
+        controllerMap.update();
+        controlMgr.loop(telemetry);
+        
         odometry.updateDeltas();
-        nav.update(telemetry);
+        if (nav.navigating())
+            nav.update(telemetry);
         scheduler.loop();
         evBus.update();
         loopTelem();

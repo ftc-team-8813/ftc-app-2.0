@@ -222,6 +222,8 @@ public class MainAuto extends LoggingOpMode
         }
     
         robot.turret.startZeroFind();
+        
+        robot.drivetrain.getOdometry().setPosition(1, 0);
     }
     
     @Override

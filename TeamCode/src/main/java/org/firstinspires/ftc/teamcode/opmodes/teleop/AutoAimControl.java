@@ -32,7 +32,7 @@ public class AutoAimControl extends ControlModule
         turret = robot.turret;
         hub = robot.controlHub;
         autoAim = new AutoAim(robot.drivetrain.getOdometry(), robot.turret.getTurretHome());
-        autoAim.setTarget(-140, 10);
+        autoAim.setTarget(-140, 0);
         
         btn_auto_toggle = controllerMap.getButtonMap("auto_aim::toggle", "gamepad2", "right_trigger");
     
