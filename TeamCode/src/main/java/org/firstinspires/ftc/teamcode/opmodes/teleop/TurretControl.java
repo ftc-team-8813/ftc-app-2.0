@@ -23,6 +23,7 @@ public class TurretControl extends ControlModule
     private ControllerMap.ButtonEntry btn_turret_reverse;
     
     private double turretAdjSpeed;
+    private boolean manualDrive;
     
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager)
@@ -49,8 +50,27 @@ public class TurretControl extends ControlModule
     @Override
     public void update(Telemetry telemetry)
     {
-        double turret_adj = -ax_turret.get() * turretAdjSpeed;
-        turret.rotate(turret.getTarget() + turret_adj);
+        double power = -ax_turret.get();
+        if (power != 0)
+        {
+            if (!manualDrive)
+            {
+                manualDrive = true;
+            }
+            
+            double pos = turret.getPosition();
+            if (pos <= 0 && power < 0)      turret.turret.setPower(0);
+            else if (pos >= 1 && power > 0) turret.turret.setPower(0);
+            else                            turret.turret.setPower(power * -0.2);
+        }
+        else
+        {
+            if (manualDrive)
+            {
+                manualDrive = false;
+                turret.rotate(turret.getPosition());
+            }
+        }
         
         if (btn_turret_home.edge() > 0)
         {
@@ -64,9 +84,17 @@ public class TurretControl extends ControlModule
     }
     
     @Override
+    public void disable()
+    {
+        super.disable();
+        manualDrive = false;
+    }
+    
+    @Override
     public void alwaysUpdate(Telemetry telemetry)
     {
-        turret.update(telemetry);
+        if (!manualDrive)
+            turret.update(telemetry);
     }
     
     @Override
