@@ -59,7 +59,7 @@ public class CurrentTele extends LoggingOpMode
         
         // automation
         controlMgr.addModule(new AutoAimControl());
-        controlMgr.addModule(new AutoPowershotControl());
+        // controlMgr.addModule(new AutoPowershotControl());
         
         controlMgr.initModules();
     
