@@ -46,10 +46,9 @@ public class AutoAim
 
         // calculate target heading
         // CCW for imu is positive
-        double robot_heading = imu.getHeading();
-        double field_heading = Math.toDegrees(Math.atan2(y_dist, x_dist));
-        
-        double turret_heading = field_heading - robot_heading + 180;
+        double field_heading = Math.atan(x_dist/y_dist);
+        double turret_heading = field_heading + (odometry.theta - (Math.PI/2));
+
         double rotation = turret_heading / 360.0;
         double rotation_pos = turretHome + rotation;
         
