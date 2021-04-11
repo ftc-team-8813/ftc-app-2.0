@@ -7,16 +7,17 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 import org.firstinspires.ftc.teamcode.vision.ImageDraw;
 import org.firstinspires.ftc.teamcode.vision.RingDetector;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import static org.opencv.core.CvType.CV_8UC4;
@@ -49,6 +50,7 @@ public class VisionTest extends LoggingOpMode
     @Override
     public void init()
     {
+        super.init();
         cam = Webcam.forSerial(serial);
         if (cam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + serial);
         frameHandler = new Webcam.SimpleFrameHandler();
@@ -56,7 +58,13 @@ public class VisionTest extends LoggingOpMode
         drawBuffer = ByteBuffer.allocate(65535);
         exTelemetry = ByteBuffer.allocate(8);
     
-        server = new Server(20000);
+        try
+        {
+            server = new Server(new InetSocketServer(20000));
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     
         server.registerProcessor(0x01, (cmd, payload, resp) -> { // Get frame
             if (serverFrameCopy == null || serverFrameUsed) return;

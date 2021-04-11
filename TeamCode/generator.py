@@ -2,6 +2,7 @@
 import os
 import shlex
 import subprocess
+import time
 
 # class ServoPositionProcessor:
 #     def __init__(self):
@@ -35,13 +36,35 @@ import subprocess
 #
 #         adb.push_file('build/preset_names.txt', '/sdcard/Team8813/')
 
+def git(*args):
+    print("git " + " ".join(args))
+    stdout = subprocess.run(('git',) + args, stdout=subprocess.PIPE).stdout
+    return stdout.decode('utf-8').split('\n')
+
 class DataFileProcessor:
     def finish(self, adb):
+        try:
+            os.mkdir('build/')
+            os.mkdir('build/tmp')
+        except OSError:
+            pass
+        with open('build/tmp/buildinfo.json', 'w') as f:
+            commit_log = git('show', '--oneline', '-s')[0]
+            f.write('{\n')
+            f.write('  "buildDate": "%s",\n' % time.strftime('%Y/%m/%d %H:%M %z'))
+            f.write('  "commit": "%s",\n' % commit_log.split(' ')[0])
+            f.write('  "branch": "%s",\n' % git('branch', '--show-current')[0])
+            f.write('  "origin": "%s"\n'  % git('remote', 'get-url', 'origin')[0])
+            f.write('}\n')
+
         if len(adb.get_devices()) == 0:
             print("No devices connected; not uploading servo positions")
             return
         for f in os.listdir('../data/'):
             adb.push_file('../data/' + f, '/sdcard/Team8813/')
+
+        adb.push_file('build/tmp/buildinfo.json', '/sdcard/Team8813')
+
 
 class Adb:
     def __init__(self, command='adb'):

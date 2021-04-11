@@ -2,12 +2,12 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.hardware.events.PowershotEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -23,13 +23,11 @@ public class Turret {
     private Logger log = new Logger("Turret");
 
     private final double TICKS = 128;
-    private final double ENC_TO_TURRET_RATIO = 110.0/30.0 * TICKS;
+    private final double ENC_TO_TURRET_RATIO = 74.0/10.0 * TICKS;
 
     private double turretHome;
     private double turretHome2;
     private double turretKp;
-    private double turretMin;
-    private double turretMax;
     private double turretSpeed;
     private double pushIn;
     private double pushOut;
@@ -56,12 +54,12 @@ public class Turret {
     private boolean find_fail = false;
     private double revStart = 0;
 
-    public Turret(DcMotor turret, DcMotor shooter, DcMotor shooter2, Servo pusher, Servo aim,
+    public Turret(DcMotor turret, DcMotor shooter, Servo pusher, Servo aim,
                   DcMotor rotateFeedback, JsonObject shooterConfig, JsonObject turretConfig,
                   DigitalChannel zeroSw)
     {
         this.turret = turret;
-        this.shooter = new Shooter(shooter, shooter2, shooterConfig);
+        this.shooter = new Shooter(shooter, shooterConfig);
         this.pusher = pusher;
         this.aim = aim;
         this.turretFb = rotateFeedback;
@@ -71,13 +69,11 @@ public class Turret {
         turretHome = root.get("home").getAsDouble();
         turretHome2= root.get("home180").getAsDouble();
         turretKp   = root.get("kp").getAsDouble();
-        turretMin  = root.get("min").getAsDouble();
-        turretMax  = root.get("max").getAsDouble();
         turretSpeed= root.get("maxSpeed").getAsDouble();
         turretDefSpeed = turretSpeed;
         JsonObject pusherConf = root.getAsJsonObject("pusher");
-        pushIn  = pusherConf.get("in").getAsDouble();
-        pushOut = pusherConf.get("out").getAsDouble();
+        pushIn  = pusherConf.get("unpush").getAsDouble();
+        pushOut = pusherConf.get("push").getAsDouble();
         
         target = turretHome;
     }
@@ -91,26 +87,29 @@ public class Turret {
     {
         rotate(position, false);
     }
-    
+
+    /***
+     * Rotates the turret left and right from the home position
+     * @param position Absolute encoder values (named eUnits). Clipped half-rotation left and right from home
+     */
     public void rotate(double position, boolean sendEvent)
     {
-        if (sendEvent) log.d("Rotate -> %.3f", position);
-        position = Range.clip(position, -1 + turretHome, 0);
+        if (sendEvent) log.i("Rotate -> %.3f", position);
+        position = Range.clip(position, 0, 1);
         target = position;
         if (sendEvent) this.sendEvent = true;
     }
 
     public double getHeading(){
-        double spin_ratio = turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
-        return spin_ratio * 360;
+        return getPosition() * 360;
     }
 
     public void home()
     {
         target = turretHome;
         sendEvent = true;
-        // HACK: 70% power homing
-        turretSpeed = 0.7;
+        // HACK: fast homing
+        turretSpeed = 0.8;
         evBus.subscribe(TurretEvent.class, (ev, bus, sub) -> {
             turretSpeed = turretDefSpeed;
             bus.unsubscribe(sub);
@@ -124,7 +123,7 @@ public class Turret {
     
     public double getPosition()
     {
-        return turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
+        return -turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
     }
 
     public double getTurretHome(){
@@ -140,18 +139,18 @@ public class Turret {
     {
         shooter.update(telemetry);
         
-        double pos = turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
+        double pos = getPosition();
         lastPos = pos;
         double error = target - pos;
 
-        if (sendEvent && Math.abs(error) < 0.05 && evBus != null)
+        if (sendEvent && Math.abs(error) < 0.03 && evBus != null)
         {
             sendEvent = false;
             evBus.pushEvent(new TurretEvent(TurretEvent.TURRET_MOVED));
         }
         
         double power = Range.clip(error * turretKp, -turretSpeed, turretSpeed);
-        turret.setPower(power);
+        turret.setPower(-power);
         telemetry.addData("pos", "%.3f", pos);
         telemetry.addData("target", "%.4f", target);
         telemetry.addData("error", "%.3f", error);
@@ -192,6 +191,7 @@ public class Turret {
     public void updateInit(Telemetry telemetry)
     {
         String state = "[unknown]";
+        telemetry.addData("Magnet Found: ", zeroSw.getState());
         double position = getPosition();
         switch (find_stage)
         {
@@ -199,7 +199,7 @@ public class Turret {
             {
                 turret.setPower(0.3); // positive power -> increase in position
                 state = String.format("Rapid pos=%.3f", position);
-                if (position >= 1)
+                if (position >= 2)
                 {
                     find_stage = FIND_RAPID_REV;
                     turret.setPower(0);
@@ -213,7 +213,7 @@ public class Turret {
             }
             case FIND_RAPID_REV:
             {
-                turret.setPower(-0.2);
+                turret.setPower(-0.3);
                 state = String.format("Rapid reverse pos=%.3f", position);
                 if (position <= 0)
                 {
@@ -230,7 +230,7 @@ public class Turret {
             }
             case FIND_REVERSE:
             {
-                turret.setPower(-0.1);
+                turret.setPower(-0.2);
                 state = "Back up";
                 if (zeroSw.getState())
                 {
@@ -241,7 +241,7 @@ public class Turret {
             }
             case FIND_REVERSE_2:
             {
-                turret.setPower(-0.1);
+                turret.setPower(-0.2);
                 state = String.format("Back up 2 pos=%.3f err=%.3f", position, position-revStart);
                 if (Math.abs(position - revStart) > 0.05)
                 {
@@ -252,7 +252,7 @@ public class Turret {
             }
             case FIND_SLOW:
             {
-                turret.setPower(0.08);
+                turret.setPower(0.2);
                 state = "Slow detect";
                 if (!zeroSw.getState())
                 {

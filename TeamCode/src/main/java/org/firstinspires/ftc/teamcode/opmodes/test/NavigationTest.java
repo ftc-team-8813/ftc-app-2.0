@@ -4,16 +4,18 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.events.IMUEvent;
-import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Navigator;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
+import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
+import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 @TeleOp(name="Navigator Test")
@@ -28,19 +30,29 @@ public class NavigationTest extends LoggingOpMode
     
     private Navigator nav;
     
+    private ControlMgr controlMgr;
+    private ControllerMap controllerMap;
+    
     private int state = 0; // 0 = initialized, 1 = running, 2 = done
     
     @Override
     public void init()
     {
-        robot = new Robot(hardwareMap);
-        server = new Server(19998);
+        super.init();
+        robot = Robot.initialize(hardwareMap, "Navigation Test");
+        try
+        {
+            server = new Server(new InetSocketServer(19998));
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     
         robot.drivetrain.resetEncoders();
         imu = robot.imu;
     
-        evBus = new EventBus();
-        scheduler = new Scheduler(evBus);
+        evBus = robot.eventBus;
+        scheduler = robot.scheduler;
     
         imu.initialize(evBus, scheduler);
     
@@ -49,6 +61,12 @@ public class NavigationTest extends LoggingOpMode
         nav = new Navigator(robot.drivetrain, odometry, evBus);
         nav.connectEventBus(evBus);
         state = 0;
+        
+        controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
+        
+        controlMgr = new ControlMgr(robot, controllerMap);
+        controlMgr.addModule(new DriveControl());
+        controlMgr.initModules();
         
         /*
         evBus.subscribe(NavMoveEvent.class, (ev, bus, sub) -> {
@@ -81,7 +99,7 @@ public class NavigationTest extends LoggingOpMode
         });
         server.registerProcessor(0x2, (cmd, payload, resp) -> {
             byte status = (byte)0;
-            if (payload.limit() < 8) status = (byte)1;
+            if (payload.remaining() < 8) status = (byte)1;
             else if (state < 1) status = (byte)2;
             else
             {
@@ -96,7 +114,7 @@ public class NavigationTest extends LoggingOpMode
         });
         server.registerProcessor(0x3, (cmd, payload, resp) -> {
             byte status = (byte)0;
-            if (payload.limit() < 24) status = (byte)1;
+            if (payload.remaining() < 24) status = (byte)1;
             else if (state < 1) status = (byte)2;
             else
             {
@@ -133,6 +151,7 @@ public class NavigationTest extends LoggingOpMode
     @Override
     public void init_loop()
     {
+        controlMgr.init_loop(telemetry);
         odometry.updateDeltas();
         scheduler.loop();
         evBus.update();
@@ -148,8 +167,12 @@ public class NavigationTest extends LoggingOpMode
     @Override
     public void loop()
     {
+        controllerMap.update();
+        controlMgr.loop(telemetry);
+        
         odometry.updateDeltas();
-        nav.update(telemetry);
+        if (nav.navigating())
+            nav.update(telemetry);
         scheduler.loop();
         evBus.update();
         loopTelem();

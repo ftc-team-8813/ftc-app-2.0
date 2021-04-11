@@ -22,7 +22,8 @@ public class WhereAmI extends LoggingOpMode
     @Override
     public void init()
     {
-        Robot robot = new Robot(hardwareMap);
+        super.init();
+        Robot robot = Robot.initialize(hardwareMap, "Where Am I");
         drivetrain = robot.drivetrain;
         imu = robot.imu;
         evBus = new EventBus();

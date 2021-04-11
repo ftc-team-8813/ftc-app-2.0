@@ -1,29 +1,30 @@
 {
   "shooter": {
     "rampTime": 1,
-    "maxPower": 0.774,
+    "maxPower": 0.79,
 
     "powershots": [
-      0.309,
-      0.3075,
-      0.3105
+      0.65,
+      0.66,
+      0.67
     ],
 
     "presets": [
-      {"power":  0.792, "color": [255, 255, 0]},
-      {"power":  0.657, "color": [64,  0,   128]}
+      {"power":  0.67, "color": [255, 255, 0  ]},
+      {"power":  0.65, "color": [255, 1,  0  ]},
+      {"power":  0.62, "color": [64,  0,   128]}
     ]
   },
   "turret": {
-    "home":    -0.100,
-    "home180": -0.580,
+    "home":    0.405,
+    "home180": 1,
     "min": 0,
     "max": 0.95,
-    "maxSpeed": 0.4,
-    "kp":  7,
+    "maxSpeed": 0.5,
+    "kp":  10,
     "pusher": {
-      "in": 0.52,
-      "out": 0.82
+      "unpush": 0.52,
+      "push": 0.75
     }
   },
   "lift": {
@@ -36,9 +37,11 @@
     }
   },
   "teleop": {
-    "drive_speeds": [-0.5, -0.35, -0.75],
+    "drive_speeds": [-0.6, -0.35, -0.85],
     "powershot_angles": [-0.73, -0.7465, -0.758],
-    "powershot_powers": [0.3735, 0.3655, 0.3585]
+    "powershot_powers": [0.3735, 0.3655, 0.3585],
+
+    "turret_adj_rate": 0.004
   },
   "wobble": {
     "arm_up": 0.20,
@@ -55,6 +58,10 @@
     "offset": 135,
     "target_x": -72,
     "target_y": -48
+  },
+  "intake": {
+    "pivot_in": 0.35,
+    "pivot_out": 0.8
   },
 
   "turret_cal": {

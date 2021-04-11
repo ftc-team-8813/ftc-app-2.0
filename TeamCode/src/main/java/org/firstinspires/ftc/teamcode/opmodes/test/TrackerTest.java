@@ -5,19 +5,22 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.autoshoot.Tracker;
+import org.firstinspires.ftc.teamcode.hardware.autoshoot.AutoAim;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
+import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
-@TeleOp(name="TrackerTest")
-public class TrackerTest extends LoggingOpMode {
+@TeleOp(name="Tracker Test")
+public class TrackerTest extends LoggingOpMode
+{
     private Robot robot;
     private IMU imu;
-    private Tracker tracker;
+    private AutoAim autoAim;
     private EventBus ev;
     private Scheduler scheduler;
     
@@ -25,31 +28,38 @@ public class TrackerTest extends LoggingOpMode {
 
     @Override
     public void init() {
-        robot = new Robot(hardwareMap);
+        super.init();
+        robot = Robot.initialize(hardwareMap, "Tracker Test");
         
         JsonObject trackerConf = robot.config.getAsJsonObject("tracker");
         double off = trackerConf.get("offset").getAsDouble();
         double target_x = trackerConf.get("target_x").getAsDouble();
         double target_y = trackerConf.get("target_y").getAsDouble();
-        robot.drivetrain.getOdometry().setPosition(66, 48);
+        robot.drivetrain.getOdometry().setPosition(0, 0);
         
-        tracker = new Tracker(robot.turret, robot.drivetrain, off);
-        tracker.setTarget(target_x, target_y);
+        autoAim = new AutoAim(robot.drivetrain.getOdometry(), robot.turret.getTurretHome());
+        autoAim.setTarget(target_x, target_y);
         ev = new EventBus();
         scheduler = new Scheduler(ev);
         imu = robot.drivetrain.getOdometry().getIMU();
 
         imu.initialize(ev, scheduler);
         robot.turret.startZeroFind();
-        
-        server = new Server(19997);
-        
+    
+        try
+        {
+            server = new Server(new InetSocketServer(19997));
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    
         server.registerProcessor(0x01, (cmd, payload, resp) -> {
             ByteBuffer buf = ByteBuffer.allocate(16);
             buf.putFloat((float)robot.drivetrain.getOdometry().x);
             buf.putFloat((float)robot.drivetrain.getOdometry().y);
             buf.putFloat((float)robot.imu.getHeading());
-            buf.putFloat((float)-(tracker.getTargetHeading() + 180));
+            buf.putFloat((float)robot.turret.getHeading());
             
             buf.flip();
             resp.respond(buf);
@@ -81,15 +91,13 @@ public class TrackerTest extends LoggingOpMode {
         robot.drivetrain.telemove(-gamepad1.left_stick_y * 0.3,
                                  -gamepad1.right_stick_y * 0.3);
         robot.drivetrain.getOdometry().updateDeltas();
-        tracker.update();
-        robot.turret.update(telemetry);
 
-        telemetry.addData("Turret Current Heading", tracker.getTargetHeading());
         telemetry.addData("Odo X", robot.drivetrain.getOdometry().x);
         telemetry.addData("Odo Y", robot.drivetrain.getOdometry().y);
         telemetry.addData("Odo L", robot.drivetrain.getOdometry().past_l);
         telemetry.addData("Odo R", robot.drivetrain.getOdometry().past_r);
-        telemetry.update();
+        robot.turret.rotate(autoAim.getTurretRotation(telemetry));
+        robot.turret.update(telemetry);
         scheduler.loop();
         ev.update();
     }

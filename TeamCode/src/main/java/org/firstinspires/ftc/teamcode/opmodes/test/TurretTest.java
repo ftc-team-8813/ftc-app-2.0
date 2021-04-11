@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes.test;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
@@ -14,7 +13,8 @@ public class TurretTest extends LoggingOpMode
     @Override
     public void init()
     {
-        robot = new Robot(hardwareMap);
+        super.init();
+        robot = Robot.initialize(hardwareMap, "Turret Test");
     }
     
     @Override

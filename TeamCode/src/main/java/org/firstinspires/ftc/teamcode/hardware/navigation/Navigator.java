@@ -69,9 +69,9 @@ public class Navigator
         this.odometry = odo;
         imu = odo.getIMU();
         
-        forwardKp = 0.15;
-        turnKp = 0.01;
+        forwardKp = 0.04;
         forwardKi = 0.001;
+        turnKp = 0.02;
         turnKi = 0.001;
         this.eventBus = eventBus;
     }
@@ -143,7 +143,7 @@ public class Navigator
             if (!preTurnComplete)
             {
                 double angleError = Math.toDegrees(angleTarget - theta);
-                if (Math.abs(angleError) < 10) preTurnComplete = true;
+                if (Math.abs(angleError) < 5) preTurnComplete = true;
             }
             else
             {
@@ -152,7 +152,7 @@ public class Navigator
                 fwdError = worldErrorVec.dot(headingVec);
     
                 distanceError = worldErrorVec.magnitude();
-                if (distanceError < 1 && Math.abs(distanceError - lastDistance) < 0.01)
+                if (distanceError < 1 && Math.abs(distanceError - lastDistance) < 1)
                 {
                     navigating = false;
                     eventBus.pushEvent(new NavMoveEvent(NavMoveEvent.MOVE_COMPLETE));
@@ -200,7 +200,7 @@ public class Navigator
         double turnPower = Range.clip(turnError * turnKp + turnInt, -turnSpeed, turnSpeed);
 
         if (eventBus != null){
-            if (Math.abs(turnError) < 0.5 && sendEvent_turn) {
+            if (Math.abs(turnError) < 5 && sendEvent_turn) {
                 sendEvent_turn = false;
                 eventBus.pushEvent(new NavMoveEvent(NavMoveEvent.TURN_COMPLETE));
             }
@@ -212,6 +212,8 @@ public class Navigator
         telemetry.addData("Nav Turn", "%.2f", turnPower);
         telemetry.addData("Nav FwdError", "%.2f", fwdError);
         telemetry.addData("Nav TurnError", "%.2f", turnError);
+        telemetry.addData("Nav FwdPower", "%.2f", fwdPower);
+        telemetry.addData("Nav TurnPower", "%.2f", turnPower);
         telemetry.addData("Heading", "%.2f", heading);
         telemetry.addData("Target heading", "%.2f", angleTarget);
         telemetry.addData("Odometry X", "%.2f", odometry.x);

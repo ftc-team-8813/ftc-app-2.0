@@ -10,12 +10,15 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.NavPath;
+import org.firstinspires.ftc.teamcode.hardware.navigation.PythonNavPath;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.EventFlow;
+import org.firstinspires.ftc.teamcode.util.event.LifecycleEvent;
+import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 import org.firstinspires.ftc.teamcode.vision.ImageDraw;
 import org.firstinspires.ftc.teamcode.vision.RingDetector;
@@ -26,8 +29,10 @@ import org.opencv.core.Mat;
 
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import static org.firstinspires.ftc.teamcode.util.event.LifecycleEvent.START;
 import static org.opencv.core.CvType.CV_8UC4;
 
 // we going to use the event bus system for this so that everything can be done on one thread
@@ -40,7 +45,7 @@ public class MainAuto extends LoggingOpMode
     
     private Robot robot;
     
-    private NavPath autoPath;
+    private PythonNavPath autoPath;
     
     private int forward1;
     private int forward2; // distance from forward1 to park
@@ -79,18 +84,18 @@ public class MainAuto extends LoggingOpMode
     @Override
     public void init()
     {
-        robot = new Robot(hardwareMap);
-        bus = new EventBus();
-        scheduler = new Scheduler(bus);
-        robot.turret.connectEventBus(bus);
+        super.init();
+        robot = Robot.initialize(hardwareMap, "Autonomous");
+        bus = robot.eventBus;
+        scheduler = robot.scheduler;
         telemBuf = ByteBuffer.allocate(65535);
         robot.imu.initialize(bus, scheduler);
         
         robot.wobble.up();
         robot.wobble.close();
+        robot.intake.pivotIn();
         
-        autoPath = new NavPath(Storage.getFile("nav_paths/test_auto_v3.json"),
-                bus, scheduler, robot, robot.config.getAsJsonObject("nav"));
+        autoPath = new PythonNavPath("autonomous.py", bus, robot);
         autoPath.addActuator("turret", (params) -> {
             String action = params.get("action").getAsString();
             switch (action)
@@ -109,6 +114,9 @@ public class MainAuto extends LoggingOpMode
                 case "unpush":
                     robot.turret.unpush();
                     break;
+                case "home":
+                    robot.turret.home();
+                    break;
             }
         });
         autoPath.addActuator("shooter", (params) -> {
@@ -116,6 +124,10 @@ public class MainAuto extends LoggingOpMode
             switch (action)
             {
                 case "start":
+                    if (params.has("speed"))
+                    {
+                        robot.turret.shooter.setMaxPower(params.get("speed").getAsDouble());
+                    }
                     robot.turret.shooter.start();
                     break;
                 case "stop":
@@ -135,6 +147,10 @@ public class MainAuto extends LoggingOpMode
                     log.v("Wobble UP");
                     robot.wobble.up();
                     break;
+                case "mid":
+                    log.v("Wobble MID");
+                    robot.wobble.middle();
+                    break;
                 case "close":
                     log.v("Wobble CLOSE");
                     robot.wobble.close();
@@ -145,10 +161,28 @@ public class MainAuto extends LoggingOpMode
                     break;
             }
         });
-        autoPath.addCondition("0", () -> 0);
-        autoPath.addCondition("incRingCount", () -> ++ringCount);
-        autoPath.addCondition("webcamState", () -> webcam.getState());
-        autoPath.addCondition("ringsSeen", () -> ringsDetected);
+        autoPath.addActuator("intake", (params) -> {
+            String action = params.get("action").getAsString();
+            switch (action)
+            {
+                case "intake":
+                    if (params.has("speed"))
+                    {
+                        double speed = params.get("speed").getAsDouble();
+                        robot.intake.run(speed);
+                    }
+                    else robot.intake.intake();
+                    break;
+                case "outtake":
+                    robot.intake.outtake();
+                    break;
+                case "stop":
+                    robot.intake.stop();
+                    break;
+            }
+        });
+        autoPath.addSensor("webcamState", () -> ByteBuffer.wrap(new byte[] {(byte)webcam.getState()}));
+        autoPath.addSensor("ringsSeen", () -> ByteBuffer.wrap(new byte[] {(byte)ringsDetected}));
         autoPath.addActuator("webcamDetect", (params) -> {
             detectStage = DETECT_REQUEST_FRAME;
         });
@@ -161,8 +195,6 @@ public class MainAuto extends LoggingOpMode
         detectorFrame = new Mat(800, 448, CV_8UC4);
     
         detector = new RingDetector(800, 448);
-    
-        autoPath.load();
         
         // load config
         /*
@@ -181,8 +213,17 @@ public class MainAuto extends LoggingOpMode
         double voltage = voltageSensor.getVoltage();
         log.d("Battery voltage: %.3f", voltage);
         autoPath.getNavigator().adjForVoltage(voltage);
-        
+        try
+        {
+            autoPath.start();
+        } catch (IOException e)
+        {
+            throw new IllegalStateException(e);
+        }
+    
         robot.turret.startZeroFind();
+        
+        robot.drivetrain.getOdometry().setPosition(1, 0);
     }
     
     @Override
@@ -205,8 +246,7 @@ public class MainAuto extends LoggingOpMode
     @Override
     public void start()
     {
-        // bus.pushEvent(new LifecycleEvent(START));
-        autoPath.start();
+        bus.pushEvent(new LifecycleEvent(START));
     }
     
     @Override
@@ -226,7 +266,7 @@ public class MainAuto extends LoggingOpMode
             serverDraw = new ImageDraw();
             Utils.bitmapToMat(frameHandler.currFramebuffer, detectorFrame);
             double area = detector.detect(detectorFrame, serverDraw);
-            if      (area < 700)   ringsDetected = 0;
+            if      (area < 1200)   ringsDetected = 0;
             else if (area < 2500)  ringsDetected = 1;
             else if (area < 10000) ringsDetected = 4;
             else                   ringsDetected = -1;
@@ -247,7 +287,7 @@ public class MainAuto extends LoggingOpMode
         
         robot.drivetrain.getOdometry().updateDeltas();
         webcam.loop(bus);
-        autoPath.loop(telemetry);
+        autoPath.update(telemetry);
         robot.turret.update(telemetry);
         scheduler.loop();
         bus.update();
@@ -258,6 +298,7 @@ public class MainAuto extends LoggingOpMode
     @Override
     public void stop()
     {
+        autoPath.stop();
         webcam.close();
         if (server != null) server.close();
         super.stop();
@@ -271,7 +312,15 @@ public class MainAuto extends LoggingOpMode
     
     private void initServer()
     {
-        server = new Server(8814);
+        try
+        {
+            server = new Server(new InetSocketServer(8814));
+        }
+        catch (IOException e)
+        {
+            server = null;
+            return;
+        }
         Logger.serveLogs(server, 0x01);
         autoPath.getNavigator().serve(server, 0x05);
         

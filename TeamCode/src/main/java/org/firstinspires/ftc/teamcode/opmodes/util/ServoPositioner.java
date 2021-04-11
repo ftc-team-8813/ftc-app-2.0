@@ -1,10 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.util;
 
-import android.os.UserManager;
-
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.LynxServoController;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -16,9 +12,8 @@ import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.telemetry.HTMLString;
 import org.firstinspires.ftc.teamcode.telemetry.Scroll;
 import org.firstinspires.ftc.teamcode.util.Time;
+import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.HTML;
@@ -75,12 +70,16 @@ public class ServoPositioner extends LoggingOpMode
     private int servoId;
     private ServoController[] servoControllers;
     
+    private EventBus evBus;
+    
     @Override
     public void init()
     {
+        super.init();
         telemetry.setDisplayFormat(HTML);
         currScene = new SceneChoose();
-        controllerMap = new ControllerMap(gamepad1, gamepad2);
+        evBus = new EventBus();
+        controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         started = false;
         
         setDefaultButtons();
@@ -120,6 +119,7 @@ public class ServoPositioner extends LoggingOpMode
                 currScene.init();
             }
             else currScene.loop();
+            controllerMap.update();
             telemetry.update();
         }
     }
