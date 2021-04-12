@@ -19,6 +19,8 @@ import org.firstinspires.ftc.teamcode.opmodes.teleop.WobbleControl;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Storage;
+import org.firstinspires.ftc.teamcode.util.Time;
+import org.firstinspires.ftc.teamcode.util.Util;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 import java.io.File;
@@ -35,6 +37,8 @@ public class CurrentTele extends LoggingOpMode
     
     private EventBus evBus;
     private Scheduler scheduler; // just in case
+    private double[] loop_time_hist = new double[100];
+    private int loop_hist_idx;
 
     @Override
     public void init()
@@ -91,12 +95,21 @@ public class CurrentTele extends LoggingOpMode
     @Override
     public void loop()
     {
+        double t = Time.now();
         controllerMap.update();
 
         controlMgr.loop(telemetry);
         
         scheduler.loop();
         evBus.update();
+        
+        double elapsed = Time.since(t);
+        loop_time_hist[loop_hist_idx] = elapsed;
+        loop_hist_idx = (loop_hist_idx + 1) % loop_time_hist.length;
+        telemetry.addData("Loop time", "%.3f", elapsed);
+        telemetry.addData("Peak loop time", "%.3f", Util.max(loop_time_hist));
+        telemetry.addData("Avg loop time", "%.3f", Util.average(loop_time_hist));
+        
     }
     
     @Override

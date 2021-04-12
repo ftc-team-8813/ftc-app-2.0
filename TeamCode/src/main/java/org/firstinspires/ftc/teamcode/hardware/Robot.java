@@ -24,6 +24,7 @@ public class Robot {
     public final Turret turret;
     public final Wobble wobble;
     public final REVHub controlHub;
+    public final REVHub expansionHub;
     
     public final JsonObject config;
 
@@ -75,6 +76,7 @@ public class Robot {
         */
         
         controlHub = new REVHub(hardwareMap.get(LynxModule.class, "Control Hub"));
+        expansionHub = new REVHub(hardwareMap.get(LynxModule.class, "Expansion Hub"));
         
         // Hardware Maps
         DcMotor top_left = hardwareMap.get(DcMotor.class, "top left");
@@ -111,4 +113,6 @@ public class Robot {
         this.wobble = new Wobble(wobble_arm, wobble_claw,
                                  config.getAsJsonObject("wobble"));
     }
+    
+    
 }
