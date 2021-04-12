@@ -21,8 +21,10 @@ public class TurretControl extends ControlModule
     private ControllerMap.AxisEntry   ax_turret;
     private ControllerMap.ButtonEntry btn_turret_home;
     private ControllerMap.ButtonEntry btn_turret_reverse;
+    private ControllerMap.ButtonEntry btn_turret_fast;
     
     private double turretAdjSpeed;
+    private boolean manualDrive;
     
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager)
@@ -32,6 +34,7 @@ public class TurretControl extends ControlModule
         ax_turret          = controllerMap.getAxisMap  ("turret::turret",  "gamepad2", "left_stick_x");
         btn_turret_home    = controllerMap.getButtonMap("turret::home",    "gamepad2", "a");
         btn_turret_reverse = controllerMap.getButtonMap("turret::reverse", "gamepad2", "left_trigger");
+        btn_turret_fast    = controllerMap.getButtonMap("turret::fast",    "gamepad2", "left_stick_button");
         
         JsonObject config = robot.config.getAsJsonObject("teleop");
         turretAdjSpeed = config.get("turret_adj_rate").getAsDouble();
@@ -49,8 +52,33 @@ public class TurretControl extends ControlModule
     @Override
     public void update(Telemetry telemetry)
     {
-        double turret_adj = -ax_turret.get() * turretAdjSpeed;
-        turret.rotate(turret.getTarget() + turret_adj);
+        double power = -ax_turret.get();
+        if (power != 0)
+        {
+            if (!manualDrive)
+            {
+                manualDrive = true;
+            }
+            
+            double turretSpeed;
+            if (btn_turret_fast.get())
+                turretSpeed = 0.6;
+            else
+                turretSpeed = 0.35;
+            
+            double pos = turret.getPosition();
+            if (pos <= 0 && power < 0)      turret.turret.setPower(0);
+            else if (pos >= 1 && power > 0) turret.turret.setPower(0);
+            else                            turret.turret.setPower(power * -turretSpeed);
+        }
+        else
+        {
+            if (manualDrive)
+            {
+                manualDrive = false;
+                turret.rotate(turret.getPosition());
+            }
+        }
         
         if (btn_turret_home.edge() > 0)
         {
@@ -64,9 +92,17 @@ public class TurretControl extends ControlModule
     }
     
     @Override
+    public void disable()
+    {
+        super.disable();
+        manualDrive = false;
+    }
+    
+    @Override
     public void alwaysUpdate(Telemetry telemetry)
     {
-        turret.update(telemetry);
+        if (!manualDrive)
+            turret.update(telemetry);
     }
     
     @Override

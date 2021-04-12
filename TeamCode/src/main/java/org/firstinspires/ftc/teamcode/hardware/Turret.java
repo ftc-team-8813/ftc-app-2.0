@@ -109,7 +109,7 @@ public class Turret {
         target = turretHome;
         sendEvent = true;
         // HACK: fast homing
-        turretSpeed = 0.5;
+        turretSpeed = 0.8;
         evBus.subscribe(TurretEvent.class, (ev, bus, sub) -> {
             turretSpeed = turretDefSpeed;
             bus.unsubscribe(sub);

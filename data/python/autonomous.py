@@ -7,7 +7,7 @@ LIFECYCLE_EVENT_INIT = 0
 LIFECYCLE_EVENT_START = 1
 LIFECYCLE_EVENT_STOP = 2
 
-SHOOT_SPEED = 0.66
+SHOOT_SPEED = 0.6585
 
 def place_wobble(nav):
     nav.actuator('wobble', {'action': 'down'})
@@ -64,17 +64,20 @@ def run_auto(nav):
         nav.move(-84, 0)
         nav.turn(0)
     elif rings_seen == 4:
-        nav.move(-111, -19)
+        nav.move(-105, -13, speed=0.9)
         nav.turn(25)
 
     nav.actuator('shooter', {'action': 'start', 'speed': SHOOT_SPEED})
     place_wobble(nav)
 
     # Line up for shooting
-    nav.move(-58, 1, reverse=False)
+    nav.move(-58.5, 0, reverse=False)
     nav.actuator('turret', {'action': 'rotate', 'angle': 0.165})
     nav.turn(90)
-    time.sleep(1.5)
+    if rings_seen == 0:
+        time.sleep(3)
+    else:
+        time.sleep(1.5)
 
     shoot_rings(nav, 3)
 
@@ -87,7 +90,7 @@ def run_auto(nav):
         time.sleep(1)
         nav.actuator('intake', {'action': 'stop'})
         # nav.actuator('turret', {'action': 'home'})
-        nav.move(-58, 1)
+        nav.move(-58.5, 1)
         nav.turn(3)
         shoot_rings(nav, 1)
         nav.turn(90)
@@ -96,12 +99,12 @@ def run_auto(nav):
 
     if rings_seen == 4:
         # second wobble
-        nav.move(-41, 24)
-        nav.move(-27, 23)
+        # nav.move(-41, 24)
+        nav.move(-25.5, 23)
         nav.turn(165)
     else:
         # second wobble
-        nav.move(-28.5, 16)
+        nav.move(-27.5, 16)
         nav.turn(192)
         time.sleep(0.75)
 
@@ -114,8 +117,8 @@ def run_auto(nav):
         nav.move(-74, -1)
         nav.turn(-9)
     elif rings_seen == 4:
-        nav.move(-47, 22)
-        nav.move(-103, -16)
+        # nav.move(-47, 18)
+        nav.move(-103, -13, speed=0.9)
         nav.turn(37)
     place_wobble(nav)
 
@@ -123,16 +126,20 @@ def run_auto(nav):
         nav.actuator('shooter', {'action': 'start', 'speed': SHOOT_SPEED})
         nav.actuator('turret', {'action': 'home'})
         nav.actuator('intake', {'action': 'intake'})
-        nav.move(-37, 5, reverse=False)
+        nav.move(-50, 5, reverse=False, speed=0.9)
+        nav.move(-41, 5, reverse=False, speed=0.35)
         time.sleep(1)
+        nav.move(-58, 2)
+        nav.turn(0)
         nav.actuator('intake', {'action': 'stop'})
-        nav.move(-58, 1)
-        nav.turn(3)
-        shoot_rings(nav, 3)
+        shoot_rings(nav, 2)
+        nav.actuator('wobble', {'action': 'down'})
         nav.actuator('shooter', {'action': 'stop'})
         nav.move(-76, -3)
     elif rings_seen == 1:
         nav.move(-76, -3, reverse=False)
+    elif rings_seen == 0:
+        nav.move(-76, 10)
 
     log.i("Path complete")
 
