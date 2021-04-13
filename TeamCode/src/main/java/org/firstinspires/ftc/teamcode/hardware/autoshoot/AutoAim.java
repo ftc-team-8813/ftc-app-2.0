@@ -15,6 +15,7 @@ public class AutoAim
     
     private double x_target;
     private double y_target;
+    private double angle_off;
     private Logger log;
 
     public AutoAim(Odometry odometry, double turretHome){
@@ -39,6 +40,16 @@ public class AutoAim
     {
         return y_target;
     }
+    
+    public void setAngleOffset(double angleOff)
+    {
+        this.angle_off = angleOff;
+    }
+    
+    public double getAngleOffset()
+    {
+        return angle_off;
+    }
 
     public double getTurretRotation(Telemetry telemetry){
         double x_dist = x_target - odometry.x;
@@ -51,7 +62,7 @@ public class AutoAim
         
         double turret_heading = field_heading - robot_heading + 180;
         double rotation = turret_heading / 360.0;
-        double rotation_pos = turretHome + rotation;
+        double rotation_pos = turretHome + rotation + angle_off;
         
         // wrap to between 0 and 1
         rotation_pos %= 1; // -1 to 1

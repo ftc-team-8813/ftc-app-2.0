@@ -21,6 +21,7 @@ public class ShooterControl extends ControlModule
     
     private ControllerMap.ButtonEntry btn_shooter;
     private ControllerMap.ButtonEntry btn_shooter_preset;
+    private ControllerMap.ButtonEntry btn_shooter_preset2;
     
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager)
@@ -33,6 +34,7 @@ public class ShooterControl extends ControlModule
         
         btn_shooter        = controllerMap.getButtonMap("shooter::shoot",  "gamepad2", "y");
         btn_shooter_preset = controllerMap.getButtonMap("shooter::preset", "gamepad2", "right_bumper");
+        btn_shooter_preset2= controllerMap.getButtonMap("shooter::preset2","gamepad2", "left_trigger");
     }
     
     @Override
@@ -47,6 +49,11 @@ public class ShooterControl extends ControlModule
         if (btn_shooter_preset.edge() > 0)
         {
             shooter.setPreset(shooter.getCurrPreset() + 1);
+            controlHub.setLEDColor(shooter.getPresetColor());
+        }
+        if (btn_shooter_preset2.edge() > 0)
+        {
+            shooter.setPreset(1);
             controlHub.setLEDColor(shooter.getPresetColor());
         }
     }

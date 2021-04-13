@@ -24,6 +24,7 @@ public class AutoAimControl extends ControlModule
     private REVHub hub;
     
     private ControllerMap.ButtonEntry btn_auto_toggle;
+    private ControllerMap.AxisEntry ax_adjust;
     private boolean auto_aim_enabled = false;
     
     @Override
@@ -35,6 +36,7 @@ public class AutoAimControl extends ControlModule
         autoAim.setTarget(-140, 0);
         
         btn_auto_toggle = controllerMap.getButtonMap("auto_aim::toggle", "gamepad2", "right_trigger");
+        ax_adjust       = controllerMap.getAxisMap  ("turret::turret",   "gamepad2", "left_stick_x");
     
         List<TurretControl> list = manager.getModules(TurretControl.class);
         if (list.size() > 1) throw new IllegalStateException("Multiple turret control modules?!");
@@ -58,7 +60,7 @@ public class AutoAimControl extends ControlModule
         
         if (auto_aim_enabled)
         {
-            if (turretControl != null && turretControl.shouldEnable())
+            if (turretControl != null && turretControl.shouldEnable() && ax_adjust.get() == 0)
             {
                 auto_aim_enabled = false;
                 turretControl.enable();
@@ -66,6 +68,7 @@ public class AutoAimControl extends ControlModule
             else
             {
                 telemetry.addData("Auto Aim", "ENGAGED");
+                autoAim.setAngleOffset(autoAim.getAngleOffset() + ax_adjust.get() * 0.001);
                 turret.rotate(autoAim.getTurretRotation(telemetry));
             }
         }
