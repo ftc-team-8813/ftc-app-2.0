@@ -40,7 +40,7 @@ public class AutoAim
         return y_target;
     }
 
-    public double getTurretRotation(Telemetry telemetry){
+    public double getTurretRotation(Telemetry telemetry) {
         double x_dist = x_target - odometry.x;
         double y_dist = y_target - odometry.y;
 
@@ -51,7 +51,6 @@ public class AutoAim
 
         double rotation = turret_heading / 360.0;
         double rotation_pos = turretHome + rotation;
-        
         // wrap to between 0 and 1
         rotation_pos %= 1; // -1 to 1
         if (rotation_pos < 0) rotation_pos += 1; // 0 to 1

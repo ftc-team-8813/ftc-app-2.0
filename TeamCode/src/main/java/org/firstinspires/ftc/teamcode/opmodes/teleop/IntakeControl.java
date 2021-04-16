@@ -15,7 +15,6 @@ public class IntakeControl extends ControlModule
     private Intake intake;
     private ControllerMap.AxisEntry ax_intake;
     private ControllerMap.AxisEntry ax_intake_out;
-    private ControllerMap.ButtonEntry btn_pivot;
     
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager)
@@ -24,16 +23,18 @@ public class IntakeControl extends ControlModule
         
         ax_intake     = controllerMap.getAxisMap  ("intake::intake",  "gamepad1", "right_trigger");
         ax_intake_out = controllerMap.getAxisMap  ("intake::outtake", "gamepad1", "left_trigger");
-        btn_pivot     = controllerMap.getButtonMap("intake::pivot",   "gamepad1", "right_trigger");
-        
-        intake.pivotIn();
     }
     
     @Override
     public void update(Telemetry telemetry)
     {
         intake.run(ax_intake.get() - ax_intake_out.get());
-        if (btn_pivot.edge() > 0) intake.pivotToggle();
+
+        if (ax_intake_out.get() >  0){
+            intake.runRoller(-1);
+        } else{
+            intake.runRoller(1);
+        }
     }
     
     @Override

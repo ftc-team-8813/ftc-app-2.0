@@ -9,12 +9,10 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.navigation.NavPath;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PythonNavPath;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
-import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.EventFlow;
 import org.firstinspires.ftc.teamcode.util.event.LifecycleEvent;
@@ -93,7 +91,6 @@ public class MainAuto extends LoggingOpMode
         
         robot.wobble.up();
         robot.wobble.close();
-        robot.intake.pivotIn();
         
         autoPath = new PythonNavPath("autonomous.py", bus, robot);
         autoPath.addActuator("turret", (params) -> {

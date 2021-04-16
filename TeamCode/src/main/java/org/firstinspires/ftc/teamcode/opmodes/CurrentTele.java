@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.autoshoot.AutoAim;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.AutoAimControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.AutoPowershotControl;
