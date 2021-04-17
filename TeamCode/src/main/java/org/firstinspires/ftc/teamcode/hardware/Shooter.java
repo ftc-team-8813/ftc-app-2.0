@@ -155,4 +155,12 @@ public class Shooter
     {
         return currPreset;
     }
+
+    public double getMaxPower(){
+        return maxPower;
+    }
+
+    public double getPower(int i){
+        return powers.get(i).power;
+    }
 }

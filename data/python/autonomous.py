@@ -7,7 +7,7 @@ LIFECYCLE_EVENT_INIT = 0
 LIFECYCLE_EVENT_START = 1
 LIFECYCLE_EVENT_STOP = 2
 
-SHOOT_SPEED = 0.67
+SHOOT_SPEED = 0.6725
 
 def place_wobble(nav, dropit=False):
     if not dropit:
@@ -79,7 +79,7 @@ def run_auto(nav):
 
     # Line up for shooting
     nav.move(-58.5, 0, reverse=False)
-    nav.actuator('turret', {'action': 'rotate', 'angle': 0.15})
+    nav.actuator('turret', {'action': 'rotate', 'angle': 0.1625})
     nav.turn(90)
     if rings_seen == 0:
         time.sleep(3)
@@ -104,11 +104,11 @@ def run_auto(nav):
     elif rings_seen == 4:
         nav.actuator('turret', {'action': 'home'})
         # nav.turn(-3)
-        nav.actuator('intake', {'action': 'intake', 'speed': -0.3})
-        nav.move(-50, 5.5, reverse=False, speed=0.9)
+        nav.actuator('intake', {'action': 'intake', 'speed': -0.6})
+        nav.move(-46, 5, reverse=False, speed=0.9)
         nav.actuator('intake', {'action': 'intake'})
-        time.sleep(0.1)
-        nav.move(-41, 5.5, reverse=False, speed=0.35)
+        time.sleep(0.15)
+        nav.move(-37, 10, reverse=False, speed=0.4)
         time.sleep(1)
         nav.move(-58, 2)
         nav.turn(0)
@@ -118,32 +118,36 @@ def run_auto(nav):
 
     nav.actuator('shooter', {'action': 'stop'})
 
-    if rings_seen == 4:
+    #if rings_seen == 4:
         # second wobble
         # nav.move(-41, 26)
-        nav.move(-31.5, 23)
-        nav.turn(-195)
-    else:
+        #nav.move(-27.5, 16)
+        #nav.turn(-195)
+    #else:
         # second wobble
+    if rings_seen == 0 or rings_seen == 1:
         nav.move(-27.5, 16)
         nav.turn(192)
         time.sleep(0.75)
+    elif rings_seen == 4:
+        nav.move(-27.5, 16)
+        time.sleep(0.25)
 
     pick_wobble(nav)
 
     if rings_seen == 0:
         nav.move(-55, -10)
-        nav.turn(40)
+        nav.turn(50)
     elif rings_seen == 1:
         nav.move(-74, -1)
         nav.turn(-9)
     elif rings_seen == 4:
         # nav.move(-47, 18)
         nav.move(-103, -13, speed=0.9)
-        nav.turn(37)
+        # nav.turn(-323)
     place_wobble(nav, dropit=(rings_seen == 4))
 
-    nav.move(-76, -3)
+    nav.move(-76, 0, reverse=(rings_seen != 4))
 
     log.i("Path complete")
 

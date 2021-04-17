@@ -22,6 +22,7 @@ public class REVHub
     private LynxGetBulkInputDataResponse bulkData;
     private Logger log;
     private List<LynxController> hubControllers = new ArrayList<>();
+    private int currentColor;
     
     public REVHub(LynxModule hub)
     {
@@ -47,6 +48,11 @@ public class REVHub
     public void setLEDColor(int color)
     {
         hub.setConstant(color);
+        currentColor = color;
+    }
+
+    public int getLEDColor(){
+        return currentColor;
     }
     
     public void setLEDPattern(List<Blinker.Step> steps)

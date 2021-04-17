@@ -67,11 +67,13 @@ public class TurretControl extends ControlModule
             }
             
             double turretSpeed;
-            if (btn_turret_slow.get())
-                turretSpeed = 0.15;
-            else
+            if (btn_turret_slow.get() || shooter.getMaxPower() == shooter.getPower(2)){
+                turretSpeed = 0.2;
+            }
+            else {
                 turretSpeed = 0.325;
-            
+            }
+
             double pos = turret.getPosition();
             if (pos <= 0 && power < 0)      turret.turret.setPower(0);
             else if (pos >= 1 && power > 0) turret.turret.setPower(0);
