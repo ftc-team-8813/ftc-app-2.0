@@ -220,7 +220,7 @@ public class MainAuto extends LoggingOpMode
     
         robot.turret.startZeroFind();
         
-        robot.drivetrain.getOdometry().setPosition(1, 0);
+        robot.drivetrain.getOdometry().setPosition(-0.5, 0);
     }
     
     @Override
@@ -244,6 +244,7 @@ public class MainAuto extends LoggingOpMode
     public void start()
     {
         bus.pushEvent(new LifecycleEvent(START));
+        robot.intake.runRoller(1);
     }
     
     @Override
