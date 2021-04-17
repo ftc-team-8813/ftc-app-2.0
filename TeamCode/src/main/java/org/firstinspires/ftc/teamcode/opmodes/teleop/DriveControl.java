@@ -45,7 +45,7 @@ public class DriveControl extends ControlModule
             speeds[i] = driveSpeeds.get(i).getAsDouble();
         }
         
-        speedSetting = 0;
+        speedSetting = 2;
         
         ax_drive_l = controllerMap.getAxisMap(  "drive::left",  "gamepad1", "left_stick_y");
         ax_drive_r = controllerMap.getAxisMap(  "drive::right", "gamepad1", "right_stick_y");
@@ -60,7 +60,7 @@ public class DriveControl extends ControlModule
     public void update(Telemetry telemetry)
     {
         double speed = speeds[speedSetting];
-        
+
         double turn = ax_drive_l.get() * speed;
         
         if (Math.abs(ax_drive_l.get()) < 0.001 && enableHeadingLock)
@@ -74,7 +74,7 @@ public class DriveControl extends ControlModule
         }
         
         drivetrain.telemove(ax_drive_r.get() * speed,
-                turn);
+                turn * 0.7);
         
         if (btn_slow.edge() > 0)
         {
@@ -95,7 +95,7 @@ public class DriveControl extends ControlModule
         
         telemetry.addData("Odo X", drivetrain.getOdometry().x);
         telemetry.addData("Odo Y", drivetrain.getOdometry().y);
-       
+        telemetry.addData("Robot Heading", drivetrain.getOdometry().calc_heading);
     }
     
     @Override

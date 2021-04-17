@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop;
 import com.google.gson.JsonObject;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.REVHub;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.Shooter;
 import org.firstinspires.ftc.teamcode.hardware.Turret;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Persistent;
@@ -17,6 +19,8 @@ public class TurretControl extends ControlModule
     }
     
     private Turret turret;
+    private Shooter shooter;
+    private REVHub controlHub;
     
     private ControllerMap.AxisEntry   ax_turret;
     private ControllerMap.ButtonEntry btn_turret_home;
@@ -30,6 +34,8 @@ public class TurretControl extends ControlModule
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager)
     {
         turret = robot.turret;
+        shooter = robot.turret.shooter;
+        controlHub = robot.controlHub;
         
         ax_turret          = controllerMap.getAxisMap  ("turret::turret",  "gamepad2", "left_stick_x");
         btn_turret_home    = controllerMap.getButtonMap("turret::home",    "gamepad2", "a");
@@ -83,11 +89,16 @@ public class TurretControl extends ControlModule
         if (btn_turret_home.edge() > 0)
         {
             turret.home();
+            shooter.setPreset(0);
+            controlHub.setLEDColor(shooter.getPresetColor());
+
         }
         
         if (btn_turret_reverse.edge() > 0)
         {
             turret.rotate(turret.getTurretShootPos());
+            shooter.setPreset(1);
+            controlHub.setLEDColor(shooter.getPresetColor());
         }
     }
     

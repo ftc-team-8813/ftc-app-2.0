@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
@@ -26,7 +25,7 @@ public class Turret {
     private final double ENC_TO_TURRET_RATIO = 74.0/10.0 * TICKS;
 
     private double turretHome;
-    private double turretHome2;
+    private double turretReverse;
     private double turretKp;
     private double turretSpeed;
     private double pushIn;
@@ -67,7 +66,7 @@ public class Turret {
 
         JsonObject root = turretConfig;
         turretHome = root.get("home").getAsDouble();
-        turretHome2= root.get("home180").getAsDouble();
+        turretReverse = root.get("home180").getAsDouble();
         turretKp   = root.get("kp").getAsDouble();
         turretSpeed= root.get("maxSpeed").getAsDouble();
         turretDefSpeed = turretSpeed;
@@ -132,7 +131,7 @@ public class Turret {
 
     public double getTurretShootPos()
     {
-        return turretHome2;
+        return turretReverse;
     }
     
     public void update(Telemetry telemetry)

@@ -21,7 +21,7 @@ public class Odometry {
     public static final double h = 7.5; // Half-Width of the robot in inches
     public static final double TURN_FACTOR = 0.9945; // adjustment factor for something or another
     public ImageDraw.Color drawColor = ImageDraw.BLUE;
-    
+
     public Odometry(DcMotor l_enc, DcMotor r_enc){
         this.l_enc = l_enc;
         this.r_enc = r_enc;
@@ -37,15 +37,15 @@ public class Odometry {
         double new_r = getCurrentR();
         double dl = new_l - past_l;
         double dr = new_r - past_r;
-        
+
         double rotation_amt = TURN_FACTOR * (new_r - new_l) / 2;
-        
+
         past_l = new_l;
         past_r = new_r;
         double heading = rotation_amt / h;
         calc_heading = heading;
         double dist = (dl + dr) / 2;
-        
+
         double leg_x = Math.cos(heading) * dist;
         double leg_y = Math.sin(heading) * dist;
 
