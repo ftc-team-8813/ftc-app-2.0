@@ -25,7 +25,7 @@ public class TurretControl extends ControlModule
     private ControllerMap.AxisEntry   ax_turret;
     private ControllerMap.ButtonEntry btn_turret_home;
     private ControllerMap.ButtonEntry btn_turret_reverse;
-    private ControllerMap.ButtonEntry btn_turret_fast;
+    private ControllerMap.ButtonEntry btn_turret_slow;
     
     private double turretAdjSpeed;
     private boolean manualDrive;
@@ -40,7 +40,7 @@ public class TurretControl extends ControlModule
         ax_turret          = controllerMap.getAxisMap  ("turret::turret",  "gamepad2", "left_stick_x");
         btn_turret_home    = controllerMap.getButtonMap("turret::home",    "gamepad2", "a");
         btn_turret_reverse = controllerMap.getButtonMap("turret::reverse", "gamepad2", "left_trigger");
-        btn_turret_fast    = controllerMap.getButtonMap("turret::fast",    "gamepad2", "left_stick_button");
+        btn_turret_slow = controllerMap.getButtonMap("turret::slow",    "gamepad2", "left_stick_button");
         
         JsonObject config = robot.config.getAsJsonObject("teleop");
         turretAdjSpeed = config.get("turret_adj_rate").getAsDouble();
@@ -67,10 +67,10 @@ public class TurretControl extends ControlModule
             }
             
             double turretSpeed;
-            if (btn_turret_fast.get())
-                turretSpeed = 0.6;
+            if (btn_turret_slow.get())
+                turretSpeed = 0.15;
             else
-                turretSpeed = 0.35;
+                turretSpeed = 0.325;
             
             double pos = turret.getPosition();
             if (pos <= 0 && power < 0)      turret.turret.setPower(0);
