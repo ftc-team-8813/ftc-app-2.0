@@ -40,17 +40,19 @@ public class AutoAim
         return y_target;
     }
 
-    public double getTurretRotation(Telemetry telemetry) {
+    public double getTurretRotation(Telemetry telemetry){
         double x_dist = x_target - odometry.x;
         double y_dist = y_target - odometry.y;
 
         // calculate target heading
         // CCW for imu is positive
         double field_heading = Math.atan(x_dist/y_dist);
-        double turret_heading = field_heading + (odometry.theta - (Math.PI/2));
+        double robot_heading = imu.getHeading();
 
+        double turret_heading = field_heading - robot_heading + 180;
         double rotation = turret_heading / 360.0;
         double rotation_pos = turretHome + rotation;
+
         // wrap to between 0 and 1
         rotation_pos %= 1; // -1 to 1
         if (rotation_pos < 0) rotation_pos += 1; // 0 to 1

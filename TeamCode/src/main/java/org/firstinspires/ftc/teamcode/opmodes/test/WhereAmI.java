@@ -35,7 +35,7 @@ public class WhereAmI extends LoggingOpMode
         drivetrain.bottom_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drivetrain.bottom_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         odo_r = hardwareMap.dcMotor.get("ramp");
-        odo_l = hardwareMap.dcMotor.get("turret");
+        odo_l = hardwareMap.dcMotor.get("intake");
         odo_l.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         odo_r.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }

@@ -95,7 +95,7 @@ public class DriveControl extends ControlModule
         
         telemetry.addData("Odo X", drivetrain.getOdometry().x);
         telemetry.addData("Odo Y", drivetrain.getOdometry().y);
-        telemetry.addData("Robot Heading", drivetrain.getOdometry().theta);
+        telemetry.addData("Robot Heading", drivetrain.getOdometry().calc_heading);
     }
     
     @Override

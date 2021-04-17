@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.hardware.navigation;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.robotcore.internal.android.dx.cf.direct.CodeObserver;
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.vision.ImageDraw;
 
@@ -11,17 +10,18 @@ import org.firstinspires.ftc.teamcode.vision.ImageDraw;
  * Currently uses motor encoders for position feedback
  */
 public class Odometry {
-    public final DcMotor l_enc;
-    public final DcMotor r_enc;
-    private final IMU imu;
-    public double x, y, theta;
-    public double past_l, past_r, past_theta;
+    public DcMotor l_enc;
+    public DcMotor r_enc;
+    private IMU imu;
+    // TODO these variables should be private
+    public double x, y;
+    public double past_l, past_r;
     public double calc_heading;
-    private static final double TICKS_PER_INCH = 29.10196;
-    private static final double h = 7.5; // Half-Width of the robot in inches
-    private static final double TURN_FACTOR = 0.9945; // adjustment factor for something or another
+    public static final double TICKS_PER_INCH = 29.10196;
+    public static final double h = 7.5; // Half-Width of the robot in inches
+    public static final double TURN_FACTOR = 0.9945; // adjustment factor for something or another
     public ImageDraw.Color drawColor = ImageDraw.BLUE;
-    
+
     public Odometry(DcMotor l_enc, DcMotor r_enc){
         this.l_enc = l_enc;
         this.r_enc = r_enc;
@@ -29,22 +29,28 @@ public class Odometry {
     }
 
     /**
-     * Updates overall x, y, and theta based on deltas from arc
-     * x (inches) is left/right, y (inches) is forward/backward
-     * theta (radians) is based on Unit Circle
+     * Updates overall x, y based on deltas from arc
+     * x is forward/back and y is left/right
      */
     public void updateDeltas(){
-        double l = getCurrentL() - past_l;
-        double r = getCurrentR() - past_r;
-        past_l = getCurrentL();
-        past_r = getCurrentR();
+        double new_l = getCurrentL();
+        double new_r = getCurrentR();
+        double dl = new_l - past_l;
+        double dr = new_r - past_r;
 
-        double delta_heading = Math.toRadians((imu.getHeading() + 90) - past_theta);
-        double arc_length = (l+r) / 2;
+        double rotation_amt = TURN_FACTOR * (new_r - new_l) / 2;
 
-        this.x = -arc_length * Math.sin(delta_heading);
-        this.y = arc_length * Math.cos(delta_heading);
-        this.theta = (this.theta + delta_heading) % (2 * Math.PI);
+        past_l = new_l;
+        past_r = new_r;
+        double heading = rotation_amt / h;
+        calc_heading = heading;
+        double dist = (dl + dr) / 2;
+
+        double leg_x = Math.cos(heading) * dist;
+        double leg_y = Math.sin(heading) * dist;
+
+        this.x += leg_x;
+        this.y += leg_y;
     }
 
     public double getCurrentL(){
