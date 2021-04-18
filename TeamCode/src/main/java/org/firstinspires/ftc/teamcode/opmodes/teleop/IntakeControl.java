@@ -28,7 +28,7 @@ public class IntakeControl extends ControlModule
     @Override
     public void update(Telemetry telemetry)
     {
-        intake.run(ax_intake.get() - ax_intake_out.get());
+        intake.runIntake(ax_intake.get() - ax_intake_out.get());
 
         if (ax_intake_out.get() >  0){
             intake.runRoller(-1);

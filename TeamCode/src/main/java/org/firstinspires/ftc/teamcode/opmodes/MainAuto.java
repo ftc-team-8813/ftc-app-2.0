@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.hardware.navigation.PythonNavPath;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
+import org.firstinspires.ftc.teamcode.util.Time;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.event.EventFlow;
 import org.firstinspires.ftc.teamcode.util.event.LifecycleEvent;
@@ -51,6 +52,7 @@ public class MainAuto extends LoggingOpMode
     private double[] turretPos;
     
     private int ringCount = 0;
+    private double start_time;
     
     private Mat detectorFrame;
     private Bitmap serverFrame;
@@ -166,7 +168,8 @@ public class MainAuto extends LoggingOpMode
                     if (params.has("speed"))
                     {
                         double speed = params.get("speed").getAsDouble();
-                        robot.intake.run(speed);
+                        robot.intake.runIntake(speed);
+                        robot.intake.runRamp(1);
                     }
                     else robot.intake.intake();
                     break;
@@ -243,6 +246,7 @@ public class MainAuto extends LoggingOpMode
     @Override
     public void start()
     {
+        start_time = Time.now();
         bus.pushEvent(new LifecycleEvent(START));
         robot.intake.runRoller(1);
     }
@@ -296,6 +300,8 @@ public class MainAuto extends LoggingOpMode
     @Override
     public void stop()
     {
+        double elapsed_time = Time.now() - start_time;
+        log.i(String.format("Autonomous Running for %f.2", elapsed_time));
         autoPath.stop();
         webcam.close();
         if (server != null) server.close();

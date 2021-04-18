@@ -7,8 +7,7 @@ LIFECYCLE_EVENT_INIT = 0
 LIFECYCLE_EVENT_START = 1
 LIFECYCLE_EVENT_STOP = 2
 
-SHOOT_SPEED = 0.6725
-
+SHOOT_SPEED = 0.681
 def place_wobble(nav, dropit=False):
     if not dropit:
         nav.actuator('wobble', {'action': 'down'})
@@ -56,7 +55,7 @@ def run_auto(nav):
     log.d("Got ring data: %d", rings_seen)
 
     # Wobble 1
-    nav.move(-6,    0) # Move off the wall so we don't hit it
+    nav.move(-6, 0) # Move off the wall so we don't hit it
     if rings_seen != 0:
         # Go around the ring stack
         nav.move(-28, -12)
@@ -78,8 +77,8 @@ def run_auto(nav):
         nav.move(-60, 0, reverse=False, speed=0.9)
 
     # Line up for shooting
-    nav.move(-58.5, 0, reverse=False)
-    nav.actuator('turret', {'action': 'rotate', 'angle': 0.1625})
+    nav.move(-56.5, 0, reverse=False)
+    nav.actuator('turret', {'action': 'rotate', 'angle': 0.165})
     nav.turn(90)
     if rings_seen == 0:
         time.sleep(3)
@@ -104,15 +103,23 @@ def run_auto(nav):
     elif rings_seen == 4:
         nav.actuator('turret', {'action': 'home'})
         # nav.turn(-3)
+        nav.actuator('intake', {'action': 'intake', 'speed': -0.3})
+        time.sleep(0.5)
+        nav.actuator('intake', {'action': 'intake', 'speed': 0.3})
+        nav.move(-52, 2.75, reverse=False, speed=0.4)
+        nav.actuator('intake', {'action': 'intake', 'speed': 0.5})
+        time.sleep(2.5)
+        #nav.actuator('intake', {'action': 'stop'})
+        #nav.move(-54.5, 2, reverse=True, speed=0.6)
+        #nav.actuator('intake', {'action': 'intake'})
+        #time.sleep(0.15)
+        #nav.move(-37, 9, reverse=False, speed=0.4)
+        nav.move(-56.5, 0)
         nav.actuator('intake', {'action': 'intake', 'speed': -0.6})
-        nav.move(-46, 5, reverse=False, speed=0.9)
-        nav.actuator('intake', {'action': 'intake'})
-        time.sleep(0.15)
-        nav.move(-37, 10, reverse=False, speed=0.4)
-        time.sleep(1)
-        nav.move(-58, 2)
+        time.sleep(0.1)
         nav.turn(0)
         nav.actuator('intake', {'action': 'stop'})
+        nav.actuator('turret', {'action': 'rotate', 'angle': 0.41})
         shoot_rings(nav, 3)
         nav.actuator('wobble', {'action': 'down'})
 
@@ -130,7 +137,7 @@ def run_auto(nav):
         nav.turn(192)
         time.sleep(0.75)
     elif rings_seen == 4:
-        nav.move(-27.5, 16)
+        nav.move(-27.5, 17)
         time.sleep(0.25)
 
     pick_wobble(nav)
