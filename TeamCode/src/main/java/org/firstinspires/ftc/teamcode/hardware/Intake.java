@@ -22,23 +22,29 @@ public class Intake {
     
     public void intake()
     {
-        runRoller(1);
-        runRamp(1);
-        runIntake(1);
+        run(1);
     }
     
     public void outtake()
     {
-        runRoller(-1);
-        runRamp(-1);
-        runIntake(-1);
+        run(-1);
+    }
+    
+    public void run(double speed)
+    {
+        runRoller(speed);
+        runRamp(speed);
+        runIntake(speed);
     }
 
     public void runRoller(double speed){
         roller.setPower(speed);
     }
 
-    public void runRamp(double speed) {ramp.setPower(speed);}
+    public void runRamp(double speed)
+    {
+        ramp.setPower(speed);
+    }
     
     public void runIntake(double speed)
     {
@@ -47,8 +53,6 @@ public class Intake {
     
     public void stop()
     {
-        runRoller(0);
-        runRamp(0);
-        runIntake(0);
+        run(0);
     }
 }

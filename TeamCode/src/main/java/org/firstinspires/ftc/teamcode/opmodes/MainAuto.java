@@ -169,12 +169,17 @@ public class MainAuto extends LoggingOpMode
                     {
                         double speed = params.get("speed").getAsDouble();
                         robot.intake.runIntake(speed);
+                        robot.intake.runRamp(Math.signum(speed)); // run the ramp out if speed is negative
+                    }
+                    else
+                    {
+                        robot.intake.runIntake(1);
                         robot.intake.runRamp(1);
                     }
-                    else robot.intake.intake();
                     break;
                 case "outtake":
-                    robot.intake.outtake();
+                    robot.intake.runIntake(-1);
+                    robot.intake.runRamp(-1);
                     break;
                 case "stop":
                     robot.intake.stop();

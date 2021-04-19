@@ -23,17 +23,23 @@ public class IntakeControl extends ControlModule
         
         ax_intake     = controllerMap.getAxisMap  ("intake::intake",  "gamepad1", "right_trigger");
         ax_intake_out = controllerMap.getAxisMap  ("intake::outtake", "gamepad1", "left_trigger");
+        
+        intake.runRoller(1);
     }
     
     @Override
     public void update(Telemetry telemetry)
     {
-        intake.runIntake(ax_intake.get() - ax_intake_out.get());
+        double v = ax_intake.get() - ax_intake_out.get();
+        intake.runIntake(v);
 
-        if (ax_intake_out.get() >  0){
-            intake.runRoller(-1);
-        } else{
-            intake.runRoller(1);
+        if (v > 0)
+        {
+            intake.runRamp(-1);
+        }
+        else
+        {
+            intake.runRamp(1);
         }
     }
     
