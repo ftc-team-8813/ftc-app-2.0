@@ -78,22 +78,22 @@ public class Navigator
     
     public void adjForVoltage(double voltage)
     {
-        speedAdj = 0.15 * (12-voltage);
+        speedAdj = 0.15 * (12 - voltage);
     }
     
     public void serve(Server server, int cmdid)
     {
         server.registerProcessor(cmdid, (cmd, payload, resp) -> {
-             synchronized (serverLock)
-             {
-                 ByteBuffer buf = ByteBuffer.allocate(4 * serverBuffer.length);
-                 for (double v : serverBuffer)
-                 {
-                    buf.putFloat((float)v);
-                 }
-                 buf.flip();
-                 resp.respond(buf);
-             }
+            synchronized (serverLock)
+            {
+                ByteBuffer buf = ByteBuffer.allocate(4 * serverBuffer.length);
+                for (double v : serverBuffer)
+                {
+                    buf.putFloat((float) v);
+                }
+                buf.flip();
+                resp.respond(buf);
+            }
         });
     }
     
@@ -150,7 +150,7 @@ public class Navigator
                 Vec2 headingVec = Vec2.fromPolar(1, heading);
                 Vec2 worldErrorVec = new Vec2(targetPos).sub(position);
                 fwdError = worldErrorVec.dot(headingVec);
-    
+                
                 distanceError = worldErrorVec.magnitude();
                 if (distanceError < 1 && Math.abs(distanceError - lastDistance) < 1)
                 {
@@ -198,9 +198,11 @@ public class Navigator
             turnInt = 0;
         }
         double turnPower = Range.clip(turnError * turnKp + turnInt, -turnSpeed, turnSpeed);
-
-        if (eventBus != null){
-            if (Math.abs(turnError) < 5 && sendEvent_turn) {
+        
+        if (eventBus != null)
+        {
+            if (Math.abs(turnError) < 5 && sendEvent_turn)
+            {
                 sendEvent_turn = false;
                 eventBus.pushEvent(new NavMoveEvent(NavMoveEvent.TURN_COMPLETE));
             }
@@ -218,7 +220,7 @@ public class Navigator
         telemetry.addData("Target heading", "%.2f", angleTarget);
         telemetry.addData("Odometry X", "%.2f", odometry.x);
         telemetry.addData("Odometry Y", "%.2f", odometry.y);
-    
+        
         synchronized (serverLock)
         {
             serverBuffer[0] = odometry.x;
@@ -293,8 +295,9 @@ public class Navigator
     {
         return navigating;
     }
-
-    public void connectEventBus(EventBus ev){
+    
+    public void connectEventBus(EventBus ev)
+    {
         this.eventBus = ev;
     }
 }

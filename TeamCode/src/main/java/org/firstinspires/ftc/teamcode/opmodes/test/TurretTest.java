@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
-@TeleOp(name="Turret Test")
+@TeleOp(name = "Turret Test")
 public class TurretTest extends LoggingOpMode
 {
     private Robot robot;
@@ -33,7 +33,7 @@ public class TurretTest extends LoggingOpMode
     public void loop()
     {
         robot.turret.updateInit(telemetry);
-    
+        
         if (robot.turret.findComplete())
         {
             telemetry.addData("Position", "%.3f", robot.turret.getPosition());

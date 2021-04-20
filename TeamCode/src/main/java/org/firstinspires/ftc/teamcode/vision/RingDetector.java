@@ -6,16 +6,11 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
-import org.opencv.core.Range;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import java.security.SecureClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class RingDetector
@@ -24,14 +19,14 @@ public class RingDetector
     private Mat workImg2;
     private Mat binaryImg;
     
-    private static final Scalar minColor = new Scalar(3,  18,  41);
+    private static final Scalar minColor = new Scalar(3, 18, 41);
     private static final Scalar maxColor = new Scalar(19, 231, 255);
     
     private int cutoffY;
     
     public RingDetector(int width, int height)
     {
-        cutoffY = (int)(height * 0.5);
+        cutoffY = (int) (height * 0.5);
         workImg = new Mat(width, height - cutoffY, CvType.CV_8UC3);
         workImg2 = new Mat(width, height - cutoffY, CvType.CV_8UC3);
         binaryImg = new Mat(width, height - cutoffY, CvType.CV_8UC1);
@@ -45,7 +40,7 @@ public class RingDetector
         Imgproc.blur(workImg2, workImg, new Size(5, 5));
         
         Core.inRange(workImg, minColor, maxColor, binaryImg);
-    
+        
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(binaryImg, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);

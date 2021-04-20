@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.events.IMUEvent;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
@@ -12,14 +11,13 @@ import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
 import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-@TeleOp(name="Odometry Test")
+@TeleOp(name = "Odometry Test")
 public class OdometryTest extends LoggingOpMode
 {
     private Robot robot;
@@ -42,14 +40,15 @@ public class OdometryTest extends LoggingOpMode
         try
         {
             server = new Server(new InetSocketServer(19999));
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
-    
+        
         robot.drivetrain.resetEncoders();
         imu = robot.imu;
-
+        
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
         

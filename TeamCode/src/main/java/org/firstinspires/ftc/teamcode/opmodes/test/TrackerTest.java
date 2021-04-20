@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.util.websocket.Server;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-@TeleOp(name="Tracker Test")
+@TeleOp(name = "Tracker Test")
 public class TrackerTest extends LoggingOpMode
 {
     private Robot robot;
@@ -25,9 +25,10 @@ public class TrackerTest extends LoggingOpMode
     private Scheduler scheduler;
     
     private Server server;
-
+    
     @Override
-    public void init() {
+    public void init()
+    {
         super.init();
         robot = Robot.initialize(hardwareMap, "Tracker Test");
         
@@ -42,24 +43,25 @@ public class TrackerTest extends LoggingOpMode
         ev = new EventBus();
         scheduler = new Scheduler(ev);
         imu = robot.drivetrain.getOdometry().getIMU();
-
+        
         imu.initialize(ev, scheduler);
         robot.turret.startZeroFind();
-    
+        
         try
         {
             server = new Server(new InetSocketServer(19997));
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
-    
+        
         server.registerProcessor(0x01, (cmd, payload, resp) -> {
             ByteBuffer buf = ByteBuffer.allocate(16);
-            buf.putFloat((float)robot.drivetrain.getOdometry().x);
-            buf.putFloat((float)robot.drivetrain.getOdometry().y);
-            buf.putFloat((float)robot.imu.getHeading());
-            buf.putFloat((float)robot.turret.getHeading());
+            buf.putFloat((float) robot.drivetrain.getOdometry().x);
+            buf.putFloat((float) robot.drivetrain.getOdometry().y);
+            buf.putFloat((float) robot.imu.getHeading());
+            buf.putFloat((float) robot.turret.getHeading());
             
             buf.flip();
             resp.respond(buf);
@@ -67,9 +69,9 @@ public class TrackerTest extends LoggingOpMode
         
         server.registerProcessor(0x02, (cmd, payload, resp) -> {
             ByteBuffer buf = ByteBuffer.allocate(12);
-            buf.putFloat((float)target_x);
-            buf.putFloat((float)target_y);
-            buf.putFloat((float)off);
+            buf.putFloat((float) target_x);
+            buf.putFloat((float) target_y);
+            buf.putFloat((float) off);
             
             buf.flip();
             resp.respond(buf);
@@ -85,13 +87,14 @@ public class TrackerTest extends LoggingOpMode
         scheduler.loop();
         ev.update();
     }
-
+    
     @Override
-    public void loop() {
+    public void loop()
+    {
         robot.drivetrain.telemove(-gamepad1.left_stick_y * 0.3,
-                                 -gamepad1.right_stick_y * 0.3);
+                -gamepad1.right_stick_y * 0.3);
         robot.drivetrain.getOdometry().updateDeltas();
-
+        
         telemetry.addData("Odo X", robot.drivetrain.getOdometry().x);
         telemetry.addData("Odo Y", robot.drivetrain.getOdometry().y);
         telemetry.addData("Odo L", robot.drivetrain.getOdometry().past_l);

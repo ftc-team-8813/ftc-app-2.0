@@ -21,8 +21,8 @@ public class IntakeControl extends ControlModule
     {
         this.intake = robot.intake;
         
-        ax_intake     = controllerMap.getAxisMap  ("intake::intake",  "gamepad1", "right_trigger");
-        ax_intake_out = controllerMap.getAxisMap  ("intake::outtake", "gamepad1", "left_trigger");
+        ax_intake = controllerMap.getAxisMap("intake::intake", "gamepad1", "right_trigger");
+        ax_intake_out = controllerMap.getAxisMap("intake::outtake", "gamepad1", "left_trigger");
         
         intake.runRoller(1);
     }
@@ -32,7 +32,7 @@ public class IntakeControl extends ControlModule
     {
         double v = ax_intake.get() - ax_intake_out.get();
         intake.runIntake(v);
-
+        
         if (v > 0)
         {
             intake.runRamp(-1);

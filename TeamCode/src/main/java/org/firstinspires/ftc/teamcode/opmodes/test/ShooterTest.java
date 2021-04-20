@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.util.websocket.Server;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-@TeleOp(name="Shooter Test")
+@TeleOp(name = "Shooter Test")
 public class ShooterTest extends LoggingOpMode
 {
     private Turret turret;
@@ -26,19 +26,20 @@ public class ShooterTest extends LoggingOpMode
         super.init();
         Robot robot = Robot.initialize(hardwareMap, "Shooter Test");
         this.turret = robot.turret;
-    
+        
         try
         {
             server = new Server(new InetSocketServer(17777));
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
         server.registerProcessor(0x01, (cmd, payload, resp) -> {
             ByteBuffer out = ByteBuffer.allocate(16);
-            out.putFloat((float)((DcMotorEx)turret.shooter.motor).getVelocity(AngleUnit.RADIANS));
-            out.putFloat((float)0);
-            out.put((byte)(turret.shooter.running() ? 1 : 0));
+            out.putFloat((float) ((DcMotorEx) turret.shooter.motor).getVelocity(AngleUnit.RADIANS));
+            out.putFloat((float) 0);
+            out.put((byte) (turret.shooter.running() ? 1 : 0));
             
             out.flip();
             resp.respond(out);

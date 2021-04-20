@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
-@TeleOp(name="Where Am I")
+@TeleOp(name = "Where Am I")
 public class WhereAmI extends LoggingOpMode
 {
     private Drivetrain drivetrain;

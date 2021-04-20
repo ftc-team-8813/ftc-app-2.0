@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.util.websocket.Server;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-@TeleOp(name="Navigator Test")
+@TeleOp(name = "Navigator Test")
 public class NavigationTest extends LoggingOpMode
 {
     private Robot robot;
@@ -43,19 +43,20 @@ public class NavigationTest extends LoggingOpMode
         try
         {
             server = new Server(new InetSocketServer(19998));
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
-    
+        
         robot.drivetrain.resetEncoders();
         imu = robot.imu;
-    
+        
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
-    
+        
         imu.initialize(evBus, scheduler);
-    
+        
         odometry = robot.drivetrain.getOdometry();
         
         nav = new Navigator(robot.drivetrain, odometry, evBus);
@@ -74,33 +75,33 @@ public class NavigationTest extends LoggingOpMode
             nav.turnAbs(0);
         }, "Nav finished", NavMoveEvent.MOVE_COMPLETE);
          */
-    
+        
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
             // Get data
             ByteBuffer buf = ByteBuffer.allocate(64);
-            buf.putFloat((float)odometry.x); // 4
-            buf.putFloat((float)odometry.y); // 8
-            buf.putFloat((float)imu.getHeading()); // 12
-            buf.putFloat((float)0); // calculated odometry heading -- 16
+            buf.putFloat((float) odometry.x); // 4
+            buf.putFloat((float) odometry.y); // 8
+            buf.putFloat((float) imu.getHeading()); // 12
+            buf.putFloat((float) 0); // calculated odometry heading -- 16
             buf.putInt(robot.drivetrain.top_left.getCurrentPosition()); // 20
             buf.putInt(robot.drivetrain.top_right.getCurrentPosition()); // 24
-            buf.putFloat((float)odometry.past_l); // 28
-            buf.putFloat((float)odometry.past_r); // 32
-            buf.putFloat((float)nav.getTargetX()); // 36
-            buf.putFloat((float)nav.getTargetY()); // 40
-            buf.putFloat((float)nav.getTargetHeading()); // 44
-            buf.putFloat((float)nav.getTargetDistance()); // 48
-            buf.putFloat((float)nav.getFwdPower()); // 52
-            buf.putFloat((float)nav.getTurnPower()); // 56
-            buf.put((byte)(nav.navigating() ? 1 : 0)); // 57
+            buf.putFloat((float) odometry.past_l); // 28
+            buf.putFloat((float) odometry.past_r); // 32
+            buf.putFloat((float) nav.getTargetX()); // 36
+            buf.putFloat((float) nav.getTargetY()); // 40
+            buf.putFloat((float) nav.getTargetHeading()); // 44
+            buf.putFloat((float) nav.getTargetDistance()); // 48
+            buf.putFloat((float) nav.getFwdPower()); // 52
+            buf.putFloat((float) nav.getTurnPower()); // 56
+            buf.put((byte) (nav.navigating() ? 1 : 0)); // 57
             buf.flip();
-        
+            
             resp.respond(buf);
         });
         server.registerProcessor(0x2, (cmd, payload, resp) -> {
-            byte status = (byte)0;
-            if (payload.remaining() < 8) status = (byte)1;
-            else if (state < 1) status = (byte)2;
+            byte status = (byte) 0;
+            if (payload.remaining() < 8) status = (byte) 1;
+            else if (state < 1) status = (byte) 2;
             else
             {
                 float x = payload.getFloat();
@@ -113,9 +114,9 @@ public class NavigationTest extends LoggingOpMode
             resp.respond(buf);
         });
         server.registerProcessor(0x3, (cmd, payload, resp) -> {
-            byte status = (byte)0;
-            if (payload.remaining() < 24) status = (byte)1;
-            else if (state < 1) status = (byte)2;
+            byte status = (byte) 0;
+            if (payload.remaining() < 24) status = (byte) 1;
+            else if (state < 1) status = (byte) 2;
             else
             {
                 float fspeed = payload.getFloat();

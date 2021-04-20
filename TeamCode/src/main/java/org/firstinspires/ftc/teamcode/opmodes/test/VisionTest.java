@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
 
 import static org.opencv.core.CvType.CV_8UC4;
 
-@TeleOp(name="Vision Test")
+@TeleOp(name = "Vision Test")
 public class VisionTest extends LoggingOpMode
 {
     private Webcam cam;
@@ -52,23 +52,25 @@ public class VisionTest extends LoggingOpMode
     {
         super.init();
         cam = Webcam.forSerial(serial);
-        if (cam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + serial);
+        if (cam == null)
+            throw new IllegalArgumentException("Could not find a webcam with serial number " + serial);
         frameHandler = new Webcam.SimpleFrameHandler();
         cam.open(ImageFormat.YUY2, 800, 448, 30, frameHandler);
         drawBuffer = ByteBuffer.allocate(65535);
         exTelemetry = ByteBuffer.allocate(8);
-    
+        
         try
         {
             server = new Server(new InetSocketServer(20000));
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
-    
+        
         server.registerProcessor(0x01, (cmd, payload, resp) -> { // Get frame
             if (serverFrameCopy == null || serverFrameUsed) return;
-    
+            
             ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
             serverFrameCopy.compress(Bitmap.CompressFormat.JPEG, 80, os); // probably quite slow
             serverFrameUsed = true;

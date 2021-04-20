@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-@TeleOp(name="Websocket Test")
+@TeleOp(name = "Websocket Test")
 public class WebsocketTest extends LoggingOpMode
 {
     private Server server;
@@ -30,25 +30,25 @@ public class WebsocketTest extends LoggingOpMode
     
     private class FrameHandler implements Webcam.FrameCallback
     {
-    
+        
         @Override
         public void setBuffer(Bitmap frameBuffer)
         {
             currFb = frameBuffer;
         }
-    
+        
         @Override
         public void onFrame(int droppedFrames)
         {
             newFrame = true;
         }
-    
+        
         @Override
         public void onClose(long lastFrameNum, int droppedFrames)
         {
         
         }
-    
+        
         @Override
         public void onError(String err)
         {
@@ -63,7 +63,8 @@ public class WebsocketTest extends LoggingOpMode
         try
         {
             server = new Server(new InetSocketServer(23456));
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }

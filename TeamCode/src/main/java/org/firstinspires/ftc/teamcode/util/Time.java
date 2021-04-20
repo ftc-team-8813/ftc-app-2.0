@@ -1,20 +1,20 @@
 package org.firstinspires.ftc.teamcode.util;
 
-import java.security.Policy;
-
 public class Time
 {
     /**
      * Get the current time (not calendar time) in seconds. Uses System.nanoTime() for the time source
+     *
      * @return the current time in seconds
      */
     public static double now()
     {
-        return (double)System.nanoTime() / 1_000_000_000.0;
+        return (double) System.nanoTime() / 1_000_000_000.0;
     }
     
     /**
      * Get the time elapsed since a specific point
+     *
      * @param start The result of {@link #now()} at a specific point in the past
      * @return How many seconds since that first time
      */
@@ -27,7 +27,7 @@ public class Time
     {
         StringBuilder builder = new StringBuilder();
         boolean minus = (time < 0);
-
+        
         if (minus) time = -time;
         
         if (time < 60) // under 1 minute
@@ -38,15 +38,18 @@ public class Time
             {
                 unit = "ns";
                 time *= 1e9;
-            } else if (magnitude < -3)
+            }
+            else if (magnitude < -3)
             {
                 unit = "us";
                 time *= 1e6;
-            } else if (magnitude < 0)
+            }
+            else if (magnitude < 0)
             {
                 unit = "ms";
                 time *= 1e3;
-            } else
+            }
+            else
             {
                 unit = "s";
             }
@@ -63,8 +66,8 @@ public class Time
             else
             {
                 double hour = Math.floor(time / 3600);
-                double min  = Math.floor((time / 60) % 60);
-                double sec  = Math.floor(time % 60);
+                double min = Math.floor((time / 60) % 60);
+                double sec = Math.floor(time % 60);
                 return String.format("%2.0fh, %2.0fmin, %2.0fs", hour, min, sec);
             }
         }

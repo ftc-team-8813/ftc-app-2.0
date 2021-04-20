@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware.autoshoot;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.IMU;
-import org.firstinspires.ftc.teamcode.hardware.Turret;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.util.Logger;
 
@@ -17,8 +15,9 @@ public class AutoAim
     private double y_target;
     private double angle_off;
     private Logger log;
-
-    public AutoAim(Odometry odometry, double turretHome){
+    
+    public AutoAim(Odometry odometry, double turretHome)
+    {
         this.odometry = odometry;
         this.imu = odometry.getIMU();
         this.turretHome = turretHome;
@@ -50,11 +49,12 @@ public class AutoAim
     {
         return angle_off;
     }
-
-    public double getTurretRotation(Telemetry telemetry){
+    
+    public double getTurretRotation(Telemetry telemetry)
+    {
         double x_dist = x_target - odometry.x;
         double y_dist = y_target - odometry.y;
-
+        
         // calculate target heading
         // CCW for imu is positive
         double robot_heading = imu.getHeading();
@@ -67,7 +67,7 @@ public class AutoAim
         // wrap to between 0 and 1
         rotation_pos %= 1; // -1 to 1
         if (rotation_pos < 0) rotation_pos += 1; // 0 to 1
-
+        
         telemetry.addData("Tracker Target Heading: ", turret_heading);
         telemetry.addData("Tracker Target Position: ", rotation_pos);
         

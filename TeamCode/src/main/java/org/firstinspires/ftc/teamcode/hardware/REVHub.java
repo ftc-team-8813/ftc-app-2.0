@@ -1,17 +1,14 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.hardware.lynx.LynxController;
-import com.qualcomm.hardware.lynx.LynxDcMotorController;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.LynxNackException;
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataCommand;
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataResponse;
 import com.qualcomm.robotcore.hardware.Blinker;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.util.Logger;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +25,14 @@ public class REVHub
     {
         this.hub = hub;
         log = new Logger(String.format("REVHub [%s]", hub.getConnectionInfo()));
-    
+        
         try
         {
             Field f = hub.getClass().getDeclaredField("controllers");
             f.setAccessible(true);
-            hubControllers = (List<LynxController>)(f.get(hub));
-        } catch (NoSuchFieldException | IllegalAccessException e)
+            hubControllers = (List<LynxController>) (f.get(hub));
+        }
+        catch (NoSuchFieldException | IllegalAccessException e)
         {
             log.e(e);
         }
@@ -50,8 +48,9 @@ public class REVHub
         hub.setConstant(color);
         currentColor = color;
     }
-
-    public int getLEDColor(){
+    
+    public int getLEDColor()
+    {
         return currentColor;
     }
     

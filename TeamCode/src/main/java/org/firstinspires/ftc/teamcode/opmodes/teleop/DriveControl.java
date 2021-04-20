@@ -7,7 +7,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
 public class DriveControl extends ControlModule
@@ -47,10 +46,10 @@ public class DriveControl extends ControlModule
         
         speedSetting = 2;
         
-        ax_drive_l = controllerMap.getAxisMap(  "drive::left",  "gamepad1", "left_stick_y");
-        ax_drive_r = controllerMap.getAxisMap(  "drive::right", "gamepad1", "right_stick_y");
-        btn_slow   = controllerMap.getButtonMap("drive::slow",  "gamepad1", "left_bumper");
-        btn_slow2  = controllerMap.getButtonMap("drive::slow2", "gamepad1", "right_bumper");
+        ax_drive_l = controllerMap.getAxisMap("drive::left", "gamepad1", "left_stick_y");
+        ax_drive_r = controllerMap.getAxisMap("drive::right", "gamepad1", "right_stick_y");
+        btn_slow = controllerMap.getButtonMap("drive::slow", "gamepad1", "left_bumper");
+        btn_slow2 = controllerMap.getButtonMap("drive::slow2", "gamepad1", "right_bumper");
         
         imu = robot.imu;
         lastHeadingTarget = imu.getHeading();
@@ -60,7 +59,7 @@ public class DriveControl extends ControlModule
     public void update(Telemetry telemetry)
     {
         double speed = speeds[speedSetting];
-
+        
         double turn = ax_drive_l.get() * speed;
         
         if (Math.abs(ax_drive_l.get()) < 0.001 && enableHeadingLock)

@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.AutoAimControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.AutoPowershotControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
@@ -26,7 +25,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-@TeleOp(name="!!THE TeleOp!!")
+@TeleOp(name = "!!THE TeleOp!!")
 public class CurrentTele extends LoggingOpMode
 {
     private Robot robot;
@@ -38,7 +37,7 @@ public class CurrentTele extends LoggingOpMode
     private Scheduler scheduler; // just in case
     private double[] loop_time_hist = new double[100];
     private int loop_hist_idx;
-
+    
     @Override
     public void init()
     {
@@ -46,7 +45,7 @@ public class CurrentTele extends LoggingOpMode
         robot = Robot.initialize(hardwareMap, "Main TeleOp");
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
-    
+        
         controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         
         robot.imu.initialize(evBus, scheduler);
@@ -65,7 +64,7 @@ public class CurrentTele extends LoggingOpMode
         // controlMgr.addModule(new AutoPowershotControl());
         
         controlMgr.initModules();
-    
+        
         JsonObject defaultsMap = controllerMap.saveMap();
         File outfile = Storage.createFile("teleop-controls.json");
         String data = new GsonBuilder().setPrettyPrinting().create().toJson(defaultsMap);
@@ -73,12 +72,13 @@ public class CurrentTele extends LoggingOpMode
         {
             w.write(data);
             w.write("\n");
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             e.printStackTrace();
         }
     }
-
+    
     @Override
     public void init_loop()
     {
@@ -96,7 +96,7 @@ public class CurrentTele extends LoggingOpMode
     {
         double t = Time.now();
         controllerMap.update();
-
+        
         controlMgr.loop(telemetry);
         
         scheduler.loop();

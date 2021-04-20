@@ -60,7 +60,7 @@ public class IMU
     private class Worker implements EventBus.SubCallback<TimerEvent>
     {
         private Logger log;
-        private File    calibrationFile = Storage.getFile("imu_calibration.json");
+        private File calibrationFile = Storage.getFile("imu_calibration.json");
         
         private final String[] internalStatus =
                 {"Idle", "Error", "Initializing peripherals", "Initializing system", "Self-test",
@@ -98,17 +98,17 @@ public class IMU
         private void update()
         {
             BNO055IMU.SystemStatus status = imu.getSystemStatus();
-            if (prevStatus != (int)status.bVal)
+            if (prevStatus != (int) status.bVal)
             {
-                prevStatus = (int)status.bVal;
+                prevStatus = (int) status.bVal;
                 detailStatus = internalStatus[prevStatus];
                 
                 if (prevStatus == 1) // status == ERROR
                 {
                     BNO055IMU.SystemError error = imu.getSystemError();
-                    if (prevError != (int)error.bVal)
+                    if (prevError != (int) error.bVal)
                     {
-                        prevError = (int)error.bVal;
+                        prevError = (int) error.bVal;
                         detailStatus = internalStatus[prevStatus] + ": " + errors[prevError];
                     }
                 }
@@ -132,7 +132,8 @@ public class IMU
             {
                 //Looped past 180 to -179
                 revolutions++;
-            } else if (delta > 300)
+            }
+            else if (delta > 300)
             {
                 //Looped past -179 to 180
                 revolutions--;
@@ -160,18 +161,20 @@ public class IMU
                             {
                                 String data = scan.useDelimiter("\\Z").next();
                                 params.calibrationData = BNO055IMU.CalibrationData.deserialize(data);
-                            } else
+                            }
+                            else
                             {
                                 log.d("File does not exist!");
                                 autoCalibrating = true;
                             }
-                        } catch (IOException e)
+                        }
+                        catch (IOException e)
                         {
                             log.w("Unable to read calibration file");
                             log.w(e);
                             autoCalibrating = true;
                         }
-    
+                        
                         log.d("Initializing IMU [WILL BLOCK EVENT LOOP]");
                         detailStatus = "Initializing";
                         imu.initialize(params);

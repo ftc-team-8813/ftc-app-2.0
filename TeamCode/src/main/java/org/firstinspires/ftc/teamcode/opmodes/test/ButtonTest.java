@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
-@TeleOp(name="Controller test")
+@TeleOp(name = "Controller test")
 @Disabled
 public class ButtonTest extends LoggingOpMode
 {

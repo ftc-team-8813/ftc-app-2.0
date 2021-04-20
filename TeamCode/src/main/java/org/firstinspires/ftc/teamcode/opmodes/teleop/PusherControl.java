@@ -28,23 +28,23 @@ public class PusherControl extends ControlModule
     {
         turret = robot.turret;
         turret.unpush();
-    
-        Scheduler.Timer pushDelay   = robot.scheduler.addPendingTrigger(0.25, "Push delay");
+        
+        Scheduler.Timer pushDelay = robot.scheduler.addPendingTrigger(0.25, "Push delay");
         Scheduler.Timer unpushDelay = robot.scheduler.addPendingTrigger(0.25, "Unpush delay");
-    
+        
         btn_pusher = controllerMap.getButtonMap("pusher::push", "gamepad2", "x");
         
         pusherFlow = new EventFlow(robot.eventBus);
         pusherFlow.start(new EventBus.Subscriber<>(ButtonEvent.class, (ev, bus, sub) -> {
-                    if (ev.edge < 0 || disabled)
-                    {
-                        // TODO HACK: don't advance the event flow
-                        pusherFlow.jump(0);
-                        return;
-                    }
-                    robot.turret.push();
-                    pushDelay.reset();
-                }, "Button Trigger", btn_pusher.getEventID()))
+            if (ev.edge < 0 || disabled)
+            {
+                // TODO HACK: don't advance the event flow
+                pusherFlow.jump(0);
+                return;
+            }
+            robot.turret.push();
+            pushDelay.reset();
+        }, "Button Trigger", btn_pusher.getEventID()))
                 .then(new EventBus.Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
                     robot.turret.unpush();
                     unpushDelay.reset();

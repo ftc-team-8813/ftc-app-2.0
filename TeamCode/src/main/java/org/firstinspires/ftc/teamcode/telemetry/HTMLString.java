@@ -1,10 +1,6 @@
 package org.firstinspires.ftc.teamcode.telemetry;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-
 import java.util.ArrayList;
-
-import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.HTML;
 
 public class HTMLString
 {

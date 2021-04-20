@@ -8,14 +8,16 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Intake -- Control intake movement.
  */
-public class Intake {
+public class Intake
+{
     public final DcMotor ramp;
     public final CRServo roller;
     public final DcMotor intake;
-
+    
     public Intake(DcMotor ramp, DcMotor intake, CRServo roller, Servo pivot,
-                  JsonObject config) {
-        this.ramp   = ramp;
+                  JsonObject config)
+    {
+        this.ramp = ramp;
         this.intake = intake;
         this.roller = roller;
     }
@@ -36,11 +38,12 @@ public class Intake {
         runRamp(speed);
         runIntake(speed);
     }
-
-    public void runRoller(double speed){
+    
+    public void runRoller(double speed)
+    {
         roller.setPower(speed);
     }
-
+    
     public void runRamp(double speed)
     {
         ramp.setPower(speed);

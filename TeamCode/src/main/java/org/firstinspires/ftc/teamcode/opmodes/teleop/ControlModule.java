@@ -15,10 +15,16 @@ public abstract class ControlModule
     }
     
     public abstract void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager);
+    
     public void init_loop(Telemetry telemetry) {}
+    
     public abstract void update(Telemetry telemetry);
+    
     public void alwaysUpdate(Telemetry telemetry) {}
-    public void stop() {};
+    
+    public void stop() {}
+    
+    ;
     
     public void disable()
     {

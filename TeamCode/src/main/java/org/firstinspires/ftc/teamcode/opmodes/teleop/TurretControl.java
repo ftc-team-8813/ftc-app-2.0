@@ -22,7 +22,7 @@ public class TurretControl extends ControlModule
     private Shooter shooter;
     private REVHub controlHub;
     
-    private ControllerMap.AxisEntry   ax_turret;
+    private ControllerMap.AxisEntry ax_turret;
     private ControllerMap.ButtonEntry btn_turret_home;
     private ControllerMap.ButtonEntry btn_turret_reverse;
     private ControllerMap.ButtonEntry btn_turret_slow;
@@ -37,10 +37,10 @@ public class TurretControl extends ControlModule
         shooter = robot.turret.shooter;
         controlHub = robot.controlHub;
         
-        ax_turret          = controllerMap.getAxisMap  ("turret::turret",  "gamepad2", "left_stick_x");
-        btn_turret_home    = controllerMap.getButtonMap("turret::home",    "gamepad2", "a");
+        ax_turret = controllerMap.getAxisMap("turret::turret", "gamepad2", "left_stick_x");
+        btn_turret_home = controllerMap.getButtonMap("turret::home", "gamepad2", "a");
         btn_turret_reverse = controllerMap.getButtonMap("turret::reverse", "gamepad2", "left_trigger");
-        btn_turret_slow = controllerMap.getButtonMap("turret::slow",    "gamepad2", "left_stick_button");
+        btn_turret_slow = controllerMap.getButtonMap("turret::slow", "gamepad2", "left_stick_button");
         
         JsonObject config = robot.config.getAsJsonObject("teleop");
         turretAdjSpeed = config.get("turret_adj_rate").getAsDouble();
@@ -67,17 +67,19 @@ public class TurretControl extends ControlModule
             }
             
             double turretSpeed;
-            if (btn_turret_slow.get() || shooter.getMaxPower() == shooter.getPower(2)){
+            if (btn_turret_slow.get() || shooter.getMaxPower() == shooter.getPower(2))
+            {
                 turretSpeed = 0.2;
             }
-            else {
+            else
+            {
                 turretSpeed = 0.325;
             }
-
+            
             double pos = turret.getPosition();
-            if (pos <= 0 && power < 0)      turret.turret.setPower(0);
+            if (pos <= 0 && power < 0) turret.turret.setPower(0);
             else if (pos >= 1 && power > 0) turret.turret.setPower(0);
-            else                            turret.turret.setPower(power * -turretSpeed);
+            else turret.turret.setPower(power * -turretSpeed);
         }
         else
         {
@@ -93,7 +95,7 @@ public class TurretControl extends ControlModule
             turret.home();
             shooter.setPreset(0);
             controlHub.setLEDColor(shooter.getPresetColor());
-
+            
         }
         
         if (btn_turret_reverse.edge() > 0)

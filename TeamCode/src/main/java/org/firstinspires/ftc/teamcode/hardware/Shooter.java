@@ -42,8 +42,8 @@ public class Shooter
             this.power = obj.get("power").getAsDouble();
             JsonArray color = obj.getAsJsonArray("color");
             this.color = (color.get(0).getAsInt() << 16 |
-                          color.get(1).getAsInt() << 8 |
-                          color.get(2).getAsInt());
+                    color.get(1).getAsInt() << 8 |
+                    color.get(2).getAsInt());
         }
     }
     
@@ -75,8 +75,9 @@ public class Shooter
     {
         started = false;
     }
-
-    public void setPower(double power){
+    
+    public void setPower(double power)
+    {
         motor.setPower(power);
     }
     
@@ -90,7 +91,7 @@ public class Shooter
         if (!started)
         {
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            double vel = ((DcMotorEx)motor).getVelocity(AngleUnit.RADIANS);
+            double vel = ((DcMotorEx) motor).getVelocity(AngleUnit.RADIANS);
             double power = -vel * 0.05;
             setPower(power);
         }
@@ -155,12 +156,14 @@ public class Shooter
     {
         return currPreset;
     }
-
-    public double getMaxPower(){
+    
+    public double getMaxPower()
+    {
         return maxPower;
     }
-
-    public double getPower(int i){
+    
+    public double getPower(int i)
+    {
         return powers.get(i).power;
     }
 }

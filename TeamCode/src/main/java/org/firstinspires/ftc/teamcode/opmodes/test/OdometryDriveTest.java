@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Logger;
 
-@TeleOp(name="Odometry Drive Test")
+@TeleOp(name = "Odometry Drive Test")
 public class OdometryDriveTest extends LoggingOpMode
 {
     

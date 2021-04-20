@@ -4,10 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
 import org.firstinspires.ftc.teamcode.util.Configuration;
@@ -59,12 +57,18 @@ public class NavPath
     {
         switch (comp)
         {
-            case 0: return a == b;
-            case 1: return a != b;
-            case 2: return a <  b;
-            case 3: return a >  b;
-            case 4: return a <= b;
-            case 5: return a >= b;
+            case 0:
+                return a == b;
+            case 1:
+                return a != b;
+            case 2:
+                return a < b;
+            case 3:
+                return a > b;
+            case 4:
+                return a <= b;
+            case 5:
+                return a >= b;
         }
         return false;
     }
@@ -358,7 +362,8 @@ public class NavPath
                     {
                         String timerName = triggerInfo.get("timer").getAsString();
                         triggerTimer = timers.get(timerName);
-                        if (triggerTimer == null) throw new IllegalArgumentException("Invalid timer: " + timerName);
+                        if (triggerTimer == null)
+                            throw new IllegalArgumentException("Invalid timer: " + timerName);
                         channel = triggerTimer.eventChannel;
                         log.d("      -> Trigger on timer '%s' (channel %d)", timerName, channel);
                     }
@@ -371,7 +376,8 @@ public class NavPath
                         actuallyRun();
                         bus.unsubscribe(sub);
                     }, "NavPath sub#" + index, channel);
-                } catch (ClassNotFoundException e)
+                }
+                catch (ClassNotFoundException e)
                 {
                     throw new IllegalArgumentException(String.format("Trigger class '%s' not found", className), e);
                 }
@@ -382,7 +388,8 @@ public class NavPath
                 log.d("    -> Loading condition info:");
                 JsonObject condInfo = entry.getAsJsonObject("condition");
                 producer = conditions.get(condInfo.get("name").getAsString());
-                if (producer == null) throw new IllegalArgumentException("Invalid condition producer: " + condInfo.get("name").getAsString());
+                if (producer == null)
+                    throw new IllegalArgumentException("Invalid condition producer: " + condInfo.get("name").getAsString());
                 log.d("      -> Producer: %s", condInfo.get("name").getAsString());
                 compareType = -1;
                 String compStr = condInfo.get("cond").getAsString();
@@ -444,7 +451,8 @@ public class NavPath
             if (type == PathType.drive)
             {
                 if (absolute) setXYTarget(x, y, speed, backwards);
-                else setXYTarget(navigator.getTargetX() + x, navigator.getTargetY() + y, speed, backwards);
+                else
+                    setXYTarget(navigator.getTargetX() + x, navigator.getTargetY() + y, speed, backwards);
                 log.d("-> Actually run path -> Move (abs=%s) <%.2f,%.2f> inches back=%s @ power=%.3f",
                         absolute, x, y, backwards, speed);
                 log.d("  -> Target position: <%.2f,%.2f>", navigator.getTargetX(), navigator.getTargetY());
@@ -487,12 +495,12 @@ public class NavPath
         int min = Integer.parseInt(split[1]);
         int patch = Integer.parseInt(split[2]);
         if (maj > formatVersion[0]
-            || (min > formatVersion[1] && maj <= formatVersion[0])
-            || (patch > formatVersion[2] && min <= formatVersion[1] && maj <= formatVersion[0]))
+                || (min > formatVersion[1] && maj <= formatVersion[0])
+                || (patch > formatVersion[2] && min <= formatVersion[1] && maj <= formatVersion[0]))
             throw new IllegalArgumentException(String.format("Unsupported future version -- %d.%d.%d > %d.%d.%d",
                     maj, min, patch, formatVersion[0], formatVersion[1], formatVersion[2]));
         if (maj < formatVersion[0]
-            || min < formatVersion[1])
+                || min < formatVersion[1])
             throw new IllegalArgumentException(String.format("Incompatible past version -- %d.%d.%d < %d.%d.%d",
                     maj, min, patch, formatVersion[0], formatVersion[1], formatVersion[2]));
     }
@@ -511,6 +519,7 @@ public class NavPath
         backwards(true);
         
         public final boolean val;
+        
         Direction(boolean val)
         {
             this.val = val;

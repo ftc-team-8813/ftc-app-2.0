@@ -36,8 +36,8 @@ public class AutoAimControl extends ControlModule
         autoAim.setTarget(-140, 0);
         
         btn_auto_toggle = controllerMap.getButtonMap("auto_aim::toggle", "gamepad2", "right_trigger");
-        ax_adjust       = controllerMap.getAxisMap  ("turret::turret",   "gamepad2", "left_stick_x");
-    
+        ax_adjust = controllerMap.getAxisMap("turret::turret", "gamepad2", "left_stick_x");
+        
         List<TurretControl> list = manager.getModules(TurretControl.class);
         if (list.size() > 1) throw new IllegalStateException("Multiple turret control modules?!");
         else if (list.size() == 1) turretControl = list.get(0);

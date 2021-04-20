@@ -1,12 +1,10 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.google.gson.JsonObject;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -18,7 +16,8 @@ import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
-public class Robot {
+public class Robot
+{
     public final Drivetrain drivetrain;
     public final Intake intake;
     public final Turret turret;
@@ -27,7 +26,7 @@ public class Robot {
     public final REVHub expansionHub;
     
     public final JsonObject config;
-
+    
     public final IMU imu;
     
     public final EventBus eventBus;
@@ -57,7 +56,8 @@ public class Robot {
     //                           //
     ///////////////////////////////
     
-    private Robot(HardwareMap hardwareMap, String initMessage){
+    private Robot(HardwareMap hardwareMap, String initMessage)
+    {
         log.i("ROBOT INIT -- %s", initMessage);
         BuildInfo buildInfo = new BuildInfo(Storage.getFile("buildinfo.json"));
         buildInfo.logInfo();
@@ -91,27 +91,27 @@ public class Robot {
         DcMotor turret = hardwareMap.get(DcMotor.class, "turret");
         DcMotor ramp = hardwareMap.get(DcMotor.class, "ramp");
         DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
-
+        
         CRServo puller = hardwareMap.get(CRServo.class, "puller");
         Servo pusher = hardwareMap.get(Servo.class, "pusher");
         Servo pivot = hardwareMap.get(Servo.class, "pivot");
         
         Servo wobble_arm = hardwareMap.get(Servo.class, "wobble a");
         Servo wobble_claw = hardwareMap.get(Servo.class, "wobble claw");
-
+        
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, new Odometry(l_enc, r_enc));
         this.imu = this.drivetrain.getOdometry().getIMU();
         
         DigitalChannel turretZero = hardwareMap.digitalChannel.get("turret_switch");
         this.turret = new Turret(turret, shooter, pusher, null, turret_enc,
-                                 config.getAsJsonObject("shooter"),
-                                 config.getAsJsonObject("turret"), turretZero);
+                config.getAsJsonObject("shooter"),
+                config.getAsJsonObject("turret"), turretZero);
         this.turret.connectEventBus(eventBus);
         this.intake = new Intake(ramp, intake, puller, pivot, config.getAsJsonObject("intake"));
         
         this.wobble = new Wobble(wobble_arm, wobble_claw,
-                                 config.getAsJsonObject("wobble"));
+                config.getAsJsonObject("wobble"));
     }
     
     

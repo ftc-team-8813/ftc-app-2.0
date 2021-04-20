@@ -6,7 +6,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.Shooter;
 import org.firstinspires.ftc.teamcode.hardware.Turret;
-import org.firstinspires.ftc.teamcode.input.ButtonEvent;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.Event;
@@ -37,7 +36,7 @@ public class AutoPowershotControl extends ControlModule
     private EventFlow flow;
     
     private int counter = 0;
-    private final double[] powers =    {0.590, 0.600, 0.615};
+    private final double[] powers = {0.590, 0.600, 0.615};
     private final double[] positions = {0.710, 0.725, 0.745};
     
     private static class AutoPSEvent extends Event
@@ -63,17 +62,17 @@ public class AutoPowershotControl extends ControlModule
         
         for (ControlModule mod : manager.getModules())
         {
-            if      (mod instanceof TurretControl)  turretControl = (TurretControl)mod;
-            else if (mod instanceof PusherControl)  pusherControl = (PusherControl)mod;
-            else if (mod instanceof ShooterControl) shooterControl = (ShooterControl)mod;
+            if (mod instanceof TurretControl) turretControl = (TurretControl) mod;
+            else if (mod instanceof PusherControl) pusherControl = (PusherControl) mod;
+            else if (mod instanceof ShooterControl) shooterControl = (ShooterControl) mod;
         }
         
         bus = robot.eventBus;
         flow = new EventFlow(robot.eventBus);
-    
+        
         Scheduler.Timer spinupTimer = robot.scheduler.addPendingTrigger(3, "autops::spinup");
-        Scheduler.Timer pushTimer   = robot.scheduler.addPendingTrigger(0.5, "autops::push");
-        Scheduler.Timer adjTimer    = robot.scheduler.addPendingTrigger(1, "autopos::adjust");
+        Scheduler.Timer pushTimer = robot.scheduler.addPendingTrigger(0.5, "autops::push");
+        Scheduler.Timer adjTimer = robot.scheduler.addPendingTrigger(1, "autopos::adjust");
         
         flow.start(new EventBus.Subscriber<>(AutoPSEvent.class, (ev, bus, sub) -> {
             shooter.start(powers[0]);
@@ -82,34 +81,34 @@ public class AutoPowershotControl extends ControlModule
             
             spinupTimer.reset();
         }, "Start auto powershot", PS_ENABLE))
-        .then(new EventBus.Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
-            turret.push();
-            pushTimer.reset();
-        }, "Spinup complete->push", spinupTimer.eventChannel))
-        .then(new EventBus.Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
-            turret.unpush();
-            pushTimer.reset();
-        }, "Push complete->unpush", pushTimer.eventChannel))
-        .then(new EventBus.Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
-            counter++;
-            if (counter == 3)
-            {
-                shooter.stop();
-                auto_ps_enabled = false;
-                flow.jump(0);
-            }
-            else
-            {
-                shooter.start(powers[counter]);
-                turret.rotate(positions[counter]);
-                adjTimer.reset();
-            }
-        }, "Unpush complete->decide", pushTimer.eventChannel))
-        .then(new EventBus.Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
-            turret.push();
-            pushTimer.reset();
-            flow.jump(2);
-        }, "Adjust complete->push", adjTimer.eventChannel));
+                .then(new EventBus.Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
+                    turret.push();
+                    pushTimer.reset();
+                }, "Spinup complete->push", spinupTimer.eventChannel))
+                .then(new EventBus.Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
+                    turret.unpush();
+                    pushTimer.reset();
+                }, "Push complete->unpush", pushTimer.eventChannel))
+                .then(new EventBus.Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
+                    counter++;
+                    if (counter == 3)
+                    {
+                        shooter.stop();
+                        auto_ps_enabled = false;
+                        flow.jump(0);
+                    }
+                    else
+                    {
+                        shooter.start(powers[counter]);
+                        turret.rotate(positions[counter]);
+                        adjTimer.reset();
+                    }
+                }, "Unpush complete->decide", pushTimer.eventChannel))
+                .then(new EventBus.Subscriber<>(TimerEvent.class, (ev, bus, sub) -> {
+                    turret.push();
+                    pushTimer.reset();
+                    flow.jump(2);
+                }, "Adjust complete->push", adjTimer.eventChannel));
     }
     
     @Override
@@ -123,8 +122,8 @@ public class AutoPowershotControl extends ControlModule
         if (auto_ps_enabled)
         {
             if ((turretControl != null && turretControl.shouldEnable())
-                || (shooterControl != null && shooterControl.shouldEnable())
-                || (pusherControl != null && pusherControl.shouldEnable()))
+                    || (shooterControl != null && shooterControl.shouldEnable())
+                    || (pusherControl != null && pusherControl.shouldEnable()))
             {
                 auto_ps_enabled = false;
             }

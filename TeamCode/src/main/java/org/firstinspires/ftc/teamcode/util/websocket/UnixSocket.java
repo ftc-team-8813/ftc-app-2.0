@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.util.websocket;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -82,15 +81,18 @@ public class UnixSocket extends SocketIO
     }
     
     private native int _create();
+    
     private native int _connect(int fd, String path);
+    
     private native int _close(int fd);
     
     private native int _send(int fd, byte[] buf, int off, int len);
+    
     private native int _recv(int fd, byte[] buf, int off, int len);
     
     private class SockInputStream extends InputStream
     {
-    
+        
         @Override
         public int read() throws IOException
         {
@@ -112,7 +114,7 @@ public class UnixSocket extends SocketIO
         @Override
         public void write(int b) throws IOException
         {
-            byte[] data = {(byte)(b & 0xFF)};
+            byte[] data = {(byte) (b & 0xFF)};
             write(data, 0, 1);
         }
         

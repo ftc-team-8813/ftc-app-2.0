@@ -32,9 +32,9 @@ public class ShooterControl extends ControlModule
         
         controlHub.setLEDColor(shooter.getPresetColor());
         
-        btn_shooter        = controllerMap.getButtonMap("shooter::shoot",  "gamepad2", "y");
+        btn_shooter = controllerMap.getButtonMap("shooter::shoot", "gamepad2", "y");
         btn_shooter_preset = controllerMap.getButtonMap("shooter::preset", "gamepad2", "right_bumper");
-        btn_shooter_preset2= controllerMap.getButtonMap("shooter::preset2","gamepad2", "left_trigger");
+        btn_shooter_preset2 = controllerMap.getButtonMap("shooter::preset2", "gamepad2", "left_trigger");
     }
     
     @Override
@@ -43,7 +43,7 @@ public class ShooterControl extends ControlModule
         if (btn_shooter.edge() > 0)
         {
             if (!shooter.running()) shooter.start();
-            else                    shooter.stop();
+            else shooter.stop();
         }
         
         if (btn_shooter_preset.edge() > 0)
@@ -61,7 +61,7 @@ public class ShooterControl extends ControlModule
     @Override
     public void alwaysUpdate(Telemetry telemetry)
     {
-        telemetry.addData("Shooter Velocity (ticks/s)", "%.3f", ((DcMotorEx)shooter.motor).getVelocity());
+        telemetry.addData("Shooter Velocity (ticks/s)", "%.3f", ((DcMotorEx) shooter.motor).getVelocity());
         telemetry.addData("Shooter Power", "%.3f", shooter.motor.getPower());
         telemetry.addData("Shooter Preset", shooter.getCurrPreset());
     }

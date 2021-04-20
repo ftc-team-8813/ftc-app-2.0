@@ -11,7 +11,8 @@ import org.firstinspires.ftc.teamcode.hardware.events.TurretEvent;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
-public class Turret {
+public class Turret
+{
     
     public final DcMotor turret;
     public final Shooter shooter;
@@ -20,10 +21,10 @@ public class Turret {
     public final DcMotor turretFb;
     
     private Logger log = new Logger("Turret");
-
+    
     private final double TICKS = 128;
-    private final double ENC_TO_TURRET_RATIO = 74.0/10.0 * TICKS;
-
+    private final double ENC_TO_TURRET_RATIO = 74.0 / 10.0 * TICKS;
+    
     private double turretHome;
     private double turretReverse;
     private double turretKp;
@@ -40,19 +41,19 @@ public class Turret {
     private boolean sendEvent = false;
     
     private DigitalChannel zeroSw;
-
-    private static final int FIND_IDLE      = 0;
-    private static final int FIND_RAPID     = 1;
+    
+    private static final int FIND_IDLE = 0;
+    private static final int FIND_RAPID = 1;
     private static final int FIND_RAPID_REV = 2;
-    private static final int FIND_REVERSE   = 3;
+    private static final int FIND_REVERSE = 3;
     private static final int FIND_REVERSE_2 = 4;
-    private static final int FIND_SLOW      = 5;
-    private static final int FIND_COMPLETE  = 6;
-
+    private static final int FIND_SLOW = 5;
+    private static final int FIND_COMPLETE = 6;
+    
     private int find_stage = FIND_IDLE;
     private boolean find_fail = false;
     private double revStart = 0;
-
+    
     public Turret(DcMotor turret, DcMotor shooter, Servo pusher, Servo aim,
                   DcMotor rotateFeedback, JsonObject shooterConfig, JsonObject turretConfig,
                   DigitalChannel zeroSw)
@@ -63,15 +64,15 @@ public class Turret {
         this.aim = aim;
         this.turretFb = rotateFeedback;
         this.zeroSw = zeroSw;
-
+        
         JsonObject root = turretConfig;
         turretHome = root.get("home").getAsDouble();
         turretReverse = root.get("home180").getAsDouble();
-        turretKp   = root.get("kp").getAsDouble();
-        turretSpeed= root.get("maxSpeed").getAsDouble();
+        turretKp = root.get("kp").getAsDouble();
+        turretSpeed = root.get("maxSpeed").getAsDouble();
         turretDefSpeed = turretSpeed;
         JsonObject pusherConf = root.getAsJsonObject("pusher");
-        pushIn  = pusherConf.get("unpush").getAsDouble();
+        pushIn = pusherConf.get("unpush").getAsDouble();
         pushOut = pusherConf.get("push").getAsDouble();
         
         target = turretHome;
@@ -86,7 +87,7 @@ public class Turret {
     {
         rotate(position, false);
     }
-
+    
     /***
      * Rotates the turret left and right from the home position
      * @param position Absolute encoder values (named eUnits). Clipped half-rotation left and right from home
@@ -98,11 +99,12 @@ public class Turret {
         target = position;
         if (sendEvent) this.sendEvent = true;
     }
-
-    public double getHeading(){
+    
+    public double getHeading()
+    {
         return getPosition() * 360;
     }
-
+    
     public void home()
     {
         target = turretHome;
@@ -124,11 +126,12 @@ public class Turret {
     {
         return -turretFb.getCurrentPosition() / ENC_TO_TURRET_RATIO;
     }
-
-    public double getTurretHome(){
+    
+    public double getTurretHome()
+    {
         return turretHome;
     }
-
+    
     public double getTurretShootPos()
     {
         return turretReverse;
@@ -141,7 +144,7 @@ public class Turret {
         double pos = getPosition();
         lastPos = pos;
         double error = target - pos;
-
+        
         if (sendEvent && Math.abs(error) < 0.03 && evBus != null)
         {
             sendEvent = false;
@@ -166,7 +169,7 @@ public class Turret {
     {
         pusher.setPosition(pushIn);
     }
-
+    
     // Initialization
     public void startZeroFind()
     {
@@ -176,17 +179,17 @@ public class Turret {
         find_stage = FIND_RAPID;
         revStart = 0;
     }
-
+    
     public boolean findComplete()
     {
         return find_stage == FIND_COMPLETE;
     }
-
+    
     public boolean findFailed()
     {
         return find_fail;
     }
-
+    
     public void updateInit(Telemetry telemetry)
     {
         String state = "[unknown]";
@@ -241,7 +244,7 @@ public class Turret {
             case FIND_REVERSE_2:
             {
                 turret.setPower(-0.2);
-                state = String.format("Back up 2 pos=%.3f err=%.3f", position, position-revStart);
+                state = String.format("Back up 2 pos=%.3f err=%.3f", position, position - revStart);
                 if (Math.abs(position - revStart) > 0.05)
                 {
                     find_stage = FIND_SLOW;

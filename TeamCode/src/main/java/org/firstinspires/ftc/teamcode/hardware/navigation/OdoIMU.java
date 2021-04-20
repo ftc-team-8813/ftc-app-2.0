@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.hardware.navigation;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
-
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;

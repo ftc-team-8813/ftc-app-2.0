@@ -1,36 +1,28 @@
 package org.firstinspires.ftc.teamcode.hardware.navigation;
 
-import android.util.JsonReader;
-import android.util.JsonWriter;
 import android.util.SparseArray;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
 import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.Event;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.python.Python;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 import org.firstinspires.ftc.teamcode.util.websocket.UnixSocketServer;
-import org.json.JSONException;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 
@@ -61,7 +53,9 @@ public class PythonNavPath
     public interface NavCommand
     {
         void recv(ByteBuffer payload);
+        
         void run(Robot robot, EventBus bus, Navigator nav, CountDownLatch latch);
+        
         void send(Server.Responder resp);
     }
     
@@ -92,7 +86,8 @@ public class PythonNavPath
         try
         {
             pyServer = new Server(new UnixSocketServer(sockFile.getPath()));
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -189,12 +184,12 @@ public class PythonNavPath
                     log.e("Error creating %s", command.getSimpleName());
                     log.e("The class should have a constructor taking a PythonNavPath instance.");
                     log.e(e);
-                    resp.respond(ByteBuffer.wrap(new byte[] {(byte)0xFF}));
+                    resp.respond(ByteBuffer.wrap(new byte[]{(byte) 0xFF}));
                 }
                 catch (InterruptedException e)
                 {
                     log.w(e);
-                    resp.respond(ByteBuffer.wrap(new byte[] {(byte)0xFE}));
+                    resp.respond(ByteBuffer.wrap(new byte[]{(byte) 0xFE}));
                 }
             });
         }
@@ -220,7 +215,7 @@ public class PythonNavPath
             name = new String(data, StandardCharsets.UTF_8);
             path.log.d("Sensor name: %s", name);
         }
-    
+        
         @Override
         public void run(Robot robot, EventBus bus, Navigator nav, CountDownLatch latch)
         {
@@ -230,15 +225,15 @@ public class PythonNavPath
             
             latch.countDown();
         }
-    
+        
         @Override
         public void send(Server.Responder resp)
         {
-            if (data == null) resp.respond(ByteBuffer.wrap(new byte[] {(byte)retval}));
+            if (data == null) resp.respond(ByteBuffer.wrap(new byte[]{(byte) retval}));
             else
             {
                 byte[] ndata = new byte[data.remaining() + 1];
-                ndata[0] = (byte)retval;
+                ndata[0] = (byte) retval;
                 data.get(ndata, 1, data.remaining());
                 resp.respond(ByteBuffer.wrap(ndata));
             }
@@ -284,7 +279,7 @@ public class PythonNavPath
                 }
             }
         }
-    
+        
         @Override
         public void run(Robot robot, EventBus bus, Navigator nav, CountDownLatch latch)
         {
@@ -299,11 +294,11 @@ public class PythonNavPath
             else actuator.move(params);
             latch.countDown();
         }
-    
+        
         @Override
         public void send(Server.Responder resp)
         {
-            resp.respond(ByteBuffer.wrap(new byte[] {(byte)retval}));
+            resp.respond(ByteBuffer.wrap(new byte[]{(byte) retval}));
         }
     }
     
@@ -323,9 +318,9 @@ public class PythonNavPath
             speed = payload.getFloat();
             byte flags = payload.get();
             absolute = (flags & 0x1) != 0;
-            wait     = (flags & 0x2) != 0;
+            wait = (flags & 0x2) != 0;
         }
-    
+        
         @Override
         public void run(Robot robot, EventBus bus, Navigator nav, CountDownLatch latch)
         {
@@ -344,11 +339,11 @@ public class PythonNavPath
                 }, "Wait for turn", NavMoveEvent.TURN_COMPLETE);
             }
         }
-    
+        
         @Override
         public void send(Server.Responder resp)
         {
-            resp.respond(ByteBuffer.wrap(new byte[] {0x00}));
+            resp.respond(ByteBuffer.wrap(new byte[]{0x00}));
         }
     }
     
@@ -371,10 +366,10 @@ public class PythonNavPath
             speed = payload.getFloat();
             byte flags = payload.get();
             absolute = (flags & 0x1) != 0;
-            reverse  = (flags & 0x2) != 0;
-            wait     = (flags & 0x4) != 0;
+            reverse = (flags & 0x2) != 0;
+            wait = (flags & 0x4) != 0;
         }
-    
+        
         @Override
         public void run(Robot robot, EventBus bus, Navigator nav, CountDownLatch latch)
         {
@@ -382,7 +377,7 @@ public class PythonNavPath
             nav.setTurnSpeed(speed);
             double currX = nav.getTargetX();
             double currY = nav.getTargetY();
-    
+            
             if (absolute) nav.goTo(x, y, reverse);
             else nav.goTo(currX + x, currY + y, reverse);
             if (!wait)
@@ -397,11 +392,11 @@ public class PythonNavPath
                 }, "Wait for move", NavMoveEvent.MOVE_COMPLETE);
             }
         }
-    
+        
         @Override
         public void send(Server.Responder resp)
         {
-            resp.respond(ByteBuffer.wrap(new byte[] {(byte)0x00}));
+            resp.respond(ByteBuffer.wrap(new byte[]{(byte) 0x00}));
         }
     }
     
@@ -422,7 +417,7 @@ public class PythonNavPath
             evClass = new String(data, StandardCharsets.UTF_8);
             retval = 0x0;
         }
-    
+        
         @Override
         public void run(Robot robot, EventBus bus, Navigator nav, CountDownLatch latch)
         {
@@ -447,11 +442,11 @@ public class PythonNavPath
                 retval = 0x02;
             }
         }
-    
+        
         @Override
         public void send(Server.Responder resp)
         {
-            resp.respond(ByteBuffer.wrap(new byte[] {(byte)retval}));
+            resp.respond(ByteBuffer.wrap(new byte[]{(byte) retval}));
         }
     }
 }
