@@ -35,11 +35,15 @@ public class IntakeControl extends ControlModule
         
         if (v > 0)
         {
+            intake.runRamp(1);
+        }
+        else if (v != 0)
+        {
             intake.runRamp(-1);
         }
         else
         {
-            intake.runRamp(1);
+            intake.runRamp(0);
         }
     }
     

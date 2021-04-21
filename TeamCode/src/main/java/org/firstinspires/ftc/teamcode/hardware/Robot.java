@@ -22,6 +22,7 @@ public class Robot
     public final Intake intake;
     public final Turret turret;
     public final Wobble wobble;
+    public final Blocker blocker;
     public final REVHub controlHub;
     public final REVHub expansionHub;
     
@@ -94,10 +95,11 @@ public class Robot
         
         CRServo puller = hardwareMap.get(CRServo.class, "puller");
         Servo pusher = hardwareMap.get(Servo.class, "pusher");
-        Servo pivot = hardwareMap.get(Servo.class, "pivot");
         
         Servo wobble_arm = hardwareMap.get(Servo.class, "wobble a");
         Servo wobble_claw = hardwareMap.get(Servo.class, "wobble claw");
+        
+        Servo blocker = hardwareMap.get(Servo.class, "blocker");
         
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(top_left, bottom_left, top_right, bottom_right, new Odometry(l_enc, r_enc));
@@ -108,10 +110,12 @@ public class Robot
                 config.getAsJsonObject("shooter"),
                 config.getAsJsonObject("turret"), turretZero);
         this.turret.connectEventBus(eventBus);
-        this.intake = new Intake(ramp, intake, puller, pivot, config.getAsJsonObject("intake"));
+        this.intake = new Intake(ramp, intake, puller);
         
         this.wobble = new Wobble(wobble_arm, wobble_claw,
                 config.getAsJsonObject("wobble"));
+        
+        this.blocker = new Blocker(blocker, config.getAsJsonObject("blocker"));
     }
     
     

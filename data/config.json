@@ -11,7 +11,7 @@
 
     "presets":[
       {"power":  0.7, "color": [255, 255, 0]},
-      {"power":  0.6725, "color":  [255, 1,  0]},
+      {"power":  0.6745, "color":  [255, 1,  0]},
       {"power":  0.62 , "color": [64,  0,   128]}
     ]
   },
@@ -49,6 +49,10 @@
     "arm_down": 1,
     "claw_open": 0.83,
     "claw_close": 0.48
+  },
+  "blocker": {
+    "up": 0,
+    "down": 0.62
   },
   "nav": {
     "angle_kp": 0.02,

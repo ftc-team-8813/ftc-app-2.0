@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.AutoAimControl;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.BlockerControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
@@ -58,6 +59,7 @@ public class CurrentTele extends LoggingOpMode
         controlMgr.addModule(new PusherControl());
         controlMgr.addModule(new ShooterControl());
         controlMgr.addModule(new WobbleControl());
+        controlMgr.addModule(new BlockerControl());
         
         // automation
         controlMgr.addModule(new AutoAimControl());
