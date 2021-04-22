@@ -37,6 +37,40 @@ public class Storage
                 throw new IllegalStateException("Unable to create root directory. Maybe check the SD card?");
             scanFile(newFile.getPath());
         }
+        
+        scanDir(rootFile, "logs");
+    }
+    
+    private static void scanDir(File dir, String... ignore)
+    {
+        Logger log = new Logger("Tree Scanner");
+        String[] names = dir.list();
+        if (names == null) return;
+        
+        log.v("Scan %s", dir.getPath());
+        for (String name : names)
+        {
+            File sub = new File(dir, name);
+            if (sub.isDirectory())
+            {
+                boolean noScan = false;
+                for (String ex : ignore)
+                {
+                    if (name.equals(ex))
+                    {
+                        noScan = true;
+                        break;
+                    }
+                }
+                if (!noScan) scanDir(sub, ignore);
+                
+            }
+            else
+            {
+                log.v(" -> Scan file %s", sub.getPath());
+                scanFile(sub.getPath());
+            }
+        }
     }
     
     public static File createFile(String path)

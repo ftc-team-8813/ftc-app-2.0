@@ -1,12 +1,11 @@
 package org.firstinspires.ftc.teamcode.opmodes.test;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
-@TeleOp(name="Turret Test")
+@TeleOp(name = "Turret Test")
 public class TurretTest extends LoggingOpMode
 {
     private Robot robot;
@@ -14,7 +13,8 @@ public class TurretTest extends LoggingOpMode
     @Override
     public void init()
     {
-        robot = new Robot(hardwareMap);
+        super.init();
+        robot = Robot.initialize(hardwareMap, "Turret Test");
     }
     
     @Override
@@ -33,7 +33,7 @@ public class TurretTest extends LoggingOpMode
     public void loop()
     {
         robot.turret.updateInit(telemetry);
-    
+        
         if (robot.turret.findComplete())
         {
             telemetry.addData("Position", "%.3f", robot.turret.getPosition());

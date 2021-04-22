@@ -17,7 +17,7 @@ public class Scheduler
         public double delay;
         public final boolean repeat;
         public boolean cancelled;
-    
+        
         public Timer(String name, double delay, boolean repeat, int evChannel)
         {
             this.name = name;
@@ -33,7 +33,7 @@ public class Scheduler
             this.cancelled = false;
             this.start = Time.now();
         }
-    
+        
         private void trigger()
         {
             if (cancelled) return;
@@ -64,6 +64,7 @@ public class Scheduler
     
     /**
      * Add a timer to trigger at some set time after it is created
+     *
      * @param delay Delay in seconds
      * @param name  Timer name for debugging
      * @return A Timer object for this timer
@@ -78,6 +79,7 @@ public class Scheduler
     /**
      * Same as {@link #addFutureTrigger(double, String)}, but immediately stops the timer. To start
      * the timer later, use {@link Timer#reset()} on the returned Timer object.
+     *
      * @param delay Delay in seconds
      * @param name  Timer name for debugging
      * @return A Timer object for this timer
@@ -91,8 +93,9 @@ public class Scheduler
     
     /**
      * Add a repeating timer, which triggers repeatedly after a set delay
+     *
      * @param delay The interval of time on which to trigger the event
-     * @param name The name of the timer, for debugging
+     * @param name  The name of the timer, for debugging
      * @return A Timer object for this timer
      */
     public Timer addRepeatingTrigger(double delay, String name)

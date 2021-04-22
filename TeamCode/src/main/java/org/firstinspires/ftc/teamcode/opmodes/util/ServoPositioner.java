@@ -1,10 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.util;
 
-import android.os.UserManager;
-
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.LynxServoController;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -16,15 +12,14 @@ import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.telemetry.HTMLString;
 import org.firstinspires.ftc.teamcode.telemetry.Scroll;
 import org.firstinspires.ftc.teamcode.util.Time;
+import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.HTML;
 
 // TODO: Add save-load system (from DiffyServoPositioner)
-@TeleOp(group="util", name="Servo Positioner")
+@TeleOp(group = "util", name = "Servo Positioner")
 public class ServoPositioner extends LoggingOpMode
 {
     
@@ -65,7 +60,9 @@ public class ServoPositioner extends LoggingOpMode
     private static abstract class Scene
     {
         private boolean firstLoop = true;
+        
         abstract void init();
+        
         abstract void loop();
     }
     
@@ -75,23 +72,27 @@ public class ServoPositioner extends LoggingOpMode
     private int servoId;
     private ServoController[] servoControllers;
     
+    private EventBus evBus;
+    
     @Override
     public void init()
     {
+        super.init();
         telemetry.setDisplayFormat(HTML);
         currScene = new SceneChoose();
-        controllerMap = new ControllerMap(gamepad1, gamepad2);
+        evBus = new EventBus();
+        controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         started = false;
         
         setDefaultButtons();
         // TODO: load buttons from file
-        btn_up_arrow =       controllerMap.buttons.get("up_arrow");
-        btn_down_arrow =     controllerMap.buttons.get("down_arrow");
-        btn_reset_pos =      controllerMap.buttons.get("reset_pos");
-        btn_delete_pos =     controllerMap.buttons.get("delete_pos");
-        btn_ok =             controllerMap.buttons.get("ok");
-        btn_stop_servo =     controllerMap.buttons.get("stop_servo");
-        btn_exit_to_menu =   controllerMap.buttons.get("exit_to_menu");
+        btn_up_arrow = controllerMap.buttons.get("up_arrow");
+        btn_down_arrow = controllerMap.buttons.get("down_arrow");
+        btn_reset_pos = controllerMap.buttons.get("reset_pos");
+        btn_delete_pos = controllerMap.buttons.get("delete_pos");
+        btn_ok = controllerMap.buttons.get("ok");
+        btn_stop_servo = controllerMap.buttons.get("stop_servo");
+        btn_exit_to_menu = controllerMap.buttons.get("exit_to_menu");
         ax_change_position = controllerMap.axes.get("change_pos");
     }
     
@@ -120,20 +121,21 @@ public class ServoPositioner extends LoggingOpMode
                 currScene.init();
             }
             else currScene.loop();
+            controllerMap.update();
             telemetry.update();
         }
     }
     
     private void setDefaultButtons()
     {
-        controllerMap.setButtonMap("up_arrow",     ControllerMap.Controller.gamepad1, ControllerMap.Button.dpad_up);
-        controllerMap.setButtonMap("down_arrow",   ControllerMap.Controller.gamepad1, ControllerMap.Button.dpad_down);
-        controllerMap.setButtonMap("reset_pos",    ControllerMap.Controller.gamepad1, ControllerMap.Button.x);
-        controllerMap.setButtonMap("delete_pos",   ControllerMap.Controller.gamepad1, ControllerMap.Button.y);
-        controllerMap.setButtonMap("ok",           ControllerMap.Controller.gamepad1, ControllerMap.Button.b);
-        controllerMap.setButtonMap("stop_servo",   ControllerMap.Controller.gamepad1, ControllerMap.Button.a);
+        controllerMap.setButtonMap("up_arrow", ControllerMap.Controller.gamepad1, ControllerMap.Button.dpad_up);
+        controllerMap.setButtonMap("down_arrow", ControllerMap.Controller.gamepad1, ControllerMap.Button.dpad_down);
+        controllerMap.setButtonMap("reset_pos", ControllerMap.Controller.gamepad1, ControllerMap.Button.x);
+        controllerMap.setButtonMap("delete_pos", ControllerMap.Controller.gamepad1, ControllerMap.Button.y);
+        controllerMap.setButtonMap("ok", ControllerMap.Controller.gamepad1, ControllerMap.Button.b);
+        controllerMap.setButtonMap("stop_servo", ControllerMap.Controller.gamepad1, ControllerMap.Button.a);
         controllerMap.setButtonMap("exit_to_menu", ControllerMap.Controller.gamepad1, ControllerMap.Button.right_bumper);
-        controllerMap.setAxisMap  ("change_pos",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.left_stick_y);
+        controllerMap.setAxisMap("change_pos", ControllerMap.Controller.gamepad1, ControllerMap.Axis.left_stick_y);
     }
     
     private class SceneChoose extends Scene
@@ -151,9 +153,9 @@ public class ServoPositioner extends LoggingOpMode
                 {
                     servoChooser.addLine(new HTMLString(
                             "span", "style=\"color: #aaaaaa;\"",
-                            servoControllers[i/6].getConnectionInfo()).toString(), -1);
+                            servoControllers[i / 6].getConnectionInfo()).toString(), -1);
                 }
-        
+                
                 if (servos[i] == null)
                 {
                     servoChooser.addLine(new HTMLString(
@@ -167,20 +169,20 @@ public class ServoPositioner extends LoggingOpMode
                 }
             }
         }
-    
+        
         @Override
         public void loop()
         {
             int up_edge = btn_up_arrow.edge();
             int dn_edge = btn_down_arrow.edge();
-            if (up_edge > 0)      servoChooser.press(-1);
+            if (up_edge > 0) servoChooser.press(-1);
             else if (dn_edge > 0) servoChooser.press(1);
             
             if (btn_up_arrow.get() || btn_down_arrow.get()) servoChooser.hold();
             
             if (btn_ok.edge() > 0)
             {
-                int sel_servo = (Integer)servoChooser.getLineMeta(servoChooser.getScrollPos());
+                int sel_servo = (Integer) servoChooser.getLineMeta(servoChooser.getScrollPos());
                 if (sel_servo >= 0)
                 {
                     servoId = sel_servo;
@@ -198,11 +200,11 @@ public class ServoPositioner extends LoggingOpMode
         private double pos = 0;
         private Scroll posList;
         private Telemetry.Item status;
-    
+        
         @Override
         void init()
         {
-            controller = (LynxServoController)servoControllers[servoId / 6];
+            controller = (LynxServoController) servoControllers[servoId / 6];
             servo = servoId % 6;
             
             controller.pwmDisable();
@@ -212,7 +214,7 @@ public class ServoPositioner extends LoggingOpMode
             posList.addLine("", Double.NaN); // dummy value, will get set immediately
             status = telemetry.addLine().addData("", "");
         }
-    
+        
         @Override
         void loop()
         {
@@ -231,7 +233,7 @@ public class ServoPositioner extends LoggingOpMode
             controller.setServoPosition(servo, pos);
             
             status.setCaption("Servo positions");
-    
+            
             boolean change = false;
             if (btn_up_arrow.edge() > 0)
             {
@@ -250,14 +252,14 @@ public class ServoPositioner extends LoggingOpMode
                 change = true;
             }
             
-            if (change) pos = (Double)posList.getSelectedMeta();
+            if (change) pos = (Double) posList.getSelectedMeta();
             else if (btn_reset_pos.edge() > 0)
             {
                 posList.addLine("", Double.NaN); // dummy, will get filled immediately
                 posList.setScrollPos(posList.size() - 1);
             }
             
-            if (pos != (Double)posList.getSelectedMeta())
+            if (pos != (Double) posList.getSelectedMeta())
             {
                 posList.setLine(posList.getScrollPos(), String.format("%.3f", pos));
                 posList.setLineMeta(posList.getScrollPos(), pos);

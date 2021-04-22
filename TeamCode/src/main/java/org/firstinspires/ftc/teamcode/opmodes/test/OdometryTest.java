@@ -4,19 +4,20 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.events.AngleHoldEvent;
-import org.firstinspires.ftc.teamcode.hardware.events.IMUEvent;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
+import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
-import org.firstinspires.ftc.teamcode.util.event.Event;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.util.event.TimerEvent;
+import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
-@TeleOp(name="Odometry Test")
+@TeleOp(name = "Odometry Test")
 public class OdometryTest extends LoggingOpMode
 {
     private Robot robot;
@@ -27,32 +28,42 @@ public class OdometryTest extends LoggingOpMode
     
     private Odometry odometry;
     
+    private ControlMgr controlMgr;
+    
+    private ControllerMap controllerMap;
+    
     @Override
     public void init()
     {
-        robot = new Robot(hardwareMap);
-        server = new Server(19999);
+        super.init();
+        robot = Robot.initialize(hardwareMap, "Odometry Test");
+        try
+        {
+            server = new Server(new InetSocketServer(19999));
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
         
         robot.drivetrain.resetEncoders();
         imu = robot.imu;
-
-        evBus = new EventBus();
-        scheduler = new Scheduler(evBus);
         
-        imu.setImmediateStart(true);
+        evBus = robot.eventBus;
+        scheduler = robot.scheduler;
+        
         imu.initialize(evBus, scheduler);
-
-        Scheduler.Timer resetTimer = scheduler.addPendingTrigger(0.5, "Reset Delay");
-        evBus.subscribe(IMUEvent.class, (ev, bus, sub) -> {
-            if (ev.new_state == IMU.STARTED)
-                resetTimer.reset();
-        }, "Reset Heading -- Delay", 0);
-        evBus.subscribe(TimerEvent.class, (ev, bus, sub) -> {
-            imu.resetHeading();
-        }, "Reset Heading", resetTimer.eventChannel);
         
+        odometry = robot.drivetrain.getOdometry();
         
-        odometry = new Odometry(hardwareMap.dcMotor.get("turret"), hardwareMap.dcMotor.get("intake"), imu);
+        controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
+        
+        controlMgr = new ControlMgr(robot, controllerMap);
+        DriveControl dc = new DriveControl();
+        dc.enableHeadingLock = false;
+        controlMgr.addModule(dc);
+        
+        controlMgr.initModules();
         
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
             // Get data
@@ -79,6 +90,7 @@ public class OdometryTest extends LoggingOpMode
     @Override
     public void init_loop()
     {
+        controlMgr.init_loop(telemetry);
         scheduler.loop();
         evBus.update();
         loopTelem();
@@ -87,8 +99,14 @@ public class OdometryTest extends LoggingOpMode
     @Override
     public void loop()
     {
+        controllerMap.update();
+        controlMgr.loop(telemetry);
         loopTelem();
-        odometry.updateDeltas();
+        telemetry.addData("Odo L", odometry.getCurrentL());
+        telemetry.addData("Odo R", odometry.getCurrentR());
+        telemetry.addData("Odo Heading", Math.toDegrees(odometry.calc_heading));
+        telemetry.addData("IMU Heading", imu.getHeading());
+        
         scheduler.loop();
         evBus.update();
     }
@@ -96,6 +114,7 @@ public class OdometryTest extends LoggingOpMode
     @Override
     public void stop()
     {
+        controlMgr.stop();
         server.close();
         super.stop();
     }

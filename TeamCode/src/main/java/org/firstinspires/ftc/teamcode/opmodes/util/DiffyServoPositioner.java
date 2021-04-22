@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.qualcomm.hardware.lynx.LynxServoController;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -19,6 +18,7 @@ import org.firstinspires.ftc.teamcode.telemetry.Scroll;
 import org.firstinspires.ftc.teamcode.util.Configuration;
 import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.Time;
+import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -27,7 +27,7 @@ import java.util.Map;
 
 import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.HTML;
 
-@TeleOp(group="util", name="Differential Servo Positioner")
+@TeleOp(group = "util", name = "Differential Servo Positioner")
 // much of this code is copied from ServoPositioner.java (from commit ab4c65f)
 public class DiffyServoPositioner extends LoggingOpMode
 {
@@ -69,8 +69,12 @@ public class DiffyServoPositioner extends LoggingOpMode
     private static abstract class Scene
     {
         private boolean firstLoop = true;
+        
         abstract void init();
+        
         abstract void loop();
+        
+        void exit() {}
     }
     
     private Scene currScene;
@@ -79,28 +83,32 @@ public class DiffyServoPositioner extends LoggingOpMode
     private int servoA;
     private int servoB;
     private ServoController[] servoControllers;
+    private EventBus evBus;
     
     private String fileName;
     
     @Override
     public void init()
     {
+        super.init();
         Storage.createDirs("servo_positions");
         telemetry.setDisplayFormat(HTML);
         currScene = new SceneChoose();
-        controllerMap = new ControllerMap(gamepad1, gamepad2);
+        
+        evBus = new EventBus();
+        controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         started = false;
         
         setDefaultButtons();
         // TODO: load buttons from file
-        btn_up_arrow =       controllerMap.buttons.get("up_arrow");
-        btn_down_arrow =     controllerMap.buttons.get("down_arrow");
-        btn_reset_pos =      controllerMap.buttons.get("reset_pos");
-        btn_delete_pos =     controllerMap.buttons.get("delete_pos");
-        btn_ok =             controllerMap.buttons.get("ok");
-        btn_stop_servo =     controllerMap.buttons.get("stop_servo");
-        btn_exit_to_menu =   controllerMap.buttons.get("exit_to_menu");
-        btn_toggle_mode =    controllerMap.buttons.get("toggle_mode");
+        btn_up_arrow = controllerMap.buttons.get("up_arrow");
+        btn_down_arrow = controllerMap.buttons.get("down_arrow");
+        btn_reset_pos = controllerMap.buttons.get("reset_pos");
+        btn_delete_pos = controllerMap.buttons.get("delete_pos");
+        btn_ok = controllerMap.buttons.get("ok");
+        btn_stop_servo = controllerMap.buttons.get("stop_servo");
+        btn_exit_to_menu = controllerMap.buttons.get("exit_to_menu");
+        btn_toggle_mode = controllerMap.buttons.get("toggle_mode");
         ax_change_position_a = controllerMap.axes.get("change_pos_a");
         ax_change_position_b = controllerMap.axes.get("change_pos_b");
     }
@@ -120,8 +128,10 @@ public class DiffyServoPositioner extends LoggingOpMode
     @Override
     public void loop()
     {
+        controllerMap.update();
         if (currScene != null)
         {
+            Scene oldScene = currScene;
             if (currScene.firstLoop)
             {
                 currScene.firstLoop = false;
@@ -130,27 +140,32 @@ public class DiffyServoPositioner extends LoggingOpMode
                 currScene.init();
             }
             else currScene.loop();
+            
+            if (currScene != oldScene)
+            {
+                oldScene.exit();
+            }
             telemetry.update();
         }
     }
     
     private void setDefaultButtons()
     {
-        controllerMap.setButtonMap("up_arrow",     ControllerMap.Controller.gamepad1, ControllerMap.Button.dpad_up);
-        controllerMap.setButtonMap("down_arrow",   ControllerMap.Controller.gamepad1, ControllerMap.Button.dpad_down);
-        controllerMap.setButtonMap("reset_pos",    ControllerMap.Controller.gamepad1, ControllerMap.Button.x);
-        controllerMap.setButtonMap("delete_pos",   ControllerMap.Controller.gamepad1, ControllerMap.Button.y);
-        controllerMap.setButtonMap("ok",           ControllerMap.Controller.gamepad1, ControllerMap.Button.b);
-        controllerMap.setButtonMap("stop_servo",   ControllerMap.Controller.gamepad1, ControllerMap.Button.a);
+        controllerMap.setButtonMap("up_arrow", ControllerMap.Controller.gamepad1, ControllerMap.Button.dpad_up);
+        controllerMap.setButtonMap("down_arrow", ControllerMap.Controller.gamepad1, ControllerMap.Button.dpad_down);
+        controllerMap.setButtonMap("reset_pos", ControllerMap.Controller.gamepad1, ControllerMap.Button.x);
+        controllerMap.setButtonMap("delete_pos", ControllerMap.Controller.gamepad1, ControllerMap.Button.y);
+        controllerMap.setButtonMap("ok", ControllerMap.Controller.gamepad1, ControllerMap.Button.b);
+        controllerMap.setButtonMap("stop_servo", ControllerMap.Controller.gamepad1, ControllerMap.Button.a);
         controllerMap.setButtonMap("exit_to_menu", ControllerMap.Controller.gamepad1, ControllerMap.Button.right_bumper);
-        controllerMap.setButtonMap("toggle_mode",  ControllerMap.Controller.gamepad1, ControllerMap.Button.back);
-        controllerMap.setAxisMap  ("change_pos_a",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.left_stick_y);
-        controllerMap.setAxisMap  ("change_pos_b",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.right_stick_y);
+        controllerMap.setButtonMap("toggle_mode", ControllerMap.Controller.gamepad1, ControllerMap.Button.back);
+        controllerMap.setAxisMap("change_pos_a", ControllerMap.Controller.gamepad1, ControllerMap.Axis.left_stick_y);
+        controllerMap.setAxisMap("change_pos_b", ControllerMap.Controller.gamepad1, ControllerMap.Axis.right_stick_y);
     }
     
     private class SceneChoose extends Scene
     {
-        private Telemetry.Item status;
+        private Telemetry.Line status;
         private Scroll servoChooser;
         private int numPicked = 0;
         private final String[] indexes = {"first", "second"};
@@ -158,7 +173,7 @@ public class DiffyServoPositioner extends LoggingOpMode
         @Override
         public void init()
         {
-            status = telemetry.addLine().addData("", "");
+            status = telemetry.addLine();
             servoChooser = new Scroll(8);
             Servo[] servos = enumerateServos(hardwareMap);
             for (int i = 0; i < servos.length; i++)
@@ -167,7 +182,7 @@ public class DiffyServoPositioner extends LoggingOpMode
                 {
                     servoChooser.addLine(new HTMLString(
                             "span", "style=\"color: #aaaaaa;\"",
-                            servoControllers[i/6].getConnectionInfo()).toString(), -1);
+                            servoControllers[i / 6].getConnectionInfo()).toString(), -1);
                 }
                 
                 if (servos[i] == null)
@@ -187,17 +202,17 @@ public class DiffyServoPositioner extends LoggingOpMode
         @Override
         public void loop()
         {
-            status.setCaption(String.format("Choose the %s servo", indexes[numPicked]));
+            status.addData(String.format("Choose the %s servo", indexes[numPicked]), "");
             int up_edge = btn_up_arrow.edge();
             int dn_edge = btn_down_arrow.edge();
-            if (up_edge > 0)      servoChooser.press(-1);
+            if (up_edge > 0) servoChooser.press(-1);
             else if (dn_edge > 0) servoChooser.press(1);
             
             if (btn_up_arrow.get() || btn_down_arrow.get()) servoChooser.hold();
             
             if (btn_ok.edge() > 0)
             {
-                int sel_servo = (Integer)servoChooser.getLineMeta(servoChooser.getScrollPos());
+                int sel_servo = (Integer) servoChooser.getLineMeta(servoChooser.getScrollPos());
                 if (sel_servo >= 0)
                 {
                     if (numPicked == 0)
@@ -208,8 +223,8 @@ public class DiffyServoPositioner extends LoggingOpMode
                     {
                         servoB = sel_servo;
                         // set file name
-                        String ctrlA = ((LynxServoController)servoControllers[servoA/6]).getSerialNumber().toString();
-                        String ctrlB = ((LynxServoController)servoControllers[servoA/6]).getSerialNumber().toString();
+                        String ctrlA = ((LynxServoController) servoControllers[servoA / 6]).getSerialNumber().toString();
+                        String ctrlB = ((LynxServoController) servoControllers[servoA / 6]).getSerialNumber().toString();
                         fileName = String.format("servo_positions/%s.%d_%s.%d.json", ctrlA, servoA % 6, ctrlB, servoB % 6);
                         
                         currScene = new SceneMove();
@@ -237,8 +252,8 @@ public class DiffyServoPositioner extends LoggingOpMode
         @Override
         void init()
         {
-            controllerA = (LynxServoController)servoControllers[servoA / 6];
-            controllerB = (LynxServoController)servoControllers[servoB / 6];
+            controllerA = (LynxServoController) servoControllers[servoA / 6];
+            controllerB = (LynxServoController) servoControllers[servoB / 6];
             cservoA = servoA % 6;
             cservoB = servoB % 6;
             
@@ -263,14 +278,15 @@ public class DiffyServoPositioner extends LoggingOpMode
         
         void updateLabel(int index)
         {
-            double[] metadata = (double[])posList.getLineMeta(index);
+            double[] metadata = (double[]) posList.getLineMeta(index);
             posList.setLine(index, String.format("%.3f, %.3f", metadata[0], metadata[1]));
         }
         
         @Override
         void loop()
         {
-            if (lastTick == 0) lastTick = Time.now(); // avoid large jump from 0 to whenever we are now
+            if (lastTick == 0)
+                lastTick = Time.now(); // avoid large jump from 0 to whenever we are now
             if (!started)
             {
                 status.setCaption("Press the PLAY button to start");
@@ -294,7 +310,7 @@ public class DiffyServoPositioner extends LoggingOpMode
             {
                 controllerA.setServoPosition(cservoA, posA);
                 controllerB.setServoPosition(cservoB, posB);
-    
+                
                 status.setCaption("Servo positions");
             }
             
@@ -318,13 +334,13 @@ public class DiffyServoPositioner extends LoggingOpMode
             
             if (change)
             {
-                double[] data = (double[])posList.getSelectedMeta();
+                double[] data = (double[]) posList.getSelectedMeta();
                 posA = data[0];
                 posB = data[1];
             }
             else if (btn_reset_pos.edge() > 0)
             {
-                posList.addLine("", new double[] {Double.NaN, Double.NaN}); // dummy, will get filled immediately
+                posList.addLine("", new double[]{Double.NaN, Double.NaN}); // dummy, will get filled immediately
                 posList.setScrollPos(posList.size() - 1);
             }
             
@@ -376,7 +392,7 @@ public class DiffyServoPositioner extends LoggingOpMode
     {
         if (currScene != null && currScene instanceof SceneMove)
         {
-            SceneMove scn = (SceneMove)currScene;
+            SceneMove scn = (SceneMove) currScene;
             Scroll posList = scn.posList;
             
             JsonObject root = new JsonObject();
@@ -385,7 +401,7 @@ public class DiffyServoPositioner extends LoggingOpMode
             
             for (int i = 0; i < posList.size(); i++)
             {
-                double[] data = (double[])posList.getLineMeta(i);
+                double[] data = (double[]) posList.getLineMeta(i);
                 JsonArray pos = new JsonArray();
                 pos.add(data[0]);
                 pos.add(data[1]);

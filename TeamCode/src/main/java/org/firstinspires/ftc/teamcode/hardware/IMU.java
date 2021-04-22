@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.hardware.events.AngleHoldEvent;
 import org.firstinspires.ftc.teamcode.hardware.events.IMUEvent;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
@@ -61,7 +60,7 @@ public class IMU
     private class Worker implements EventBus.SubCallback<TimerEvent>
     {
         private Logger log;
-        private File    calibrationFile = Storage.getFile("imu_calibration.json");
+        private File calibrationFile = Storage.getFile("imu_calibration.json");
         
         private final String[] internalStatus =
                 {"Idle", "Error", "Initializing peripherals", "Initializing system", "Self-test",
@@ -99,17 +98,17 @@ public class IMU
         private void update()
         {
             BNO055IMU.SystemStatus status = imu.getSystemStatus();
-            if (prevStatus != (int)status.bVal)
+            if (prevStatus != (int) status.bVal)
             {
-                prevStatus = (int)status.bVal;
+                prevStatus = (int) status.bVal;
                 detailStatus = internalStatus[prevStatus];
                 
                 if (prevStatus == 1) // status == ERROR
                 {
                     BNO055IMU.SystemError error = imu.getSystemError();
-                    if (prevError != (int)error.bVal)
+                    if (prevError != (int) error.bVal)
                     {
-                        prevError = (int)error.bVal;
+                        prevError = (int) error.bVal;
                         detailStatus = internalStatus[prevStatus] + ": " + errors[prevError];
                     }
                 }
@@ -133,7 +132,8 @@ public class IMU
             {
                 //Looped past 180 to -179
                 revolutions++;
-            } else if (delta > 300)
+            }
+            else if (delta > 300)
             {
                 //Looped past -179 to 180
                 revolutions--;
@@ -161,18 +161,20 @@ public class IMU
                             {
                                 String data = scan.useDelimiter("\\Z").next();
                                 params.calibrationData = BNO055IMU.CalibrationData.deserialize(data);
-                            } else
+                            }
+                            else
                             {
                                 log.d("File does not exist!");
                                 autoCalibrating = true;
                             }
-                        } catch (IOException e)
+                        }
+                        catch (IOException e)
                         {
                             log.w("Unable to read calibration file");
                             log.w(e);
                             autoCalibrating = true;
                         }
-    
+                        
                         log.d("Initializing IMU [WILL BLOCK EVENT LOOP]");
                         detailStatus = "Initializing";
                         imu.initialize(params);
@@ -277,29 +279,6 @@ public class IMU
         worker.scheduler = scheduler;
         workerInterval = scheduler.addRepeatingTrigger(0.05, "IMU Worker Timer");
         workerSub = evBus.subscribe(TimerEvent.class, worker, "IMU Worker", workerInterval.eventChannel);
-    }
-    
-    @Deprecated
-    public void setImmediateStart(boolean immediateStart)
-    {
-    
-    }
-    
-    public void start()
-    {
-        worker.inRadians = false; // radians mode is most likely broken
-        if (worker.getState() < INITIALIZED)
-        {
-            log.f("start() called before initialization complete!");
-            throw new IllegalStateException("start() called before initialization complete!");
-        }
-        if (worker.getState() == STARTED)
-        {
-            log.d("Trying to start IMU even though it is already running");
-            // understandable; have a nice day
-            return;
-        }
-        worker.setState(STARTED);
     }
     
     public int getStatus()

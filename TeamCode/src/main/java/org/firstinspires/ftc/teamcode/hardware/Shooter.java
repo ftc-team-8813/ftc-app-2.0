@@ -1,13 +1,13 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-import org.firstinspires.ftc.teamcode.util.Configuration;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +15,6 @@ public class Shooter
 {
     
     public final DcMotor motor;
-    public final DcMotor motor2;
     private double rampTime;
     private double maxPower;
     private double[] powershot_power;
@@ -25,7 +24,7 @@ public class Shooter
     private boolean started;
     
     private List<ShooterPower> powers;
-    private int currPower = -1;
+    private int currPreset = -1;
     
     private static class ShooterPower
     {
@@ -43,25 +42,28 @@ public class Shooter
             this.power = obj.get("power").getAsDouble();
             JsonArray color = obj.getAsJsonArray("color");
             this.color = (color.get(0).getAsInt() << 16 |
-                          color.get(1).getAsInt() << 8 |
-                          color.get(2).getAsInt());
+                    color.get(1).getAsInt() << 8 |
+                    color.get(2).getAsInt());
         }
     }
     
-    public Shooter(DcMotor motor, DcMotor motor2, JsonObject config)
+    public Shooter(DcMotor motor, JsonObject config)
     {
         this.motor = motor;
-        this.motor2 = motor2;
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         powers = new ArrayList<>();
         loadConfiguration(config);
     }
     
     public void start()
     {
+        start(maxPower);
+    }
+    
+    public void start(double power)
+    {
+        maxPower = power;
         if (!started)
         {
             startTime = System.nanoTime();
@@ -73,10 +75,10 @@ public class Shooter
     {
         started = false;
     }
-
-    public void setPower(double power){
+    
+    public void setPower(double power)
+    {
         motor.setPower(power);
-        motor2.setPower(power);
     }
     
     public boolean running()
@@ -84,19 +86,25 @@ public class Shooter
         return started;
     }
     
-    public void update()
+    public void update(Telemetry telemetry)
     {
         if (!started)
         {
-            setPower(0);
-            return;
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            double vel = ((DcMotorEx) motor).getVelocity(AngleUnit.RADIANS);
+            double power = -vel * 0.05;
+            setPower(power);
         }
-        
-        double time = (double)(System.nanoTime() - startTime) / 1_000_000_000;
-        double power;
-        if (time >= rampTime) power = maxPower;
-        else                  power = (time / rampTime) * maxPower;
-        setPower(power);
+        else
+        {
+            motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            double time = (double) (System.nanoTime() - startTime) / 1_000_000_000;
+            double power;
+            if (time >= rampTime) power = maxPower;
+            else power = (time / rampTime) * maxPower;
+            setPower(power);
+        }
+        telemetry.addData("shooter_power", "%.4f", maxPower);
     }
     
     private void loadConfiguration(JsonObject root)
@@ -118,6 +126,11 @@ public class Shooter
         }
     }
     
+    public void setMaxPower(double power)
+    {
+        this.maxPower = power;
+    }
+    
     @Deprecated
     public void powershot(int i)
     {
@@ -129,18 +142,28 @@ public class Shooter
     {
         int x = i % powers.size();
         if (x < 0) x += powers.size();
-        currPower = x;
-        maxPower = powers.get(currPower).power;
+        currPreset = x;
+        maxPower = powers.get(currPreset).power;
     }
     
     public int getPresetColor()
     {
-        if (currPower < 0) return 0;
-        return powers.get(currPower).color;
+        if (currPreset < 0) return 0;
+        return powers.get(currPreset).color;
     }
     
     public int getCurrPreset()
     {
-        return currPower;
+        return currPreset;
+    }
+    
+    public double getMaxPower()
+    {
+        return maxPower;
+    }
+    
+    public double getPower(int i)
+    {
+        return powers.get(i).power;
     }
 }

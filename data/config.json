@@ -1,29 +1,30 @@
 {
   "shooter": {
     "rampTime": 1,
-    "maxPower": 0.40,
+    "maxPower": 0.79,
 
     "powershots": [
-      0.35,
-      0.25,
-      0.25
+      0.65,
+      0.66,
+      0.67
     ],
 
-    "presets": [
-      {"power":  0.38, "color": [255, 255, 0]},
-      {"power":  0.30, "color": [64,  0,   128]}
+    "presets":[
+      {"power":  0.7, "color": [255, 255, 0]},
+      {"power":  0.6745, "color":  [255, 255, 255]},
+      {"power":  0.6425, "color": [64,  0,   128]}
     ]
   },
   "turret": {
-    "home":    -0.125,
-    "home180": -0.580,
+    "home":    0.405,
+    "home180": 0.081,
     "min": 0,
     "max": 0.95,
-    "maxSpeed": 0.4,
-    "kp":  7,
+    "maxSpeed": 0.5,
+    "kp":  10,
     "pusher": {
-      "in": 0.82,
-      "out": 0.52
+      "unpush": 0.52,
+      "push": 0.75
     }
   },
   "lift": {
@@ -36,18 +37,35 @@
     }
   },
   "teleop": {
-    "drive_speeds": [-0.65, -0.4, -0.5]
+    "drive_speeds": [-0.6, -0.35, -0.85],
+    "powershot_angles": [-0.73, -0.7465, -0.758],
+    "powershot_powers": [0.3735, 0.3655, 0.3585],
+
+    "turret_adj_rate": 0.004
   },
   "wobble": {
-    "arm_up": 1,
-    "arm_mid": 0.56,
-    "arm_down": 0,
-    "claw_open": 0.14,
-    "claw_close": 0.4
+    "arm_up": 0.20,
+    "arm_mid": 0.41,
+    "arm_down": 1,
+    "claw_open": 0.83,
+    "claw_close": 0.48
+  },
+  "blocker": {
+    "up": 0,
+    "down": 0.62
   },
   "nav": {
     "angle_kp": 0.02,
     "dist_kp": 0.005
+  },
+  "tracker": {
+    "offset": 135,
+    "target_x": -72,
+    "target_y": -48
+  },
+  "intake": {
+    "pivot_in": 0.35,
+    "pivot_out": 0.8
   },
 
   "turret_cal": {

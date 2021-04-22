@@ -1,0 +1,643 @@
+{
+  "version": "1.1.1",
+  "defaultSpeed": 0.6,
+  "defaultDir": "backwards",
+  "_comments": [
+
+  ],
+
+  "_uses": [
+
+  ],
+
+  "timers": {
+    "wobbleTimer": 1,
+    "clawTimer": 0.3,
+
+    "pushTimer": 0.25,
+    "spinTimer": 0.75,
+
+    "webcamTimer": 1
+  },
+
+  "constants": {
+    "wobble2-x": -28.8,
+    "wobble2-y": -30,
+    "wobble2-x2": -27,
+    "wobble2-a": 185,
+
+    "r0-drop1x": -67.3,
+    "r0-drop1y": -34.9,
+    "r0-drop1a": 85,
+
+    "r0-drop2x": -74.5,
+    "r0-drop2y": -21.8,
+    "r0-drop2a": 135,
+
+
+    "r1-drop1x": -84,
+    "r1-drop1y": -17,
+    "r1-drop1a": 33,
+
+    "r1-drop2x": -76,
+    "r1-drop2y": -21,
+    "r1-drop2a": -8,
+
+
+    "r4-drop1x": -109,
+    "r4-drop1y": -41,
+    "r4-drop1a": 14,
+
+    "r4-drop2x": -100,
+    "r4-drop2y": -42,
+    "r4-drop2a": 6,
+
+    "r4-park-x": -73,
+    "r4-park-y": -39
+  },
+
+  "path": [
+
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "shooter",
+        "params": {"action": "start"}
+      }
+    },
+
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "turret",
+        "params": {"action": "rotate", "angle": -0.015}
+      }
+    },
+
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "webcamTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "webcamDetect",
+        "params": {}
+      }
+    },
+
+    {
+      "type": "drive",
+      "absolute": true,
+
+      "x": -58.2,
+      "y": 0
+    },
+
+    {
+      "type": "turn",
+      "absolute": true,
+      "rotation": 0
+    },
+
+    {
+      "label": "ringShoot",
+      "type": "actuator",
+      "actuator": {
+        "name": "turret",
+        "params": {"action": "push"}
+      }
+    },
+
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "pushTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "turret",
+        "params": {"action": "unpush"}
+      }
+    },
+
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "spinTimer"
+      },
+
+      "type": "nop",
+
+      "condition": {
+        "name": "incRingCount",
+        "cond": "<",
+        "value": 3,
+        "jumpTrue": "ringShoot"
+      }
+    },
+
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "shooter",
+        "params": {"action": "stop"}
+      }
+    },
+
+    {
+      "type": "nop",
+      "condition": {
+        "name": "ringsSeen",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": "rings-0"
+      }
+    },
+
+    {
+      "type": "nop",
+      "condition": {
+        "name": "ringsSeen",
+        "cond": "==",
+        "value": 1,
+        "jumpTrue": "rings-1",
+        "jumpFalse": "rings-4"
+      }
+    },
+
+
+
+
+    {
+      "label": "rings-0",
+      "type": "drive",
+      "absolute": true,
+      "x": "r0-drop1x",
+      "y": "r0-drop1y"
+    },
+
+    {
+      "type": "turn",
+      "absolute": true,
+      "rotation": "r0-drop1a"
+    },
+
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "open"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "clawTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      }
+    },
+
+    {
+      "type": "drive",
+      "absolute": true,
+      "x": "wobble2-x",
+      "y": "wobble2-y"
+    },
+
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "close"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "clawTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      }
+    },
+
+    {
+      "type": "drive",
+      "absolute": true,
+      "direction": "forwards",
+      "x": "r0-drop2x",
+      "y": "r0-drop2y"
+    },
+
+    {
+      "type": "turn",
+      "absolute": true,
+      "rotation": "r0-drop2a"
+    },
+
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "open"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "clawTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      },
+
+      "condition": {
+        "name": "0",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": "end"
+      }
+    },
+
+
+
+
+    {
+      "label": "rings-1",
+      "type": "drive",
+      "absolute": true,
+      "x": "r1-drop1x",
+      "y": "r1-drop1y"
+    },
+
+    {
+      "type": "turn",
+      "absolute": true,
+      "rotation": "r1-drop1a"
+    },
+
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "open"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "clawTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      }
+    },
+
+    {
+      "type": "drive",
+      "absolute": true,
+      "x": "wobble2-x",
+      "y": "wobble2-y"
+    },
+
+    {
+      "type": "turn",
+      "absolute": true,
+      "rotation": "wobble2-a"
+    },
+
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleTimer"
+      },
+
+      "type": "drive",
+      "absolute": true,
+      "x": "wobble2-x2",
+      "y": "wobble2-y"
+    },
+
+    {
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "close"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "clawTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      }
+    },
+
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleTimer"
+      },
+
+      "type": "drive",
+      "absolute": true,
+      "direction": "forwards",
+      "x": "r1-drop2x",
+      "y": "r1-drop2y"
+    },
+
+    {
+      "type": "turn",
+      "absolute": true,
+      "rotation": "r1-drop2a"
+    },
+
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "open"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "clawTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      },
+
+      "condition": {
+        "name": "0",
+        "cond": "==",
+        "value": 0,
+        "jumpTrue": "end"
+      }
+    },
+
+
+
+
+    {
+      "label": "rings-4",
+      "type": "drive",
+      "absolute": true,
+      "x": "r4-drop1x",
+      "y": "r4-drop1y"
+    },
+
+    {
+      "type": "turn",
+      "absolute": true,
+      "rotation": "r4-drop1a"
+    },
+
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "open"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "clawTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      }
+    },
+
+    {
+      "type": "drive",
+      "absolute": true,
+      "x": "wobble2-x",
+      "y": "wobble2-y"
+    },
+
+    {
+      "type": "turn",
+      "absolute": true,
+      "rotation": "wobble2-a"
+    },
+
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleTimer"
+      },
+
+      "type": "drive",
+      "absolute": true,
+      "x": "wobble2-x2",
+      "y": "wobble2-y"
+    },
+
+    {
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "close"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "clawTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      }
+    },
+
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleTimer"
+      },
+
+      "type": "drive",
+      "absolute": true,
+      "direction": "forwards",
+      "x": "r4-drop2x",
+      "y": "r4-drop2y"
+    },
+
+    {
+      "type": "turn",
+      "absolute": true,
+      "rotation": "r4-drop2a"
+    },
+
+    {
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "down"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "wobbleTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "open"}
+      }
+    },
+    {
+      "trigger": {
+        "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
+        "timer": "clawTimer"
+      },
+
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      }
+    },
+
+    {
+      "type": "drive",
+      "absolute": true,
+      "direction": "forwards",
+      "power": 0.7,
+      "x": "r4-park-x",
+      "y": "r4-park-y"
+    },
+
+    {
+      "label": "end",
+      "type": "nop"
+    }
+  ]
+
+}

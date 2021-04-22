@@ -1,18 +1,36 @@
 package org.firstinspires.ftc.teamcode.opmodes.test;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import android.text.TextUtils;
+
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 
-@TeleOp(name="Webcam Finder")
+@TeleOp(name = "Webcam Finder")
 public class WebcamFinder extends LoggingOpMode
 {
+    private String telemString;
+    
     @Override
     public void init()
     {
-        Webcam.getConnected();
+        super.init();
+        Webcam[] webcams = Webcam.getConnected();
+        
+        String[] serials = new String[webcams.length];
+        for (int i = 0; i < webcams.length; i++)
+        {
+            serials[i] = webcams[i].getSerialNumber();
+        }
+        
+        telemString = TextUtils.join(", ", serials);
+    }
+    
+    @Override
+    public void init_loop()
+    {
+        telemetry.addData("Webcams connected", telemString);
     }
     
     @Override

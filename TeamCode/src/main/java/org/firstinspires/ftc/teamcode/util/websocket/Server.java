@@ -1,48 +1,42 @@
 package org.firstinspires.ftc.teamcode.util.websocket;
 
 import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.util.event.Event;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 public class Server
 {
-
-    private Thread workerThread;
-    private SocketWorker worker;
     
-    public static final int STATE_CONNECTING     = 0;
-    public static final int STATE_RECV_COMMAND   = 1;
+    private Thread workerThread;
+    protected SocketWorker worker;
+    
+    public static final int STATE_CONNECTING = 0;
+    public static final int STATE_RECV_COMMAND = 1;
     public static final int STATE_AWAIT_RESPONSE = 2;
-    public static final int STATE_SEND_RESPONSE  = 3;
-    public static final int STATE_CLOSED         = 4;
+    public static final int STATE_SEND_RESPONSE = 3;
+    public static final int STATE_CLOSED = 4;
     public static final String[] statuses = {
             "Connecting", "Receive Command", "Await Response", "Send Response", "Closed"
     };
     
-    public static final int CMD_ECHO             = 0x00;
-    public static final int CMD_CLOSE            = 0xFF;
-    public static final int RESP_MULTI           = 0xFE;
+    public static final int CMD_ECHO = 0x00;
+    public static final int CMD_CLOSE = 0xFF;
+    public static final int RESP_MULTI = 0xFE;
     
     private HashMap<Integer, CommandProcessor> processors;
     
     private Logger log = new Logger("Websocket control");
     
-    public Server(int port)
+    public Server(ServerIO server)
     {
         processors = new HashMap<>();
-        worker = new SocketWorker(port);
+        worker = new SocketWorker(server);
         workerThread = new Thread(worker);
     }
     
@@ -69,7 +63,7 @@ public class Server
     {
         try
         {
-            ServerSocket server = worker.server.get();
+            ServerIO server = worker.server;
             if (server != null && !server.isClosed())
             {
                 log.d("Closing server");
@@ -77,13 +71,14 @@ public class Server
             }
             if (worker.connection != null)
             {
-                Socket conn = worker.connection.get();
+                SocketIO conn = worker.connection.get();
                 if (conn != null && !conn.isClosed())
                 {
                     log.d("Closing connection");
                     conn.close();
                 }
             }
+            workerThread.interrupt();
         }
         catch (IOException e)
         {
@@ -109,6 +104,7 @@ public class Server
     public static class Responder
     {
         private SocketWorker worker;
+        
         private Responder(SocketWorker worker)
         {
             this.worker = worker;
@@ -128,8 +124,8 @@ public class Server
         private Logger log = new Logger("Websocket worker");
         
         private int port;
-        private WeakReference<ServerSocket> server;
-        private WeakReference<Socket> connection;
+        private ServerIO server;
+        private WeakReference<SocketIO> connection;
         /*
            Protocol: Command/response format
            - user sends a command (1 byte + some payload)
@@ -168,9 +164,9 @@ public class Server
         
         private Responder resp;
         
-        public SocketWorker(int port)
+        public SocketWorker(ServerIO server)
         {
-            this.port = port;
+            this.server = server;
             log.d("Initialized worker for port %d", port);
             resp = new Responder(this);
         }
@@ -180,18 +176,16 @@ public class Server
         {
             recvBuffer = ByteBuffer.allocate(65535);
             sendBuffer = ByteBuffer.allocate(65535);
-            try (ServerSocket server = new ServerSocket(port))
+            try (ServerIO server = this.server)
             {
-                // GC the server when it is closed
-                this.server = new WeakReference<>(server);
                 while (true)
                 {
                     state = STATE_CONNECTING;
                     log.d("Waiting for connection on port %d...", port);
-                    try (Socket sock = server.accept())
+                    try (SocketIO sock = server.accept())
                     {
                         connection = new WeakReference<>(sock);
-                        log.d("Connection from %s", sock.getInetAddress().getHostAddress());
+                        log.d("Connection from %s", sock.getConnectionInfo());
                         InputStream in = sock.getInputStream();
                         OutputStream out = sock.getOutputStream();
                         boolean closeConnection = false;
@@ -252,18 +246,18 @@ public class Server
                                 // log.d("Sending large response");
                                 int size = largeResponse.limit();
                                 // integer ceiling-divide; make sure there are enough packets sent to fit the entire response
-                                int packetCount = size/65535 + ((size % 65535 > 0) ? 1 : 0);
+                                int packetCount = size / 65535 + ((size % 65535 > 0) ? 1 : 0);
                                 if (packetCount > 255)
                                 {
                                     log.e("Packet size MUCH too large: %d", size);
                                     packetCount = 0;
                                 }
                                 byte[] resp_packet = {
-                                        (byte)RESP_MULTI,  // response
-                                        (byte)0x00,        // size MSB
-                                        (byte)0x02,        // size LSB
-                                        (byte)packetCount, // packet count
-                                        (byte)response     // command ID
+                                        (byte) RESP_MULTI,  // response
+                                        (byte) 0x00,        // size MSB
+                                        (byte) 0x02,        // size LSB
+                                        (byte) packetCount, // packet count
+                                        (byte) response     // command ID
                                 };
                                 out.write(resp_packet);
                                 int ptr = 0;
@@ -272,9 +266,9 @@ public class Server
                                     // log.v("Sending packet %d/%d", i+1, packetCount);
                                     int packetSize = Math.min(65535, size - ptr);
                                     byte[] head = {
-                                            (byte)i,
-                                            (byte)((packetSize >> 8) & 0xFF),
-                                            (byte)(packetSize & 0xFF)
+                                            (byte) i,
+                                            (byte) ((packetSize >> 8) & 0xFF),
+                                            (byte) (packetSize & 0xFF)
                                     };
                                     out.write(head);
                                     out.write(largeResponse.array(), ptr, packetSize);
@@ -288,9 +282,9 @@ public class Server
                                 sendBuffer.flip();
                                 int size = sendBuffer.limit();
                                 byte[] head = {
-                                        (byte)response,
-                                        (byte)((size >> 8) & 0xFF),
-                                        (byte)(size & 0xFF)
+                                        (byte) response,
+                                        (byte) ((size >> 8) & 0xFF),
+                                        (byte) (size & 0xFF)
                                 };
                                 out.write(head);
                                 out.write(sendBuffer.array(), 0, sendBuffer.limit());
@@ -309,12 +303,14 @@ public class Server
                         log.e("Connection failed -- listening for new connections");
                     }
                 }
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 log.e(e);
             }
             finally
             {
+                this.server = null;
                 state = STATE_CLOSED;
             }
         }

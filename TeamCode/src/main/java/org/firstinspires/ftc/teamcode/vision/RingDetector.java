@@ -10,9 +10,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import java.security.SecureClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class RingDetector
@@ -21,24 +19,28 @@ public class RingDetector
     private Mat workImg2;
     private Mat binaryImg;
     
-    private static final Scalar minColor = new Scalar(3,  18,  41);
+    private static final Scalar minColor = new Scalar(3, 18, 41);
     private static final Scalar maxColor = new Scalar(19, 231, 255);
+    
+    private int cutoffY;
     
     public RingDetector(int width, int height)
     {
-        workImg = new Mat(width, height, CvType.CV_8UC3);
-        workImg2 = new Mat(width, height, CvType.CV_8UC3);
-        binaryImg = new Mat(width, height, CvType.CV_8UC1);
+        cutoffY = (int) (height * 0.5);
+        workImg = new Mat(width, height - cutoffY, CvType.CV_8UC3);
+        workImg2 = new Mat(width, height - cutoffY, CvType.CV_8UC3);
+        binaryImg = new Mat(width, height - cutoffY, CvType.CV_8UC1);
     }
     
     public double detect(Mat inputImg, ImageDraw draw)
     {
-        Imgproc.cvtColor(inputImg, workImg, Imgproc.COLOR_RGBA2BGR);
+        inputImg.submat(cutoffY, inputImg.height(), 0, inputImg.width()).copyTo(workImg);
+        Imgproc.cvtColor(workImg, workImg, Imgproc.COLOR_RGBA2BGR);
         Imgproc.cvtColor(workImg, workImg2, Imgproc.COLOR_BGR2HLS);
         Imgproc.blur(workImg2, workImg, new Size(5, 5));
         
         Core.inRange(workImg, minColor, maxColor, binaryImg);
-    
+        
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(binaryImg, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -65,8 +67,14 @@ public class RingDetector
             {
                 Color c = notChosen;
                 if (i == maxContourIndex) c = chosen;
-                ImageDraw.Point[] contour = ImageDraw.Point.fromContour(contours.get(i));
-                if (contour.length >= 2) draw.draw(new ImageDraw.Lines(c, 2, contour));
+                MatOfPoint contour = contours.get(i);
+                Point[] points = contour.toArray();
+                for (Point p : points)
+                {
+                    p.y += cutoffY;
+                }
+                ImageDraw.Point[] contourPoints = ImageDraw.Point.fromContour(points);
+                if (contourPoints.length >= 2) draw.draw(new ImageDraw.Lines(c, 2, contourPoints));
             }
         }
         

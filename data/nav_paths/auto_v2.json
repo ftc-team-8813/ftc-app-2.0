@@ -33,14 +33,15 @@
     "pushDelay": 0.8,
     "re_spinupDelay": 1.5,
     "wobbleDownDelay": 1,
-    "wobbleOpenDelay": 0.3
+    "wobbleOpenDelay": 0.3,
+    "wobbleUpDelay": 0.5
   },
 
   "constants": {
     "shootFwd": -2200,
-    "powershot0": 0.044,
-    "powershot1": 0.031,
-    "powershot2": 0.02,
+    "powershot0": -0.074,
+    "powershot1": -0.0545,
+    "powershot2": -0.0372,
 
     "near_rotate1": 68,
     "near_forward1": -1550,
@@ -283,15 +284,16 @@
     },
 
     {
-      "_comment": "[18] wait, turn robot",
+      "_comment": "[18] wait, lift claw",
       "trigger": {
         "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
-        "timer": "wobbleOpenDelay"
+        "timer": "wobbleUpDelay"
       },
-
-      "type": "turn",
-      "absolute": true,
-      "rotation": "near_rotate2"
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      }
     },
 
     {
@@ -344,15 +346,16 @@
     },
 
     {
-      "_comment": "[24] wait, turn robot",
+      "_comment": "[24] wait, lift claw",
       "trigger": {
         "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
-        "timer": "wobbleOpenDelay"
+        "timer": "wobbleUpDelay"
       },
-
-      "type": "turn",
-      "absolute": true,
-      "rotation": "mid_rotate2"
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      }
     },
 
     {
@@ -405,15 +408,16 @@
     },
 
     {
-      "_comment": "[30] wait, turn robot",
+      "_comment": "[30] wait, lift claw",
       "trigger": {
         "class": "org.firstinspires.ftc.teamcode.util.event.TimerEvent",
-        "timer": "wobbleOpenDelay"
+        "timer": "wobbleUpDelay"
       },
-
-      "type": "turn",
-      "absolute": true,
-      "rotation": "far_rotate2"
+      "type": "actuator",
+      "actuator": {
+        "name": "wobble",
+        "params": {"action": "up"}
+      }
     },
 
     {
