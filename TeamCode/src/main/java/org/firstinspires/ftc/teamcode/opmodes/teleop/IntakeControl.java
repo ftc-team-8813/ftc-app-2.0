@@ -31,7 +31,14 @@ public class IntakeControl extends ControlModule
     public void update(Telemetry telemetry)
     {
         double v = ax_intake.get() - ax_intake_out.get();
-        intake.runIntake(v);
+        if (v == 0)
+        {
+            intake.zero(telemetry);
+        }
+        else
+        {
+            intake.runIntake(v);
+        }
         
         if (v > 0)
         {

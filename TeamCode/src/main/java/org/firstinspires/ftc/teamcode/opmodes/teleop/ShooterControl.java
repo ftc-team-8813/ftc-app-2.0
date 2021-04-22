@@ -51,11 +51,13 @@ public class ShooterControl extends ControlModule
             shooter.setPreset(shooter.getCurrPreset() + 1);
             controlHub.setLEDColor(shooter.getPresetColor());
         }
+        /*
         if (btn_shooter_preset2.edge() > 0)
         {
             shooter.setPreset(1);
             controlHub.setLEDColor(shooter.getPresetColor());
         }
+         */
     }
     
     @Override

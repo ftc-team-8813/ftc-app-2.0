@@ -93,6 +93,7 @@ public class TurretControl extends ControlModule
         if (btn_turret_home.edge() > 0)
         {
             turret.home();
+            
             shooter.setPreset(0);
             controlHub.setLEDColor(shooter.getPresetColor());
             
@@ -101,8 +102,10 @@ public class TurretControl extends ControlModule
         if (btn_turret_reverse.edge() > 0)
         {
             turret.rotate(turret.getTurretShootPos());
+            /*
             shooter.setPreset(1);
             controlHub.setLEDColor(shooter.getPresetColor());
+             */
         }
     }
     

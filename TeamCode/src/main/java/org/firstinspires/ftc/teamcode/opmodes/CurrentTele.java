@@ -111,6 +111,8 @@ public class CurrentTele extends LoggingOpMode
         telemetry.addData("Peak loop time", "%.3f", Util.max(loop_time_hist));
         telemetry.addData("Avg loop time", "%.3f", Util.average(loop_time_hist));
         
+        telemetry.addData("Intake position", robot.intake.intake.getCurrentPosition());
+        
     }
     
     @Override

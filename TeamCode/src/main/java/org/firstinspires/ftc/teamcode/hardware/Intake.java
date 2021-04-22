@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 /**
  * Intake -- Control intake movement.
  */
@@ -12,11 +14,16 @@ public class Intake
     public final CRServo roller;
     public final DcMotor intake;
     
+    private static final double TPR = 145.1;
+    
     public Intake(DcMotor ramp, DcMotor intake, CRServo roller)
     {
         this.ramp = ramp;
         this.intake = intake;
         this.roller = roller;
+        
+        intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
     
     public void intake()
@@ -54,5 +61,17 @@ public class Intake
     public void stop()
     {
         run(0);
+    }
+    
+    public void zero(Telemetry telemetry)
+    {
+        int pos = intake.getCurrentPosition();
+        
+        int off = pos - (int)((int)((pos + TPR/2) / TPR) * TPR);
+        double power = -((double)off / TPR) * 2;
+        
+        telemetry.addData("Intake zeroing", power);
+        
+        intake.setPower(power);
     }
 }
