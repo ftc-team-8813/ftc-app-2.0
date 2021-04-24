@@ -69,7 +69,7 @@ public class AutoAimControl extends ControlModule
             {
                 telemetry.addData("Auto Aim", "ENGAGED");
                 autoAim.setAngleOffset(autoAim.getAngleOffset() + ax_adjust.get() * 0.001);
-                turret.rotate(autoAim.getTurretRotation(telemetry));
+                turret.rotate(autoAim.getTurretRotationVis(telemetry));
             }
         }
         else

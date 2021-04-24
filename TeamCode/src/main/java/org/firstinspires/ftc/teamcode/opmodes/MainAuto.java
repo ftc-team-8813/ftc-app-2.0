@@ -26,6 +26,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -34,7 +35,7 @@ import static org.firstinspires.ftc.teamcode.util.event.LifecycleEvent.START;
 import static org.opencv.core.CvType.CV_8UC4;
 
 // we going to use the event bus system for this so that everything can be done on one thread
-@Autonomous(name = "Auto")
+@Autonomous(name="Auto")
 public class MainAuto extends LoggingOpMode
 {
     private EventBus bus;
@@ -168,37 +169,31 @@ public class MainAuto extends LoggingOpMode
                     {
                         double speed = params.get("speed").getAsDouble();
                         robot.intake.runIntake(speed);
-                        robot.intake.runRamp(Math.signum(speed)); // run the ramp out if speed is negative
-                    }
-                    else
-                    {
-                        robot.intake.runIntake(1);
                         robot.intake.runRamp(1);
                     }
+                    else robot.intake.run(1);
                     break;
                 case "outtake":
-                    robot.intake.runIntake(-1);
-                    robot.intake.runRamp(-1);
+                    robot.intake.run(-1);
                     break;
                 case "stop":
                     robot.intake.stop();
                     break;
             }
         });
-        autoPath.addSensor("webcamState", () -> ByteBuffer.wrap(new byte[]{(byte) webcam.getState()}));
-        autoPath.addSensor("ringsSeen", () -> ByteBuffer.wrap(new byte[]{(byte) ringsDetected}));
+        autoPath.addSensor("webcamState", () -> ByteBuffer.wrap(new byte[] {(byte)webcam.getState()}));
+        autoPath.addSensor("ringsSeen", () -> ByteBuffer.wrap(new byte[] {(byte)ringsDetected}));
         autoPath.addActuator("webcamDetect", (params) -> {
             detectStage = DETECT_REQUEST_FRAME;
         });
         
         webcam = Webcam.forSerial(WEBCAM_SERIAL);
-        if (webcam == null)
-            throw new IllegalArgumentException("Could not find a webcam with serial number " + WEBCAM_SERIAL);
+        if (webcam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + WEBCAM_SERIAL);
         frameHandler = new Webcam.SimpleFrameHandler();
         webcam.open(ImageFormat.YUY2, 800, 448, 30, frameHandler);
-        
+    
         detectorFrame = new Mat(800, 448, CV_8UC4);
-        
+    
         detector = new RingDetector(800, 448);
         
         // load config
@@ -209,10 +204,10 @@ public class MainAuto extends LoggingOpMode
                 autoPath.getConstant("powershot2")
         };
          */
-        
+    
         Persistent.clear();
         homeComplete = false;
-        
+    
         initServer();
         LynxVoltageSensor voltageSensor = hardwareMap.get(LynxVoltageSensor.class, "Control Hub");
         double voltage = voltageSensor.getVoltage();
@@ -221,12 +216,11 @@ public class MainAuto extends LoggingOpMode
         try
         {
             autoPath.start();
-        }
-        catch (IOException e)
+        } catch (IOException e)
         {
             throw new IllegalStateException(e);
         }
-        
+    
         robot.turret.startZeroFind();
         
         robot.drivetrain.getOdometry().setPosition(-0.5, 0);
@@ -274,10 +268,10 @@ public class MainAuto extends LoggingOpMode
             serverDraw = new ImageDraw();
             Utils.bitmapToMat(frameHandler.currFramebuffer, detectorFrame);
             double area = detector.detect(detectorFrame, serverDraw);
-            if (area < 1200) ringsDetected = 0;
-            else if (area < 2500) ringsDetected = 1;
+            if      (area < 1200)   ringsDetected = 0;
+            else if (area < 2500)  ringsDetected = 1;
             else if (area < 10000) ringsDetected = 4;
-            else ringsDetected = -1;
+            else                   ringsDetected = -1;
             log.d("Detected: %d rings (area=%.3f)", ringsDetected, area);
         }
         
@@ -288,7 +282,7 @@ public class MainAuto extends LoggingOpMode
             telemBuf.putDouble(robot.turret.getPosition());
             telemBuf.putDouble(robot.turret.getTarget());
             telemBuf.putDouble(robot.turret.shooter.motor.getPower());
-            telemBuf.putDouble(((DcMotorEx) robot.turret.shooter.motor).getVelocity(AngleUnit.RADIANS));
+            telemBuf.putDouble(((DcMotorEx)robot.turret.shooter.motor).getVelocity(AngleUnit.RADIANS));
             telemBuf.putDouble(ringsDetected);
             telemUsed = false;
         }

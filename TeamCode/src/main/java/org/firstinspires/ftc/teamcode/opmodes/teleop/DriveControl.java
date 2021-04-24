@@ -44,12 +44,11 @@ public class DriveControl extends ControlModule
             speeds[i] = driveSpeeds.get(i).getAsDouble();
         }
         
-        speedSetting = 2;
+        speedSetting = 1;
         
-        ax_drive_l = controllerMap.getAxisMap("drive::left", "gamepad1", "left_stick_y");
-        ax_drive_r = controllerMap.getAxisMap("drive::right", "gamepad1", "right_stick_y");
-        btn_slow = controllerMap.getButtonMap("drive::slow", "gamepad1", "left_bumper");
-        btn_slow2 = controllerMap.getButtonMap("drive::slow2", "gamepad1", "right_bumper");
+        ax_drive_l = controllerMap.getAxisMap(  "drive::left",  "gamepad1", "left_stick_y");
+        ax_drive_r = controllerMap.getAxisMap(  "drive::right", "gamepad1", "right_stick_y");
+        btn_slow   = controllerMap.getButtonMap("drive::slow",  "gamepad1", "left_bumper");
         
         imu = robot.imu;
         lastHeadingTarget = imu.getHeading();
@@ -59,7 +58,7 @@ public class DriveControl extends ControlModule
     public void update(Telemetry telemetry)
     {
         double speed = speeds[speedSetting];
-        
+
         double turn = ax_drive_l.get() * speed;
         
         if (Math.abs(ax_drive_l.get()) < 0.001 && enableHeadingLock)
@@ -78,11 +77,6 @@ public class DriveControl extends ControlModule
         if (btn_slow.edge() > 0)
         {
             if (speedSetting == 0) speedSetting = 1;
-            else speedSetting = 0;
-        }
-        if (btn_slow2.edge() > 0)
-        {
-            if (speedSetting == 0) speedSetting = 2;
             else speedSetting = 0;
         }
     }
