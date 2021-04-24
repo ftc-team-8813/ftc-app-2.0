@@ -5,8 +5,11 @@ import android.graphics.ImageFormat;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.autoshoot.AutoAim;
+import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
@@ -46,6 +49,8 @@ public class VisionTest extends LoggingOpMode
     private RingDetector ringDetector;
     private GoalDetector goalDetector;
     
+    private Robot robot;
+    
     private Logger log = new Logger("Vision Test");
     
     static
@@ -73,6 +78,8 @@ public class VisionTest extends LoggingOpMode
         {
             throw new RuntimeException(e);
         }
+        
+        robot = Robot.initialize(hardwareMap, "Vision Test");
         
         server.registerProcessor(0x01, (cmd, payload, resp) -> { // Get frame
             if (serverFrameCopy == null || serverFrameUsed) return;
@@ -123,6 +130,10 @@ public class VisionTest extends LoggingOpMode
             // double ringsArea = detector.detect(cvFrame, draw);
             double pixel_length = goalDetector.calcPixelTurn(cvFrame, draw);
             
+            double newPos = (robot.turret.getPosition() + (pixel_length * AutoAim.PIXEL2eUNIT)) % 1.0;
+            if (newPos < 0) newPos += 1;
+            robot.turret.rotate(newPos);
+            
             if (telemDataUsed)
             {
                 exTelemetry.clear();
@@ -139,6 +150,8 @@ public class VisionTest extends LoggingOpMode
             
             cam.requestNewFrame();
         }
+        
+        robot.turret.update(telemetry);
         telemetry.addData("Camera status", cam.getStatus());
         telemetry.addData("Server status", server.getStatus());
         // telemetry.addData("Contour area", "%.3f", exTelemetry[0]);

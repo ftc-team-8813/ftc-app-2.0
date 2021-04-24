@@ -41,7 +41,7 @@ public class AutoAim
     private static final int DETECT_REQUEST_FRAME = 1;
     private static final int DETECT_PROCESS_FRAME = 2;
     public int detectStage = 0;
-    public final double PIXEL2eUNIT = 65 * 0.00001;
+    public static final double PIXEL2eUNIT = 65 * 0.00001;
 
     public AutoAim(){
         goalDetector = new GoalDetector();
