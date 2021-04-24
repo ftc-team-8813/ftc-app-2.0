@@ -41,7 +41,7 @@ public class AutoAim
     private static final int DETECT_REQUEST_FRAME = 1;
     private static final int DETECT_PROCESS_FRAME = 2;
     public int detectStage = 0;
-    public static final double PIXEL2eUNIT = 65 * 0.00001;
+    public static final double PIXEL2eUNIT = 10 * 0.000001;
 
     public AutoAim(){
         goalDetector = new GoalDetector();
@@ -62,26 +62,6 @@ public class AutoAim
     {
         this.x_target = xTarget;
         this.y_target = yTarget;
-    }
-    
-    public double getTargetX()
-    {
-        return x_target;
-    }
-    
-    public double getTargetY()
-    {
-        return y_target;
-    }
-    
-    public void setAngleOffset(double angleOff)
-    {
-        this.angle_off = angleOff;
-    }
-    
-    public double getAngleOffset()
-    {
-        return angle_off;
     }
 
     @Deprecated
@@ -120,7 +100,7 @@ public class AutoAim
             Utils.bitmapToMat(frameHandler.currFramebuffer, detectorFrame);
             double pixel_turn = goalDetector.calcPixelTurn(detectorFrame, null);
             double turn = pixel_turn * PIXEL2eUNIT;
-            log.i(String.format("Auto Aim Turn (eUnits): %f.3", turn));
+            log.i(String.format("Pixel Turn: %f.3, Turn (eUnits): %f.3", pixel_turn, turn));
             return turn;
         }
         return 0;
