@@ -48,6 +48,8 @@ public class VisionTest extends LoggingOpMode
     
     private RingDetector ringDetector;
     private GoalDetector goalDetector;
+
+    private ControlMgr mgr;
     
     private Robot robot;
     

@@ -7,7 +7,8 @@ LIFECYCLE_EVENT_INIT = 0
 LIFECYCLE_EVENT_START = 1
 LIFECYCLE_EVENT_STOP = 2
 
-SHOOT_SPEED = 0.72325
+SHOOT_SPEED = 0.705
+SHOOT_SPEED4 = 0.7156
 
 def place_wobble(nav, dropit=False):
     if not dropit:
@@ -71,7 +72,10 @@ def run_auto(nav):
         nav.move(-105, -13, speed=0.9)
         nav.turn(25)
 
-    nav.actuator('shooter', {'action': 'start', 'speed': SHOOT_SPEED})
+    if rings_seen == 4:
+        nav.actuator('shooter', {'action': 'start', 'speed': SHOOT_SPEED4})
+    else:
+        nav.actuator('shooter', {'action': 'start', 'speed': SHOOT_SPEED})
     place_wobble(nav)
 
     if rings_seen == 4:
@@ -79,7 +83,7 @@ def run_auto(nav):
 
     # Line up for shooting
     nav.move(-58.5, 0, reverse=False)
-    nav.actuator('turret', {'action': 'rotate', 'angle': 0.16})
+    nav.actuator('turret', {'action': 'rotate', 'angle': 0.165})
     nav.turn(90)
     if rings_seen == 0:
         time.sleep(3)
@@ -102,11 +106,11 @@ def run_auto(nav):
         shoot_rings(nav, 1)
         nav.turn(90)
     elif rings_seen == 4:
-        nav.actuator('turret', {'action': 'home'})
+        nav.actuator('turret', {'action': 'rotate', 'angle': 0.412})
         # nav.turn(-3)
-        nav.actuator('intake', {'action': 'intake', 'speed': -0.75})
+        nav.actuator('intake', {'action': 'intake', 'speed': -0.45})
         nav.move(-46, 5, reverse=False, speed=0.85)
-        nav.actuator('intake', {'action': 'intake', 'speed': 0.82})
+        nav.actuator('intake', {'action': 'intake', 'speed': 0.52})
         time.sleep(0.15)
         nav.move(-37, 12, reverse=False, speed=0.45)
         time.sleep(1)
@@ -130,7 +134,7 @@ def run_auto(nav):
         nav.turn(192)
         time.sleep(0.75)
     elif rings_seen == 4:
-        nav.move(-27, 18)
+        nav.move(-28, 18)
         time.sleep(0.25)
 
     pick_wobble(nav)
@@ -143,7 +147,7 @@ def run_auto(nav):
         nav.turn(-9)
     elif rings_seen == 4:
         # nav.move(-47, 18)
-        nav.actuator('intake', {'action': 'start', 'speed': -0.6})
+        nav.actuator('intake', {'action': 'intake', 'speed': -0.5})
         nav.move(-103, -13, speed=0.9)
         nav.actuator('intake', {'action': 'stop'})
         # nav.turn(-323)
