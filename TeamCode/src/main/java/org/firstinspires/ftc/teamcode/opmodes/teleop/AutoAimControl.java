@@ -83,9 +83,6 @@ public class AutoAimControl extends ControlModule
         if (auto_aim_enabled) {
             double turn = autoAim.getTurretRotationVis(telemetry);
             turret.rotate(turret.getPosition() + turn);
-            if (turn != 0) {
-                telemetry.addData("Auto Aim Encoder Turn: ", turn);
-            }
         }
     }
 

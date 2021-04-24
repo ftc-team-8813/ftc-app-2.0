@@ -7,7 +7,7 @@ LIFECYCLE_EVENT_INIT = 0
 LIFECYCLE_EVENT_START = 1
 LIFECYCLE_EVENT_STOP = 2
 
-SHOOT_SPEED = 0.7225
+SHOOT_SPEED = 0.72325
 
 def place_wobble(nav, dropit=False):
     if not dropit:
@@ -143,7 +143,9 @@ def run_auto(nav):
         nav.turn(-9)
     elif rings_seen == 4:
         # nav.move(-47, 18)
+        nav.actuator('intake', {'action': 'start', 'speed': -0.6})
         nav.move(-103, -13, speed=0.9)
+        nav.actuator('intake', {'action': 'stop'})
         # nav.turn(-323)
     place_wobble(nav)
 

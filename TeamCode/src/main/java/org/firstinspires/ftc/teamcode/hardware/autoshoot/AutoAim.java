@@ -48,6 +48,7 @@ public class AutoAim
         goalDetector.initializeWebcam();
         frameHandler = goalDetector.frameHandler;
         webcam = goalDetector.webcam;
+        this.log = new Logger("Auto Aim");
     }
 
     public AutoAim(Odometry odometry, double turretHome){
@@ -118,7 +119,9 @@ public class AutoAim
             detectStage = 0;
             Utils.bitmapToMat(frameHandler.currFramebuffer, detectorFrame);
             double pixel_turn = goalDetector.calcPixelTurn(detectorFrame, null);
-            return pixel_turn * PIXEL2eUNIT;
+            double turn = pixel_turn * PIXEL2eUNIT;
+            log.i(String.format("Auto Aim Turn (eUnits): %f.3", turn));
+            return turn;
         }
         return 0;
     }

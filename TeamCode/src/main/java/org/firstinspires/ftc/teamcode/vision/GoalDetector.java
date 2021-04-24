@@ -31,15 +31,10 @@ public class GoalDetector {
     private Mat binaryImg;
     public Mat contoured;
 
-    private static final int DETECT_REQUEST_FRAME = 1;
-    private static final int DETECT_PROCESS_FRAME = 2;
-    public int detectStage = 0;
-    public final double PIXEL2eUNIT = 65 * 0.00001;
-
     private final int width = 800;
     private final int height = 448;
-    private static final Scalar minColor = new Scalar(0,  50,  150);
-    private static final Scalar maxColor = new Scalar(14, 100, 255);
+    private static final Scalar minColor = new Scalar(105,  50,  100);
+    private static final Scalar maxColor = new Scalar(115, 100, 255);
 
 
     public GoalDetector(){
