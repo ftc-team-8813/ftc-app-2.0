@@ -33,7 +33,8 @@ public class IntakeControl extends ControlModule
         double v = ax_intake.get() - ax_intake_out.get();
         if (v == 0)
         {
-            intake.zero(telemetry);
+            intake.runRamp(0);
+            intake.runIntake(0);
         }
         else
         {

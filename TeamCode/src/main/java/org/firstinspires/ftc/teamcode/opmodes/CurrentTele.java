@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import android.graphics.Bitmap;
+
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -15,16 +17,22 @@ import org.firstinspires.ftc.teamcode.opmodes.teleop.PusherControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ShooterControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.TurretControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.WobbleControl;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.Time;
 import org.firstinspires.ftc.teamcode.util.Util;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
+import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
+import org.firstinspires.ftc.teamcode.util.websocket.Server;
+import org.opencv.android.OpenCVLoader;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 @TeleOp(name = "!!THE TeleOp!!")
 public class CurrentTele extends LoggingOpMode
@@ -38,6 +46,11 @@ public class CurrentTele extends LoggingOpMode
     private Scheduler scheduler; // just in case
     private double[] loop_time_hist = new double[100];
     private int loop_hist_idx;
+
+    static
+    {
+        OpenCVLoader.initDebug();
+    }
     
     @Override
     public void init()
@@ -118,7 +131,7 @@ public class CurrentTele extends LoggingOpMode
     @Override
     public void stop()
     {
-        controlMgr.stop();
+       controlMgr.stop();
         super.stop();
     }
 }

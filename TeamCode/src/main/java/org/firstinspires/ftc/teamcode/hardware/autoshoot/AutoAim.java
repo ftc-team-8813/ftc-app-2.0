@@ -6,6 +6,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.vision.GoalDetector;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -24,47 +25,36 @@ import static org.opencv.core.CvType.CV_8UC4;
 
 public class AutoAim
 {
+    private GoalDetector goalDetector;
     private Odometry odometry;
     private IMU imu;
     private double turretHome;
+    private Logger log;
+
+    private Webcam.SimpleFrameHandler frameHandler;
+    private Webcam webcam;
     
     private double x_target;
     private double y_target;
     private double angle_off;
-    private Logger log;
-
-    private Mat detectorFrame;
-    private Webcam.SimpleFrameHandler frameHandler;
-    private Webcam webcam;
 
     private static final int DETECT_REQUEST_FRAME = 1;
     private static final int DETECT_PROCESS_FRAME = 2;
-    private int detectStage = 0;
-    private static final double PIXEL2eUNIT = 0.001;
+    public int detectStage = 0;
+    public final double PIXEL2eUNIT = 65 * 0.00001;
 
-    private Mat workImg;
-    private Mat workImg2;
-    private Mat binaryImg;
-    private Mat contoured;
-
-    private final int width = 800;
-    private final int height = 448;
-    private int cutoffY;
-    private static final Scalar minColor = new Scalar(0,  50,  150);
-    private static final Scalar maxColor = new Scalar(20, 100, 255);
-
-    private static final String WEBCAM_SERIAL = "3522DE6F";
+    public AutoAim(){
+        goalDetector = new GoalDetector();
+        goalDetector.initializeWebcam();
+        frameHandler = goalDetector.frameHandler;
+        webcam = goalDetector.webcam;
+    }
 
     public AutoAim(Odometry odometry, double turretHome){
         this.odometry = odometry;
         this.imu = odometry.getIMU();
         this.turretHome = turretHome;
         this.log = new Logger("Auto Aim");
-
-        workImg = new Mat(width, height, CvType.CV_8UC3);
-        workImg2 = new Mat(width, height, CvType.CV_8UC3);
-        binaryImg = new Mat(width, height, CvType.CV_8UC1);
-        contoured = new Mat(width, height, CvType.CV_8UC3);
     }
     
     public void setTarget(double xTarget, double yTarget)
@@ -117,88 +107,19 @@ public class AutoAim
         return rotation_pos;
     }
 
-    public double getTurretRotationVis(Telemetry telemetry){
-        webcam = Webcam.forSerial(WEBCAM_SERIAL);
-        if (webcam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + WEBCAM_SERIAL);
-        frameHandler = new Webcam.SimpleFrameHandler();
-        webcam.open(ImageFormat.YUY2, 800, 448, 30, frameHandler);
-        detectorFrame = new Mat(800, 448, CV_8UC4);
-
-        if (detectStage == DETECT_REQUEST_FRAME){
-            frameHandler.newFrameAvailable = false;
+    public double getTurretRotationVis(Telemetry telemetry) {
+        Mat detectorFrame = new Mat(800, 448, CV_8UC4);
+        if (detectStage == DETECT_REQUEST_FRAME) {
+            goalDetector.frameHandler.newFrameAvailable = false;
             webcam.requestNewFrame();
             detectStage = DETECT_PROCESS_FRAME;
-        } else if (detectStage == DETECT_PROCESS_FRAME && frameHandler.newFrameAvailable){
+        } else if (detectStage == DETECT_PROCESS_FRAME && frameHandler.newFrameAvailable) {
             frameHandler.newFrameAvailable = false;
             detectStage = 0;
             Utils.bitmapToMat(frameHandler.currFramebuffer, detectorFrame);
+            double pixel_turn = goalDetector.calcPixelTurn(detectorFrame, null);
+            return pixel_turn * PIXEL2eUNIT;
         }
-
-        double pixel_turn = calcPixelTurn(detectorFrame);
-        return pixel_turn * PIXEL2eUNIT;
-    }
-
-    public double calcPixelTurn(Mat inputImg){
-        Imgproc.resize(workImg, workImg, new Size(800, 448));
-        Imgproc.cvtColor(workImg, workImg, Imgproc.COLOR_RGBA2BGR);
-        Imgproc.cvtColor(workImg, workImg2, Imgproc.COLOR_BGR2HLS);
-        Imgproc.blur(workImg2, workImg, new Size(1, 1));
-
-        Core.inRange(workImg, minColor, maxColor, binaryImg);
-
-        List<MatOfPoint> contours = new ArrayList<>();
-        Mat hierarchy = new Mat();
-        Imgproc.findContours(binaryImg, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-        hierarchy.release();
-
-        double maxArea = -1;
-        int maxContourIndex = -1;
-        for (int i = 0; i < contours.size(); i++){
-            double area = Imgproc.contourArea(contours.get(i));
-            if (area > maxArea)
-            {
-                maxContourIndex = i;
-                maxArea = area;
-            }
-        }
-        contoured = workImg;
-        Imgproc.drawContours(contoured, contours, maxContourIndex, new Scalar(0, 255, 0), 2);
-
-        final MatOfPoint biggest = contours.get(maxContourIndex);
-        List<Point> corners = getCornersFromPoints(biggest.toList());
-        return 400 - ((corners.get(0).x + corners.get(3).x)/2);
-    }
-
-    private List<Point> getCornersFromPoints(final List<Point> points) {
-        double minX = 0;
-        double minY = 0;
-        double maxX = 0;
-        double maxY = 0;
-
-        for (Point point : points) {
-            double x = point.x;
-            double y = point.y;
-
-            if (minX == 0 || x < minX) {
-                minX = x;
-            }
-            if (minY == 0 || y < minY) {
-                minY = y;
-            }
-            if (maxX == 0 || x > maxX) {
-                maxX = x;
-            }
-            if (maxY == 0 || y > maxY) {
-                maxY = y;
-            }
-        }
-
-        List<Point> corners = new ArrayList<>(4);
-        corners.add(new Point(minX, minY));
-        corners.add(new Point(minX, maxY));
-        corners.add(new Point(maxX, minY));
-        corners.add(new Point(maxX, maxY));
-
-        return corners;
+        return 0;
     }
 }

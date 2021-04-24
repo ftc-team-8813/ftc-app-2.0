@@ -5,16 +5,20 @@ import android.graphics.ImageFormat;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.hardware.autoshoot.AutoAim;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
+import org.firstinspires.ftc.teamcode.vision.GoalDetector;
 import org.firstinspires.ftc.teamcode.vision.ImageDraw;
 import org.firstinspires.ftc.teamcode.vision.RingDetector;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,6 +32,7 @@ public class VisionTest extends LoggingOpMode
     private Webcam cam;
     
     private static final String serial = "3522DE6F";
+    private static final String serial_top = "AABFDF4E";
     private Webcam.SimpleFrameHandler frameHandler;
     private Bitmap serverFrameCopy;
     private volatile boolean serverFrameUsed = true;
@@ -38,7 +43,8 @@ public class VisionTest extends LoggingOpMode
     private ByteBuffer exTelemetry;
     private boolean telemDataUsed = true;
     
-    private RingDetector detector;
+    private RingDetector ringDetector;
+    private GoalDetector goalDetector;
     
     private Logger log = new Logger("Vision Test");
     
@@ -51,9 +57,9 @@ public class VisionTest extends LoggingOpMode
     public void init()
     {
         super.init();
-        cam = Webcam.forSerial(serial);
+        cam = Webcam.forSerial(serial_top);
         if (cam == null)
-            throw new IllegalArgumentException("Could not find a webcam with serial number " + serial);
+            throw new IllegalArgumentException("Could not find a webcam with serial number " + serial_top);
         frameHandler = new Webcam.SimpleFrameHandler();
         cam.open(ImageFormat.YUY2, 800, 448, 30, frameHandler);
         drawBuffer = ByteBuffer.allocate(65535);
@@ -93,7 +99,8 @@ public class VisionTest extends LoggingOpMode
         });
         cvFrame = new Mat(800, 448, CV_8UC4);
         
-        detector = new RingDetector(800, 448);
+        ringDetector = new RingDetector(800, 448);
+        goalDetector = new GoalDetector();
         
         server.startServer();
     }
@@ -113,12 +120,13 @@ public class VisionTest extends LoggingOpMode
             }
             ImageDraw draw = new ImageDraw();
             // send Mat and ImageDraw to vision code
-            double ringsArea = detector.detect(cvFrame, draw);
+            // double ringsArea = detector.detect(cvFrame, draw);
+            double pixel_length = goalDetector.calcPixelTurn(cvFrame, draw);
             
             if (telemDataUsed)
             {
                 exTelemetry.clear();
-                exTelemetry.putDouble(ringsArea);
+                exTelemetry.putDouble(pixel_length);
                 telemDataUsed = false;
             }
             
