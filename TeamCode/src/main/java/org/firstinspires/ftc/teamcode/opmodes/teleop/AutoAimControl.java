@@ -82,7 +82,11 @@ public class AutoAimControl extends ControlModule
 
         if (auto_aim_enabled) {
             double turn = autoAim.getTurretRotationVis(telemetry);
-            turret.rotate(turret.getPosition() + turn);
+            
+            double newPos = (turret.getPosition() + (turn)) % 1.0;
+            if (newPos < 0) newPos += 1;
+            
+            turret.rotate(newPos);
         }
     }
 
