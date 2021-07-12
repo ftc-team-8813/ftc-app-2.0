@@ -77,7 +77,8 @@ public class PythonNavPath
         commandClasses = new SparseArray<>(256);
         this.eventBus = evBus;
         this.robot = robot;
-        this.nav = new Navigator(robot.drivetrain, robot.drivetrain.getOdometry(), eventBus);
+        // this.nav = new Navigator(robot.drivetrain, robot.drivetrain.getOdometry(), eventBus);
+        // TODO Replace with correct drivetrain
         
         this.python = new Python(scriptFile);
         this.args = args;

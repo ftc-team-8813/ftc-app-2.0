@@ -96,7 +96,8 @@ public class NavPath
         labels = new HashMap<>();
         paths = new ArrayList<>();
         
-        navigator = new Navigator(robot.drivetrain, robot.drivetrain.getOdometry(), evBus);
+        // navigator = new Navigator(robot.drivetrain, robot.drivetrain.getOdometry(), evBus);
+        // TODO Replace with correct drivetrain
     }
     
     public Navigator getNavigator()

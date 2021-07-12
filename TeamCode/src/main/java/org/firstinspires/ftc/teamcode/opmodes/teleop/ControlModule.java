@@ -24,8 +24,6 @@ public abstract class ControlModule
     
     public void stop() {}
     
-    ;
-    
     public void disable()
     {
         disabled = true;

@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.hardware.navigation;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.events.NavMoveEvent;
 import org.firstinspires.ftc.teamcode.util.Time;
@@ -17,7 +16,8 @@ import static java.lang.Math.PI;
 
 public class Navigator
 {
-    private Drivetrain drivetrain;
+    // private Drivetrain drivetrain;
+    // TODO Replace with correct drivetrain
     private Odometry odometry;
     private IMU imu;
     private EventBus eventBus;
@@ -63,9 +63,9 @@ public class Navigator
     private double[] serverBuffer = new double[10];
     private final Object serverLock = new Object();
     
-    public Navigator(Drivetrain drivetrain, Odometry odo, EventBus eventBus)
+    public Navigator(Odometry odo, EventBus eventBus)
     {
-        this.drivetrain = drivetrain;
+        // this.drivetrain = drivetrain;
         this.odometry = odo;
         imu = odo.getIMU();
         
@@ -209,7 +209,7 @@ public class Navigator
         }
         
         // Actually drive
-        drivetrain.telemove(fwdPower, -turnPower);
+        // drivetrain.telemove(fwdPower, -turnPower);
         telemetry.addData("Nav Forward", "%.2f", fwdPower);
         telemetry.addData("Nav Turn", "%.2f", turnPower);
         telemetry.addData("Nav FwdError", "%.2f", fwdError);
