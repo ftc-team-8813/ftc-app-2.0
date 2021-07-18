@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -11,6 +12,7 @@ public class Robot
 {
     // Hardware Vars
     public Drivetrain drivetrain;
+    public Odometry odometry;
 
     public EventBus eventBus = new EventBus();
     public Scheduler scheduler = new Scheduler(eventBus);
@@ -47,6 +49,6 @@ public class Robot
 
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
-
+        this.odometry = new Odometry(back_right, front_right, back_left);
     }
 }
