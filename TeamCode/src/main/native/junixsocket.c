@@ -13,7 +13,8 @@ static void get_addr(struct sockaddr_un *addr, const char *path)
 {
     addr->sun_family = AF_UNIX;
 
-    strncpy(addr->sun_path, path, 100); // copy up to 100 characters (assume ASCII-only paths but break otherwise)
+    strncpy(addr->sun_path, path,
+            100); // copy up to 100 characters (assume ASCII-only paths but break otherwise)
 }
 
 JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_util_websocket_UnixSocketServer__1create
@@ -37,7 +38,7 @@ JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_util_websocket_UnixSo
     struct sockaddr_un addr;
     get_addr(&addr, in_path);
 
-    if (bind(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+    if (bind(sockfd, (struct sockaddr *) &addr, sizeof(addr)) < 0)
     {
         (*env)->ReleaseStringUTFChars(env, path, in_path);
         return -3;
@@ -60,7 +61,7 @@ JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_util_websocket_UnixSo
     struct sockaddr_un client_addr;
     socklen_t addr_size = sizeof(client_addr);
 
-    int fd = accept(server_fd, (struct sockaddr *)&client_addr, &addr_size);
+    int fd = accept(server_fd, (struct sockaddr *) &client_addr, &addr_size);
     return fd;
 }
 
@@ -90,7 +91,7 @@ JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_util_websocket_UnixSo
     struct sockaddr_un addr;
     get_addr(&addr, in_path);
 
-    if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+    if (connect(fd, (struct sockaddr *) &addr, sizeof(addr)) < 0)
     {
         (*env)->ReleaseStringUTFChars(env, path, in_path);
         return -2;

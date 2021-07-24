@@ -28,7 +28,8 @@ public class UnixSocketServer extends ServerIO
     public SocketIO accept() throws IOException
     {
         int client_fd = _accept(fd);
-        if (client_fd < 0) throw new IOException(String.format("Error creating connection: %d", client_fd));
+        if (client_fd < 0)
+            throw new IOException(String.format("Error creating connection: %d", client_fd));
         return new UnixSocket(path, client_fd);
     }
     
@@ -41,6 +42,8 @@ public class UnixSocketServer extends ServerIO
     }
     
     private native int _create(String path);
+    
     private native int _accept(int server_fd);
+    
     private native int _close(int fd);
 }

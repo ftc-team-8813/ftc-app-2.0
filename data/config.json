@@ -9,15 +9,15 @@
       0.67
     ],
 
-    "presets": [
-      {"power":  0.67, "color": [255, 255, 0  ]},
-      {"power":  0.65, "color": [255, 1,  0  ]},
-      {"power":  0.62, "color": [64,  0,   128]}
+    "presets":[
+      {"power":  0.696, "color": [255, 255, 0]},
+      {"power":  0.6745, "color":  [255, 255, 255]},
+      {"power":  0.6478, "color": [64,  0,   128]}
     ]
   },
   "turret": {
     "home":    0.405,
-    "home180": 1,
+    "home180": 0.081,
     "min": 0,
     "max": 0.95,
     "maxSpeed": 0.5,
@@ -37,7 +37,7 @@
     }
   },
   "teleop": {
-    "drive_speeds": [-0.6, -0.35, -0.85],
+    "drive_speeds": [-0.35, -0.85],
     "powershot_angles": [-0.73, -0.7465, -0.758],
     "powershot_powers": [0.3735, 0.3655, 0.3585],
 
@@ -49,6 +49,10 @@
     "arm_down": 1,
     "claw_open": 0.83,
     "claw_close": 0.48
+  },
+  "blocker": {
+    "up": 0,
+    "down": 0.62
   },
   "nav": {
     "angle_kp": 0.02,

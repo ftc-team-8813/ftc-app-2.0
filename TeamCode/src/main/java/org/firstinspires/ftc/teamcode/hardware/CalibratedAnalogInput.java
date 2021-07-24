@@ -3,14 +3,8 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -30,7 +24,8 @@ public class CalibratedAnalogInput
      *   "yValues": [ Y values (the same number of non-linear potentiometer values) ]
      * }
      * </pre>
-     * @param in The analog input
+     *
+     * @param in              The analog input
      * @param calibrationJson The calibration data file
      */
     public CalibratedAnalogInput(AnalogInput in, JsonObject calibrationJson)
@@ -42,6 +37,7 @@ public class CalibratedAnalogInput
     /**
      * Get the calculated linear position based on the analog input. For optimal performance, this
      * value should be cached.
+     *
      * @return A linear position between 0.0 and 1.0
      */
     public double get()
@@ -64,8 +60,8 @@ public class CalibratedAnalogInput
         // the line is between (x[idx-1], y[idx-1]) and (x[idx], y[idx])
         double xbase = calibrationX[idx];
         // find where we are on the line (interpolate)
-        double dx = (calibrationX[idx] - calibrationX[idx-1])
-                * (y - calibrationY[idx]) / (calibrationY[idx] - calibrationY[idx-1]);
+        double dx = (calibrationX[idx] - calibrationX[idx - 1])
+                * (y - calibrationY[idx]) / (calibrationY[idx] - calibrationY[idx - 1]);
         return xbase + dx;
     }
     

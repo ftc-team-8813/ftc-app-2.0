@@ -1,39 +1,33 @@
 package org.firstinspires.ftc.teamcode.util.websocket;
 
 import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.util.event.Event;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 public class Server
 {
-
+    
     private Thread workerThread;
     protected SocketWorker worker;
     
-    public static final int STATE_CONNECTING     = 0;
-    public static final int STATE_RECV_COMMAND   = 1;
+    public static final int STATE_CONNECTING = 0;
+    public static final int STATE_RECV_COMMAND = 1;
     public static final int STATE_AWAIT_RESPONSE = 2;
-    public static final int STATE_SEND_RESPONSE  = 3;
-    public static final int STATE_CLOSED         = 4;
+    public static final int STATE_SEND_RESPONSE = 3;
+    public static final int STATE_CLOSED = 4;
     public static final String[] statuses = {
             "Connecting", "Receive Command", "Await Response", "Send Response", "Closed"
     };
     
-    public static final int CMD_ECHO             = 0x00;
-    public static final int CMD_CLOSE            = 0xFF;
-    public static final int RESP_MULTI           = 0xFE;
+    public static final int CMD_ECHO = 0x00;
+    public static final int CMD_CLOSE = 0xFF;
+    public static final int RESP_MULTI = 0xFE;
     
     private HashMap<Integer, CommandProcessor> processors;
     
@@ -110,6 +104,7 @@ public class Server
     public static class Responder
     {
         private SocketWorker worker;
+        
         private Responder(SocketWorker worker)
         {
             this.worker = worker;
@@ -251,18 +246,18 @@ public class Server
                                 // log.d("Sending large response");
                                 int size = largeResponse.limit();
                                 // integer ceiling-divide; make sure there are enough packets sent to fit the entire response
-                                int packetCount = size/65535 + ((size % 65535 > 0) ? 1 : 0);
+                                int packetCount = size / 65535 + ((size % 65535 > 0) ? 1 : 0);
                                 if (packetCount > 255)
                                 {
                                     log.e("Packet size MUCH too large: %d", size);
                                     packetCount = 0;
                                 }
                                 byte[] resp_packet = {
-                                        (byte)RESP_MULTI,  // response
-                                        (byte)0x00,        // size MSB
-                                        (byte)0x02,        // size LSB
-                                        (byte)packetCount, // packet count
-                                        (byte)response     // command ID
+                                        (byte) RESP_MULTI,  // response
+                                        (byte) 0x00,        // size MSB
+                                        (byte) 0x02,        // size LSB
+                                        (byte) packetCount, // packet count
+                                        (byte) response     // command ID
                                 };
                                 out.write(resp_packet);
                                 int ptr = 0;
@@ -271,9 +266,9 @@ public class Server
                                     // log.v("Sending packet %d/%d", i+1, packetCount);
                                     int packetSize = Math.min(65535, size - ptr);
                                     byte[] head = {
-                                            (byte)i,
-                                            (byte)((packetSize >> 8) & 0xFF),
-                                            (byte)(packetSize & 0xFF)
+                                            (byte) i,
+                                            (byte) ((packetSize >> 8) & 0xFF),
+                                            (byte) (packetSize & 0xFF)
                                     };
                                     out.write(head);
                                     out.write(largeResponse.array(), ptr, packetSize);
@@ -287,9 +282,9 @@ public class Server
                                 sendBuffer.flip();
                                 int size = sendBuffer.limit();
                                 byte[] head = {
-                                        (byte)response,
-                                        (byte)((size >> 8) & 0xFF),
-                                        (byte)(size & 0xFF)
+                                        (byte) response,
+                                        (byte) ((size >> 8) & 0xFF),
+                                        (byte) (size & 0xFF)
                                 };
                                 out.write(head);
                                 out.write(sendBuffer.array(), 0, sendBuffer.limit());
@@ -308,7 +303,8 @@ public class Server
                         log.e("Connection failed -- listening for new connections");
                     }
                 }
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 log.e(e);
             }

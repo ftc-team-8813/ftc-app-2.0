@@ -4,16 +4,11 @@ import android.text.TextUtils;
 
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Storage;
-import org.firstinspires.ftc.teamcode.util.websocket.Server;
-import org.firstinspires.ftc.teamcode.util.websocket.UnixSocketServer;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
-import java.util.NoSuchElementException;
 import java.util.Random;
-import java.util.Scanner;
 
 public class Python
 {
@@ -40,7 +35,8 @@ public class Python
     
     public Process start(String... args) throws IOException
     {
-        if (started) throw new IllegalStateException("Cannot start() a Python instance multiple times");
+        if (started)
+            throw new IllegalStateException("Cannot start() a Python instance multiple times");
         started = true;
         ProcessBuilder builder = new ProcessBuilder();
         builder.command().add(PYTHON_EXE);
@@ -52,7 +48,7 @@ public class Python
         log.d(cmdString);
         
         proc = builder.start();
-    
+        
         return proc;
     }
     
@@ -68,10 +64,12 @@ public class Python
             try
             {
                 Thread.sleep(2000);
-            } catch (InterruptedException e)
+            }
+            catch (InterruptedException e)
             {
                 log.w("[interrupted]");
-            } finally
+            }
+            finally
             {
                 log.i("Reaping process");
                 proc.destroy();
@@ -84,6 +82,6 @@ public class Python
     public static File getSocketFile()
     {
         Random rand = new Random();
-        return Storage.getFile(String.format("python-ipc-%08x.sock", ((long)rand.nextInt()) & 0xFFFFFFFFL ));
+        return Storage.getFile(String.format("python-ipc-%08x.sock", ((long) rand.nextInt()) & 0xFFFFFFFFL));
     }
 }

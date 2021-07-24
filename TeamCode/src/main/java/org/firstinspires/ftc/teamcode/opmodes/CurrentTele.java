@@ -1,41 +1,33 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.autoshoot.AutoAim;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.AutoAimControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.AutoPowershotControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.PusherControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.ShooterControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.TurretControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.WobbleControl;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
-import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
+import org.opencv.android.OpenCVLoader;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
-@TeleOp(name="!!THE TeleOp!!")
+@TeleOp(name = "!!THE TeleOp!!")
 public class CurrentTele extends LoggingOpMode
 {
+    // Robot and Controller Vars
     private Robot robot;
     private ControllerMap controllerMap;
-    
     private ControlMgr controlMgr;
-    
-    private EventBus evBus;
-    private Scheduler scheduler; // just in case
 
+    private EventBus evBus;
+    private Scheduler scheduler;
+
+    static
+    {
+        OpenCVLoader.initDebug();
+    }
+    
     @Override
     public void init()
     {
@@ -43,39 +35,16 @@ public class CurrentTele extends LoggingOpMode
         robot = Robot.initialize(hardwareMap, "Main TeleOp");
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
-    
+        
         controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         
-        robot.imu.initialize(evBus, scheduler);
-        
         controlMgr = new ControlMgr(robot, controllerMap);
-        // base modules
-        controlMgr.addModule(new DriveControl());
-        controlMgr.addModule(new IntakeControl());
-        controlMgr.addModule(new TurretControl());
-        controlMgr.addModule(new PusherControl());
-        controlMgr.addModule(new ShooterControl());
-        controlMgr.addModule(new WobbleControl());
-        
-        // automation
-        controlMgr.addModule(new AutoAimControl());
-        // controlMgr.addModule(new AutoPowershotControl());
+        // Controller Modules
+        controlMgr.addModule(new DriveControl("Drive Control"));
         
         controlMgr.initModules();
-    
-        JsonObject defaultsMap = controllerMap.saveMap();
-        File outfile = Storage.createFile("teleop-controls.json");
-        String data = new GsonBuilder().setPrettyPrinting().create().toJson(defaultsMap);
-        try (FileWriter w = new FileWriter(outfile))
-        {
-            w.write(data);
-            w.write("\n");
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
     }
-
+    
     @Override
     public void init_loop()
     {
@@ -91,10 +60,9 @@ public class CurrentTele extends LoggingOpMode
     @Override
     public void loop()
     {
+        // Loop Updaters
         controllerMap.update();
-
         controlMgr.loop(telemetry);
-        
         scheduler.loop();
         evBus.update();
     }
@@ -102,7 +70,7 @@ public class CurrentTele extends LoggingOpMode
     @Override
     public void stop()
     {
-        controlMgr.stop();
-        super.stop();
+       controlMgr.stop();
+       super.stop();
     }
 }

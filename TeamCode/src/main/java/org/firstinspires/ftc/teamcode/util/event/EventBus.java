@@ -130,8 +130,8 @@ public class EventBus
     public void update()
     {
         pushEvent(new TickEvent()); // TickEvent subs will run on every loop cycle
-    
-    
+        
+        
         // copy the subscriber list so they can remove themselves if they wish
         List<Subscriber<?>> oldSubs = new ArrayList<>(subscribers);
         // same for the event list

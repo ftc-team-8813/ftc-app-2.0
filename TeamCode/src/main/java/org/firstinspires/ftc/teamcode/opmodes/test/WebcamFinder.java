@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 
-@TeleOp(name="Webcam Finder")
+@TeleOp(name = "Webcam Finder")
 public class WebcamFinder extends LoggingOpMode
 {
     private String telemString;

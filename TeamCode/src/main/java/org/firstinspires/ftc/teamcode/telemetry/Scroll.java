@@ -24,7 +24,8 @@ public class Scroll
     
     public Scroll(int visibleLines)
     {
-        if (visibleLines <= 0) throw new IllegalArgumentException("Must have at least one visible line");
+        if (visibleLines <= 0)
+            throw new IllegalArgumentException("Must have at least one visible line");
         this.visibleLines = visibleLines;
         this.lines = new ArrayList<>();
         this.metadata = new ArrayList<>();
@@ -49,7 +50,8 @@ public class Scroll
         invalid = true;
         metadata.remove(index);
         String line = lines.remove(index);
-        if (getScrollPos() >= lines.size()) updateScrollPos(getScrollPos()); // re-validate scroll position
+        if (getScrollPos() >= lines.size())
+            updateScrollPos(getScrollPos()); // re-validate scroll position
         return line;
     }
     
@@ -98,16 +100,16 @@ public class Scroll
         }
         else if (pos >= len)
         {
-            if (scrollMode == SCROLL_STOP) pos = len-1;
+            if (scrollMode == SCROLL_STOP) pos = len - 1;
             else pos -= len;
         }
-    
+        
         if (pos < visStart) visStart = pos;
         else if (pos >= visStart + visibleLines) visStart = pos - visibleLines + 1;
-    
+        
         selected = pos;
         invalid = true;
-    
+        
         return pos;
     }
     
@@ -165,7 +167,7 @@ public class Scroll
     }
     
     private static final double preHoldTime = 0.5;
-    private static final double holdTime    = 0.05;
+    private static final double holdTime = 0.05;
     
     private double holdStart = 0;
     private boolean holdTick = false;

@@ -11,9 +11,8 @@ import org.firstinspires.ftc.teamcode.util.websocket.UnixSocketServer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
 
-@TeleOp(name="Python Test")
+@TeleOp(name = "Python Test")
 public class PythonTest extends LoggingOpMode
 {
     private Python python;

@@ -2,11 +2,8 @@ package org.firstinspires.ftc.teamcode.util.event;
 
 import org.firstinspires.ftc.teamcode.util.Logger;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 public class EventFlow
 {
@@ -49,7 +46,7 @@ public class EventFlow
         currentNode.unsubscribe();
         nodes.get(index).subscribe();
     }
-
+    
     public void stop()
     {
         stop = true;
@@ -95,10 +92,14 @@ public class EventFlow
                             nodes.get(jumpTarget).subscribe();
                             jumpTarget = -1;
                         }
-                        else if (!stop) {
-                            if (next != null) {
+                        else if (!stop)
+                        {
+                            if (next != null)
+                            {
                                 next.subscribe();
-                            } else {
+                            }
+                            else
+                            {
                                 rootNode.subscribe();
                             }
                         }

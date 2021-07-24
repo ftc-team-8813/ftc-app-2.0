@@ -8,10 +8,8 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.teamcode.telemetry.HTMLString;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 public class ControllerMap
 {
@@ -35,7 +33,9 @@ public class ControllerMap
         this.evBus = evBus;
     }
     
-    /** @deprecated will be made private; use getButtonMap with default values instead **/
+    /**
+     * @deprecated will be made private; use getButtonMap with default values instead
+     **/
     @Deprecated
     public ButtonEntry setButtonMap(String name, Controller c, Button b)
     {
@@ -44,14 +44,18 @@ public class ControllerMap
         return entry;
     }
     
-    /** @deprecated will be made private; use getButtonMap with default values instead **/
+    /**
+     * @deprecated will be made private; use getButtonMap with default values instead
+     **/
     @Deprecated
     public ButtonEntry setButtonMap(String name, String c, String b)
     {
         return setButtonMap(name, Controller.valueOf(c), Button.valueOf(b));
     }
     
-    /** @deprecated will be made private; use getAxisMap with default values instead **/
+    /**
+     * @deprecated will be made private; use getAxisMap with default values instead
+     **/
     @Deprecated
     public AxisEntry setAxisMap(String name, Controller c, Axis a)
     {
@@ -60,7 +64,9 @@ public class ControllerMap
         return entry;
     }
     
-    /** @deprecated will be made private; use getAxisMap with default values instead **/
+    /**
+     * @deprecated will be made private; use getAxisMap with default values instead
+     **/
     @Deprecated
     public AxisEntry setAxisMap(String name, String c, String a)
     {
@@ -94,7 +100,8 @@ public class ControllerMap
         {
             String name = entry.getKey();
             String[] value = entry.getValue().getAsString().split("\\.");
-            if (value.length != 2) throw new IllegalArgumentException("Invalid button identifier: " + entry.getValue().getAsString());
+            if (value.length != 2)
+                throw new IllegalArgumentException("Invalid button identifier: " + entry.getValue().getAsString());
             
             setButtonMap(name, value[0], value[1]);
         }
@@ -103,8 +110,9 @@ public class ControllerMap
         {
             String name = entry.getKey();
             String[] value = entry.getValue().getAsString().split("\\.");
-            if (value.length != 2) throw new IllegalArgumentException("Invalid button identifier: " + entry.getValue().getAsString());
-    
+            if (value.length != 2)
+                throw new IllegalArgumentException("Invalid button identifier: " + entry.getValue().getAsString());
+            
             setAxisMap(name, value[0], value[1]);
         }
     }
@@ -133,7 +141,7 @@ public class ControllerMap
     
     public Gamepad getController(Controller c)
     {
-        if      (c == Controller.gamepad1) return gamepad1;
+        if (c == Controller.gamepad1) return gamepad1;
         else if (c == Controller.gamepad2) return gamepad2;
         return null;
     }
@@ -160,16 +168,26 @@ public class ControllerMap
         // build an int out of bytes. Everything is signed and sign-extended in Java, so this gets tedious.
         int buttons = ((data[0x2a] & 0xFF) << 24) | ((data[0x2b] & 0xFF) << 16) | ((data[0x2c] & 0xFF) << 8) | (data[0x2d] & 0xFF);
         
-        if (gamepad.left_stick_y > triggerThreshold)   buttons |= (1 << Button.left_stick_y_pos.ordinal());
-        if (gamepad.left_stick_y < -triggerThreshold)  buttons |= (1 << Button.left_stick_y_neg.ordinal());
-        if (gamepad.left_stick_x > triggerThreshold)   buttons |= (1 << Button.left_stick_x_pos.ordinal());
-        if (gamepad.left_stick_x < -triggerThreshold)  buttons |= (1 << Button.left_stick_x_neg.ordinal());
-        if (gamepad.right_stick_y > triggerThreshold)  buttons |= (1 << Button.right_stick_y_pos.ordinal());
-        if (gamepad.right_stick_y < -triggerThreshold) buttons |= (1 << Button.right_stick_y_neg.ordinal());
-        if (gamepad.right_stick_x > triggerThreshold)  buttons |= (1 << Button.right_stick_x_pos.ordinal());
-        if (gamepad.right_stick_x < -triggerThreshold) buttons |= (1 << Button.right_stick_x_neg.ordinal());
-        if (gamepad.left_trigger > triggerThreshold)   buttons |= (1 << Button.left_trigger.ordinal());
-        if (gamepad.right_trigger > triggerThreshold)  buttons |= (1 << Button.right_trigger.ordinal());
+        if (gamepad.left_stick_y > triggerThreshold)
+            buttons |= (1 << Button.left_stick_y_pos.ordinal());
+        if (gamepad.left_stick_y < -triggerThreshold)
+            buttons |= (1 << Button.left_stick_y_neg.ordinal());
+        if (gamepad.left_stick_x > triggerThreshold)
+            buttons |= (1 << Button.left_stick_x_pos.ordinal());
+        if (gamepad.left_stick_x < -triggerThreshold)
+            buttons |= (1 << Button.left_stick_x_neg.ordinal());
+        if (gamepad.right_stick_y > triggerThreshold)
+            buttons |= (1 << Button.right_stick_y_pos.ordinal());
+        if (gamepad.right_stick_y < -triggerThreshold)
+            buttons |= (1 << Button.right_stick_y_neg.ordinal());
+        if (gamepad.right_stick_x > triggerThreshold)
+            buttons |= (1 << Button.right_stick_x_pos.ordinal());
+        if (gamepad.right_stick_x < -triggerThreshold)
+            buttons |= (1 << Button.right_stick_x_neg.ordinal());
+        if (gamepad.left_trigger > triggerThreshold)
+            buttons |= (1 << Button.left_trigger.ordinal());
+        if (gamepad.right_trigger > triggerThreshold)
+            buttons |= (1 << Button.right_trigger.ordinal());
         
         return buttons;
     }
@@ -177,7 +195,7 @@ public class ControllerMap
     public float[] getAxes(Controller controller)
     {
         Gamepad gamepad = getController(controller);
-        return new float[] {
+        return new float[]{
                 gamepad.left_stick_x,
                 gamepad.left_stick_y,
                 gamepad.right_stick_x,
@@ -200,8 +218,8 @@ public class ControllerMap
     public int getEdge(Controller gamepad, Button button)
     {
         int padnum = gamepad.ordinal();
-        if      ((edges[2*padnum]     & 1 << button.ordinal()) != 0) return 1;
-        else if ((edges[2*padnum + 1] & 1 << button.ordinal()) != 0) return -1;
+        if ((edges[2 * padnum] & 1 << button.ordinal()) != 0) return 1;
+        else if ((edges[2 * padnum + 1] & 1 << button.ordinal()) != 0) return -1;
         return 0;
     }
     
@@ -212,10 +230,10 @@ public class ControllerMap
         int old1 = oldButtons[0];
         int old2 = oldButtons[1];
         
-        int posedge1 =  buttons1 & ~old1;
-        int negedge1 = ~buttons1 &  old1;
-        int posedge2 =  buttons2 & ~old2;
-        int negedge2 = ~buttons2 &  old2;
+        int posedge1 = buttons1 & ~old1;
+        int negedge1 = ~buttons1 & old1;
+        int posedge2 = buttons2 & ~old2;
+        int negedge2 = ~buttons2 & old2;
         edges[0] = posedge1;
         edges[1] = negedge1;
         edges[2] = posedge2;
@@ -327,7 +345,7 @@ public class ControllerMap
         {
             int controllerN = controller.ordinal() + 1;
             String color = "#fff";
-            if (button == Button.y)      color = "#fd3";
+            if (button == Button.y) color = "#fd3";
             else if (button == Button.x) color = "#57f";
             else if (button == Button.b) color = "#f10";
             else if (button == Button.a) color = "#7f1";

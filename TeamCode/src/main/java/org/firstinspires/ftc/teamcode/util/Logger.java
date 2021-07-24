@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -67,9 +66,10 @@ public class Logger
     {
         return new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
     }
-
+    
     /**
      * Initialize the logger to a default location ('logs/[date].log')
+     *
      * @throws IOException If an I/O error occurs
      */
     public static void init() throws IOException
@@ -162,7 +162,8 @@ public class Logger
             try
             {
                 init();
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 throw new RuntimeException(e);
             }
@@ -171,12 +172,12 @@ public class Logger
         {
             String base = base(level);
             String line = base + String.format(fmt, args);
-            if (writer != null)       writer.println(line);
+            if (writer != null) writer.println(line);
             if (serverWriter != null) serverWriter.println(line);
             RobotLog.dd(tag, String.format(fmt, args));
         }
     }
-
+    
     public synchronized void log(int level, Throwable t)
     {
         if (writer == null)
@@ -184,7 +185,8 @@ public class Logger
             try
             {
                 init();
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 throw new RuntimeException(e);
             }
@@ -230,24 +232,24 @@ public class Logger
     {
         log(1, fmt, args);
     }
-
+    
     public synchronized void f(String fmt, Object... args)
     {
         log(0, fmt, args);
     }
     
     public synchronized void v(Throwable t) { log(99, t); }
-
+    
     public synchronized void d(Throwable t) { log(4, t); }
-
+    
     public synchronized void i(Throwable t) { log(3, t); }
-
+    
     public synchronized void w(Throwable t) { log(2, t); }
-
+    
     public synchronized void e(Throwable t) { log(1, t); }
-
+    
     public synchronized void f(Throwable t) { log(0, t); }
-
+    
     
     private String base(int level)
     {

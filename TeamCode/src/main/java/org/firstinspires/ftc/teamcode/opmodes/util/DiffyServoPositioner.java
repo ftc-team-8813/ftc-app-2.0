@@ -27,7 +27,7 @@ import java.util.Map;
 
 import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.HTML;
 
-@TeleOp(group="util", name="Differential Servo Positioner")
+@TeleOp(group = "util", name = "Differential Servo Positioner")
 // much of this code is copied from ServoPositioner.java (from commit ab4c65f)
 public class DiffyServoPositioner extends LoggingOpMode
 {
@@ -69,8 +69,11 @@ public class DiffyServoPositioner extends LoggingOpMode
     private static abstract class Scene
     {
         private boolean firstLoop = true;
+        
         abstract void init();
+        
         abstract void loop();
+        
         void exit() {}
     }
     
@@ -98,14 +101,14 @@ public class DiffyServoPositioner extends LoggingOpMode
         
         setDefaultButtons();
         // TODO: load buttons from file
-        btn_up_arrow =       controllerMap.buttons.get("up_arrow");
-        btn_down_arrow =     controllerMap.buttons.get("down_arrow");
-        btn_reset_pos =      controllerMap.buttons.get("reset_pos");
-        btn_delete_pos =     controllerMap.buttons.get("delete_pos");
-        btn_ok =             controllerMap.buttons.get("ok");
-        btn_stop_servo =     controllerMap.buttons.get("stop_servo");
-        btn_exit_to_menu =   controllerMap.buttons.get("exit_to_menu");
-        btn_toggle_mode =    controllerMap.buttons.get("toggle_mode");
+        btn_up_arrow = controllerMap.buttons.get("up_arrow");
+        btn_down_arrow = controllerMap.buttons.get("down_arrow");
+        btn_reset_pos = controllerMap.buttons.get("reset_pos");
+        btn_delete_pos = controllerMap.buttons.get("delete_pos");
+        btn_ok = controllerMap.buttons.get("ok");
+        btn_stop_servo = controllerMap.buttons.get("stop_servo");
+        btn_exit_to_menu = controllerMap.buttons.get("exit_to_menu");
+        btn_toggle_mode = controllerMap.buttons.get("toggle_mode");
         ax_change_position_a = controllerMap.axes.get("change_pos_a");
         ax_change_position_b = controllerMap.axes.get("change_pos_b");
     }
@@ -148,16 +151,16 @@ public class DiffyServoPositioner extends LoggingOpMode
     
     private void setDefaultButtons()
     {
-        controllerMap.setButtonMap("up_arrow",     ControllerMap.Controller.gamepad1, ControllerMap.Button.dpad_up);
-        controllerMap.setButtonMap("down_arrow",   ControllerMap.Controller.gamepad1, ControllerMap.Button.dpad_down);
-        controllerMap.setButtonMap("reset_pos",    ControllerMap.Controller.gamepad1, ControllerMap.Button.x);
-        controllerMap.setButtonMap("delete_pos",   ControllerMap.Controller.gamepad1, ControllerMap.Button.y);
-        controllerMap.setButtonMap("ok",           ControllerMap.Controller.gamepad1, ControllerMap.Button.b);
-        controllerMap.setButtonMap("stop_servo",   ControllerMap.Controller.gamepad1, ControllerMap.Button.a);
+        controllerMap.setButtonMap("up_arrow", ControllerMap.Controller.gamepad1, ControllerMap.Button.dpad_up);
+        controllerMap.setButtonMap("down_arrow", ControllerMap.Controller.gamepad1, ControllerMap.Button.dpad_down);
+        controllerMap.setButtonMap("reset_pos", ControllerMap.Controller.gamepad1, ControllerMap.Button.x);
+        controllerMap.setButtonMap("delete_pos", ControllerMap.Controller.gamepad1, ControllerMap.Button.y);
+        controllerMap.setButtonMap("ok", ControllerMap.Controller.gamepad1, ControllerMap.Button.b);
+        controllerMap.setButtonMap("stop_servo", ControllerMap.Controller.gamepad1, ControllerMap.Button.a);
         controllerMap.setButtonMap("exit_to_menu", ControllerMap.Controller.gamepad1, ControllerMap.Button.right_bumper);
-        controllerMap.setButtonMap("toggle_mode",  ControllerMap.Controller.gamepad1, ControllerMap.Button.back);
-        controllerMap.setAxisMap  ("change_pos_a",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.left_stick_y);
-        controllerMap.setAxisMap  ("change_pos_b",   ControllerMap.Controller.gamepad1, ControllerMap.Axis.right_stick_y);
+        controllerMap.setButtonMap("toggle_mode", ControllerMap.Controller.gamepad1, ControllerMap.Button.back);
+        controllerMap.setAxisMap("change_pos_a", ControllerMap.Controller.gamepad1, ControllerMap.Axis.left_stick_y);
+        controllerMap.setAxisMap("change_pos_b", ControllerMap.Controller.gamepad1, ControllerMap.Axis.right_stick_y);
     }
     
     private class SceneChoose extends Scene
@@ -179,7 +182,7 @@ public class DiffyServoPositioner extends LoggingOpMode
                 {
                     servoChooser.addLine(new HTMLString(
                             "span", "style=\"color: #aaaaaa;\"",
-                            servoControllers[i/6].getConnectionInfo()).toString(), -1);
+                            servoControllers[i / 6].getConnectionInfo()).toString(), -1);
                 }
                 
                 if (servos[i] == null)
@@ -202,14 +205,14 @@ public class DiffyServoPositioner extends LoggingOpMode
             status.addData(String.format("Choose the %s servo", indexes[numPicked]), "");
             int up_edge = btn_up_arrow.edge();
             int dn_edge = btn_down_arrow.edge();
-            if (up_edge > 0)      servoChooser.press(-1);
+            if (up_edge > 0) servoChooser.press(-1);
             else if (dn_edge > 0) servoChooser.press(1);
             
             if (btn_up_arrow.get() || btn_down_arrow.get()) servoChooser.hold();
             
             if (btn_ok.edge() > 0)
             {
-                int sel_servo = (Integer)servoChooser.getLineMeta(servoChooser.getScrollPos());
+                int sel_servo = (Integer) servoChooser.getLineMeta(servoChooser.getScrollPos());
                 if (sel_servo >= 0)
                 {
                     if (numPicked == 0)
@@ -220,8 +223,8 @@ public class DiffyServoPositioner extends LoggingOpMode
                     {
                         servoB = sel_servo;
                         // set file name
-                        String ctrlA = ((LynxServoController)servoControllers[servoA/6]).getSerialNumber().toString();
-                        String ctrlB = ((LynxServoController)servoControllers[servoA/6]).getSerialNumber().toString();
+                        String ctrlA = ((LynxServoController) servoControllers[servoA / 6]).getSerialNumber().toString();
+                        String ctrlB = ((LynxServoController) servoControllers[servoA / 6]).getSerialNumber().toString();
                         fileName = String.format("servo_positions/%s.%d_%s.%d.json", ctrlA, servoA % 6, ctrlB, servoB % 6);
                         
                         currScene = new SceneMove();
@@ -249,8 +252,8 @@ public class DiffyServoPositioner extends LoggingOpMode
         @Override
         void init()
         {
-            controllerA = (LynxServoController)servoControllers[servoA / 6];
-            controllerB = (LynxServoController)servoControllers[servoB / 6];
+            controllerA = (LynxServoController) servoControllers[servoA / 6];
+            controllerB = (LynxServoController) servoControllers[servoB / 6];
             cservoA = servoA % 6;
             cservoB = servoB % 6;
             
@@ -275,14 +278,15 @@ public class DiffyServoPositioner extends LoggingOpMode
         
         void updateLabel(int index)
         {
-            double[] metadata = (double[])posList.getLineMeta(index);
+            double[] metadata = (double[]) posList.getLineMeta(index);
             posList.setLine(index, String.format("%.3f, %.3f", metadata[0], metadata[1]));
         }
         
         @Override
         void loop()
         {
-            if (lastTick == 0) lastTick = Time.now(); // avoid large jump from 0 to whenever we are now
+            if (lastTick == 0)
+                lastTick = Time.now(); // avoid large jump from 0 to whenever we are now
             if (!started)
             {
                 status.setCaption("Press the PLAY button to start");
@@ -306,7 +310,7 @@ public class DiffyServoPositioner extends LoggingOpMode
             {
                 controllerA.setServoPosition(cservoA, posA);
                 controllerB.setServoPosition(cservoB, posB);
-    
+                
                 status.setCaption("Servo positions");
             }
             
@@ -330,13 +334,13 @@ public class DiffyServoPositioner extends LoggingOpMode
             
             if (change)
             {
-                double[] data = (double[])posList.getSelectedMeta();
+                double[] data = (double[]) posList.getSelectedMeta();
                 posA = data[0];
                 posB = data[1];
             }
             else if (btn_reset_pos.edge() > 0)
             {
-                posList.addLine("", new double[] {Double.NaN, Double.NaN}); // dummy, will get filled immediately
+                posList.addLine("", new double[]{Double.NaN, Double.NaN}); // dummy, will get filled immediately
                 posList.setScrollPos(posList.size() - 1);
             }
             
@@ -388,7 +392,7 @@ public class DiffyServoPositioner extends LoggingOpMode
     {
         if (currScene != null && currScene instanceof SceneMove)
         {
-            SceneMove scn = (SceneMove)currScene;
+            SceneMove scn = (SceneMove) currScene;
             Scroll posList = scn.posList;
             
             JsonObject root = new JsonObject();
@@ -397,7 +401,7 @@ public class DiffyServoPositioner extends LoggingOpMode
             
             for (int i = 0; i < posList.size(); i++)
             {
-                double[] data = (double[])posList.getLineMeta(i);
+                double[] data = (double[]) posList.getLineMeta(i);
                 JsonArray pos = new JsonArray();
                 pos.add(data[0]);
                 pos.add(data[1]);

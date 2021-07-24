@@ -39,7 +39,8 @@ public class InetSocket extends SocketIO
     
     public void setAddr(String ip, int port)
     {
-        if (connected) throw new IllegalStateException("Socket already connected; cannot change address");
+        if (connected)
+            throw new IllegalStateException("Socket already connected; cannot change address");
         if (isClosed()) throw new IllegalStateException("Socket closed");
         this.ip = ip;
         this.port = port;

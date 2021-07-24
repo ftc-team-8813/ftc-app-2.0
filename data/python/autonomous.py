@@ -7,15 +7,20 @@ LIFECYCLE_EVENT_INIT = 0
 LIFECYCLE_EVENT_START = 1
 LIFECYCLE_EVENT_STOP = 2
 
-SHOOT_SPEED = 0.6585
+SHOOT_SPEED = 0.705
+SHOOT_SPEED4 = 0.7156
 
-def place_wobble(nav):
-    nav.actuator('wobble', {'action': 'down'})
-    time.sleep(0.5)
+def place_wobble(nav, dropit=False):
+    if not dropit:
+        nav.actuator('wobble', {'action': 'down'})
+        time.sleep(0.5)
+
     nav.actuator('wobble', {'action': 'open'})
     time.sleep(0.5)
-    nav.actuator('wobble', {'action': 'up'})
-    time.sleep(0.5)
+
+    if not dropit:
+        nav.actuator('wobble', {'action': 'up'})
+        time.sleep(0.5)
 
 def pick_wobble(nav):
     nav.actuator('wobble', {'action': 'open'}) # should be already open but make sure
@@ -31,7 +36,7 @@ def shoot_rings(nav, rings):
         nav.actuator('turret', {'action': 'push'})
         time.sleep(0.2)
         nav.actuator('turret', {'action': 'unpush'})
-        time.sleep(0.5)
+        time.sleep(0.4)
 
 def run_auto(nav):
     log = logger.Logger('Autonomous')
@@ -67,8 +72,14 @@ def run_auto(nav):
         nav.move(-105, -13, speed=0.9)
         nav.turn(25)
 
-    nav.actuator('shooter', {'action': 'start', 'speed': SHOOT_SPEED})
+    if rings_seen == 4:
+        nav.actuator('shooter', {'action': 'start', 'speed': SHOOT_SPEED4})
+    else:
+        nav.actuator('shooter', {'action': 'start', 'speed': SHOOT_SPEED})
     place_wobble(nav)
+
+    if rings_seen == 4:
+        nav.move(-60, 0, reverse=False, speed=0.9)
 
     # Line up for shooting
     nav.move(-58.5, 0, reverse=False)
@@ -94,52 +105,55 @@ def run_auto(nav):
         nav.turn(3)
         shoot_rings(nav, 1)
         nav.turn(90)
+    elif rings_seen == 4:
+        nav.actuator('turret', {'action': 'rotate', 'angle': 0.412})
+        # nav.turn(-3)
+        nav.actuator('intake', {'action': 'intake', 'speed': -0.45})
+        nav.move(-46, 5, reverse=False, speed=0.85)
+        nav.actuator('intake', {'action': 'intake', 'speed': 0.52})
+        time.sleep(0.15)
+        nav.move(-37, 12, reverse=False, speed=0.45)
+        time.sleep(1)
+        nav.move(-58, 2)
+        nav.turn(0)
+        nav.actuator('intake', {'action': 'stop'})
+        shoot_rings(nav, 3)
+        nav.actuator('wobble', {'action': 'down'})
 
     nav.actuator('shooter', {'action': 'stop'})
 
-    if rings_seen == 4:
+    #if rings_seen == 4:
         # second wobble
-        # nav.move(-41, 24)
-        nav.move(-25.5, 23)
-        nav.turn(165)
-    else:
+        # nav.move(-41, 26)
+        #nav.move(-27.5, 16)
+        #nav.turn(-195)
+    #else:
         # second wobble
-        nav.move(-27.5, 16)
+    if rings_seen == 0 or rings_seen == 1:
+        nav.move(-27.5, 17)
         nav.turn(192)
         time.sleep(0.75)
+    elif rings_seen == 4:
+        nav.move(-28, 18)
+        time.sleep(0.25)
 
     pick_wobble(nav)
 
     if rings_seen == 0:
         nav.move(-55, -10)
-        nav.turn(40)
+        nav.turn(50)
     elif rings_seen == 1:
         nav.move(-74, -1)
         nav.turn(-9)
     elif rings_seen == 4:
         # nav.move(-47, 18)
+        nav.actuator('intake', {'action': 'intake', 'speed': -0.5})
         nav.move(-103, -13, speed=0.9)
-        nav.turn(37)
+        nav.actuator('intake', {'action': 'stop'})
+        # nav.turn(-323)
     place_wobble(nav)
 
-    if rings_seen == 4:
-        nav.actuator('shooter', {'action': 'start', 'speed': SHOOT_SPEED})
-        nav.actuator('turret', {'action': 'home'})
-        nav.actuator('intake', {'action': 'intake'})
-        nav.move(-50, 5, reverse=False, speed=0.9)
-        nav.move(-41, 5, reverse=False, speed=0.35)
-        time.sleep(1)
-        nav.move(-58, 2)
-        nav.turn(0)
-        nav.actuator('intake', {'action': 'stop'})
-        shoot_rings(nav, 2)
-        nav.actuator('wobble', {'action': 'down'})
-        nav.actuator('shooter', {'action': 'stop'})
-        nav.move(-76, -3)
-    elif rings_seen == 1:
-        nav.move(-76, -3, reverse=False)
-    elif rings_seen == 0:
-        nav.move(-76, 10)
+    nav.move(-76, 0, reverse=(rings_seen != 4))
 
     log.i("Path complete")
 
