@@ -31,12 +31,12 @@ public class DriveControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        drivetrain.telemove(-ax_drive_right_y.get(), ax_drive_right_x.get(), ax_drive_left_x.get());
+        drivetrain.telemove(-ax_drive_right_y.get() * 0.7, ax_drive_right_x.get() * 0.7, ax_drive_left_x.get() * 0.7);
         odometry.update();
 
-        telemetry.addData("Forward Dist: ", odometry.forward);
-        telemetry.addData("Side Dist: ", odometry.side);
-        telemetry.addData("Turn Dist: ", odometry.heading);
+        telemetry.addData("X Coord: ", odometry.x);
+        telemetry.addData("Y Coord: ", odometry.y);
+        telemetry.addData("Heading: ", odometry.heading);
 
         double[] curr_poses = odometry.getCurrentPositions();
         telemetry.addData("Left Enc: ", curr_poses[0]);

@@ -39,6 +39,7 @@ public class CurrentTele extends LoggingOpMode
         controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         
         controlMgr = new ControlMgr(robot, controllerMap);
+
         // Controller Modules
         controlMgr.addModule(new DriveControl("Drive Control"));
         
