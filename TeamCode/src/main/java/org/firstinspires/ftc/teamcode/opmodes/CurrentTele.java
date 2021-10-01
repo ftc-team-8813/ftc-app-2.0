@@ -66,6 +66,7 @@ public class CurrentTele extends LoggingOpMode
         controlMgr.loop(telemetry);
         scheduler.loop();
         evBus.update();
+        telemetry.update();
     }
     
     @Override

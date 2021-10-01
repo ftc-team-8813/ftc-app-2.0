@@ -1,13 +1,17 @@
 package org.firstinspires.ftc.teamcode.hardware.navigation;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Status;
 
 public class Odometry {
     private final DcMotor l_enc;
     private final DcMotor r_enc;
     private final DcMotor f_enc;
+    private final Servo left_drop;
+    private final Servo right_drop;
 
     public double x;
     public double y;
@@ -17,15 +21,13 @@ public class Odometry {
     private double past_r;
     private double past_b;
 
-    private final double ROTATIONAL_TICKS = 8192;
-    private final double WHEEL_DIAMETER = 1.377953;
-    private final double ROBOT_RADIUS_SIDE = 8.5;
-    private final double ROBOT_RADIUS_FRONT = 5.5;
 
-    public Odometry(DcMotor l_enc, DcMotor r_enc, DcMotor f_enc){
+    public Odometry(DcMotor l_enc, DcMotor r_enc, DcMotor f_enc, Servo left_drop, Servo right_drop){
         this.l_enc = l_enc;
         this.r_enc = r_enc;
         this.f_enc = f_enc;
+        this.left_drop = left_drop;
+        this.right_drop = right_drop;
         this.x = 0;
         this.y = 0;
 
@@ -37,6 +39,13 @@ public class Odometry {
         r_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         f_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
+
+
+    public void release(){
+        left_drop.setPosition(Status.RELEASE_POS);
+        right_drop.setPosition(1 - Status.RELEASE_POS);
+    }
+
 
     public void update(){
         double[] poses = getCurrentPositions();
@@ -65,19 +74,22 @@ public class Odometry {
         heading += convertToRadians(delta_theta);
     }
 
+
     public double convertToInches(double ticks){
-        double revolutions = ticks / ROTATIONAL_TICKS;
-        double delta_inches = revolutions * (Math.PI * WHEEL_DIAMETER);
+        double revolutions = ticks / Status.ROTATIONAL_TICKS;
+        double delta_inches = revolutions * (Math.PI * Status.WHEEL_DIAMETER);
         return delta_inches;
     }
 
+
     public double convertToRadians(double ticks){
-        double ticks_per_inch = ROTATIONAL_TICKS / (Math.PI * WHEEL_DIAMETER);
+        double ticks_per_inch = Status.ROTATIONAL_TICKS / (Math.PI * Status.WHEEL_DIAMETER);
         double delta_inches = ticks / ticks_per_inch;
-        double revolutions = delta_inches / (2 * Math.PI * ROBOT_RADIUS_SIDE);
+        double revolutions = delta_inches / (2 * Math.PI * Status.ROBOT_RADIUS_SIDE);
         double delta_radians = revolutions * (2 * Math.PI);
         return delta_radians;
     }
+
 
     public double[] getCurrentPositions(){
         return new double[]{l_enc.getCurrentPosition(), -r_enc.getCurrentPosition(), f_enc.getCurrentPosition()};
