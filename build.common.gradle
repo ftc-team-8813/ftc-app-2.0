@@ -111,11 +111,14 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    packagingOptions {
+        pickFirst '**/*.so'
+    }
     sourceSets.main {
         jni.srcDirs = []
         jniLibs.srcDirs rootProject.file('libs'), project(':opencv-sdk').file('native/libs')
     }
-
+    ndkVersion '21.3.6528147'
 }
 
 repositories {
