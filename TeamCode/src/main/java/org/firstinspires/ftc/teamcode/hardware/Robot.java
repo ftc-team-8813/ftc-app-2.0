@@ -59,6 +59,7 @@ public class Robot
         // Servos
         Servo left_odo_drop = hardwareMap.get(Servo.class, "left odo drop");
         Servo right_odo_drop = hardwareMap.get(Servo.class, "right odo drop");
+        Servo dropper = hardwareMap.get(Servo.class, "dropper");
 
         // Sensors
         DigitalChannel arm_lower_limit = hardwareMap.get(DigitalChannel.class, "arm lower limit");
@@ -68,6 +69,6 @@ public class Robot
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
         this.odometry = new Odometry(back_right, front_right, back_left, left_odo_drop, right_odo_drop);
         this.intake = new Intake(intake);
-        this.fourbar = new FourBar(fourbar, arm_lower_limit);
+        this.fourbar = new FourBar(fourbar, dropper, arm_lower_limit);
     }
 }

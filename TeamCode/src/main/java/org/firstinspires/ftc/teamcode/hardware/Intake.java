@@ -18,4 +18,8 @@ public class Intake {
     public void outtake(){
         intake.setPower(1);
     }
+
+    public void stop(){
+        intake.setPower(0);
+    }
 }

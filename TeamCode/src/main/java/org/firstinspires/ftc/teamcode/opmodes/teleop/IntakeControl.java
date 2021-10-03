@@ -27,6 +27,8 @@ public class IntakeControl extends ControlModule{
             intake.intake();
         } else if (ax_outtake.get() > 0.5){
             intake.outtake();
+        } else {
+            intake.stop();
         }
     }
 }
