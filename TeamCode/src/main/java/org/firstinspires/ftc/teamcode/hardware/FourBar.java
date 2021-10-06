@@ -15,7 +15,6 @@ public class FourBar {
 
     private double target_pos;
     private boolean rotating;
-    private boolean working_right;
 
 
     public FourBar(DcMotor arm, Servo dropper, DigitalChannel limit_checker){
@@ -28,6 +27,10 @@ public class FourBar {
 
     public double getCurrentArmPos(){
         return arm.getCurrentPosition();
+    }
+
+    public double getTargetArmPos(){
+        return target_pos;
     }
 
     public double getCurrentDropperPos(){
@@ -49,6 +52,7 @@ public class FourBar {
 
 
     public void rotate(double target_ticks){
+        // TODO Test limits on other side
         if (Status.LOWER_LIMIT < (target_ticks) && (target_ticks) < Status.UPPER_LIMIT){
             target_pos = target_ticks;
             rotating = true;

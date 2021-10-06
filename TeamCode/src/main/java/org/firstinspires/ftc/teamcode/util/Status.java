@@ -17,7 +17,7 @@ public class Status {
     public static final double THRESHOLD = 0.01;
     public static final double kP = 1;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{put("low", 0.0); put("mid", 0.0); put("high", 0.0);}};
-    public static final double DELTA_MULTIPLIER = 100;
+    public static final double DELTA_MULTIPLIER = 10;
     public static final double DEPOSIT_EXTEND_LEFT = 0;
     public static final double DEPOSIT_EXTEND_RIGHT = 0;
     public static final double DEPOSIT_RETRACT = 0;

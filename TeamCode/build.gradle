@@ -30,7 +30,11 @@ dependencies {
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
     implementation project(':opencv-sdk')
-}o
+}
+
+task onInstall {
+    exec {
+        workingDir '.'
         commandLine('python', 'generator.py')
     }
 }

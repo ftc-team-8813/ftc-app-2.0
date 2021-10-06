@@ -67,7 +67,10 @@ public class FourBarControl extends ControlModule{
             fourbar.dropperExtendRight();
         }
 
-        telemetry.addData("FourBar Pos: ", fourbar.getCurrentArmPos());
+
+        fourbar.update();
+        telemetry.addData("FourBar Real Pos: ", fourbar.getCurrentArmPos());
+        telemetry.addData("Four Bar Target Pos: ", fourbar.getTargetArmPos());
         telemetry.addData("Dropper Pos :", fourbar.getCurrentDropperPos());
     }
 }
