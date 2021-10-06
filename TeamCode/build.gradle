@@ -22,7 +22,7 @@ android {
             path "CMakeLists.txt"
         }
     }
-    ndkVersion '22.1.7171670'
+    ndkVersion '23.0.7599858'
 
 }
 
@@ -30,11 +30,7 @@ dependencies {
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
     implementation project(':opencv-sdk')
-}
-
-task onInstall {
-    exec {
-        workingDir '.'
+}o
         commandLine('python', 'generator.py')
     }
 }

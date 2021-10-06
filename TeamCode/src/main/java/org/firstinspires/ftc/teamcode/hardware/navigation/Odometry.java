@@ -42,8 +42,8 @@ public class Odometry {
 
 
     public void release(){
-        left_drop.setPosition(Status.RELEASE_POS);
-        right_drop.setPosition(1 - Status.RELEASE_POS);
+        left_drop.setPosition(Status.RELEASE_POS_1);
+        right_drop.setPosition(Status.RELEASE_POS_2);
     }
 
 
