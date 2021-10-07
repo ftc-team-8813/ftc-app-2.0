@@ -14,7 +14,7 @@ public class FourBar {
     private final DigitalChannel limit_checker;
 
     private double target_pos;
-    private boolean rotating;
+    public boolean manual = false;
 
 
     public FourBar(DcMotor arm, Servo dropper, DigitalChannel limit_checker){
@@ -46,16 +46,14 @@ public class FourBar {
         this.dropper.setPosition(Status.DEPOSIT_EXTEND_RIGHT);
     }
 
-    public void dropperRetract(){
-        this.dropper.setPosition(Status.DEPOSIT_RETRACT);
+    public void dropperReset(){
+        this.dropper.setPosition(Status.DEPOSIT_RESET);
     }
 
 
     public void rotate(double target_ticks){
-        // TODO Test limits on other side
-        if (Status.LOWER_LIMIT < (target_ticks) && (target_ticks) < Status.UPPER_LIMIT){
+        if (-Status.UPPER_LIMIT < (target_ticks) && (target_ticks) < Status.UPPER_LIMIT){
             target_pos = target_ticks;
-            rotating = true;
         }
     }
 
@@ -63,10 +61,11 @@ public class FourBar {
     public void update(){
         double curr_pos = arm.getCurrentPosition();
 
-        double ratio = (target_pos - curr_pos) / Status.UPPER_LIMIT;
-        if (-Status.THRESHOLD < ratio && ratio < Status.THRESHOLD){
-            rotating = false;
+        double ratio = (target_pos - curr_pos) / 300;
+        if (manual){
+            arm.setPower(ratio * Status.MANUAL_SPEED);
+        } else {
+            arm.setPower(ratio * Status.SPEED);
         }
-        arm.setPower(ratio * Status.kP);
     }
 }

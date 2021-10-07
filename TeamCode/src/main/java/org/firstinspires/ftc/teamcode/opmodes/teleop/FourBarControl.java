@@ -18,6 +18,7 @@ public class FourBarControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_b;
     private ControllerMap.ButtonEntry btn_y;
     private ControllerMap.ButtonEntry btn_right_bumper;
+    private ControllerMap.ButtonEntry btn_x;
 
 
     public FourBarControl(String name){super(name);}
@@ -37,12 +38,19 @@ public class FourBarControl extends ControlModule{
         btn_b = controllerMap.getButtonMap("fourbar:right_mid", "gamepad2", "b");
         btn_y = controllerMap.getButtonMap("fourbar:right_high", "gamepad2", "y");
         btn_right_bumper = controllerMap.getButtonMap("fourbar:right_dropper", "gamepad2", "right_bumper");
+
+        btn_x = controllerMap.getButtonMap("fourbar:reset", "gamepad2", "x");
     }
 
     @Override
     public void update(Telemetry telemetry) {
-        double target_ticks = fourbar.getCurrentArmPos() + (-ax_right_stick_y.get() * Status.DELTA_MULTIPLIER);
-        fourbar.rotate(target_ticks);
+        if (-ax_right_stick_y.get() != 0) {
+            double target_ticks = fourbar.getCurrentArmPos() + (-ax_right_stick_y.get() * Status.DELTA_MULTIPLIER);
+            fourbar.manual = true;
+            fourbar.rotate(target_ticks);
+        } else {
+            fourbar.manual = false;
+        }
 
         if (btn_down_dpad.get()){
             fourbar.rotate(Status.STAGES.get("low"));
@@ -55,16 +63,19 @@ public class FourBarControl extends ControlModule{
             fourbar.dropperExtendLeft();
         }
 
-        // TODO Stages need to be inverse of other side
         if (btn_a.get()){
-            fourbar.rotate(Status.STAGES.get("low"));
+            fourbar.rotate(-Status.STAGES.get("low"));
         } else if (btn_b.get()){
-            fourbar.rotate(Status.STAGES.get("mid"));
+            fourbar.rotate(-Status.STAGES.get("mid"));
         } else if (btn_y.get()){
-            fourbar.rotate(Status.STAGES.get("high"));
+            fourbar.rotate(-Status.STAGES.get("high"));
         }
         if (btn_right_bumper.get()){
             fourbar.dropperExtendRight();
+        }
+
+        if (btn_x.get()){
+            fourbar.rotate(0);
         }
 
 
