@@ -14,6 +14,7 @@ public class FourBar {
     private final DigitalChannel limit_checker;
 
     private double target_pos;
+    public boolean manual = false;
 
 
     public FourBar(DcMotor arm, Servo dropper, DigitalChannel limit_checker){
@@ -28,6 +29,10 @@ public class FourBar {
         return arm.getCurrentPosition();
     }
 
+    public double getTargetArmPos(){
+        return target_pos;
+    }
+
     public double getCurrentDropperPos(){
         return dropper.getPosition();
     }
@@ -37,21 +42,18 @@ public class FourBar {
         this.dropper.setPosition(Status.DEPOSIT_EXTEND_LEFT);
     }
 
-
     public void dropperExtendRight(){
-        this.dropper.setPosition(Status.DEPOSIT_EXTEND_LEFT);
+        this.dropper.setPosition(Status.DEPOSIT_EXTEND_RIGHT);
+    }
+
+    public void dropperReset(){
+        this.dropper.setPosition(Status.DEPOSIT_RESET);
     }
 
 
-    public void dropperRetract(){
-        this.dropper.setPosition(Status.DEPOSIT_RETRACT);
-    }
-
-
-    public void rotate(double delta_ticks){
-        double curr_pos = arm.getCurrentPosition();
-        if (Status.LOWER_LIMIT < (curr_pos + delta_ticks) && (curr_pos + delta_ticks) < Status.UPPER_LIMIT){
-            target_pos += delta_ticks;
+    public void rotate(double target_ticks){
+        if (-Status.UPPER_LIMIT < (target_ticks) && (target_ticks) < Status.UPPER_LIMIT){
+            target_pos = target_ticks;
         }
     }
 
@@ -59,9 +61,11 @@ public class FourBar {
     public void update(){
         double curr_pos = arm.getCurrentPosition();
 
-        if (Status.LOWER_LIMIT < curr_pos && curr_pos < Status.UPPER_LIMIT) {
-            double ratio = (target_pos - curr_pos) / Status.UPPER_LIMIT;
-            arm.setPower(Status.kP * ratio);
+        double ratio = (target_pos - curr_pos) / 300;
+        if (manual){
+            arm.setPower(ratio * Status.MANUAL_SPEED);
+        } else {
+            arm.setPower(ratio * Status.SPEED);
         }
     }
 }
