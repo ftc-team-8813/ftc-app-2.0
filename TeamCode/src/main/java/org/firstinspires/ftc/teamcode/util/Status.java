@@ -13,6 +13,7 @@ public class Status {
 
     // Four Bar
     public static final double UPPER_LIMIT = 3000;
+    public static final double THRESHOLD = 700;
     public static final double SPEED = 0.4;
     public static final double MANUAL_SPEED = 0.2;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{put("low", 700.0); put("mid", 1300.0); put("high", 2100.0);}};

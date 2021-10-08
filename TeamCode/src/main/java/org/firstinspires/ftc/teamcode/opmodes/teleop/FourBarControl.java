@@ -19,6 +19,7 @@ public class FourBarControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_y;
     private ControllerMap.ButtonEntry btn_right_bumper;
     private ControllerMap.ButtonEntry btn_x;
+    private ControllerMap.ButtonEntry btn_right_dpad;
 
 
     public FourBarControl(String name){super(name);}
@@ -39,7 +40,8 @@ public class FourBarControl extends ControlModule{
         btn_y = controllerMap.getButtonMap("fourbar:right_high", "gamepad2", "y");
         btn_right_bumper = controllerMap.getButtonMap("fourbar:right_dropper", "gamepad2", "right_bumper");
 
-        btn_x = controllerMap.getButtonMap("fourbar:reset", "gamepad2", "x");
+        btn_x = controllerMap.getButtonMap("fourbar:reset_letter", "gamepad2", "x");
+        btn_right_dpad = controllerMap.getButtonMap("fourbar:reset_dpad", "gamepad2", "dpad_right");
     }
 
     @Override
@@ -74,7 +76,7 @@ public class FourBarControl extends ControlModule{
             fourbar.dropperExtendRight();
         }
 
-        if (btn_x.get()){
+        if (btn_x.get() || btn_right_dpad.get()){
             fourbar.rotate(0);
         }
 
