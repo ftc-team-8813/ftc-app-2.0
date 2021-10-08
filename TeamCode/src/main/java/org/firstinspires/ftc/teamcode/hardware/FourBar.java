@@ -19,6 +19,8 @@ public class FourBar {
 
     public FourBar(DcMotor arm, Servo dropper, DigitalChannel limit_checker){
         this.arm = arm; // Encoder and motor on same port
+        this.arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        this.arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.dropper = dropper;
         this.limit_checker = limit_checker;
         this.limit_checker.setMode(INPUT);
@@ -52,7 +54,7 @@ public class FourBar {
 
 
     public void rotate(double target_ticks){
-        if (-Status.UPPER_LIMIT < (target_ticks) && (target_ticks) < Status.UPPER_LIMIT){
+        if (-Status.UPPER_LIMIT < target_ticks && target_ticks < Status.UPPER_LIMIT){
             target_pos = target_ticks;
         }
     }
@@ -60,8 +62,8 @@ public class FourBar {
 
     public void update(){
         double curr_pos = arm.getCurrentPosition();
+        double ratio = (target_pos - curr_pos) / Status.THRESHOLD;
 
-        double ratio = (target_pos - curr_pos) / 300;
         if (manual){
             arm.setPower(ratio * Status.MANUAL_SPEED);
         } else {
