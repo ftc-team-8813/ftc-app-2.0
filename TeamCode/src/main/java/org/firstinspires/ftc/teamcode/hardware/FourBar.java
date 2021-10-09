@@ -11,14 +11,16 @@ import static com.qualcomm.robotcore.hardware.DigitalChannel.Mode.INPUT;
 public class FourBar {
     private final DcMotor arm;
     private final Servo dropper;
+    private final Servo dropper_gate;
     private final DigitalChannel limit_checker;
 
     private double target_pos;
     public boolean manual = false;
 
 
-    public FourBar(DcMotor arm, Servo dropper, DigitalChannel limit_checker){
+    public FourBar(DcMotor arm, Servo dropper, Servo dropper_gate, DigitalChannel limit_checker){
         this.arm = arm; // Encoder and motor on same port
+        this.dropper_gate = dropper_gate;
         this.arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.dropper = dropper;
@@ -52,8 +54,13 @@ public class FourBar {
         this.dropper.setPosition(Status.DEPOSIT_RESET);
     }
 
+    public void dropperClose() { this.dropper_gate.setPosition(Status.DEPOSIT_CLOSED); }
+
+    public void dropperOpen() { this.dropper_gate.setPosition(Status.DEPOSIT_OPEN); }
+
 
     public void rotate(double target_ticks){
+        this.dropperClose();
         if (-Status.UPPER_LIMIT < target_ticks && target_ticks < Status.UPPER_LIMIT){
             target_pos = target_ticks;
         }
