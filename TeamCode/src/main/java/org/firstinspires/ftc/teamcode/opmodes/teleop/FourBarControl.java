@@ -78,6 +78,8 @@ public class FourBarControl extends ControlModule{
 
         if (btn_x.get() || btn_right_dpad.get()){
             fourbar.rotate(0);
+            fourbar.dropperReset();
+            fourbar.dropperOpen();
         }
 
 
