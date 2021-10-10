@@ -22,5 +22,7 @@ public class Status {
     public static final double DEPOSIT_EXTEND_RIGHT = 1;
     public static final double DEPOSIT_RESET = 0.6;
     public static final double DEPOSIT_OPEN = 0.139;
-    public static final double DEPOSIT_CLOSED = 0.514;
+    public static final double DEPOSIT_CLOSED = 0.711;
+
+
 }
