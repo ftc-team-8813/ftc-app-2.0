@@ -35,7 +35,7 @@ public class DriveControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        drivetrain.telemove(-ax_drive_left_y.get() * 0.8, ax_drive_left_x.get() * 0.8, ax_drive_right_x.get() * 0.8);
+        drivetrain.telemove(-ax_drive_left_y.get() * 0.7, ax_drive_left_x.get() * 0.7, ax_drive_right_x.get() * 0.4);
 
         telemetry.addData("X Coord: ", odometry.x);
         telemetry.addData("Y Coord: ", odometry.y);

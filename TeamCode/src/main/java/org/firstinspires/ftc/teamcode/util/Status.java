@@ -13,16 +13,16 @@ public class Status {
 
     // Four Bar
     public static final double UPPER_LIMIT = 3000;
-    public static final double THRESHOLD = 700;
-    public static final double SPEED = 0.4;
-    public static final double MANUAL_SPEED = 0.2;
-    public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{put("low", 700.0); put("mid", 1300.0); put("high", 2100.0);}};
-    public static final double DELTA_MULTIPLIER = 20;
-    public static final double DEPOSIT_EXTEND_LEFT = 0.15;
-    public static final double DEPOSIT_EXTEND_RIGHT = 1;
+    public static final double SPEED_CAP = 0.35;
+    public static final double kP = 0.00085;
+    public static final double kI = 0.00003;
+    public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{put("low", 700.0); put("mid", 1300.0); put("high", 2400.0);}};
+    public static final double DELTA_MULTIPLIER = 50;
+    public static final double DEPOSIT_EXTEND_LEFT = 1;
+    public static final double DEPOSIT_EXTEND_RIGHT = 0.15;
     public static final double DEPOSIT_RESET = 0.6;
     public static final double DEPOSIT_OPEN = 0.139;
     public static final double DEPOSIT_CLOSED = 0.711;
-
-
+    public static final double BLOCK_DETECT = 8.5;
+    public static final double ARM_AWAY = 20;
 }

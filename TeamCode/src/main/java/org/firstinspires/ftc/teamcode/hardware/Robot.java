@@ -27,7 +27,6 @@ public class Robot
     public EventBus eventBus = new EventBus();
     public Scheduler scheduler = new Scheduler(eventBus);
     private final Logger log = new Logger("Robot");
-    public final ColorRangeSensor color_sensor;
 
 
     ///////////////////////////////
@@ -69,13 +68,12 @@ public class Robot
 
         // Sensors
         DigitalChannel arm_lower_limit = hardwareMap.get(DigitalChannel.class, "arm lower limit");
-        ColorRangeSensor color_dist = hardwareMap.get(ColorRangeSensor.class, "freight sensor");
+        ColorRangeSensor dist = hardwareMap.get(ColorRangeSensor.class, "freight sensor");
 
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
         this.odometry = new Odometry(back_right, front_right, back_left, left_odo_drop, right_odo_drop);
-        this.intake = new Intake(intake);
-        this.fourbar = new FourBar(fourbar, dropper, dropper_gate, arm_lower_limit, color_dist);
-        this.color_sensor = color_dist;
+        this.intake = new Intake(intake, dropper, dropper_gate, dist);
+        this.fourbar = new FourBar(fourbar, dropper, arm_lower_limit);
     }
 }

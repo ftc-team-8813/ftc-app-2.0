@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.util.Status;
 public class FourBarControl extends ControlModule{
     private FourBar fourbar;
 
-    private ControllerMap.AxisEntry ax_right_stick_y;
+    private ControllerMap.AxisEntry ax_right_stick_x;
     private ControllerMap.ButtonEntry btn_down_dpad;
     private ControllerMap.ButtonEntry btn_left_dpad;
     private ControllerMap.ButtonEntry btn_up_dpad;
@@ -28,7 +28,9 @@ public class FourBarControl extends ControlModule{
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.fourbar = robot.fourbar;
-        ax_right_stick_y = controllerMap.getAxisMap("fourbar:right_y", "gamepad2", "right_stick_y");
+        this.fourbar.dropperReset();
+
+        ax_right_stick_x = controllerMap.getAxisMap("fourbar:right_x", "gamepad2", "right_stick_x");
 
         btn_down_dpad = controllerMap.getButtonMap("fourbar:left_low", "gamepad2", "dpad_down");
         btn_left_dpad = controllerMap.getButtonMap("fourbar:left_mid", "gamepad2", "dpad_left");
@@ -46,31 +48,31 @@ public class FourBarControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        if (-ax_right_stick_y.get() != 0) {
-            double target_ticks = fourbar.getCurrentArmPos() + (-ax_right_stick_y.get() * Status.DELTA_MULTIPLIER);
-            fourbar.manual = true;
+        if (ax_right_stick_x.get() != 0) {
+            double target_ticks = fourbar.getCurrentArmPos() + (-ax_right_stick_x.get() * Status.DELTA_MULTIPLIER);
             fourbar.rotate(target_ticks);
+            fourbar.manual = true;
         } else {
             fourbar.manual = false;
         }
 
         if (btn_down_dpad.get()){
-            fourbar.rotate(Status.STAGES.get("low"));
+            fourbar.rotate(-Status.STAGES.get("low"));
         } else if (btn_left_dpad.get()){
-            fourbar.rotate(Status.STAGES.get("mid"));
+            fourbar.rotate(-Status.STAGES.get("mid"));
         } else if (btn_up_dpad.get()){
-            fourbar.rotate(Status.STAGES.get("high"));
+            fourbar.rotate(-Status.STAGES.get("high"));
         }
         if (btn_left_bumper.get()){
             fourbar.dropperExtendLeft();
         }
 
         if (btn_a.get()){
-            fourbar.rotate(-Status.STAGES.get("low"));
+            fourbar.rotate(Status.STAGES.get("low"));
         } else if (btn_b.get()){
-            fourbar.rotate(-Status.STAGES.get("mid"));
+            fourbar.rotate(Status.STAGES.get("mid"));
         } else if (btn_y.get()){
-            fourbar.rotate(-Status.STAGES.get("high"));
+            fourbar.rotate(Status.STAGES.get("high"));
         }
         if (btn_right_bumper.get()){
             fourbar.dropperExtendRight();
@@ -79,7 +81,6 @@ public class FourBarControl extends ControlModule{
         if (btn_x.get() || btn_right_dpad.get()){
             fourbar.rotate(0);
             fourbar.dropperReset();
-            fourbar.dropperOpen();
         }
 
 
