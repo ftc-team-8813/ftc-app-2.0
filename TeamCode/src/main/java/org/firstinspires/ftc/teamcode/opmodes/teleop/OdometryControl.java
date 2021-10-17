@@ -24,7 +24,7 @@ public class OdometryControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        if (btn_release_odo_a.get()){
+        if (btn_release_odo_a.get()) {
             odometry.release();
         }
         odometry.update();

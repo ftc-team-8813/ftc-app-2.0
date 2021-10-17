@@ -25,16 +25,25 @@ public class ServerControl extends ControlModule{
             throw new RuntimeException(e);
         }
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
-            ByteBuffer buf = ByteBuffer.allocate(100);
-            buf.putDouble(robot.odometry.x);
-            buf.putDouble(robot.odometry.y);
+            ByteBuffer buf = ByteBuffer.allocate(200);
             buf.putDouble(robot.fourbar.getCurrentArmPos());
+            double[] pid_terms = robot.fourbar.getPIDTerms();
+            buf.putDouble(pid_terms[0]); // P Term
+            buf.putDouble(pid_terms[1]); // I Term
+            buf.putDouble(pid_terms[2]); // D Term
+
+            buf.flip();
+            resp.respond(buf);
         });
         server.startServer();
     }
 
     @Override
     public void update(Telemetry telemetry) {
+        // No update
+    }
 
+    public void stop(){
+        server.close();
     }
 }

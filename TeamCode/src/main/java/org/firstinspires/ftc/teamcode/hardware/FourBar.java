@@ -15,6 +15,10 @@ public class FourBar {
 
     private double target_pos;
     private double integral;
+    private double past_error;
+    private double p_term;
+    private double i_term;
+    private double d_term;
     public boolean manual = false;
 
 
@@ -52,6 +56,10 @@ public class FourBar {
         this.dropper.setPosition(Status.DEPOSIT_RESET);
     }
 
+    public double[] getPIDTerms(){
+        return new double[]{p_term, i_term, d_term};
+    }
+
 
     public void rotate(double target_ticks){
         if (-Status.UPPER_LIMIT < target_ticks && target_ticks < Status.UPPER_LIMIT){
@@ -64,12 +72,16 @@ public class FourBar {
         double curr_pos = arm.getCurrentPosition();
         double error = target_pos - curr_pos;
 
-        double p_term = error * Status.kP;
+        p_term = error * Status.kP;
 
         integral += error;
-        double i_term = integral * Status.kI;
+        i_term = integral * Status.kI;
 
-        double power = p_term + i_term;
+        double derivative = error - past_error;
+        d_term = derivative * Status.kD;
+
+        double power = p_term + i_term + d_term;
         arm.setPower(power * Status.SPEED_CAP);
+        past_error = error;
     }
 }
