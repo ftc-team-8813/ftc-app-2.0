@@ -10,9 +10,8 @@ public class Navigation {
     }
 
     public void update(){
-        double curr_x = odometry.x;
-        double curr_y = odometry.y;
-
-        
+        double[] odo_data = odometry.getOdoData();
+        double curr_x = odo_data[0];
+        double curr_y = odo_data[1];
     }
 }

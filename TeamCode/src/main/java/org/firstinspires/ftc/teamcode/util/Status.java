@@ -6,24 +6,21 @@ public class Status {
     // Odometry
     public static final double ROTATIONAL_TICKS = 8192;
     public static final double WHEEL_DIAMETER = 1.377953;
-    public static final double ROBOT_RADIUS_SIDE = 8.5;
-    public static final double ROBOT_RADIUS_FRONT = 5.5;
-    public static final double RELEASE_POS_1 = 0;
-    public static final double RELEASE_POS_2 = 0;
+    public static final double REVOLUTION_TICKS = 47931;
+    public static final double UP_POS_LEFT = 0;
+    public static final double UP_POS_RIGHT = 0;
+    public static final double DOWN_POS_LEFT = 0;
+    public static final double DOWN_POS_RIGHT = 1;
 
     // Four Bar
     public static final double UPPER_LIMIT = 3000;
-    public static final double SPEED_CAP = 0.4;
-    public static final double kP = 0.0008;
-    public static final double kI = 0.00015;
-    public static final double kD = 0.0015;
-    public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{put("low", 700.0); put("mid", 1300.0); put("high", 2400.0);}};
-    public static final double DELTA_MULTIPLIER = 50;
-    public static final double DEPOSIT_EXTEND_LEFT = 1;
-    public static final double DEPOSIT_EXTEND_RIGHT = 0.15;
-    public static final double DEPOSIT_RESET = 0.6;
-    public static final double DEPOSIT_OPEN = 0.139;
-    public static final double DEPOSIT_CLOSED = 0.711;
+    public static final double SPEED_CAP = 1;
+    public static final double kP = 0.005;
+    public static final double kI = 0;
+    public static final double kD = 0;
+    public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{put("low", 100.0); put("mid", 500.0); put("high", 1000.0);}};
+    public static final HashMap<String, Double> EXTENSIONS = new HashMap<String, Double>(){{put("left", 700.0); put("right", 1300.0); put("center", 2400.0);}};
+    public static final HashMap<String, Double> DEPOSITS = new HashMap<String, Double>(){{put("left", 700.0); put("right", 1300.0); put("center", 2400.0);}};
     public static final double BLOCK_DETECT = 11;
     public static final double ARM_AWAY = 20;
 }
