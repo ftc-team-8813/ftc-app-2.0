@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
@@ -8,20 +10,20 @@ import org.firstinspires.ftc.teamcode.util.Status;
 
 public class LiftControl extends ControlModule{
     private Lift lift;
+    private final ElapsedTime timer = new ElapsedTime();
 
-    private int height = 0; // 0 = Lowest, 1 = Low, 2 = Mid, 3 = High
+    private int bottom = 0; // 0 = Bottom, 1 = Going to Bottom
+    private int height = 0; // 1 = Low, 2 = Mid, 3 = High
     private int extension = 0; // 0 = Center, 1 = Left, 2 = Right
+    private final double arm_wait_time = 1.3;
+    private boolean moving = false;
 
-    private ControllerMap.AxisEntry ax_right_stick_x;
     private ControllerMap.ButtonEntry btn_down_dpad;
     private ControllerMap.ButtonEntry btn_left_dpad;
-    private ControllerMap.ButtonEntry btn_up_dpad;
-    private ControllerMap.ButtonEntry btn_left_bumper;
     private ControllerMap.ButtonEntry btn_a;
     private ControllerMap.ButtonEntry btn_b;
     private ControllerMap.ButtonEntry btn_y;
     private ControllerMap.ButtonEntry btn_right_bumper;
-    private ControllerMap.ButtonEntry btn_x;
     private ControllerMap.ButtonEntry btn_right_dpad;
 
 
@@ -52,49 +54,64 @@ public class LiftControl extends ControlModule{
             height = 3;
         }
 
-        if (btn_left_dpad.get()){
-            extension = 1;
-        } else if (btn_right_dpad.get()){
-            extension = 2;
+        if (height > 0) {
+            if (btn_left_dpad.get()) {
+                extension = 1;
+            } else if (btn_right_dpad.get()) {
+                extension = 2;
+            }
         }
 
         if (btn_right_bumper.get()){
             switch (extension){
                 case 1:
-                    lift.extend(Status.DEPOSITS.get("left"));
+                    lift.deposit(Status.DEPOSITS.get("left"));
                 case 2:
-                    lift.extend(Status.DEPOSITS.get("right"));
+                    lift.deposit(Status.DEPOSITS.get("right"));
             }
-            lift.extend(Status.DEPOSITS.get("center"));
+        } else {
+            lift.deposit(Status.DEPOSITS.get("center"));
         }
 
         if (btn_down_dpad.get()){
-            height = 0;
+            bottom = 1;
             extension = 0;
         }
 
-        if (height == 0){
-            lift.extend(Status.EXTENSIONS.get("center"));
-            if (lift.armReached()){
-                lift.raise(0);
-            }
-        } else if (height > 0){
-            if (extension > 0){
-                switch (height){
-                    case 1:
-                        lift.raise(Status.STAGES.get("low"));
-                    case 2:
-                        lift.raise(Status.STAGES.get("mid"));
-                    case 3:
-                        lift.raise(Status.STAGES.get("high"));
+        if (bottom == 1){
+            if (moving){
+                if (timer.seconds() > arm_wait_time){
+                    lift.raise(0);
+                    bottom = 0;
+                    moving = false;
                 }
-                if (lift.liftReached()){
-                    switch (extension){
-                        case 1:
-                            lift.extend(Status.EXTENSIONS.get("left"));
-                        case 2:
-                            lift.extend(Status.EXTENSIONS.get("right"));
-                    }
+            } else {
+                lift.extend(Status.EXTENSIONS.get("center"));
+                timer.reset();
+                moving = true;
+            }
+        }
+
+        if (extension > 0){
+            switch (height){
+                case 1:
+                    lift.raise(Status.STAGES.get("low"));
+                    break;
+                case 2:
+                    lift.raise(Status.STAGES.get("mid"));
+                    break;
+                case 3:
+                    lift.raise(Status.STAGES.get("high"));
+                    break;
+            }
+            if (lift.liftReached()){
+                switch (extension){
+                    case 1:
+                        lift.extend(Status.EXTENSIONS.get("left"));
+                        break;
+                    case 2:
+                        lift.extend(Status.EXTENSIONS.get("right"));
+                        break;
                 }
             }
         }

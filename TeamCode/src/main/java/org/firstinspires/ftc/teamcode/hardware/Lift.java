@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.Status;
@@ -47,17 +46,12 @@ public class Lift {
     }
 
     public boolean liftReached(){
-        double threshold = 10;
+        double threshold = 100;
         return target_pos - threshold < lift.getCurrentPosition() && lift.getCurrentPosition() < target_pos + threshold;
     }
 
-    public boolean armReached(){
-        double threshold = 10;
-        return arm.getPosition() - threshold < arm.getPosition() && arm.getPosition() < target_pos + threshold;
-    }
-
     public void raise(double target_ticks){
-        if (0 < target_ticks && target_ticks < Status.UPPER_LIMIT){
+        if (0 <= target_ticks && target_ticks <= Status.UPPER_LIMIT){
             target_pos = target_ticks;
         }
     }
@@ -86,7 +80,12 @@ public class Lift {
         d_term = derivative * Status.kD;
 
         double power = p_term + i_term + d_term;
-        lift.setPower(power * Status.SPEED_CAP);
+        if (power < 0){
+            power *= Status.LOWER_SPEED;
+        } else {
+            power *= Status.RAISE_SPEED;
+        }
+        lift.setPower(power);
         past_error = error;
     }
 }

@@ -13,14 +13,15 @@ public class Status {
     public static final double DOWN_POS_RIGHT = 1;
 
     // Four Bar
-    public static final double UPPER_LIMIT = 3000;
-    public static final double SPEED_CAP = 1;
-    public static final double kP = 0.005;
+    public static final double UPPER_LIMIT = 2500;
+    public static final double RAISE_SPEED = 1;
+    public static final double LOWER_SPEED = 0.25;
+    public static final double kP = 0.03;
     public static final double kI = 0;
     public static final double kD = 0;
-    public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{put("low", 100.0); put("mid", 500.0); put("high", 1000.0);}};
-    public static final HashMap<String, Double> EXTENSIONS = new HashMap<String, Double>(){{put("left", 700.0); put("right", 1300.0); put("center", 2400.0);}};
-    public static final HashMap<String, Double> DEPOSITS = new HashMap<String, Double>(){{put("left", 700.0); put("right", 1300.0); put("center", 2400.0);}};
+    public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{put("low", 500.0); put("mid", 1000.0); put("high", 2000.0);}};
+    public static final HashMap<String, Double> EXTENSIONS = new HashMap<String, Double>(){{put("left", 1.0); put("right", 0.22); put("center", 0.56);}};
+    public static final HashMap<String, Double> DEPOSITS = new HashMap<String, Double>(){{put("left", 0.246); put("right", 0.736); put("center", 0.504);}};
     public static final double BLOCK_DETECT = 11;
     public static final double ARM_AWAY = 20;
 }
