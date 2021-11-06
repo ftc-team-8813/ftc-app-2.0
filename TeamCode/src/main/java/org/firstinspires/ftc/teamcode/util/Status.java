@@ -29,7 +29,8 @@ public class Status {
     public static final HashMap<String, Double> EXTENSIONS = new HashMap<String, Double>(){{
         put("left", 1.0);
         put("right", 0.22);
-        put("center", 0.56);
+        put("center_from_left", 0.504);
+        put("center_from_right", 0.52);
     }};
     public static final double ARM_WAIT_TIME = 0.55;
     public static final double EXTENDABLE_THRESHOLD = 100;
@@ -38,7 +39,6 @@ public class Status {
     public static final HashMap<String, Double> DEPOSITS = new HashMap<String, Double>(){{
         put("left", 0.17);
         put("right", 0.95);
-        put("center_from_left", 0.504);
-        put("center_from_right", 0.52);
+        put("center", 0.504);
     }};
 }
