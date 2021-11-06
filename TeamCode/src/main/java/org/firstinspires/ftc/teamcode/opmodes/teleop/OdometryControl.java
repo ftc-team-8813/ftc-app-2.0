@@ -15,7 +15,7 @@ public class OdometryControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_increase_right;
     private ControllerMap.ButtonEntry btn_decrease_right;
 
-    private boolean pods_up;
+    private boolean pods_up = true;
 
 
     public OdometryControl(String name) {
@@ -26,8 +26,9 @@ public class OdometryControl extends ControlModule{
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.odometry = robot.odometry;
-        btn_release_odo_a = controllerMap.getButtonMap("odo:a", "gamepad1","a");
-        btn_release_odo_b = controllerMap.getButtonMap("odo:b", "gamepad1","b");
+
+        btn_release_odo_a = controllerMap.getButtonMap("odo:x", "gamepad1","x");
+        btn_release_odo_b = controllerMap.getButtonMap("odo:y", "gamepad1","y");
         btn_increase_left = controllerMap.getButtonMap("odo:dpad_right", "gamepad1", "dpad_right");
         btn_decrease_left = controllerMap.getButtonMap("odo:dpad_left", "gamepad1", "dpad_left");
         btn_increase_right = controllerMap.getButtonMap("odo:dpad_up", "gamepad1", "dpad_up");

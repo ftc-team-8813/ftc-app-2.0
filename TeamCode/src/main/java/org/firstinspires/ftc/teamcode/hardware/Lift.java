@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import android.text.method.Touch;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.util.Status;
 
@@ -9,6 +12,7 @@ public class Lift {
     private final DcMotor lift;
     private final Servo dropper;
     private final Servo arm;
+    private final TouchSensor limit;
 
     private double target_pos;
     private double integral;
@@ -18,12 +22,13 @@ public class Lift {
     private double d_term;
 
 
-    public Lift(DcMotor lift, Servo arm, Servo dropper){
+    public Lift(DcMotor lift, Servo arm, Servo dropper, TouchSensor limit){
         this.lift = lift; // Encoder and motor on same port
         this.lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.arm = arm;
         this.dropper = dropper;
+        this.limit = limit;
     }
 
 
@@ -41,13 +46,16 @@ public class Lift {
         return dropper.getPosition();
     }
 
+    public double getPower(){
+        return lift.getPower();
+    }
+
     public double[] getPIDTerms(){
         return new double[]{p_term, i_term, d_term};
     }
 
-    public boolean liftReached(){
-        double threshold = 100;
-        return target_pos - threshold < lift.getCurrentPosition() && lift.getCurrentPosition() < target_pos + threshold;
+    public boolean extendable(){
+        return lift.getCurrentPosition() > Status.EXTENDABLE_THRESHOLD;
     }
 
     public void raise(double target_ticks){

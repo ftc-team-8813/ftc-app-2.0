@@ -15,7 +15,6 @@ public class LiftControl extends ControlModule{
     private int bottom = 0; // 0 = Bottom, 1 = Going to Bottom
     private int height = 0; // 1 = Low, 2 = Mid, 3 = High
     private int extension = 0; // 0 = Center, 1 = Left, 2 = Right
-    private final double arm_wait_time = 1.3;
     private boolean moving = false;
 
     private ControllerMap.ButtonEntry btn_down_dpad;
@@ -66,8 +65,10 @@ public class LiftControl extends ControlModule{
             switch (extension){
                 case 1:
                     lift.deposit(Status.DEPOSITS.get("left"));
+                    break;
                 case 2:
                     lift.deposit(Status.DEPOSITS.get("right"));
+                    break;
             }
         } else {
             lift.deposit(Status.DEPOSITS.get("center"));
@@ -80,7 +81,7 @@ public class LiftControl extends ControlModule{
 
         if (bottom == 1){
             if (moving){
-                if (timer.seconds() > arm_wait_time){
+                if (timer.seconds() > Status.ARM_WAIT_TIME){
                     lift.raise(0);
                     bottom = 0;
                     moving = false;
@@ -104,7 +105,7 @@ public class LiftControl extends ControlModule{
                     lift.raise(Status.STAGES.get("high"));
                     break;
             }
-            if (lift.liftReached()){
+            if (lift.extendable()){
                 switch (extension){
                     case 1:
                         lift.extend(Status.EXTENSIONS.get("left"));

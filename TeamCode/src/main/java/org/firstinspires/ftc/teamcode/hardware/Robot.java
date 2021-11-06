@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import android.text.method.Touch;
+
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -7,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.util.Logger;
@@ -66,13 +69,14 @@ public class Robot
         CRServo spinner = hardwareMap.get(CRServo.class, "spinner");
 
         // Sensors
+        TouchSensor lift_limit = hardwareMap.get(TouchSensor.class, "lift limit");
         ColorRangeSensor dist = hardwareMap.get(ColorRangeSensor.class, "freight sensor");
 
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
         this.odometry = new Odometry(back_right, back_left, front_right, left_odo_drop, right_odo_drop);
         this.intake = new Intake(intake, dist);
-        this.lift = new Lift(lift, arm, dropper);
+        this.lift = new Lift(lift, arm, dropper, lift_limit);
         this.duck = new Duck(spinner);
     }
 }

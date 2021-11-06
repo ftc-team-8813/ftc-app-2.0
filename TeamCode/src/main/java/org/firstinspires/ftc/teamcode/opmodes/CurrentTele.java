@@ -45,7 +45,7 @@ public class CurrentTele extends LoggingOpMode
         controlMgr = new ControlMgr(robot, controllerMap);
 
         // Controller Modules
-        controlMgr.addModule(new ServerControl("Server Control")); // TODO Needs testing
+        controlMgr.addModule(new ServerControl("Server Control"));
         controlMgr.addModule(new DriveControl("Drive Control"));
         controlMgr.addModule(new OdometryControl("Odometry Control"));
         controlMgr.addModule(new IntakeControl("Intake Control"));
