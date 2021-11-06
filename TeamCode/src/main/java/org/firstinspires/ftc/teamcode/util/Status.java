@@ -19,13 +19,26 @@ public class Status {
     public static final double kP = 0.004;
     public static final double kI = 0;
     public static final double kD = 0;
-    public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{put("low", 400.0); put("mid", 800.0); put("high", 1200.0);}};
+    public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
+        put("low", 400.0);
+        put("mid", 800.0);
+        put("high", 1200.0);
+    }};
 
     // Arm
-    public static final HashMap<String, Double> EXTENSIONS = new HashMap<String, Double>(){{put("left", 1.0); put("right", 0.22); put("center", 0.56);}};
+    public static final HashMap<String, Double> EXTENSIONS = new HashMap<String, Double>(){{
+        put("left", 1.0);
+        put("right", 0.22);
+        put("center", 0.56);
+    }};
     public static final double ARM_WAIT_TIME = 0.55;
     public static final double EXTENDABLE_THRESHOLD = 100;
 
     // Deposit
-    public static final HashMap<String, Double> DEPOSITS = new HashMap<String, Double>(){{put("left", 0.246); put("right", 0.736); put("center", 0.504);}};
+    public static final HashMap<String, Double> DEPOSITS = new HashMap<String, Double>(){{
+        put("left", 0.17);
+        put("right", 0.95);
+        put("center_from_left", 0.504);
+        put("center_from_right", 0.52);
+    }};
 }

@@ -76,7 +76,6 @@ public class LiftControl extends ControlModule{
 
         if (btn_down_dpad.get()){
             bottom = 1;
-            extension = 0;
         }
 
         if (bottom == 1){
@@ -87,7 +86,15 @@ public class LiftControl extends ControlModule{
                     moving = false;
                 }
             } else {
-                lift.extend(Status.EXTENSIONS.get("center"));
+                switch (extension){
+                    case 1:
+                        lift.extend(Status.EXTENSIONS.get("center_from_left"));
+                        break;
+                    case 2:
+                        lift.extend(Status.EXTENSIONS.get("center_from_right"));
+                        break;
+                }
+                extension = 0; // Setting zero here to retain old position for checking in switch
                 timer.reset();
                 moving = true;
             }

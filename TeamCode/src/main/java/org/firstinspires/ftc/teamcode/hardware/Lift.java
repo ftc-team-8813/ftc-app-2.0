@@ -79,21 +79,25 @@ public class Lift {
         double curr_pos = lift.getCurrentPosition();
         double error = target_pos - curr_pos;
 
-        p_term = error * Status.kP;
+        if (curr_pos <= 0){
+            lift.setPower(0);
+        } else{
+            p_term = error * Status.kP;
 
-        integral += error;
-        i_term = integral * Status.kI;
+            integral += error;
+            i_term = integral * Status.kI;
 
-        double derivative = error - past_error;
-        d_term = derivative * Status.kD;
+            double derivative = error - past_error;
+            d_term = derivative * Status.kD;
 
-        double power = p_term + i_term + d_term;
-        if (power < 0){
-            power *= Status.LOWER_SPEED;
-        } else {
-            power *= Status.RAISE_SPEED;
+            double power = p_term + i_term + d_term;
+            if (power < 0){
+                power *= Status.LOWER_SPEED;
+            } else {
+                power *= Status.RAISE_SPEED;
+            }
+            lift.setPower(power);
+            past_error = error;
         }
-        lift.setPower(power);
-        past_error = error;
     }
 }
