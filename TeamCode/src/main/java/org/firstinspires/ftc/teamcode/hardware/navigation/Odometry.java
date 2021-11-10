@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.hardware.navigation;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Status;
@@ -10,22 +12,22 @@ public class Odometry {
     private final DcMotor l_enc;
     private final DcMotor r_enc;
     private final DcMotor f_enc;
-    private final Servo left_drop;
-    private final Servo right_drop;
+    private final ServoImplEx left_drop;
+    private final ServoImplEx right_drop;
 
-    public double x;
-    public double y;
-    public double heading;
+    private double x;
+    private double y;
+    private double heading;
     
     private double past_l;
     private double past_r;
     private double past_b;
 
 
-    public Odometry(DcMotor l_enc, DcMotor r_enc, DcMotor f_enc, Servo left_drop, Servo right_drop){
+    public Odometry(DcMotor l_enc, DcMotor r_enc, DcMotor s_enc, ServoImplEx left_drop, ServoImplEx right_drop){
         this.l_enc = l_enc;
         this.r_enc = r_enc;
-        this.f_enc = f_enc;
+        this.f_enc = s_enc;
         this.left_drop = left_drop;
         this.right_drop = right_drop;
         this.x = 0;
@@ -33,17 +35,37 @@ public class Odometry {
 
         l_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         r_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        f_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        s_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         l_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         r_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        f_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        s_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+//        PwmControl.PwmRange range = new PwmControl.PwmRange(50, 2500);
+//        left_drop.setPwmRange(range);
+//        right_drop.setPwmRange(range);
     }
 
+    public void podsUp(){
+        left_drop.setPosition(Status.UP_POS_LEFT);
+        right_drop.setPosition(Status.UP_POS_RIGHT);
+    }
 
-    public void release(){
-        left_drop.setPosition(Status.RELEASE_POS_1);
-        right_drop.setPosition(Status.RELEASE_POS_2);
+    public void podsDown(){
+        left_drop.setPosition(Status.DOWN_POS_LEFT);
+        right_drop.setPosition(Status.DOWN_POS_RIGHT);
+    }
+
+    public void deltaPositionLeft(double position){
+        left_drop.setPosition(left_drop.getPosition() + position);
+    }
+
+    public void deltaPositionRight(double position){
+        right_drop.setPosition(right_drop.getPosition() + position);
+    }
+
+    public double[] getServoDropPositions(){
+        return new double[]{left_drop.getPosition(), right_drop.getPosition()};
     }
 
 
@@ -83,15 +105,17 @@ public class Odometry {
 
 
     public double convertToRadians(double ticks){
-        double ticks_per_inch = Status.ROTATIONAL_TICKS / (Math.PI * Status.WHEEL_DIAMETER);
-        double delta_inches = ticks / ticks_per_inch;
-        double revolutions = delta_inches / (2 * Math.PI * Status.ROBOT_RADIUS_SIDE);
-        double delta_radians = revolutions * (2 * Math.PI);
+        double circle_fraction = ticks / Status.REVOLUTION_TICKS;
+        double delta_radians = circle_fraction * (2 * Math.PI);
         return delta_radians;
     }
 
 
     public double[] getCurrentPositions(){
-        return new double[]{l_enc.getCurrentPosition(), -r_enc.getCurrentPosition(), f_enc.getCurrentPosition()};
+        return new double[]{-l_enc.getCurrentPosition(), -r_enc.getCurrentPosition(), f_enc.getCurrentPosition()};
+    }
+
+    public double[] getOdoData(){
+        return new double[]{x, y, heading};
     }
 }

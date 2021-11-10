@@ -1,20 +1,20 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import android.text.method.Touch;
+
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
-import org.firstinspires.ftc.teamcode.opmodes.DistanceSensorTest;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-
-import java.security.DigestInputStream;
 
 public class Robot
 {
@@ -22,7 +22,8 @@ public class Robot
     public Drivetrain drivetrain;
     public Odometry odometry;
     public Intake intake;
-    public FourBar fourbar;
+    public Lift lift;
+    public Duck duck;
 
     public EventBus eventBus = new EventBus();
     public Scheduler scheduler = new Scheduler(eventBus);
@@ -58,22 +59,24 @@ public class Robot
         DcMotor back_left = hardwareMap.get(DcMotor.class, "back left");
         DcMotor back_right = hardwareMap.get(DcMotor.class, "back right");
         DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
-        DcMotor fourbar = hardwareMap.get(DcMotor.class, "fourbar");
+        DcMotor lift = hardwareMap.get(DcMotor.class, "lift");
 
         // Servos
-        Servo left_odo_drop = hardwareMap.get(Servo.class, "left odo drop");
-        Servo right_odo_drop = hardwareMap.get(Servo.class, "right odo drop");
+        ServoImplEx left_odo_drop = hardwareMap.get(ServoImplEx.class, "left odo drop");
+        ServoImplEx right_odo_drop = hardwareMap.get(ServoImplEx.class, "right odo drop");
+        Servo arm = hardwareMap.get(Servo.class, "arm");
         Servo dropper = hardwareMap.get(Servo.class, "dropper");
-        Servo dropper_gate = hardwareMap.get(Servo.class, "dropper gate");
+        CRServo spinner = hardwareMap.get(CRServo.class, "spinner");
 
         // Sensors
-        DigitalChannel arm_lower_limit = hardwareMap.get(DigitalChannel.class, "arm lower limit");
+        TouchSensor lift_limit = hardwareMap.get(TouchSensor.class, "lift limit");
         ColorRangeSensor dist = hardwareMap.get(ColorRangeSensor.class, "freight sensor");
 
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
-        this.odometry = new Odometry(back_right, front_right, back_left, left_odo_drop, right_odo_drop);
-        this.intake = new Intake(intake, dropper, dropper_gate, dist);
-        this.fourbar = new FourBar(fourbar, dropper, arm_lower_limit);
+        this.odometry = new Odometry(back_right, back_left, front_right, left_odo_drop, right_odo_drop);
+        this.intake = new Intake(intake, dist);
+        this.lift = new Lift(lift, arm, dropper, lift_limit);
+        this.duck = new Duck(spinner);
     }
 }

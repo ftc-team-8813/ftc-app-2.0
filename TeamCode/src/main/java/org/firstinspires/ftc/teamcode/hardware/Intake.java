@@ -9,15 +9,11 @@ import org.firstinspires.ftc.teamcode.util.Status;
 
 public class Intake {
     private final DcMotor intake;
-    private final Servo dropper;
-    private final Servo dropper_gate;
     private final ColorRangeSensor dist;
 
 
-    public Intake(DcMotor intake, Servo dropper, Servo dropper_gate, ColorRangeSensor dist){
+    public Intake(DcMotor intake, ColorRangeSensor dist){
         this.intake = intake;
-        this.dropper_gate = dropper_gate;
-        this.dropper = dropper;
         this.dist = dist;
     }
 
@@ -33,10 +29,6 @@ public class Intake {
     public void stop(){
         intake.setPower(0);
     }
-
-    public void dropperClose() { dropper_gate.setPosition(Status.DEPOSIT_CLOSED); }
-
-    public void dropperOpen() { dropper_gate.setPosition(Status.DEPOSIT_OPEN); }
 
     public double getDistance() {
         return dist.getDistance(DistanceUnit.MM);
