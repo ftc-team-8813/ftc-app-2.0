@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 @TeleOp()
-public class TestMotors extends OpMode
+public class test extends OpMode
 {
     Servo one;
     @Override
