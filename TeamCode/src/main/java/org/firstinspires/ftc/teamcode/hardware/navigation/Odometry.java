@@ -20,20 +20,15 @@ public class Odometry {
     private double past_r;
     private double past_s;
 
-    public double delta_f;
-    public double delta_s;
-    public double delta_theta;
-
-
     public Odometry(DcMotor l_enc, DcMotor r_enc, DcMotor s_enc, ServoImplEx left_drop, ServoImplEx right_drop){
         this.l_enc = l_enc;
         this.r_enc = r_enc;
         this.s_enc = s_enc;
         this.left_drop = left_drop;
         this.right_drop = right_drop;
-        this.x = 0;
-        this.y = 0;
-        this.heading = 0;
+        this.x = 0.0;
+        this.y = 0.0;
+        this.heading = 0.0;
 
         this.l_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.r_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -78,18 +73,18 @@ public class Odometry {
         past_r = poses[1];
         past_s = poses[2];
 
-        delta_f = (change_l + change_r) / 2;
-        delta_s = (change_l - change_r) / 2 + change_b;
-        delta_theta = (change_r - change_l) / 2;
+        double delta_f = (change_l + change_r) / 2;
+        double delta_s = (change_l - change_r) / 2 + change_b;
+        double delta_theta = (change_r - change_l) / 2;
 
         double vector = Math.sqrt(Math.pow(delta_f, 2) + Math.pow(delta_s, 2));
-        double relative_heading = Math.atan2(delta_s, delta_f);
+        double relative_heading = Math.atan2(delta_f, delta_s);
         double delta_x = Math.sin(heading + relative_heading) * vector;
         double delta_y = Math.cos(heading + relative_heading) * vector;
 
-        x += (Status.MOVEMENT_TICKS / delta_x);
-        y += (Status.MOVEMENT_TICKS / delta_y);
-        heading = (heading + Status.ROTATIONAL_TICKS / delta_theta) % 180;
+        x += (delta_x / Status.MOVEMENT_TICKS);
+        y += (delta_y / Status.MOVEMENT_TICKS);
+        heading = (delta_theta / Status.ROTATIONAL_TICKS + heading);
     }
 
     public double[] getCurrentPositions(){
@@ -98,9 +93,5 @@ public class Odometry {
 
     public double[] getOdoData(){
         return new double[]{x, y, heading};
-    }
-
-    public double getX(){
-        return x;
     }
 }

@@ -35,7 +35,5 @@ public class IntakeControl extends ControlModule {
         } else {
             intake.stop();
         }
-
-        telemetry.addData("Distance Sensor: ", intake.getDistance());
     }
 }

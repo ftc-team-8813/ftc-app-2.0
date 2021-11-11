@@ -61,7 +61,7 @@ public class OdometryControl extends ControlModule{
         odometry.update();
 
         double[] odo_data = odometry.getOdoData();
-        telemetry.addData("X Coord: ", odometry.getX());
+        telemetry.addData("X Coord: ", odo_data[0]);
         telemetry.addData("Y Coord: ", odo_data[1]);
         telemetry.addData("Heading: ", odo_data[2]);
 
@@ -69,9 +69,5 @@ public class OdometryControl extends ControlModule{
         telemetry.addData("Left Enc: ", curr_poses[0]);
         telemetry.addData("Right Enc: ", curr_poses[1]);
         telemetry.addData("Front Enc: ", curr_poses[2]);
-
-        double[] servo_poses = odometry.getServoDropPositions();
-        telemetry.addData("Left Odo Drop", servo_poses[0]);
-        telemetry.addData("Right Odo Drop", servo_poses[1]);
     }
 }

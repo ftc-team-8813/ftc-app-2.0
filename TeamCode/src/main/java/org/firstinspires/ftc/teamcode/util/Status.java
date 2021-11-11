@@ -4,9 +4,8 @@ import java.util.HashMap;
 
 public class Status {
     // Odometry
-    public static final double MOVEMENT_TICKS = 1860.32; // TODO Could tune better (tuned to 72 in)
-    public static final double ROTATIONAL_TICKS = 93381.5; // TODO Could tune better (tuned to 720 degrees)
-    public static final double WHEEL_DIAMETER = 1.377953;
+    public static final double MOVEMENT_TICKS = 1860.32; // TODO Could tune better (tuned to __ ticks/in)
+    public static final double ROTATIONAL_TICKS = 116; // TODO Could tune better (tuned to __ ticks/degree)
     public static final double UP_POS_LEFT = 0.812;
     public static final double UP_POS_RIGHT = 0.239;
     public static final double DOWN_POS_LEFT = 0;
