@@ -56,10 +56,14 @@ public class Robot
         // Motors
         DcMotor front_left = hardwareMap.get(DcMotor.class, "front left");
         DcMotor front_right = hardwareMap.get(DcMotor.class, "front right");
-        DcMotor back_left = hardwareMap.get(DcMotor.class, "back left");
+        DcMotor back_left = hardwareMap.get(DcMotor.class, "back left"); // Doubles as right odo pod
         DcMotor back_right = hardwareMap.get(DcMotor.class, "back right");
         DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
         DcMotor lift = hardwareMap.get(DcMotor.class, "lift");
+
+        // Odo Pods
+        DcMotor left_odo_motor = hardwareMap.get(DcMotor.class, "left odo");
+        DcMotor back_odo_motor = hardwareMap.get(DcMotor.class, "side odo");
 
         // Servos
         ServoImplEx left_odo_drop = hardwareMap.get(ServoImplEx.class, "left odo drop");
@@ -73,8 +77,8 @@ public class Robot
         ColorRangeSensor dist = hardwareMap.get(ColorRangeSensor.class, "freight sensor");
 
         // Sub-Assemblies
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
-        this.odometry = new Odometry(back_right, back_left, front_right, left_odo_drop, right_odo_drop);
+        this.odometry = new Odometry(left_odo_motor, back_left, back_odo_motor, left_odo_drop, right_odo_drop);
+        this.drivetrain = new Drivetrain(this.odometry, front_left, front_right, back_left, back_right);
         this.intake = new Intake(intake, dist);
         this.lift = new Lift(lift, arm, dropper, lift_limit);
         this.duck = new Duck(spinner);

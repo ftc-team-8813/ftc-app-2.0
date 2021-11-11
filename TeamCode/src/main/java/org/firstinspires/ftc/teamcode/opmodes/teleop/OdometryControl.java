@@ -15,7 +15,7 @@ public class OdometryControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_increase_right;
     private ControllerMap.ButtonEntry btn_decrease_right;
 
-    private boolean pods_up = true;
+    private boolean pods_up = false;
 
 
     public OdometryControl(String name) {
@@ -59,6 +59,11 @@ public class OdometryControl extends ControlModule{
             odometry.deltaPositionRight(-0.01);
         }
         odometry.update();
+
+        double[] odo_data = odometry.getOdoData();
+        telemetry.addData("X Coord: ", odometry.getX());
+        telemetry.addData("Y Coord: ", odo_data[1]);
+        telemetry.addData("Heading: ", odo_data[2]);
 
         double[] curr_poses = odometry.getCurrentPositions();
         telemetry.addData("Left Enc: ", curr_poses[0]);

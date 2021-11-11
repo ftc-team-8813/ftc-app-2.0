@@ -14,6 +14,10 @@ public class Lift {
     private final Servo arm;
     private final TouchSensor limit;
 
+    private int bottom = 0;
+    private int height_preset = 0;
+    private int extension = 0;
+
     private double target_pos;
     private double integral;
     private double past_error;
@@ -54,8 +58,10 @@ public class Lift {
         return new double[]{p_term, i_term, d_term};
     }
 
-    public boolean extendable(){
-        return lift.getCurrentPosition() > Status.EXTENDABLE_THRESHOLD;
+    public boolean reachedTarget(){
+        double min = target_pos - 30;
+        double max = target_pos + 30;
+        return min <= target_pos && target_pos <= max;
     }
 
     public void raise(double target_ticks){
@@ -79,25 +85,31 @@ public class Lift {
         double curr_pos = lift.getCurrentPosition();
         double error = target_pos - curr_pos;
 
-        if (curr_pos <= 0){
-            lift.setPower(0);
-        } else{
-            p_term = error * Status.kP;
+        p_term = error * Status.kP;
 
-            integral += error;
-            i_term = integral * Status.kI;
+        integral += error;
+        i_term = integral * Status.kI;
 
-            double derivative = error - past_error;
-            d_term = derivative * Status.kD;
+        double derivative = error - past_error;
+        d_term = derivative * Status.kD;
 
-            double power = p_term + i_term + d_term;
-            if (power < 0){
-                power *= Status.LOWER_SPEED;
-            } else {
-                power *= Status.RAISE_SPEED;
-            }
-            lift.setPower(power);
-            past_error = error;
+        double power = p_term + i_term + d_term;
+        if (power < 0){
+            power *= Status.LOWER_SPEED;
+        } else {
+            power *= Status.RAISE_SPEED;
         }
+        lift.setPower(power);
+        past_error = error;
+    }
+
+    public void updateStates(int bottom, int height_preset, int extension){
+        this.bottom = bottom;
+        this.height_preset = height_preset;
+        this.extension = extension;
+    }
+
+    public double[] getStates(){
+        return new double[]{bottom, height_preset, extension};
     }
 }

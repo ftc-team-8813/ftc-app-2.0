@@ -10,12 +10,14 @@ import org.firstinspires.ftc.teamcode.util.Status;
 
 public class LiftControl extends ControlModule{
     private Lift lift;
-    private final ElapsedTime timer = new ElapsedTime();
+    private final ElapsedTime arm_timer = new ElapsedTime();
+    private boolean resetting = false;
+    private final ElapsedTime lift_timer = new ElapsedTime();
+    private boolean up_and_over = false;
 
     private int bottom = 0; // 0 = Bottom, 1 = Going to Bottom
-    private int height = 0; // 1 = Low, 2 = Mid, 3 = High
+    private int height_preset = 0; // 1 = Low, 2 = Mid, 3 = High
     private int extension = 0; // 0 = Center, 1 = Left, 2 = Right
-    private boolean moving = false;
 
     private ControllerMap.ButtonEntry btn_down_dpad;
     private ControllerMap.ButtonEntry btn_left_dpad;
@@ -46,14 +48,14 @@ public class LiftControl extends ControlModule{
     @Override
     public void update(Telemetry telemetry) {
         if (btn_a.get()){
-            height = 1;
+            height_preset = 1;
         } else if (btn_b.get()){
-            height = 2;
+            height_preset = 2;
         } else if (btn_y.get()){
-            height = 3;
+            height_preset = 3;
         }
 
-        if (height > 0) {
+        if (height_preset > 0) {
             if (btn_left_dpad.get()) {
                 extension = 1;
             } else if (btn_right_dpad.get()) {
@@ -78,32 +80,10 @@ public class LiftControl extends ControlModule{
             bottom = 1;
         }
 
-        if (bottom == 1){
-            if (moving){
-                if (timer.seconds() > Status.ARM_WAIT_TIME){
-                    lift.raise(0);
-                    bottom = 0;
-                    moving = false;
-                }
-            } else {
-                switch (extension){
-                    case 1:
-                        lift.extend(Status.EXTENSIONS.get("center_from_left"));
-                        break;
-                    case 2:
-                        lift.extend(Status.EXTENSIONS.get("center_from_right"));
-                        break;
-                }
-                extension = 0; // Setting zero here to retain old position for checking in switch
-                timer.reset();
-                moving = true;
-            }
-        }
-
         if (extension > 0){
-            switch (height){
+            switch (height_preset){
                 case 1:
-                    lift.raise(Status.STAGES.get("low"));
+                    lift.raise(Status.STAGES.get("low_above"));
                     break;
                 case 2:
                     lift.raise(Status.STAGES.get("mid"));
@@ -112,7 +92,7 @@ public class LiftControl extends ControlModule{
                     lift.raise(Status.STAGES.get("high"));
                     break;
             }
-            if (lift.extendable()){
+            if (lift.reachedTarget()){
                 switch (extension){
                     case 1:
                         lift.extend(Status.EXTENSIONS.get("left"));
@@ -124,8 +104,30 @@ public class LiftControl extends ControlModule{
             }
         }
 
+        if (bottom == 1){
+            if (resetting){
+                if (arm_timer.seconds() > Status.ARM_WAIT_TIME){
+                    lift.raise(0);
+                    bottom = 0;
+                    resetting = false;
+                }
+            } else {
+                switch (extension){
+                    case 1:
+                        lift.extend(Status.EXTENSIONS.get("center_from_left"));
+                        break;
+                    case 2:
+                        lift.extend(Status.EXTENSIONS.get("center_from_right"));
+                        break;
+                }
+                extension = 0; // Setting zero here to retain old position for checking in switch
+                arm_timer.reset();
+                resetting = true;
+            }
+        }
+
         lift.updateLift();
-        telemetry.addData("Height: ", height);
+        telemetry.addData("Height: ", height_preset);
         telemetry.addData("Extension: ", extension);
         telemetry.addData("Lift Real Pos: ", lift.getCurrentLiftPos());
         telemetry.addData("Lift Target Pos: ", lift.getTargetLiftPos());

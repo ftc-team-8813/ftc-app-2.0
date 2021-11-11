@@ -18,9 +18,6 @@ public class MainAuto extends LoggingOpMode
 {
     private Robot robot;
     private Logger log = new Logger("Autonomous");
-
-    private EventBus bus;
-    private Scheduler scheduler;
     
     
     static
@@ -33,21 +30,11 @@ public class MainAuto extends LoggingOpMode
     {
         super.init();
         robot = Robot.initialize(hardwareMap, "Autonomous");
-        bus = robot.eventBus;
-        scheduler = robot.scheduler;
     }
     
     @Override
-    public void init_loop()
-    {
-        scheduler.loop();
-        bus.update();
-    }
-    
-    @Override
-    public void start()
-    {
-        bus.pushEvent(new LifecycleEvent(START));
+    public void start() {
+
     }
     
     @Override
