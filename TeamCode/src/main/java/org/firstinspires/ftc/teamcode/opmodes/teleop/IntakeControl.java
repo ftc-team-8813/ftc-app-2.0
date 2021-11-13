@@ -11,6 +11,8 @@ public class IntakeControl extends ControlModule {
     private ControllerMap.AxisEntry ax_intake;
     private ControllerMap.AxisEntry ax_outtake;
 
+    boolean test = false;
+
 
     public IntakeControl(String name) {
         super(name);

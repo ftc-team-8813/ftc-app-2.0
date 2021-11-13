@@ -13,10 +13,13 @@ public class Drivetrain {
     private final DcMotor back_left;
     private final DcMotor back_right;
 
-    private double target_x;
     private double target_y;
+    private double target_x;
     private double target_heading;
     private double target_speed;
+    private double forward_power;
+    private double strafe_power;
+    private double turn_power;
 
     public Drivetrain(Odometry odometry, DcMotor front_left, DcMotor front_right, DcMotor back_left, DcMotor back_right){
         this.odometry = odometry;
@@ -50,15 +53,19 @@ public class Drivetrain {
 
     public boolean updatePosition(){
         double[] odoData = odometry.getOdoData();
-        double delta_y = target_y + odoData[0]; // Adding to flip y-axis
+        double delta_y = odoData[0] - target_y; // Flipped to change power direction
         double delta_x = target_x - odoData[1];
         double delta_heading = target_heading + odoData[2]; // Adding to flip rotation direction
 
-        double forward_power = delta_x * Status.FORWARD_KP * target_speed;
-        double strafe_power = delta_y * Status.STRAFE_KP * target_speed;
-        double turn_power = delta_heading * Status.TURN_KP * target_speed;
+        forward_power = delta_x * Status.FORWARD_KP * target_speed;
+        strafe_power = delta_y * Status.STRAFE_KP * target_speed;
+        turn_power = delta_heading * Status.TURN_KP * target_speed;
 
         teleMove(forward_power, strafe_power, turn_power);
         return delta_y < 1.5 && delta_x < 1.5 && delta_heading < 2;
+    }
+
+    public double[] getPositionDeltas(){
+        return new double[]{forward_power, strafe_power, turn_power};
     }
 }

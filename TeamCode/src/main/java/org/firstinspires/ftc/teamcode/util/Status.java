@@ -24,7 +24,7 @@ public class Status {
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
         put("low_actual", 50.0);
         put("low_above", 300.0);
-        put("mid", 400.0);
+        put("mid", 360.0);
         put("high", 800.0);
     }};
 
@@ -34,8 +34,10 @@ public class Status {
         put("right", 0.22);
         put("center_from_left", 0.57);
         put("center_from_right", 0.52);
+        put("neutral_left", 0.75);
+        put("neutral_right", 0.37);
     }};
-    public static final double ARM_WAIT_TIME = 0.55;
+    public static final double ARM_WAIT_TIME = 0.62;
     public static final double EXTENDABLE_THRESHOLD = 100;
 
     // Deposit

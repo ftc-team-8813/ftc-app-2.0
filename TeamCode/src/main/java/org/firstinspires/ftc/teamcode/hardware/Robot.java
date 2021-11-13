@@ -69,7 +69,7 @@ public class Robot
         // Servos
         ServoImplEx left_odo_drop = hardwareMap.get(ServoImplEx.class, "left odo drop");
         ServoImplEx right_odo_drop = hardwareMap.get(ServoImplEx.class, "right odo drop");
-        Servo arm = hardwareMap.get(Servo.class, "arm");
+        ServoImplEx arm = hardwareMap.get(ServoImplEx.class, "arm");
         Servo dropper = hardwareMap.get(Servo.class, "dropper");
         CRServo spinner = hardwareMap.get(CRServo.class, "spinner");
 
