@@ -26,8 +26,8 @@ import org.opencv.android.OpenCVLoader;
 import static org.firstinspires.ftc.teamcode.util.event.LifecycleEvent.START;
 
 // we going to use the event bus system for this so that everything can be done on one thread
-@Autonomous(name="Auto")
-public class MainAuto extends LoggingOpMode
+@Autonomous(name="Red Auto")
+public class RedAuto extends LoggingOpMode
 {
     private Robot robot;
     private Drivetrain drivetrain;

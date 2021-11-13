@@ -61,8 +61,8 @@ public class OdometryControl extends ControlModule{
         odometry.update();
 
         double[] odo_data = odometry.getOdoData();
-        telemetry.addData("X Coord: ", odo_data[0]);
-        telemetry.addData("Y Coord: ", odo_data[1]);
+        telemetry.addData("Y Coord: ", odo_data[0]);
+        telemetry.addData("X Coord: ", odo_data[1]);
         telemetry.addData("Heading: ", odo_data[2]);
 
         double[] curr_poses = odometry.getCurrentPositions();

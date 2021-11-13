@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import android.text.method.Touch;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -73,11 +74,12 @@ public class Robot
         CRServo spinner = hardwareMap.get(CRServo.class, "spinner");
 
         // Sensors
+        BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
         TouchSensor lift_limit = hardwareMap.get(TouchSensor.class, "lift limit");
         ColorRangeSensor dist = hardwareMap.get(ColorRangeSensor.class, "freight sensor");
 
         // Sub-Assemblies
-        this.odometry = new Odometry(left_odo_motor, back_left, back_odo_motor, left_odo_drop, right_odo_drop);
+        this.odometry = new Odometry(left_odo_motor, back_left, back_odo_motor, left_odo_drop, right_odo_drop, imu);
         this.drivetrain = new Drivetrain(this.odometry, front_left, front_right, back_left, back_right);
         this.intake = new Intake(intake, dist);
         this.lift = new Lift(lift, arm, dropper, lift_limit);

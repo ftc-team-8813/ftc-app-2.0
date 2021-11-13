@@ -1,8 +1,14 @@
 package org.firstinspires.ftc.teamcode.hardware.navigation;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 public class Odometry {
@@ -11,23 +17,24 @@ public class Odometry {
     private final DcMotor s_enc;
     private final ServoImplEx left_drop;
     private final ServoImplEx right_drop;
+    private BNO055IMU imu;
 
-    private double x;
     private double y;
+    private double x;
     private double heading;
     
     private double past_l;
     private double past_r;
     private double past_s;
 
-    public Odometry(DcMotor l_enc, DcMotor r_enc, DcMotor s_enc, ServoImplEx left_drop, ServoImplEx right_drop){
+    public Odometry(DcMotor l_enc, DcMotor r_enc, DcMotor s_enc, ServoImplEx left_drop, ServoImplEx right_drop, BNO055IMU imu){
         this.l_enc = l_enc;
         this.r_enc = r_enc;
         this.s_enc = s_enc;
         this.left_drop = left_drop;
         this.right_drop = right_drop;
-        this.x = 0.0;
         this.y = 0.0;
+        this.x = 0.0;
         this.heading = 0.0;
 
         this.l_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -37,6 +44,16 @@ public class Odometry {
         this.l_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.r_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.s_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        this.imu = imu;
+        this.imu.initialize(parameters);
     }
 
     public void podsUp(){
@@ -63,7 +80,20 @@ public class Odometry {
 
 
     public void update(){
+        /*
+            Coordinate System:
+                      x
+                      |
+                      |
+                y --------- -y
+                      |
+                      |
+                      -x
+             Robot starts facing positive x
+         */
         double[] poses = getCurrentPositions();
+        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        heading = angles.firstAngle;
 
         double change_l = poses[0] - past_l;
         double change_r = poses[1] - past_r;
@@ -79,12 +109,11 @@ public class Odometry {
 
         double vector = Math.sqrt(Math.pow(delta_f, 2) + Math.pow(delta_s, 2));
         double relative_heading = Math.atan2(delta_f, delta_s);
-        double delta_x = Math.sin(heading + relative_heading) * vector;
-        double delta_y = Math.cos(heading + relative_heading) * vector;
+        double delta_y = Math.cos(heading * (Math.PI/180) + relative_heading) * vector;
+        double delta_x = Math.sin(heading * (Math.PI/180) + relative_heading) * vector;
 
-        x += (delta_x / Status.MOVEMENT_TICKS);
         y += (delta_y / Status.MOVEMENT_TICKS);
-        heading = (delta_theta / Status.ROTATIONAL_TICKS + heading);
+        x += (delta_x / Status.MOVEMENT_TICKS);
     }
 
     public double[] getCurrentPositions(){
@@ -92,6 +121,6 @@ public class Odometry {
     }
 
     public double[] getOdoData(){
-        return new double[]{x, y, heading};
+        return new double[]{y, x, heading};
     }
 }
