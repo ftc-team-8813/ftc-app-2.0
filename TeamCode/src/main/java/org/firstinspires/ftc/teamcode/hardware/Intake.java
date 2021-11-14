@@ -23,7 +23,7 @@ public class Intake {
     }
 
     public void outtake(){
-        intake.setPower(-1);
+        intake.setPower(-0.3);
     }
 
     public void stop(){

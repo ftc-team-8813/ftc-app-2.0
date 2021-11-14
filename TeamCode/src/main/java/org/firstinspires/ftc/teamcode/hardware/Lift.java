@@ -4,6 +4,7 @@ import android.text.method.Touch;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.util.Status;
@@ -11,8 +12,12 @@ import org.firstinspires.ftc.teamcode.util.Status;
 public class Lift {
     private final DcMotor lift;
     private final Servo dropper;
-    private final Servo arm;
+    private final ServoImplEx arm;
     private final TouchSensor limit;
+
+    private int bottom = 0;
+    private int height_preset = 0;
+    private int extension = 0;
 
     private double target_pos;
     private double integral;
@@ -22,7 +27,7 @@ public class Lift {
     private double d_term;
 
 
-    public Lift(DcMotor lift, Servo arm, Servo dropper, TouchSensor limit){
+    public Lift(DcMotor lift, ServoImplEx arm, Servo dropper, TouchSensor limit){
         this.lift = lift; // Encoder and motor on same port
         this.lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -54,8 +59,10 @@ public class Lift {
         return new double[]{p_term, i_term, d_term};
     }
 
-    public boolean extendable(){
-        return lift.getCurrentPosition() > Status.EXTENDABLE_THRESHOLD;
+    public boolean reachedTarget(){
+        double min = target_pos - 30;
+        double max = target_pos + 30;
+        return min <= target_pos && target_pos <= max;
     }
 
     public void raise(double target_ticks){
@@ -95,5 +102,15 @@ public class Lift {
         }
         lift.setPower(power);
         past_error = error;
+    }
+
+    public void updateStates(int bottom, int height_preset, int extension){
+        this.bottom = bottom;
+        this.height_preset = height_preset;
+        this.extension = extension;
+    }
+
+    public double[] getStates(){
+        return new double[]{bottom, height_preset, extension};
     }
 }
