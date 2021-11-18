@@ -4,15 +4,19 @@ import java.util.HashMap;
 
 public class Status {
     // Odometry
+    public static final double ROTATIONAL_TICKS = 8192;
+    public static final double WHEEL_CIRCUMFERENCE = 1.377953 * Math.PI;
     public static final double MOVEMENT_TICKS = 1896.5; // TODO Could tune better (tuned to __ ticks/in)
-    public static final double ROTATIONAL_TICKS = 42475.5; // TODO Could tune better (tuned to __ ticks/degree)
     public static final double UP_POS_LEFT = 0.812;
     public static final double UP_POS_RIGHT = 0.239;
     public static final double DOWN_POS_LEFT = 0;
     public static final double DOWN_POS_RIGHT = 1;
-    public static final double FORWARD_KP = 0.17;
-    public static final double STRAFE_KP = 0.25;
-    public static final double TURN_KP = 0.01;
+    public static final double FORWARD_KP = 0.55;
+    public static final double STRAFE_KP = 0.6;
+    public static final double TURN_KP = 0.07;
+    public static final double FORWARD_KI = 0; // 0.00232
+    public static final double STRAFE_KI = 0; // 0.00354
+    public static final double TURN_KI = 0;
 
     // Lift
     public static final double UPPER_LIMIT = 810;

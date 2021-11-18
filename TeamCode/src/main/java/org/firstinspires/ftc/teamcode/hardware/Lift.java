@@ -17,6 +17,7 @@ public class Lift {
     private int bottom = 0;
     private int height_preset = 0;
     private int extension = 0;
+    private boolean lift_reached;
 
     private double target_pos;
     private double integral;
@@ -58,15 +59,20 @@ public class Lift {
         return new double[]{p_term, i_term, d_term};
     }
 
-    public boolean reachedTarget(){
+    public boolean ifLifted(){
         double min = target_pos - 30;
         double max = target_pos + 30;
-        return min <= target_pos && target_pos <= max;
+        if (!lift_reached && min <= target_pos && target_pos <= max){
+            lift_reached = true;
+            return true;
+        }
+        return false;
     }
 
     public void raise(double target_ticks){
         if (0 <= target_ticks && target_ticks <= Status.UPPER_LIMIT){
             target_pos = target_ticks;
+            lift_reached = false;
         }
     }
 
@@ -101,12 +107,6 @@ public class Lift {
         }
         lift.setPower(power);
         past_error = error;
-    }
-
-    public void updateStates(int bottom, int height_preset, int extension){
-        this.bottom = bottom;
-        this.height_preset = height_preset;
-        this.extension = extension;
     }
 
     public double[] getStates(){

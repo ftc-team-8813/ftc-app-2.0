@@ -5,57 +5,47 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Duck;
-import org.firstinspires.ftc.teamcode.hardware.Intake;
+import org.firstinspires.ftc.teamcode.hardware.Lift;
+import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.DuckControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.OdometryControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.ServerControl;
 import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.util.event.LifecycleEvent;
 import org.opencv.android.OpenCVLoader;
 
-
-import static org.firstinspires.ftc.teamcode.util.event.LifecycleEvent.START;
-
 // we going to use the event bus system for this so that everything can be done on one thread
-@Autonomous(name="Red Auto")
-public class RedAuto extends LoggingOpMode
+@Autonomous(name="Blue Duck Auto")
+public class BlueDuckAuto extends LoggingOpMode
 {
     private Robot robot;
     private Drivetrain drivetrain;
     private Odometry odometry;
     private Duck duck;
+    private Lift lift;
     private ControllerMap controllerMap;
     private ControlMgr controlMgr;
-    private EventBus evBus;
     private ElapsedTime timer;
+    private Logger logger;
 
     private int id = 0;
-    private boolean was_moving = false;
-    private boolean moving = false;
-    private boolean spinning = false;
-    private boolean was_spinning = false;
-    
-    
+    private int timer_delay = 1000; // Set high to not trigger next move
+    private boolean waiting = false;
+
+
     static
     {
         OpenCVLoader.initDebug();
     }
-    
+
     @Override
     public void init()
     {
         super.init();
         robot = Robot.initialize(hardwareMap, "Autonomous");
-        controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
+        logger = new Logger("Autonomous");
+        controllerMap = new ControllerMap(gamepad1, gamepad2, new EventBus());
         controlMgr = new ControlMgr(robot, controllerMap);
         timer = new ElapsedTime();
 
@@ -65,55 +55,34 @@ public class RedAuto extends LoggingOpMode
         drivetrain = robot.drivetrain;
         odometry = robot.odometry;
         duck = robot.duck;
+        lift = robot.lift;
 
         odometry.podsDown();
     }
-    
+
     @Override
     public void start() {
 
     }
-    
+
     @Override
     public void loop() {
         switch (id){
             case 0:
-                was_spinning = false;
-                drivetrain.goToPosition(19.5, -15.2, 0, 0.2);
+                duck.spin(1);
+                drivetrain.goToPosition(19, -14, 0, 0.1);
                 break;
             case 1:
-                was_spinning = false;
-                drivetrain.goToPosition(19.5, -3.5, 0, 0.2);
+                drivetrain.goToPosition(19, -7.5, 0, 0.1);
                 break;
             case 2:
-                was_moving = false;
-                if (!spinning){
-                    timer.reset();
-                }
-                duck.spin(-1);
-                if (timer.seconds() >= 7.0){
-                    spinning = false;
-                } else {
-                    spinning = true;
-                }
+                timer_delay = 5;
+                waiting = true;
                 break;
             case 3:
-                was_spinning = false;
                 duck.spin(0);
-                drivetrain.goToPosition(19.5, -20.5, 0, 0.2);
+                drivetrain.goToPosition(19.5, -27, 0, 0.1);
                 break;
-        }
-
-        if (!moving && was_moving){
-            id += 1;
-            was_moving = false;
-        } else if (!spinning && was_spinning){
-            id += 1;
-            was_spinning = false;
-        }
-        else {
-            was_moving = true;
-            was_spinning = true;
         }
 
         double[] odo_data = odometry.getOdoData();
@@ -121,14 +90,36 @@ public class RedAuto extends LoggingOpMode
         telemetry.addData("X: ", odo_data[1]);
         telemetry.addData("Heading: ", odo_data[2]);
 
-        telemetry.addData("Moving: ", moving);
-        telemetry.addData("Timer: ", timer.seconds());
+        double[] target_positions = drivetrain.getTargets();
+        telemetry.addData("Target Y: ", target_positions[0]);
+        telemetry.addData("Target X: ", target_positions[1]);
+        telemetry.addData("Target Heading: ", target_positions[2]);
 
-        moving = !drivetrain.updatePosition();
+        double[] delta_positions = drivetrain.getPositionDeltas();
+        telemetry.addData("Delta Y: ", delta_positions[0]);
+        telemetry.addData("Delta X: ", delta_positions[1]);
+        telemetry.addData("Delta Heading: ", delta_positions[2]);
+
+        telemetry.addData("Timer: ", timer.seconds());
+        telemetry.addData("Id: ", id);
+        telemetry.addData("Reached: ", drivetrain.reached);
+
+
+        drivetrain.updatePosition();
         odometry.update();
         telemetry.update();
+
+        if (!waiting){
+            timer.reset();
+        }
+        if (drivetrain.ifReached()){ // Checks after updates to get values for deltas
+            id += 1;
+        } else if (timer.seconds() > timer_delay){
+            id += 1;
+            waiting = false;
+        }
     }
-    
+
     @Override
     public void stop()
     {
