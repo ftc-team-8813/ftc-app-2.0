@@ -129,7 +129,7 @@ public class RedDuckAuto extends LoggingOpMode
         telemetry.addData("Moving: ", moving);
         telemetry.addData("Timer: ", timer.seconds());
 
-        moving = !drivetrain.updatePosition();
+        drivetrain.updatePosition();
         odometry.update();
         telemetry.update();
     }

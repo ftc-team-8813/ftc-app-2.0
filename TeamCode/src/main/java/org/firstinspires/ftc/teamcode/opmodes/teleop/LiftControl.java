@@ -63,6 +63,10 @@ public class LiftControl extends ControlModule{
             }
         }
 
+        if (btn_down_dpad.get()){
+            bottom = 1;
+        }
+
         if (btn_right_bumper.get()){
             switch (extension){
                 case 1:
@@ -74,10 +78,6 @@ public class LiftControl extends ControlModule{
             }
         } else {
             lift.deposit(Status.DEPOSITS.get("center"));
-        }
-
-        if (btn_down_dpad.get()){
-            bottom = 1;
         }
 
         if (extension > 0){
@@ -92,7 +92,7 @@ public class LiftControl extends ControlModule{
                     lift.raise(Status.STAGES.get("high"));
                     break;
             }
-            if (lift.reachedTarget()){
+            if (lift.ifLifted()){
                 switch (extension){
                     case 1:
                         if (height_preset == 1){

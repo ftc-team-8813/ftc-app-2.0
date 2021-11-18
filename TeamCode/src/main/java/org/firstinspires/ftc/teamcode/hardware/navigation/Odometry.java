@@ -92,8 +92,6 @@ public class Odometry {
              Robot starts facing positive x
          */
         double[] poses = getCurrentPositions();
-        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        heading = angles.firstAngle;
 
         double change_l = poses[0] - past_l;
         double change_r = poses[1] - past_r;
@@ -105,15 +103,21 @@ public class Odometry {
 
         double delta_f = (change_l + change_r) / 2;
         double delta_s = (change_l - change_r) / 2 + change_b;
-        double delta_theta = (change_r - change_l) / 2;
 
         double vector = Math.sqrt(Math.pow(delta_f, 2) + Math.pow(delta_s, 2));
         double relative_heading = Math.atan2(delta_f, delta_s);
         double delta_y = Math.cos(heading * (Math.PI/180) + relative_heading) * vector;
         double delta_x = Math.sin(heading * (Math.PI/180) + relative_heading) * vector;
 
-        y += (delta_y / Status.MOVEMENT_TICKS);
-        x += (delta_x / Status.MOVEMENT_TICKS);
+        y += convertToInches(delta_y);
+        x += convertToInches(delta_x);
+        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        heading = angles.firstAngle;
+    }
+
+    public double convertToInches(double ticks){
+        double revolutions = ticks / Status.ROTATIONAL_TICKS;
+        return revolutions * Status.WHEEL_CIRCUMFERENCE;
     }
 
     public double[] getCurrentPositions(){
