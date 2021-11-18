@@ -95,18 +95,10 @@ public class LiftControl extends ControlModule{
             if (lift.reachedTarget()){
                 switch (extension){
                     case 1:
-                        if (height_preset == 1){
-                            lift.extend(Status.EXTENSIONS.get("neutral_left"));
-                        } else{
-                            lift.extend(Status.EXTENSIONS.get("left"));
-                        }
+                        lift.extend(Status.EXTENSIONS.get("left"));
                         break;
                     case 2:
-                        if (height_preset == 1){
-                            lift.extend(Status.EXTENSIONS.get("neutral_right"));
-                        } else{
-                            lift.extend(Status.EXTENSIONS.get("right"));
-                        }
+                        lift.extend(Status.EXTENSIONS.get("right"));
                         break;
                 }
             }

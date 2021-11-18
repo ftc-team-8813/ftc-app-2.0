@@ -26,8 +26,8 @@ import org.opencv.android.OpenCVLoader;
 import static org.firstinspires.ftc.teamcode.util.event.LifecycleEvent.START;
 
 // we going to use the event bus system for this so that everything can be done on one thread
-@Autonomous(name="Blue Warehouse Auto")
-public class BlueWarehouseAuto extends LoggingOpMode
+@Autonomous(name="Red Auto")
+public class RedAuto extends LoggingOpMode
 {
     private Robot robot;
     private Drivetrain drivetrain;
@@ -41,13 +41,15 @@ public class BlueWarehouseAuto extends LoggingOpMode
     private int id = 0;
     private boolean was_moving = false;
     private boolean moving = false;
-
-
+    private boolean spinning = false;
+    private boolean was_spinning = false;
+    
+    
     static
     {
         OpenCVLoader.initDebug();
     }
-
+    
     @Override
     public void init()
     {
@@ -64,50 +66,54 @@ public class BlueWarehouseAuto extends LoggingOpMode
         odometry = robot.odometry;
         duck = robot.duck;
 
-        odometry.podsUp();
+        odometry.podsDown();
     }
-
+    
     @Override
     public void start() {
 
     }
-
+    
     @Override
     public void loop() {
         switch (id){
             case 0:
-                if (!moving){
-                    timer.reset();
-                }
-                drivetrain.teleMove(.5, 0, 0);
-                if (timer.seconds() >= 0.75){
-                    moving = false;
-                } else {
-                    moving = true;
-                }
+                was_spinning = false;
+                drivetrain.goToPosition(19.5, -15.2, 0, 0.2);
                 break;
             case 1:
-                if (!moving){
-                    timer.reset();
-                }
-                drivetrain.teleMove(0, 0.3, 0);
-                if (timer.seconds() >= 2){
-                    moving = false;
-                } else {
-                    moving = true;
-                }
+                was_spinning = false;
+                drivetrain.goToPosition(19.5, -3.5, 0, 0.2);
                 break;
             case 2:
-                moving = false;
                 was_moving = false;
-                drivetrain.teleMove(0, 0, 0);
+                if (!spinning){
+                    timer.reset();
+                }
+                duck.spin(-1);
+                if (timer.seconds() >= 7.0){
+                    spinning = false;
+                } else {
+                    spinning = true;
+                }
+                break;
+            case 3:
+                was_spinning = false;
+                duck.spin(0);
+                drivetrain.goToPosition(19.5, -20.5, 0, 0.2);
+                break;
         }
 
         if (!moving && was_moving){
             id += 1;
             was_moving = false;
-        }else {
+        } else if (!spinning && was_spinning){
+            id += 1;
+            was_spinning = false;
+        }
+        else {
             was_moving = true;
+            was_spinning = true;
         }
 
         double[] odo_data = odometry.getOdoData();
@@ -115,18 +121,14 @@ public class BlueWarehouseAuto extends LoggingOpMode
         telemetry.addData("X: ", odo_data[1]);
         telemetry.addData("Heading: ", odo_data[2]);
 
-        double[] delta_positions = drivetrain.getPositionDeltas();
-        telemetry.addData("Forward Power: ", delta_positions[0]);
-        telemetry.addData("Strafe Power: ", delta_positions[1]);
-        telemetry.addData("Turn Power: ", delta_positions[2]);
-
         telemetry.addData("Moving: ", moving);
         telemetry.addData("Timer: ", timer.seconds());
 
+        moving = !drivetrain.updatePosition();
         odometry.update();
         telemetry.update();
     }
-
+    
     @Override
     public void stop()
     {

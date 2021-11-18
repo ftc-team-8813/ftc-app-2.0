@@ -5,29 +5,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Duck;
-import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.DuckControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.OdometryControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.ServerControl;
-import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.util.event.LifecycleEvent;
 import org.opencv.android.OpenCVLoader;
 
-
-import static org.firstinspires.ftc.teamcode.util.event.LifecycleEvent.START;
-
 // we going to use the event bus system for this so that everything can be done on one thread
-@Autonomous(name="Red Duck Auto")
-public class RedDuckAuto extends LoggingOpMode
+@Autonomous(name="Blue Auto")
+public class BlueAuto extends LoggingOpMode
 {
     private Robot robot;
     private Drivetrain drivetrain;
@@ -79,11 +66,11 @@ public class RedDuckAuto extends LoggingOpMode
         switch (id){
             case 0:
                 was_spinning = false;
-                drivetrain.goToPosition(-19.5, -12, 0, 0.15);
+                drivetrain.goToPosition(19.5, -15.2, 0, 0.2);
                 break;
             case 1:
                 was_spinning = false;
-                drivetrain.goToPosition(-19.5, -2, 0, 0.2);
+                drivetrain.goToPosition(19.5, -3.5, 0, 0.2);
                 break;
             case 2:
                 was_moving = false;
@@ -100,7 +87,7 @@ public class RedDuckAuto extends LoggingOpMode
             case 3:
                 was_spinning = false;
                 duck.spin(0);
-                drivetrain.goToPosition(-19.5, -20, 0, 0.2);
+                drivetrain.goToPosition(19.5, -20.5, 0, 0.2);
                 break;
         }
 
@@ -120,11 +107,6 @@ public class RedDuckAuto extends LoggingOpMode
         telemetry.addData("Y: ", odo_data[0]);
         telemetry.addData("X: ", odo_data[1]);
         telemetry.addData("Heading: ", odo_data[2]);
-
-        double[] delta_positions = drivetrain.getPositionDeltas();
-        telemetry.addData("Forward Power: ", delta_positions[0]);
-        telemetry.addData("Strafe Power: ", delta_positions[1]);
-        telemetry.addData("Turn Power: ", delta_positions[2]);
 
         telemetry.addData("Moving: ", moving);
         telemetry.addData("Timer: ", timer.seconds());

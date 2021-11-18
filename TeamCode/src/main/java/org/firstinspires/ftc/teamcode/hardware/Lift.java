@@ -4,7 +4,6 @@ import android.text.method.Touch;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.util.Status;
@@ -12,7 +11,7 @@ import org.firstinspires.ftc.teamcode.util.Status;
 public class Lift {
     private final DcMotor lift;
     private final Servo dropper;
-    private final ServoImplEx arm;
+    private final Servo arm;
     private final TouchSensor limit;
 
     private int bottom = 0;
@@ -27,7 +26,7 @@ public class Lift {
     private double d_term;
 
 
-    public Lift(DcMotor lift, ServoImplEx arm, Servo dropper, TouchSensor limit){
+    public Lift(DcMotor lift, Servo arm, Servo dropper, TouchSensor limit){
         this.lift = lift; // Encoder and motor on same port
         this.lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
