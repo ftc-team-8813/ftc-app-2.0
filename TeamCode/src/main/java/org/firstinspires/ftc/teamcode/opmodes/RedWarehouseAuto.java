@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ServerControl;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.vision.CapstoneDetector;
 import org.firstinspires.ftc.teamcode.vision.ImageDraw;
@@ -22,6 +23,8 @@ import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+
+import java.sql.Statement;
 
 // we going to use the event bus system for this so that everything can be done on one thread
 @Autonomous(name="Red Warehouse Auto")
@@ -35,7 +38,7 @@ public class RedWarehouseAuto extends LoggingOpMode
     private Webcam webcam;
     private Webcam.SimpleFrameHandler frame_handler;
     private final String WEBCAM_SERIAL = "3522DE6F";
-    private Mat detector_frame;
+    private Mat detector_frame = new Mat();
 
     private ControllerMap controllerMap;
     private ControlMgr controlMgr;
@@ -43,8 +46,9 @@ public class RedWarehouseAuto extends LoggingOpMode
 
     private ElapsedTime timer;
     private int id = 0;
-    private int timer_delay = 1000; // Set high to not trigger next move
+    private double timer_delay = 1000; // Set high to not trigger next move
     private boolean waiting = false;
+    private int shipping_height;
 
 
     static
@@ -62,8 +66,8 @@ public class RedWarehouseAuto extends LoggingOpMode
         controlMgr = new ControlMgr(robot, controllerMap);
         timer = new ElapsedTime();
 
-        controlMgr.addModule(new ServerControl("Server Control"));
-        controlMgr.initModules();
+//        controlMgr.addModule(new ServerControl("Server Control"));
+//        controlMgr.initModules();
 
         drivetrain = robot.drivetrain;
         odometry = robot.odometry;
@@ -72,7 +76,7 @@ public class RedWarehouseAuto extends LoggingOpMode
 
 //        odometry.setStartPosition(66, -10, 0);
 //        drivetrain.setStart(66, -10, 0); // Must match Odo start position
-        odometry.podsDown();
+        odometry.podsUp();
 
         webcam = Webcam.forSerial(WEBCAM_SERIAL);
         if (webcam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + WEBCAM_SERIAL);
@@ -82,6 +86,7 @@ public class RedWarehouseAuto extends LoggingOpMode
 
     @Override
     public void start() {
+        timer.reset();
         odometry.resetEncoders();
 //        webcam.requestNewFrame();
 //        if (!frame_handler.newFrameAvailable){
@@ -89,77 +94,91 @@ public class RedWarehouseAuto extends LoggingOpMode
 //        }
 //        Utils.bitmapToMat(frame_handler.currFramebuffer, detector_frame);
 //        CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame);
-        // TODO Add detection command
+//        int x_coord = capstone_detector.detect();
+//        if (100 < x_coord && x_coord < 250){
+//            shipping_height = 1;
+//        } else if (250 < x_coord && x_coord < 450){
+//            shipping_height = 2;
+//        } else if (450 < x_coord && x_coord < 600){
+//            shipping_height = 3;
+//        }
     }
 
     @Override
     public void loop() {
+        if (!waiting){
+            timer.reset();
+        }
+
         // DON'T FORGET BREAKS
         // NEXT CASE SHOULD BE +1
         switch (id){
             case 0:
-                drivetrain.goToPosition(22, -21, 0.03);
-                break;
-            case 1:
+                drivetrain.teleMove(-0.225, -0.47, 0);
                 timer_delay = 1;
                 waiting = true;
+                break;
+            case 1:
+                drivetrain.teleMove(0, 0, 0);
+                lift.raise(Status.STAGES.get("high"));
+                break;
             case 2:
-                drivetrain.goToPosition(0, 0, 0.025);
+                lift.extend(Status.EXTENSIONS.get("left"));
+                timer_delay = 2;
+                waiting = true;
                 break;
             case 3:
-                drivetrain.goToPosition(2, 40, 0.04);
+                lift.deposit(Status.DEPOSITS.get("left"));
+                timer_delay = 2;
+                waiting = true;
                 break;
             case 4:
-                drivetrain.goToPosition(20, 40, 0.04);
+                lift.deposit(Status.DEPOSITS.get("center"));
+                timer_delay = 2;
+                waiting = true;
                 break;
-
+            case 5:
+                lift.extend(Status.EXTENSIONS.get("center_from_left"));
+                timer_delay = 2;
+                waiting = true;
+                break;
+            case 6:
+                lift.raise(0);
+                break;
+            case 7:
+                drivetrain.teleMove(0.225, 0.47, 0);
+                timer_delay = 1;
+                waiting = true;
+                break;
+            case 8:
+                drivetrain.teleMove(0.5, 0, 0);
+                timer_delay = 1.5;
+                waiting = true;
+                break;
+            case 9:
+                drivetrain.teleMove(0, -0.4, 0);
+                timer_delay = 1;
+                waiting = true;
+                break;
+            case 10:
+                drivetrain.teleMove(0, 0, 0);
+                break;
         }
-
-        // Y: -20 X: 36
-
-        double[] odo_data = odometry.getOdoData();
-        telemetry.addData("Y: ", odo_data[0]);
-        telemetry.addData("X: ", odo_data[1]);
-        telemetry.addData("Heading: ", odo_data[2]);
-
-        double[] target_positions = drivetrain.getTargets();
-        telemetry.addData("Target Y: ", target_positions[0]);
-        telemetry.addData("Target X: ", target_positions[1]);
-        telemetry.addData("Target Heading: ", target_positions[2]);
-
-        double[] delta_positions = drivetrain.getPositionDeltas();
-        telemetry.addData("Delta Y: ", delta_positions[0]);
-        telemetry.addData("Delta X: ", delta_positions[1]);
-        telemetry.addData("Delta Heading: ", delta_positions[2]);
 
         telemetry.addData("Timer: ", timer.seconds());
         telemetry.addData("Id: ", id);
-        logger.i(String.format("%d", id));
-        telemetry.addData("Reached: ", drivetrain.reached);
+        telemetry.addData("Reached: ", waiting);
 
-
-        if (!drivetrain.turned){
-            logger.i("Update Heading");
-            drivetrain.updateHeading();
-        } else {
-            logger.i("Update Position");
-            drivetrain.updatePosition();
-        }
-        odometry.update();
+        lift.updateLift();
         telemetry.update();
 
-        if (!waiting){
-            timer.reset();
-        }
-        if (drivetrain.ifReachedPosition()){ // Checks after updates to get values for deltas
-            logger.i("Reached Position");
-            id += 1;
-        } else if (drivetrain.ifReachedHeading()) {
-            logger.i("Reached Heading");
-            id += 1;
-        } else if (timer.seconds() > timer_delay){
+        if (timer.seconds() > timer_delay){
+            logger.i("Reached Timer: %d", id);
             id += 1;
             waiting = false;
+        } else if (lift.ifLifted()){
+            logger.i("Reached Lift: %d", id);
+            id += 1;
         }
     }
 

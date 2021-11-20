@@ -27,8 +27,8 @@ import org.opencv.core.Mat;
 import java.sql.Statement;
 
 // we going to use the event bus system for this so that everything can be done on one thread
-@Autonomous(name="Blue Warehouse Auto")
-public class BlueWarehouseAuto extends LoggingOpMode
+@Autonomous(name="Red Duck Auto")
+public class RedDuckAuto extends LoggingOpMode
 {
     private Robot robot;
     private Drivetrain drivetrain;
@@ -114,53 +114,11 @@ public class BlueWarehouseAuto extends LoggingOpMode
         // NEXT CASE SHOULD BE +1
         switch (id){
             case 0:
-                drivetrain.teleMove(-0.225, 0.47, 0);
-                timer_delay = 1;
+                drivetrain.teleMove(0.215, -0.3, 0);
+                timer_delay = 2;
                 waiting = true;
                 break;
             case 1:
-                drivetrain.teleMove(0, 0, 0);
-                lift.raise(Status.STAGES.get("high"));
-                break;
-            case 2:
-                lift.extend(Status.EXTENSIONS.get("right"));
-                timer_delay = 2;
-                waiting = true;
-                break;
-            case 3:
-                lift.deposit(Status.DEPOSITS.get("right"));
-                timer_delay = 2;
-                waiting = true;
-                break;
-            case 4:
-                lift.deposit(Status.DEPOSITS.get("center"));
-                timer_delay = 2;
-                waiting = true;
-                break;
-            case 5:
-                lift.extend(Status.EXTENSIONS.get("center_from_right"));
-                timer_delay = 2;
-                waiting = true;
-                break;
-            case 6:
-                lift.raise(0);
-                break;
-            case 7:
-                drivetrain.teleMove(0.225, -0.47, 0);
-                timer_delay = 1;
-                waiting = true;
-                break;
-            case 8:
-                drivetrain.teleMove(0.5, 0, 0);
-                timer_delay = 1.5;
-                waiting = true;
-                break;
-            case 9:
-                drivetrain.teleMove(0, 0.4, 0);
-                timer_delay = 1;
-                waiting = true;
-                break;
-            case 10:
                 drivetrain.teleMove(0, 0, 0);
                 break;
         }
