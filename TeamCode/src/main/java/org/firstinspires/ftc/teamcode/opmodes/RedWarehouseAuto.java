@@ -24,8 +24,8 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
 // we going to use the event bus system for this so that everything can be done on one thread
-@Autonomous(name="Blue Duck Auto")
-public class BlueDuckAuto extends LoggingOpMode
+@Autonomous(name="Red Warehouse Auto")
+public class RedWarehouseAuto extends LoggingOpMode
 {
     private Robot robot;
     private Drivetrain drivetrain;
@@ -70,8 +70,8 @@ public class BlueDuckAuto extends LoggingOpMode
         duck = robot.duck;
         lift = robot.lift;
 
-        odometry.setStartPosition(-60, 36, 0);
-        drivetrain.setStart(-60, 36, 0); // Must match Odo start position
+//        odometry.setStartPosition(66, -10, 0);
+//        drivetrain.setStart(66, -10, 0); // Must match Odo start position
         odometry.podsDown();
 
         webcam = Webcam.forSerial(WEBCAM_SERIAL);
@@ -98,18 +98,21 @@ public class BlueDuckAuto extends LoggingOpMode
         // NEXT CASE SHOULD BE +1
         switch (id){
             case 0:
-                drivetrain.goToPosition(-48, 36, 0.04);
+                drivetrain.goToPosition(22, -21, 0.03);
                 break;
             case 1:
-                drivetrain.goToHeading(90, 1);
-                break;
+                timer_delay = 1;
+                waiting = true;
             case 2:
-                drivetrain.goToPosition(-48, 40, 0.04);
+                drivetrain.goToPosition(0, 0, 0.025);
                 break;
             case 3:
-                timer_delay = 5;
-                waiting = true;
+                drivetrain.goToPosition(2, 40, 0.04);
                 break;
+            case 4:
+                drivetrain.goToPosition(20, 40, 0.04);
+                break;
+
         }
 
         // Y: -20 X: 36

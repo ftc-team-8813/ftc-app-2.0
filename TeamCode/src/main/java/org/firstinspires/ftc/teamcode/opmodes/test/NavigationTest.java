@@ -17,8 +17,7 @@ public class NavigationTest extends LoggingOpMode {
 
     @Override
     public void loop() {
-        robot.drivetrain.goToPosition(40, -40, 0, 0.4);
-        robot.drivetrain.updatePosition();
+        robot.drivetrain.goToPosition(0, 0, 0.04);
 
         double[] odo_data = robot.odometry.getOdoData();
         telemetry.addData("Y: ", odo_data[0]);
@@ -30,6 +29,7 @@ public class NavigationTest extends LoggingOpMode {
         telemetry.addData("Strafe Power: ", delta_positions[1]);
         telemetry.addData("Turn Power: ", delta_positions[2]);
 
+        robot.drivetrain.updatePosition();
         robot.odometry.update();
         telemetry.update();
     }

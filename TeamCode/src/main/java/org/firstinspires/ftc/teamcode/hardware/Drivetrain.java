@@ -28,6 +28,7 @@ public class Drivetrain {
     private double delta_heading;
 
     public boolean reached = true;
+    public boolean turned = true;
 
     public Drivetrain(Odometry odometry, DcMotor front_left, DcMotor front_right, DcMotor back_left, DcMotor back_right){
         this.odometry = odometry;
@@ -40,6 +41,12 @@ public class Drivetrain {
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
+    public void setStart(double y, double x, double heading){
+        this.target_y = y;
+        this.target_x = x;
+        this.target_heading = heading;
+    }
+
     public void teleMove(double forward, double strafe, double turn){
         // Reversed because of bevel gears
         front_left.setPower(-1 * (forward + strafe + turn));
@@ -49,37 +56,57 @@ public class Drivetrain {
     }
 
     // Only updates reached status in one loop cycle
-    public boolean ifReached(){
-        if (!reached && Math.abs(delta_y) < 2 && Math.abs(delta_x) < 2 && Math.abs(delta_heading) < 1.5){
+    public boolean ifReachedPosition(){
+        if (!reached && Math.abs(delta_y) < 2 && Math.abs(delta_x) < 2){
             reached = true;
             return true;
         }
         return false;
     }
 
-    public void goToPosition(double y, double x, double heading, double speed){
+    public boolean ifReachedHeading(){
+        if (!turned && Math.abs(delta_heading) < 4){
+            turned = true;
+            return true;
+        }
+        return false;
+    }
+
+    public void goToPosition(double y, double x, double speed){
         target_y = y;
         target_x = x;
-        target_heading = heading;
         target_speed = speed;
         reached = false;
+    }
+
+    public void goToHeading(double heading, double speed){
+        target_heading = heading;
+        target_speed = speed;
+        turned = false;
     }
 
     public void updatePosition(){
         double[] odoData = odometry.getOdoData();
         delta_y = odoData[0] - target_y; // Flipped to change power direction
         delta_x = target_x - odoData[1];
-        delta_heading = target_heading + odoData[2]; // Adding to flip rotation direction
 
         y_integral += delta_y;
         x_integral += delta_x;
-        heading_integral += delta_heading;
 
         double forward_power = ((x_integral * Status.FORWARD_KI) + (delta_x * Status.FORWARD_KP)) * target_speed;
         double strafe_power = ((y_integral * Status.STRAFE_KI) + (delta_y * Status.STRAFE_KP)) * target_speed;
-        double turn_power = ((heading_integral * Status.TURN_KI) + (delta_heading * Status.TURN_KP)) * target_speed;
 
-        teleMove(forward_power, strafe_power, turn_power);
+        teleMove(forward_power, strafe_power, 0);
+    }
+
+    public void updateHeading(){
+        double[] odoData = odometry.getOdoData();
+        delta_heading = target_heading + odoData[2]; // Adding to flip rotation direction
+        heading_integral += delta_heading;
+
+        double turn_power = ((heading_integral * Status.TURN_KI) + (delta_heading * Status.TURN_KP)) * target_speed;
+        teleMove(0, 0, turn_power);
+
     }
 
     public double[] getPositionDeltas(){

@@ -83,7 +83,7 @@ public class LiftControl extends ControlModule{
         if (extension > 0){
             switch (height_preset){
                 case 1:
-                    lift.raise(Status.STAGES.get("low_above"));
+                    lift.raise(Status.STAGES.get("low"));
                     break;
                 case 2:
                     lift.raise(Status.STAGES.get("mid"));
@@ -95,10 +95,18 @@ public class LiftControl extends ControlModule{
             if (lift.ifLifted()){
                 switch (extension){
                     case 1:
-                        lift.extend(Status.EXTENSIONS.get("left"));
+                        if (height_preset == 1){
+                            lift.extend(Status.EXTENSIONS.get("half_left"));
+                        } else {
+                            lift.extend(Status.EXTENSIONS.get("left"));
+                        }
                         break;
                     case 2:
-                        lift.extend(Status.EXTENSIONS.get("right"));
+                        if (height_preset == 1){
+                            lift.extend(Status.EXTENSIONS.get("half_right"));
+                        } else {
+                            lift.extend(Status.EXTENSIONS.get("right"));
+                        }
                         break;
                 }
             }

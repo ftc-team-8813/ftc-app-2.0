@@ -15,7 +15,7 @@ public class OdometryControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_increase_right;
     private ControllerMap.ButtonEntry btn_decrease_right;
 
-    private boolean pods_up = false;
+    private boolean pods_up = true;
 
 
     public OdometryControl(String name) {

@@ -56,6 +56,16 @@ public class Odometry {
         this.imu.initialize(parameters);
     }
 
+    public void resetEncoders(){
+        this.l_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        this.r_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        this.s_enc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        this.l_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        this.r_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        this.s_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
     public void podsUp(){
         left_drop.setPosition(Status.UP_POS_LEFT);
         right_drop.setPosition(Status.UP_POS_RIGHT);
@@ -78,6 +88,12 @@ public class Odometry {
         return new double[]{left_drop.getPosition(), right_drop.getPosition()};
     }
 
+    public void setStartPosition(double y, double x, double heading){
+        this.y = y;
+        this.x = x;
+        this.heading = heading;
+    }
+
 
     public void update(){
         /*
@@ -89,7 +105,8 @@ public class Odometry {
                       |
                       |
                       -x
-             Robot starts facing positive x
+                 (Neutral Goal)
+            0 Heading is Positive X
          */
         double[] poses = getCurrentPositions();
 

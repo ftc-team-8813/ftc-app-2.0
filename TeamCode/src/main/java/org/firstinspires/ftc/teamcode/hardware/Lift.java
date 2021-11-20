@@ -17,7 +17,7 @@ public class Lift {
     private int bottom = 0;
     private int height_preset = 0;
     private int extension = 0;
-    private boolean lift_reached;
+    private boolean lift_reached = true;
 
     private double target_pos;
     private double integral;
