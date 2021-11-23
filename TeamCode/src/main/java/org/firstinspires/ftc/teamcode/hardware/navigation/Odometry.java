@@ -107,6 +107,7 @@ public class Odometry {
                       -x
                  (Neutral Goal)
             0 Heading is Positive X
+            90 Heading is Positive Y
          */
         double[] poses = getCurrentPositions();
 

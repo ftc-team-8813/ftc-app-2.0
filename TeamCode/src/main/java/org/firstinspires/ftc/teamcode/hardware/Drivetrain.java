@@ -18,8 +18,8 @@ public class Drivetrain {
     private double target_heading = 0;
     private double target_speed;
 
-    private double y_integral;
-    private double x_integral;
+    private double forward_integral;
+    private double strafe_integral;
     private double heading_integral;
 
 
@@ -86,15 +86,22 @@ public class Drivetrain {
     }
 
     public void updatePosition(){
-        double[] odoData = odometry.getOdoData();
-        delta_y = odoData[0] - target_y; // Flipped to change power direction
-        delta_x = target_x - odoData[1];
+        double[] odo_data = odometry.getOdoData();
+        delta_y = odo_data[0] - target_y; // Flipped to change power direction
+        delta_x = target_x - odo_data[1];
+        double heading = odo_data[2];
 
-        y_integral += delta_y;
-        x_integral += delta_x;
+        // TODO Check if heading is positive clockwise
+        double relative_heading = Math.atan(delta_y/delta_x) * (180/Math.PI) + heading;
+        double vector = Math.sqrt(Math.pow(delta_y, 2) + Math.pow(delta_x, 2));
+        double strafe_distance = Math.sin(relative_heading * (Math.PI/180)) * vector;
+        double forward_distance = Math.cos(relative_heading * (Math.PI/180)) * vector;
 
-        double forward_power = ((x_integral * Status.FORWARD_KI) + (delta_x * Status.FORWARD_KP)) * target_speed;
-        double strafe_power = ((y_integral * Status.STRAFE_KI) + (delta_y * Status.STRAFE_KP)) * target_speed;
+        forward_integral += forward_distance;
+        strafe_integral += strafe_distance;
+
+        double forward_power = (forward_distance * Status.FORWARD_KP) + (forward_integral * Status.FORWARD_KI) * target_speed;
+        double strafe_power = (strafe_distance * Status.STRAFE_KP) + (strafe_integral * Status.STRAFE_KI) * target_speed;
 
         teleMove(forward_power, strafe_power, 0);
     }
