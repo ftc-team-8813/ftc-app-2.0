@@ -13,14 +13,15 @@ public class BlueWarehouseAuto extends LoggingOpMode
 {
     private Robot robot;
     private AutonomousTemplate auto;
+    private final String name = "Blue Warehouse Auto";
     private int id;
 
     @Override
     public void init() {
         super.init();
-        this.robot = Robot.initialize(hardwareMap, "Blue Duck Auto");
+        this.robot = Robot.initialize(hardwareMap, name);
         this.auto = new AutonomousTemplate(
-                "Blue Duck Auto",
+                name,
                 this.robot,
                 hardwareMap,
                 new ControllerMap(gamepad1, gamepad2, new EventBus()),

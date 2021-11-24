@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
+import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -15,15 +17,22 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ServerControl;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
+import org.firstinspires.ftc.teamcode.util.websocket.Server;
 import org.firstinspires.ftc.teamcode.vision.CapstoneDetector;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 public class AutonomousTemplate {
     String name;
     private Robot robot;
+    private Server server;
     private Drivetrain drivetrain;
     private Odometry odometry;
     private Duck duck;
@@ -38,10 +47,13 @@ public class AutonomousTemplate {
     private Webcam.SimpleFrameHandler frame_handler;
     private final String WEBCAM_SERIAL = "3522DE6F";
     private Mat detector_frame = new Mat();
+    private Mat send_frame = new Mat();
 
+    private ElapsedTime camera_timer;
     private ElapsedTime timer;
     private int id = 0;
     private double timer_delay = 1000; // Set high to not trigger next move
+    private boolean waiting_camera = false;
     private boolean waiting = false;
     private int shipping_height;
 
@@ -58,6 +70,7 @@ public class AutonomousTemplate {
         this.controller_map = controller_map;
         this.control_mgr = new ControlMgr(robot, this.controller_map);
         this.timer = new ElapsedTime();
+        this.camera_timer = new ElapsedTime();
 
         drivetrain = robot.drivetrain;
         odometry = robot.odometry;
@@ -66,14 +79,32 @@ public class AutonomousTemplate {
     }
 
     public void init_server(){
-        control_mgr.addModule(new ServerControl("Server Control"));
-        control_mgr.initModules();
+        try
+        {
+            server = new Server(new InetSocketServer(20000));
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+        server.registerProcessor(0x01, (cmd, payload, resp) -> { // Get frame
+            if (detector_frame == null) return;
+
+            Bitmap bmp = Bitmap.createBitmap(send_frame.cols(), send_frame.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(send_frame, bmp);
+
+            ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 80, os); // probably quite slow
+            byte[] data = os.toByteArray();
+            resp.respond(ByteBuffer.wrap(data));
+        });
+        server.startServer();
     }
 
-    public void init_odometry(double x, double y, double heading){
-        odometry.setStartPosition(66, -10, 0);
-        drivetrain.setStart(66, -10, 0); // Must match Odo start position
-        odometry.podsUp();
+    public void init_odometry(double y, double x, double heading){
+        odometry.setStartPosition(y, x, heading);
+        drivetrain.setStart(y, x, heading); // Must match Odo start position
+        odometry.podsDown();
     }
 
     public void init_camera(){
@@ -81,23 +112,8 @@ public class AutonomousTemplate {
         if (webcam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + WEBCAM_SERIAL);
         frame_handler = new Webcam.SimpleFrameHandler();
         webcam.open(ImageFormat.YUY2, 800, 448, 30, frame_handler);
-    }
-
-    public void check_image(){
-        webcam.requestNewFrame();
-        if (!frame_handler.newFrameAvailable){
-            throw new IllegalArgumentException("New frame not available");
-        }
-        Utils.bitmapToMat(frame_handler.currFramebuffer, detector_frame);
-        CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame);
-        int x_coord = capstone_detector.detect();
-        if (100 < x_coord && x_coord < 250){
-            shipping_height = 1;
-        } else if (250 < x_coord && x_coord < 450){
-            shipping_height = 2;
-        } else if (450 < x_coord && x_coord < 600){
-            shipping_height = 3;
-        }
+        camera_timer.reset();
+        waiting_camera = true;
     }
 
     public void set_timer(double delay){
@@ -105,23 +121,52 @@ public class AutonomousTemplate {
         waiting = true;
     }
 
+    public void check_image(){
+        if (waiting_camera && camera_timer.seconds() > 5) {
+            webcam.requestNewFrame();
+            if (!frame_handler.newFrameAvailable) {
+                throw new IllegalArgumentException("New frame not available");
+            }
+            Utils.bitmapToMat(frame_handler.currFramebuffer, detector_frame);
+            CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
+            int x_coord = capstone_detector.detect();
+            send_frame = capstone_detector.stored_frame;
+            if (145 < x_coord && x_coord < 325) {
+                shipping_height = 1;
+            } else if (325 < x_coord && x_coord < 505) {
+                shipping_height = 2;
+            } else if (505 < x_coord && x_coord < 669) {
+                shipping_height = 3;
+            }
+
+            logger.i(String.format("X Coord of Block: %d", x_coord));
+            logger.i(String.format("Shipping Height: %d", shipping_height));
+            waiting_camera = false;
+            id += 1;
+        }
+    }
+
     public int update() {
         if (!waiting) {
             timer.reset();
         }
 
+        double[] odo_data = odometry.getOdoData();
+        telemetry.addData("Y: ", odo_data[0]);
+        telemetry.addData("X: ", odo_data[1]);
+        telemetry.addData("Heading: ", odo_data[2]);
+
         telemetry.addData("Timer: ", timer.seconds());
         telemetry.addData("Id: ", id);
         telemetry.addData("Reached: ", waiting);
 
+        drivetrain.update();
+        odometry.update();
         lift.updateLift();
         telemetry.update();
 
-        if (drivetrain.ifReachedPosition()){
+        if (drivetrain.ifReached()){
             logger.i("Reached Position: %d", id);
-            id += 1;
-        } else if (drivetrain.ifReachedHeading()){
-            logger.i("Reached Heading: %d", id);
             id += 1;
         } else if (timer.seconds() > timer_delay){
             logger.i("Reached Timer: %d", id);
@@ -137,6 +182,11 @@ public class AutonomousTemplate {
 
     public void stop(){
         control_mgr.stop();
-        webcam.close();
+        if (webcam != null){
+            webcam.close();
+        }
+        if (server != null) {
+            server.close();
+        }
     }
 }

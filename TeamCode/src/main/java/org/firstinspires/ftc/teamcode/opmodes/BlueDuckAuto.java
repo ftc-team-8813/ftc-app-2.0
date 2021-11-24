@@ -13,26 +13,28 @@ public class BlueDuckAuto extends LoggingOpMode
 {
     private Robot robot;
     private AutonomousTemplate auto;
+    private String name = "Blue Duck Auto";
     private int id;
 
     @Override
     public void init() {
         super.init();
-        this.robot = Robot.initialize(hardwareMap, "Blue Duck Auto");
+        this.robot = Robot.initialize(hardwareMap, name);
         this.auto = new AutonomousTemplate(
-                "Blue Duck Auto",
+                name,
                 this.robot,
                 hardwareMap,
                 new ControllerMap(gamepad1, gamepad2, new EventBus()),
                 telemetry
         );
         auto.init_camera();
-        auto.init_server();
+        auto.init_odometry(0, 0, 0);
+//        auto.init_server();
     }
 
     @Override
     public void start() {
-        auto.check_image();
+        robot.odometry.resetEncoders();
     }
 
     @Override
@@ -40,9 +42,17 @@ public class BlueDuckAuto extends LoggingOpMode
         // DON'T FORGET BREAKS
         // NEXT CASE SHOULD BE +1
         switch (id){
+            case -1:
+                auto.check_image();
+                break;
             case 0:
-                robot.drivetrain.teleMove(0.22, 0.3, 0);
-                auto.set_timer(2);
+                robot.drivetrain.goToPosition(-50, -10, 0.0001);
+                break;
+            case 1:
+                robot.drivetrain.goToPosition(0, 0, 0.0001);
+                break;
+            case 2:
+                robot.drivetrain.stop();
                 break;
         }
 

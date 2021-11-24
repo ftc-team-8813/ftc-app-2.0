@@ -6,57 +6,62 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class CapstoneDetector {
     public Logger logger;
     public Mat detector_frame;
+    public Mat stored_frame;
     public Scalar lower_hls;
     public Scalar upper_hls;
     public List<MatOfPoint> contours;
 
-    public CapstoneDetector(Mat detector_frame){
-        logger = new Logger("Capstone Detector");
+    public CapstoneDetector(Mat detector_frame, Logger logger){
+        this.logger = logger;
         this.detector_frame = detector_frame;
-        this.lower_hls = new Scalar(21,174,9);
-        this.upper_hls = new Scalar(100,253,61);
+        this.stored_frame = new Mat();
+        this.lower_hls = new Scalar(40,110,0);
+        this.upper_hls = new Scalar(60,130,255);
         contours = new ArrayList<>();
     }
 
     public int detect(){
+        Mat resized = new Mat();
+        Mat blurred = new Mat();
         Mat hls = new Mat();
-        Mat bitwise = new Mat();
-        Mat gray = new Mat();
-        Mat binary = new Mat();
-        Mat hierarchy = new Mat();
+        Mat masked = new Mat();
 
-        Core.inRange(detector_frame, lower_hls, upper_hls, hls);
-        Core.bitwise_and(hls, hls, bitwise);
-        Imgproc.cvtColor(bitwise, gray, Imgproc.COLOR_BayerBG2GRAY);
-        Imgproc.threshold(gray, binary, 100, 255, Imgproc.THRESH_BINARY);
-        Imgproc.findContours(binary, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.resize(detector_frame, resized, new Size(800, 400));
+        Imgproc.blur(resized, blurred, new Size(5, 5));
+        Imgproc.cvtColor(blurred, hls, Imgproc.COLOR_BGR2HLS);
 
-        double max_area = 0;
-        int contour_id = 0;
-        List<Moments> mu = new ArrayList<Moments>(contours.size());
-        for (int contour_idx = 0; contour_idx < contours.size(); contour_idx++){
-            double contour_area = Imgproc.contourArea(contours.get(contour_idx));
-            if (contour_area > max_area){
-                max_area = contour_area;
-                contour_id = contour_idx;
-            }
+        Core.inRange(hls, lower_hls, upper_hls, masked);
+        Imgproc.findContours(masked, contours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+
+        stored_frame = masked;
+
+        ArrayList<Double> areas = new ArrayList<>();
+        for (int i = 0; i < contours.size(); i++){
+            MatOfPoint contour = contours.get(i);
+            double area = Imgproc.contourArea(contour);
+            areas.add(area);
         }
+        if (!areas.isEmpty()) {
+            double max_area = Collections.max(areas);
+            int index = areas.indexOf(max_area);
 
-        logger.i(String.format("Contour Area: %06f", max_area));
-        mu.add(contour_id, Imgproc.moments(contours.get(contour_id), false));
-        Moments p = mu.get(contour_id);
-        int x = (int) (p.get_m10() / p.get_m00());
+            Moments p = Imgproc.moments(contours.get(index), false);
+            int x = (int) (p.get_m10() / p.get_m00());
 
-        return x;
+            return x;
+        }
+        return 0;
     }
 }

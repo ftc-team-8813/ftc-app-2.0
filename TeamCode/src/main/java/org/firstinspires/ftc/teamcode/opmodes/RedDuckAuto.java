@@ -13,14 +13,15 @@ public class RedDuckAuto extends LoggingOpMode
 {
     private Robot robot;
     private AutonomousTemplate auto;
+    private final String name = "Red Duck Auto";
     private int id;
 
     @Override
     public void init() {
         super.init();
-        this.robot = Robot.initialize(hardwareMap, "Blue Duck Auto");
+        this.robot = Robot.initialize(hardwareMap, name);
         this.auto = new AutonomousTemplate(
-                "Blue Duck Auto",
+                name,
                 this.robot,
                 hardwareMap,
                 new ControllerMap(gamepad1, gamepad2, new EventBus()),
@@ -41,8 +42,10 @@ public class RedDuckAuto extends LoggingOpMode
         // NEXT CASE SHOULD BE +1
         switch (id){
             case 0:
-                robot.drivetrain.teleMove(0.22, 0.3, 0);
-                auto.set_timer(2);
+                robot.drivetrain.goToPosition(0.22, 0.3, 0);
+                break;
+            case 1:
+                robot.drivetrain.goToPosition(0, 0, 0);
                 break;
         }
 

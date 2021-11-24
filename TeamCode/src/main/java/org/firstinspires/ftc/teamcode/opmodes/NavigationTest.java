@@ -8,12 +8,12 @@ import org.firstinspires.ftc.teamcode.opmodes.auto.AutonomousTemplate;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 // we going to use the event bus system for this so that everything can be done on one thread
-@Autonomous(name="Red Warehouse Auto")
-public class RedWarehouseAuto extends LoggingOpMode
+@Autonomous(name="Navigation Test")
+public class NavigationTest extends LoggingOpMode
 {
     private Robot robot;
     private AutonomousTemplate auto;
-    private final String name = "Red Warehouse Auto";
+    private String name = "Navigation Test";
     private int id;
 
     @Override
@@ -29,23 +29,24 @@ public class RedWarehouseAuto extends LoggingOpMode
         );
         auto.init_camera();
         auto.init_server();
+        auto.init_odometry(0, 0, 0);
     }
 
     @Override
     public void start() {
-        auto.check_image();
+        robot.odometry.resetEncoders();
     }
 
     @Override
     public void loop() {
+        auto.check_image();
         // DON'T FORGET BREAKS
         // NEXT CASE SHOULD BE +1
-        switch (id){
-            case 0:
-                robot.drivetrain.teleMove(0.22, 0.3, 0);
-                auto.set_timer(2);
-                break;
-        }
+//        switch (id){
+//            case 0:
+//                robot.drivetrain.goToPosition(0, 30, 0.03);
+//                break;
+//        }
 
         id = auto.update();
     }

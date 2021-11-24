@@ -22,6 +22,7 @@ public class Odometry {
     private double y;
     private double x;
     private double heading;
+    private double heading_offset;
     
     private double past_l;
     private double past_r;
@@ -88,10 +89,10 @@ public class Odometry {
         return new double[]{left_drop.getPosition(), right_drop.getPosition()};
     }
 
-    public void setStartPosition(double y, double x, double heading){
+    public void setStartPosition(double y, double x, double heading_offset){
         this.y = y;
         this.x = x;
-        this.heading = heading;
+        this.heading_offset = heading_offset;
     }
 
 
@@ -130,6 +131,7 @@ public class Odometry {
         y += convertToInches(delta_y);
         x += convertToInches(delta_x);
         Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        // TODO Adjust for non-zero start angle
         heading = angles.firstAngle;
     }
 

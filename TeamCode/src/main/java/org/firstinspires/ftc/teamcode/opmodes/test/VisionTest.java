@@ -9,13 +9,16 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Util;
 import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
+import org.firstinspires.ftc.teamcode.vision.CapstoneDetector;
 import org.firstinspires.ftc.teamcode.vision.ImageDraw;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -76,8 +79,14 @@ public class VisionTest extends LoggingOpMode
         server.registerProcessor(0x01, (cmd, payload, resp) -> { // Get frame
             if (serverFrameCopy == null || serverFrameUsed) return;
 
+            CapstoneDetector capstone_detector = new CapstoneDetector(cvFrame, log);
+            capstone_detector.detect();
+
+            Bitmap bmp = Bitmap.createBitmap(capstone_detector.stored_frame.cols(), capstone_detector.stored_frame.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(capstone_detector.stored_frame, bmp);
+
             ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
-            serverFrameCopy.compress(Bitmap.CompressFormat.JPEG, 80, os); // probably quite slow
+            bmp.compress(Bitmap.CompressFormat.JPEG, 80, os); // probably quite slow
             serverFrameUsed = true;
             byte[] data = os.toByteArray();
             resp.respond(ByteBuffer.wrap(data));

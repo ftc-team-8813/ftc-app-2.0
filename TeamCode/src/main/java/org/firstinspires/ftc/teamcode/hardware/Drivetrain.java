@@ -55,18 +55,17 @@ public class Drivetrain {
         back_right.setPower(-1 * (forward + strafe - turn));
     }
 
-    // Only updates reached status in one loop cycle
-    public boolean ifReachedPosition(){
-        if (!reached && Math.abs(delta_y) < 2 && Math.abs(delta_x) < 2){
-            reached = true;
-            return true;
-        }
-        return false;
+    public void stop(){
+        front_left.setPower(0);
+        front_right.setPower(0);
+        back_left.setPower(0);
+        back_right.setPower(0);
     }
 
-    public boolean ifReachedHeading(){
-        if (!turned && Math.abs(delta_heading) < 4){
-            turned = true;
+    // Only updates reached status in one loop cycle
+    public boolean ifReached(){
+        if (!reached && Math.abs(delta_y) < 2 && Math.abs(delta_x) < 2 && Math.abs(delta_heading) < 5){
+            reached = true;
             return true;
         }
         return false;
@@ -85,35 +84,27 @@ public class Drivetrain {
         turned = false;
     }
 
-    public void updatePosition(){
+    public void update(){
         double[] odo_data = odometry.getOdoData();
+        double heading = odo_data[2];
         delta_y = odo_data[0] - target_y; // Flipped to change power direction
         delta_x = target_x - odo_data[1];
-        double heading = odo_data[2];
+        delta_heading = target_heading + odo_data[2]; // Adding to flip rotation direction
 
-        // TODO Check if heading is positive clockwise
-        double relative_heading = Math.atan(delta_y/delta_x) * (180/Math.PI) + heading;
+        double relative_heading = Math.atan2(delta_y, delta_x) * (180/Math.PI) + heading;
         double vector = Math.sqrt(Math.pow(delta_y, 2) + Math.pow(delta_x, 2));
         double strafe_distance = Math.sin(relative_heading * (Math.PI/180)) * vector;
         double forward_distance = Math.cos(relative_heading * (Math.PI/180)) * vector;
 
         forward_integral += forward_distance;
         strafe_integral += strafe_distance;
+        heading_integral += delta_heading;
 
         double forward_power = (forward_distance * Status.FORWARD_KP) + (forward_integral * Status.FORWARD_KI) * target_speed;
         double strafe_power = (strafe_distance * Status.STRAFE_KP) + (strafe_integral * Status.STRAFE_KI) * target_speed;
-
-        teleMove(forward_power, strafe_power, 0);
-    }
-
-    public void updateHeading(){
-        double[] odoData = odometry.getOdoData();
-        delta_heading = target_heading + odoData[2]; // Adding to flip rotation direction
-        heading_integral += delta_heading;
-
         double turn_power = ((heading_integral * Status.TURN_KI) + (delta_heading * Status.TURN_KP)) * target_speed;
-        teleMove(0, 0, turn_power);
 
+        teleMove(forward_power, strafe_power, turn_power);
     }
 
     public double[] getPositionDeltas(){
