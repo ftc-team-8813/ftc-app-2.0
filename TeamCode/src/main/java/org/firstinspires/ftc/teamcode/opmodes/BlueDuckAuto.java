@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.auto.AutonomousTemplate;
+import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 // we going to use the event bus system for this so that everything can be done on one thread
@@ -28,8 +29,8 @@ public class BlueDuckAuto extends LoggingOpMode
                 telemetry
         );
         auto.init_camera();
-        auto.init_odometry(0, 0, 0);
 //        auto.init_server();
+//        auto.init_odometry(0, 0, 0);
     }
 
     @Override
@@ -42,20 +43,35 @@ public class BlueDuckAuto extends LoggingOpMode
         // DON'T FORGET BREAKS
         // NEXT CASE SHOULD BE +1
         switch (id){
-            case -1:
-                auto.check_image();
-                break;
             case 0:
-                robot.drivetrain.goToPosition(-50, -10, 0.0001);
+                // Sets powers and moves for set time
+                robot.drivetrain.teleMove(0, 0, 0);
+                auto.set_timer(2);
                 break;
             case 1:
-                robot.drivetrain.goToPosition(0, 0, 0.0001);
+                // Lift heights based on detected height
+                if (auto.shipping_height == -1){ // Waits for detection to not be run
+                    switch (auto.shipping_height) {
+                        case 1:
+                            robot.lift.raise(Status.STAGES.get("low"));
+                            break;
+                        case 2:
+                            robot.lift.raise(Status.STAGES.get("mid"));
+                            break;
+                        case 3:
+                            robot.lift.raise(Status.STAGES.get("high"));
+                            break;
+                    }
+                }
                 break;
             case 2:
-                robot.drivetrain.stop();
+                // Moves to left position (can be adjusted to different positions in Status.java) within 2 secs
+                robot.lift.extend(Status.EXTENSIONS.get("left"));
+                auto.set_timer(2);
                 break;
         }
 
+        auto.check_image();
         id = auto.update();
     }
 

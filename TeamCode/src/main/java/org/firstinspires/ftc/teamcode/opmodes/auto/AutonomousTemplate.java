@@ -55,7 +55,7 @@ public class AutonomousTemplate {
     private double timer_delay = 1000; // Set high to not trigger next move
     private boolean waiting_camera = false;
     private boolean waiting = false;
-    private int shipping_height;
+    public int shipping_height = -1;
 
     static
     {
@@ -160,24 +160,20 @@ public class AutonomousTemplate {
         telemetry.addData("Id: ", id);
         telemetry.addData("Reached: ", waiting);
 
-        drivetrain.update();
         odometry.update();
         lift.updateLift();
         telemetry.update();
 
-        if (drivetrain.ifReached()){
-            logger.i("Reached Position: %d", id);
+        if (lift.ifLifted()){
+            logger.i("Reached Lift: %d", id);
             id += 1;
         } else if (timer.seconds() > timer_delay){
             logger.i("Reached Timer: %d", id);
             id += 1;
             waiting = false;
-        } else if (lift.ifLifted()){
-            logger.i("Reached Lift: %d", id);
-            id += 1;
         }
 
-        return id;
+            return id;
     }
 
     public void stop(){
