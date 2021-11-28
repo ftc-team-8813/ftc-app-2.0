@@ -2,11 +2,14 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.auto.AutonomousTemplate;
 import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
+
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
 
 // we going to use the event bus system for this so that everything can be done on one thread
 @Autonomous(name="Blue Duck Auto")

@@ -40,8 +40,11 @@ public class NavigationTest extends LoggingOpMode
 
     @Override
     public void loop() {
+        //robot.intake.intake();
+        //robot.duck.spin(+ or - 1);
         // DON'T FORGET BREAKS
         // NEXT CASE SHOULD BE +1
+        // REMEMBER TIME BASED FOR ALL BUT LIFT
         switch (id){
             case 0:
                 // Sets powers and moves for set time
@@ -50,7 +53,7 @@ public class NavigationTest extends LoggingOpMode
                 break;
             case 1:
                 // Lift heights based on detected height
-                if (auto.shipping_height == -1){ // Waits for detection to not be run
+                if (auto.shipping_height != -1){ // Waits for detection to not be run
                     switch (auto.shipping_height) {
                         case 1:
                             robot.lift.raise(Status.STAGES.get("low"));

@@ -18,22 +18,22 @@ public class Status {
     public static final double TURN_KI = 0.0004;
 
     // Lift
-    public static final double UPPER_LIMIT = 810;
+    public static final double UPPER_LIMIT =750;
     public static final double RAISE_SPEED = 1;
     public static final double LOWER_SPEED = 0.1;
     public static final double kP = 0.008;
     public static final double kI = 0;
     public static final double kD = 0;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
-        put("low", 300.0);
-        put("mid", 400.0);
-        put("high", 800.0);
+        put("low", 260.0);
+        put("mid", 370.0);
+        put("high", 730.0);
     }};
 
     // Arm
     public static final HashMap<String, Double> EXTENSIONS = new HashMap<String, Double>(){{
-        put("left", 1.0);
-        put("right", 0.22);
+        put("left", .84);
+        put("right", 0.38);
         put("center_from_left", 0.59);
         put("center_from_right", 0.55);
         put("half_left", 0.75);
