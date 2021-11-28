@@ -41,7 +41,7 @@ public class AutonomousTemplate {
     private ControllerMap controller_map;
     private ControlMgr control_mgr;
     private Telemetry telemetry;
-    private Logger logger;
+    public Logger logger;
 
     private Webcam webcam;
     private Webcam.SimpleFrameHandler frame_handler;
@@ -50,12 +50,12 @@ public class AutonomousTemplate {
     private Mat send_frame = new Mat();
 
     private ElapsedTime camera_timer;
-    private ElapsedTime timer;
+    public ElapsedTime timer;
     private int id = 0;
     private double timer_delay = 1000; // Set high to not trigger next move
     private boolean waiting_camera = false;
     private boolean waiting = false;
-    public int shipping_height = -1;
+    public int shipping_height = 3;
 
     static
     {
@@ -122,28 +122,29 @@ public class AutonomousTemplate {
     }
 
     public void check_image(){
-        if (waiting_camera && camera_timer.seconds() > 5) {
-            webcam.requestNewFrame();
-            if (!frame_handler.newFrameAvailable) {
-                throw new IllegalArgumentException("New frame not available");
-            }
-            Utils.bitmapToMat(frame_handler.currFramebuffer, detector_frame);
-            CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
-            int x_coord = capstone_detector.detect();
-            send_frame = capstone_detector.stored_frame;
-            if (145 < x_coord && x_coord < 325) {
-                shipping_height = 1;
-            } else if (325 < x_coord && x_coord < 505) {
-                shipping_height = 2;
-            } else if (505 < x_coord && x_coord < 669) {
-                shipping_height = 3;
-            }
-
-            logger.i(String.format("X Coord of Block: %d", x_coord));
-            logger.i(String.format("Shipping Height: %d", shipping_height));
-            waiting_camera = false;
-            id += 1;
+//        if (detector_frame != null){
+//            return;
+//        }
+        webcam.requestNewFrame();
+        if (!frame_handler.newFrameAvailable) {
+            throw new IllegalArgumentException("New frame not available");
         }
+        Utils.bitmapToMat(frame_handler.currFramebuffer, detector_frame);
+        CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
+        int x_coord = capstone_detector.detect();
+        send_frame = capstone_detector.stored_frame;
+        if (145 < x_coord && x_coord < 325) {
+            shipping_height = 1;
+        } else if (325 < x_coord && x_coord < 505) {
+            shipping_height = 2;
+        } else if (505 < x_coord && x_coord < 669) {
+            shipping_height = 3;
+        }
+
+        logger.i(String.format("X Coord of Block: %d", x_coord));
+        logger.i(String.format("Shipping Height: %d", shipping_height));
+        waiting_camera = false;
+        id += 1;
     }
 
     public int update() {
@@ -171,6 +172,7 @@ public class AutonomousTemplate {
             logger.i("Reached Timer: %d", id);
             id += 1;
             waiting = false;
+            timer.reset();
         }
 
             return id;
