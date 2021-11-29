@@ -96,16 +96,20 @@ public class LiftControl extends ControlModule{
                 switch (extension){
                     case 1:
                         if (height_preset == 1){
-                            lift.extend(Status.EXTENSIONS.get("half_left"));
-                        } else {
-                            lift.extend(Status.EXTENSIONS.get("left"));
+                            lift.extend(Status.EXTENSIONS.get("low_left"));
+                        } else if (height_preset == 2){
+                            lift.extend(Status.EXTENSIONS.get("mid_left"));
+                        } else if (height_preset == 3) {
+                            lift.extend(Status.EXTENSIONS.get("high_left"));
                         }
                         break;
                     case 2:
                         if (height_preset == 1){
-                            lift.extend(Status.EXTENSIONS.get("half_right"));
-                        } else {
-                            lift.extend(Status.EXTENSIONS.get("right"));
+                            lift.extend(Status.EXTENSIONS.get("low_right"));
+                        } else if (height_preset == 2){
+                            lift.extend(Status.EXTENSIONS.get("mid_right"));
+                        } else if (height_preset == 3){
+                            lift.extend(Status.EXTENSIONS.get("high_right"));
                         }
                         break;
                 }

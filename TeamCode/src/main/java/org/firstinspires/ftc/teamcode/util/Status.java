@@ -18,33 +18,35 @@ public class Status {
     public static final double TURN_KI = 0.0004;
 
     // Lift
-    public static final double UPPER_LIMIT =750;
+    public static final double UPPER_LIMIT =754;
     public static final double RAISE_SPEED = 1;
     public static final double LOWER_SPEED = 0.1;
     public static final double kP = 0.008;
     public static final double kI = 0;
     public static final double kD = 0;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
-        put("low", 260.0);
-        put("mid", 370.0);
-        put("high", 730.0);
+        put("low", 204.0);
+        put("mid", 353.0);
+        put("high", 718.0);
     }};
 
     // Arm
     public static final HashMap<String, Double> EXTENSIONS = new HashMap<String, Double>(){{
-        put("left", .84);
-        put("right", 0.38);
+        put("high_left", .82);
+        put("high_right", 0.34);
+        put("low_left", 0.76);
+        put("low_right", 0.44);
+        put("mid_left", .79);
+        put("mid_right", .38);
         put("center_from_left", 0.59);
         put("center_from_right", 0.55);
-        put("half_left", 0.75);
-        put("half_right", 0.4);
     }};
     public static final double ARM_WAIT_TIME = 0.7;
 
     // Deposit
     public static final HashMap<String, Double> DEPOSITS = new HashMap<String, Double>(){{
-        put("left", 0.17);
-        put("right", 0.95);
+        put("left", 0.25);
+        put("right", 0.8);
         put("center", 0.504);
     }};
 }
