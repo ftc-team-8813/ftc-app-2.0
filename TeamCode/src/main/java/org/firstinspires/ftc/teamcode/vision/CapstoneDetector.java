@@ -44,10 +44,7 @@ public class CapstoneDetector {
         Imgproc.cvtColor(blurred, hls, Imgproc.COLOR_BGR2HLS);
 
         Core.inRange(hls, lower_hls, upper_hls, masked);
-        logger.i("Original Type: %01d", detector_frame.type());
-        logger.i("Masked Type: %01d", masked.type());
         Imgproc.findContours(masked, contours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-        logger.i("Contours Size: %02d", contours.size());
 
         stored_frame = masked;
 

@@ -55,7 +55,8 @@ public class AutonomousTemplate {
     private double timer_delay = 1000; // Set high to not trigger next move
     private boolean waiting_camera = false;
     private boolean waiting = false;
-    public int shipping_height = 3;
+    public int shipping_height = -1;
+    public int x_coord = -1;
 
     static
     {
@@ -70,7 +71,6 @@ public class AutonomousTemplate {
         this.controller_map = controller_map;
         this.control_mgr = new ControlMgr(robot, this.controller_map);
         this.timer = new ElapsedTime();
-        this.camera_timer = new ElapsedTime();
 
         drivetrain = robot.drivetrain;
         odometry = robot.odometry;
@@ -112,8 +112,6 @@ public class AutonomousTemplate {
         if (webcam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + WEBCAM_SERIAL);
         frame_handler = new Webcam.SimpleFrameHandler();
         webcam.open(ImageFormat.YUY2, 800, 448, 30, frame_handler);
-        camera_timer.reset();
-        waiting_camera = true;
     }
 
     public void set_timer(double delay){
@@ -131,20 +129,18 @@ public class AutonomousTemplate {
         }
         Utils.bitmapToMat(frame_handler.currFramebuffer, detector_frame);
         CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
-        int x_coord = capstone_detector.detect();
+        x_coord = capstone_detector.detect();
         send_frame = capstone_detector.stored_frame;
         if (125 < x_coord && x_coord < 300) {
             shipping_height = 1;
-        } else if (300 < x_coord && x_coord < 540) {
+        } else if (300 < x_coord && x_coord < 500) {
             shipping_height = 2;
-        } else if (540 < x_coord && x_coord < 669) {
+        } else if (500 < x_coord && x_coord < 700) {
             shipping_height = 3;
         }
 
         logger.i(String.format("X Coord of Block: %d", x_coord));
         logger.i(String.format("Shipping Height: %d", shipping_height));
-        waiting_camera = false;
-        id += 1;
     }
 
     public int update() {
@@ -157,9 +153,9 @@ public class AutonomousTemplate {
         telemetry.addData("X: ", odo_data[1]);
         telemetry.addData("Heading: ", odo_data[2]);
 
-        telemetry.addData("Timer: ", timer.seconds());
         telemetry.addData("Id: ", id);
-        telemetry.addData("Reached: ", waiting);
+        telemetry.addData("Shipping Height: ", shipping_height);
+        telemetry.addData("X Coord of Block: ", x_coord);
 
         odometry.update();
         lift.updateLift();
@@ -175,7 +171,7 @@ public class AutonomousTemplate {
             timer.reset();
         }
 
-            return id;
+        return id;
     }
 
     public void stop(){
