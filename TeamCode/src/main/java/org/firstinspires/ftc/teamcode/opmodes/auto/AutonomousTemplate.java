@@ -122,9 +122,9 @@ public class AutonomousTemplate {
     }
 
     public void check_image(){
-//        if (detector_frame != null){
-//            return;
-//        }
+        if (shipping_height != -1){
+            return;
+        }
         webcam.requestNewFrame();
         if (!frame_handler.newFrameAvailable) {
             throw new IllegalArgumentException("New frame not available");
@@ -133,11 +133,11 @@ public class AutonomousTemplate {
         CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
         int x_coord = capstone_detector.detect();
         send_frame = capstone_detector.stored_frame;
-        if (145 < x_coord && x_coord < 325) {
+        if (125 < x_coord && x_coord < 300) {
             shipping_height = 1;
-        } else if (325 < x_coord && x_coord < 505) {
+        } else if (300 < x_coord && x_coord < 540) {
             shipping_height = 2;
-        } else if (505 < x_coord && x_coord < 669) {
+        } else if (540 < x_coord && x_coord < 669) {
             shipping_height = 3;
         }
 

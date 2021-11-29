@@ -21,7 +21,7 @@ public class CapstoneDetector {
     public Mat stored_frame;
     public Scalar lower_hls;
     public Scalar upper_hls;
-    public List<MatOfPoint> contours;
+    public ArrayList<MatOfPoint> contours;
 
     public CapstoneDetector(Mat detector_frame, Logger logger){
         this.logger = logger;
@@ -37,13 +37,17 @@ public class CapstoneDetector {
         Mat blurred = new Mat();
         Mat hls = new Mat();
         Mat masked = new Mat();
+        Mat binary = new Mat();
 
         Imgproc.resize(detector_frame, resized, new Size(800, 400));
         Imgproc.blur(resized, blurred, new Size(5, 5));
         Imgproc.cvtColor(blurred, hls, Imgproc.COLOR_BGR2HLS);
 
         Core.inRange(hls, lower_hls, upper_hls, masked);
+        logger.i("Original Type: %01d", detector_frame.type());
+        logger.i("Masked Type: %01d", masked.type());
         Imgproc.findContours(masked, contours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+        logger.i("Contours Size: %02d", contours.size());
 
         stored_frame = masked;
 
@@ -53,6 +57,7 @@ public class CapstoneDetector {
             double area = Imgproc.contourArea(contour);
             areas.add(area);
         }
+
         if (!areas.isEmpty()) {
             double max_area = Collections.max(areas);
             int index = areas.indexOf(max_area);
@@ -62,6 +67,7 @@ public class CapstoneDetector {
 
             return x;
         }
-        return 0;
+
+        return -1;
     }
 }

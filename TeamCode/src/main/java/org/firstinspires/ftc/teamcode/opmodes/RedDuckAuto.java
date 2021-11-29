@@ -41,16 +41,13 @@ public class RedDuckAuto extends LoggingOpMode
 
     @Override
     public void loop() {
+        auto.check_image();
         //robot.intake.intake();
         //robot.duck.spin(+ or - 1);
         // DON'T FORGET BREAKS
         // NEXT CASE SHOULD BE +1
         // REMEMBER TIME BASED FOR ALL BUT LIFT
         switch (id){
-//            case 0:
-//                auto.check_image();
-//                auto.set_timer(2);
-//                break;
             case 0:
                 // Sets powers and moves for set time
                 auto.logger.i("First Move");
