@@ -105,7 +105,7 @@ public class RedWarehouseAuto extends LoggingOpMode
                 auto.set_timer(2);
                 break;
             case 9:
-                robot.drivetrain.teleMove(.37,0,0);
+                robot.drivetrain.teleMove(.35,0,0);
                 robot.intake.intake();
                 auto.set_timer(1.5);
                 break;
@@ -119,14 +119,14 @@ public class RedWarehouseAuto extends LoggingOpMode
                 break;
             case 12:
                 robot.intake.outtake();
-                auto.set_timer(.5);
+                auto.set_timer(.75);
                 break;
             case 13:
                 robot.intake.stop();
                 auto.set_timer(.25);
                 break;
             case 14:
-                robot.drivetrain.teleMove(-0.425,-0.05,0);
+                robot.drivetrain.teleMove(-0.4,0.07,0);
                 auto.set_timer(1.5);
                 break;
             case 15:
@@ -134,7 +134,7 @@ public class RedWarehouseAuto extends LoggingOpMode
                 auto.set_timer(.25);
                 break;
             case 16:
-                robot.drivetrain.teleMove(-0.05,-0.3,0);
+                robot.drivetrain.teleMove(-0.055,-0.3,0);
                 auto.set_timer(2);
                 break;
             case 17:

@@ -48,7 +48,7 @@ public class BlueDuckAuto extends LoggingOpMode
                 auto.set_timer(1.7);
                 break;
             case 2:
-                robot.drivetrain.teleMove(-.01,.23,0);
+                robot.drivetrain.teleMove(-.05,.235,0);
                 auto.set_timer(1);
                 break;
             case 3:
@@ -58,12 +58,12 @@ public class BlueDuckAuto extends LoggingOpMode
                 break;
             case 4:
                 robot.duck.spin(0);
-                robot.drivetrain.teleMove(-0.232,-0.232,0);
-                auto.set_timer(2.5);
+                robot.drivetrain.teleMove(-0.23,-0.23,0);
+                auto.set_timer(2.2);
                 break;
             case 5:
                 robot.drivetrain.teleMove(0,0,0);
-                robot.drivetrain.teleMove(0.05,-0.05,0);
+                robot.drivetrain.teleMove(0.05,0.05,0);
                 auto.set_timer(1);
                 break;
             case 6:

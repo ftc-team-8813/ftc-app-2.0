@@ -47,7 +47,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 auto.set_timer(1.5);
                 break;
             case 1:
-                robot.drivetrain.teleMove(-.17, .3375, 0);
+                robot.drivetrain.teleMove(-.165, .3375, 0);
                 auto.set_timer(1.5);
                 break;
             case 2:
@@ -105,7 +105,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 auto.set_timer(2);
                 break;
             case 9:
-                robot.drivetrain.teleMove(.37,0,0);
+                robot.drivetrain.teleMove(.35,0,0);
                 robot.intake.intake();
                 auto.set_timer(1.5);
                 break;
@@ -126,15 +126,15 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 auto.set_timer(.25);
                 break;
             case 14:
-                robot.drivetrain.teleMove(-0.45,-0.02,0);
-                auto.set_timer(1.5);
+                robot.drivetrain.teleMove(-0.4,-0.07,0);
+                auto.set_timer(1.65);
                 break;
             case 15:
                 robot.drivetrain.teleMove(0,0,0);
                 auto.set_timer(.25);
                 break;
             case 16:
-                robot.drivetrain.teleMove(-0.09,0.31,0);
+                robot.drivetrain.teleMove(-0.04,0.3,0);
                 auto.set_timer(2);
                 break;
             case 17:

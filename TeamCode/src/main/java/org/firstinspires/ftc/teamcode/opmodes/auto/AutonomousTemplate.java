@@ -133,9 +133,9 @@ public class AutonomousTemplate {
         send_frame = capstone_detector.stored_frame;
         if (125 < x_coord && x_coord < 300) {
             shipping_height = 1;
-        } else if (300 < x_coord && x_coord < 500) {
+        } else if (330 < x_coord && x_coord < 530) {
             shipping_height = 2;
-        } else if (500 < x_coord && x_coord < 700) {
+        } else if (530 < x_coord && x_coord < 700) {
             shipping_height = 3;
         }
 
