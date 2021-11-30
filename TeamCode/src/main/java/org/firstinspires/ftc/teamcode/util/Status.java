@@ -25,15 +25,15 @@ public class Status {
     public static final double kI = 0;
     public static final double kD = 0;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
-        put("low", 204.0);
-        put("mid", 353.0);
-        put("high", 718.0);
+        put("low", 200.0);
+        put("mid", 351.0);
+        put("high", 710.0);
     }};
 
     // Arm
     public static final HashMap<String, Double> EXTENSIONS = new HashMap<String, Double>(){{
         put("high_left", .82);
-        put("high_right", 0.34);
+        put("high_right", 0.32);
         put("low_left", 0.76);
         put("low_right", 0.44);
         put("mid_left", .79);
