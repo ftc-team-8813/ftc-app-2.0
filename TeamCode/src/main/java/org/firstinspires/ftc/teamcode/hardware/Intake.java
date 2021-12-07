@@ -8,29 +8,33 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 public class Intake {
-    private final DcMotor intake;
+    private final DcMotor intake_front;
+    private final DcMotor intake_back;
     private final ColorRangeSensor dist;
 
 
-    public Intake(DcMotor intake, ColorRangeSensor dist){
-        this.intake = intake;
+    public Intake(DcMotor intake_front, DcMotor intake_back, ColorRangeSensor dist){
+        this.intake_front = intake_front;
+        this.intake_back = intake_back;
         this.dist = dist;
+        // TODO Make positive one to be intake
     }
 
 
-    public void intake(){
-        intake.setPower(1);
+    public void setIntakeFront(double power){
+        intake_front.setPower(power);
     }
 
-    public void outtake(){
-        intake.setPower(-1);
+    public void setIntakeBack(double power){
+        intake_back.setPower(power);
     }
 
     public void stop(){
-        intake.setPower(0);
+        intake_front.setPower(0);
+        intake_back.setPower(0);
     }
 
-    public double getDistance() {
-        return dist.getDistance(DistanceUnit.MM);
+    public boolean freightDetected() {
+        return dist.getDistance(DistanceUnit.MM) > Status.FREIGHT_DETECTION;
     }
 }

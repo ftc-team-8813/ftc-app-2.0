@@ -34,7 +34,6 @@ public class RedWarehouseAuto extends LoggingOpMode
 
     @Override
     public void start() {
-        robot.odometry.resetEncoders();
         auto.timer.reset();
     }
 
@@ -42,137 +41,7 @@ public class RedWarehouseAuto extends LoggingOpMode
     public void loop() {
         auto.check_image();
         switch (id){
-            case 0:
-                robot.drivetrain.teleMove(0,0,0);
-                auto.set_timer(1.5); // Lower if possible
-                break;
-            case 1:
-                robot.drivetrain.teleMove(-.18, -.355, 0);
-                auto.set_timer(1.5);
-                break;
-            case 2:
-                robot.drivetrain.teleMove(0,0,0);
-                    switch (auto.shipping_height) {
-                        case 1:
-                            robot.lift.raise(Status.STAGES.get("low"));
-                            break;
-                        case 2:
-                            robot.lift.raise(Status.STAGES.get("mid"));
-                            break;
-                        case 3:
-                            robot.lift.raise(Status.STAGES.get("high"));
-                            break;
-                        case -1:
-                            robot.lift.raise(Status.STAGES.get("high")); // Incase no image detected
-                            break;
-                }
-                break;
-            case 3:
-                switch (auto.shipping_height) {
-                    case 1:
-                        robot.lift.extend(Status.EXTENSIONS.get("low_left"));
-                        break;
-                    case 2:
-                        robot.lift.extend(Status.EXTENSIONS.get("mid_left"));
-                        break;
-                    case 3:
-                        robot.lift.extend(Status.EXTENSIONS.get("high_left"));
-                        break;
-                    case -1:
-                        robot.lift.extend((Status.EXTENSIONS.get("high_left")));
-                        break;
-                }
-                auto.set_timer(1.5);
-                break;
-            case 4:
-                robot.lift.deposit(Status.DEPOSITS.get("left"));
-                auto.set_timer(.5);
-                break;
-            case 5:
-                robot.lift.extend(Status.EXTENSIONS.get("center_from_left"));
-                auto.set_timer(2.5);
-                break;
-            case 6:
-                robot.lift.deposit(Status.DEPOSITS.get("center"));
-                auto.set_timer(.5);
-                break;
-            case 7:
-                robot.lift.raise(0);
-                auto.set_timer(1);
-                break;
-            case 8:
-                robot.drivetrain.teleMove(.22, .36, 0);
-                auto.set_timer(2);
-                break;
-            case 9:
-                robot.drivetrain.teleMove(.35,0,0);
-                robot.intake.intake();
-                auto.set_timer(1.5);
-                break;
-            case 10:
-                robot.drivetrain.teleMove(0,0,0);
-                auto.set_timer(1);
-                break;
-            case 11:
-                robot.intake.stop();
-                auto.set_timer(.25);
-                break;
-            case 12:
-                robot.intake.outtake();
-                auto.set_timer(.75);
-                break;
-            case 13:
-                robot.intake.stop();
-                auto.set_timer(.25);
-                break;
-            case 14:
-                robot.drivetrain.teleMove(-0.4,0.07,0);
-                auto.set_timer(1.5);
-                break;
-            case 15:
-                robot.drivetrain.teleMove(0,0,0);
-                auto.set_timer(.25);
-                break;
-            case 16:
-                robot.drivetrain.teleMove(-0.055,-0.3,0);
-                auto.set_timer(2);
-                break;
-            case 17:
-                robot.drivetrain.teleMove(0,0,0);
-                robot.lift.raise(Status.STAGES.get("high"));
-                break;
-            case 18:
-                robot.lift.extend(Status.EXTENSIONS.get("high_left"));
-                auto.set_timer(1.5);
-                break;
-            case 19:
-                robot.lift.deposit(Status.DEPOSITS.get("left"));
-                auto.set_timer(.5);
-                break;
-            case 20:
-                robot.lift.extend(Status.EXTENSIONS.get("center_from_left"));
-                auto.set_timer(2.5);
-                break;
-            case 21:
-                robot.lift.deposit(Status.DEPOSITS.get("center"));
-                auto.set_timer(.5);
-                break;
-            case 22:
-                robot.lift.raise(0);
-                auto.set_timer(1);
-                break;
-            case 23:
-                robot.drivetrain.teleMove(.15, .36, 0);
-                auto.set_timer(2);
-                break;
-            case 24:
-                robot.drivetrain.teleMove(.35,0,0);
-                auto.set_timer(2);
-                break;
-            case 25:
-                robot.drivetrain.teleMove(0,0,0);
-                auto.set_timer(.5);
-                break;
+
         }
 
         id = auto.update();

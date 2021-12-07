@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 
@@ -15,7 +14,6 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.ServerControl;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
@@ -104,7 +102,6 @@ public class AutonomousTemplate {
     public void init_odometry(double y, double x, double heading){
         odometry.setStartPosition(y, x, heading);
         drivetrain.setStart(y, x, heading); // Must match Odo start position
-        odometry.podsDown();
     }
 
     public void init_camera(){
@@ -161,7 +158,7 @@ public class AutonomousTemplate {
         lift.updateLift();
         telemetry.update();
 
-        if (lift.ifLifted()){
+        if (lift.ifReached(lift.getTargetLiftPos())){
             logger.i("Reached Lift: %d", id);
             id += 1;
         } else if (timer.seconds() > timer_delay){

@@ -9,7 +9,6 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
 public class DriveControl extends ControlModule{
     private Drivetrain drivetrain;
-    private Odometry odometry;
     private Lift lift;
 
     private double turn_scalar;
@@ -29,7 +28,6 @@ public class DriveControl extends ControlModule{
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.drivetrain = robot.drivetrain;
-        this.odometry = robot.odometry;
         this.lift = robot.lift;
 
         ax_drive_left_x = controllerMap.getAxisMap("drive:left_x", "gamepad1", "left_stick_x");

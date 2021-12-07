@@ -7,11 +7,11 @@ import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 public class Drivetrain {
-    private final Odometry odometry;
     private final DcMotor front_left;
     private final DcMotor front_right;
     private final DcMotor back_left;
     private final DcMotor back_right;
+    private final Odometry odometry;
 
     private double target_y = 0;
     private double target_x = 0;
@@ -30,12 +30,12 @@ public class Drivetrain {
     public boolean reached = true;
     public boolean turned = true;
 
-    public Drivetrain(Odometry odometry, DcMotor front_left, DcMotor front_right, DcMotor back_left, DcMotor back_right){
-        this.odometry = odometry;
+    public Drivetrain(DcMotor front_left, DcMotor front_right, DcMotor back_left, DcMotor back_right, Odometry odometry){
         this.front_left = front_left;
         this.front_right = front_right;
         this.back_left = back_left;
         this.back_right = back_right;
+        this.odometry = odometry;
 
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);

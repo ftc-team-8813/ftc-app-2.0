@@ -47,14 +47,11 @@ public class CurrentTele extends LoggingOpMode
         // Controller Modules
 //        controlMgr.addModule(new ServerControl("Server Control"));
         controlMgr.addModule(new DriveControl("Drive Control"));
-        controlMgr.addModule(new OdometryControl("Odometry Control"));
         controlMgr.addModule(new IntakeControl("Intake Control"));
         controlMgr.addModule(new LiftControl("FourBar Control"));
         controlMgr.addModule(new DuckControl("Duck Control"));
         
         controlMgr.initModules();
-
-        robot.odometry.podsUp();
     }
     
     @Override

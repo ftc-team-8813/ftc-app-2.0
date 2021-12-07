@@ -11,12 +11,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.util.Status;
 
+@Deprecated
 public class Odometry {
     private final DcMotor l_enc;
     private final DcMotor r_enc;
     private final DcMotor s_enc;
-    private final ServoImplEx left_drop;
-    private final ServoImplEx right_drop;
     private BNO055IMU imu;
 
     private double y;
@@ -28,12 +27,10 @@ public class Odometry {
     private double past_r;
     private double past_s;
 
-    public Odometry(DcMotor l_enc, DcMotor r_enc, DcMotor s_enc, ServoImplEx left_drop, ServoImplEx right_drop, BNO055IMU imu){
+    public Odometry(DcMotor l_enc, DcMotor r_enc, DcMotor s_enc, BNO055IMU imu){
         this.l_enc = l_enc;
         this.r_enc = r_enc;
         this.s_enc = s_enc;
-        this.left_drop = left_drop;
-        this.right_drop = right_drop;
         this.y = 0.0;
         this.x = 0.0;
         this.heading = 0.0;
@@ -65,28 +62,6 @@ public class Odometry {
         this.l_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.r_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.s_enc.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-    }
-
-    public void podsUp(){
-        left_drop.setPosition(Status.UP_POS_LEFT);
-        right_drop.setPosition(Status.UP_POS_RIGHT);
-    }
-
-    public void podsDown(){
-        left_drop.setPosition(Status.DOWN_POS_LEFT);
-        right_drop.setPosition(Status.DOWN_POS_RIGHT);
-    }
-
-    public void deltaPositionLeft(double position){
-        left_drop.setPosition(left_drop.getPosition() + position);
-    }
-
-    public void deltaPositionRight(double position){
-        right_drop.setPosition(right_drop.getPosition() + position);
-    }
-
-    public double[] getServoDropPositions(){
-        return new double[]{left_drop.getPosition(), right_drop.getPosition()};
     }
 
     public void setStartPosition(double y, double x, double heading_offset){

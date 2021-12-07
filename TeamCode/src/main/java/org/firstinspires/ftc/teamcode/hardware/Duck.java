@@ -1,11 +1,11 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
-import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 public class Duck {
-    private CRServo spinner;
+    private DcMotor spinner;
 
-    public Duck(CRServo spinner){
+    public Duck(DcMotor spinner){
         this.spinner = spinner;
     }
 

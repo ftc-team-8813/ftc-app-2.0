@@ -1,22 +1,15 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
-import android.text.method.Touch;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.util.Status;
 
 public class Lift {
     private final DcMotor lift;
-    private final Servo dropper;
     private final Servo arm;
-    private final TouchSensor limit;
+    private final Servo bucket;
 
-    private int bottom = 0;
-    private int height_preset = 0;
-    private int extension = 0;
     private boolean lift_reached = true;
 
     private double target_pos;
@@ -27,65 +20,38 @@ public class Lift {
     private double d_term;
 
 
-    public Lift(DcMotor lift, Servo arm, Servo dropper, TouchSensor limit){
+    public Lift(DcMotor lift, Servo arm, Servo bucket){
         this.lift = lift; // Encoder and motor on same port
         this.lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.arm = arm;
-        this.dropper = dropper;
-        this.limit = limit;
+        this.bucket = bucket;
     }
 
-
-    public double getCurrentLiftPos(){ return lift.getCurrentPosition(); }
-
-    public double getTargetLiftPos(){
-        return target_pos;
+    public void extend(double target_ticks, boolean tracking){
+        if (0 <= target_ticks && target_ticks <= Status.UPPER_LIMIT){
+            target_pos = target_ticks;
+            lift_reached = tracking;
+        }
     }
 
-    public double getCurrentArmPos(){
-        return arm.getPosition();
+    public void rotate(double target_pos){
+        arm.setPosition(target_pos);
     }
 
-    public double getCurrentDropperPos(){
-        return dropper.getPosition();
+    public void deposit(double target_pos){
+        bucket.setPosition(target_pos);
     }
 
-    public double getPower(){
-        return lift.getPower();
-    }
-
-    public double[] getPIDTerms(){
-        return new double[]{p_term, i_term, d_term};
-    }
-
-    public boolean ifLifted(){
-        double min = target_pos - 30;
-        double max = target_pos + 30;
-        if (!lift_reached && min <= target_pos && target_pos <= max){
+    public boolean ifReached(double check_pos){
+        double min = check_pos - 30;
+        double max = check_pos + 30;
+        if (!lift_reached && min <= getCurrentLiftPos() && getCurrentLiftPos() <= max){
             lift_reached = true;
             return true;
         }
         return false;
     }
-
-    public void raise(double target_ticks){
-        if (0 <= target_ticks && target_ticks <= Status.UPPER_LIMIT){
-            target_pos = target_ticks;
-            lift_reached = false;
-        }
-    }
-
-    public void extend(double target_pos){
-        if (getCurrentLiftPos() > 10){
-            arm.setPosition(target_pos);
-        }
-    }
-
-    public void deposit(double target_pos){
-        dropper.setPosition(target_pos);
-    }
-
 
     public void updateLift(){
         double curr_pos = lift.getCurrentPosition();
@@ -109,7 +75,22 @@ public class Lift {
         past_error = error;
     }
 
-    public double[] getStates(){
-        return new double[]{bottom, height_preset, extension};
+    public double getCurrentLiftPos(){
+        return lift.getCurrentPosition();
+    }
+    public double getTargetLiftPos(){
+        return target_pos;
+    }
+    public double getCurrentArmPos(){
+        return arm.getPosition();
+    }
+    public double getCurrentDropperPos(){
+        return bucket.getPosition();
+    }
+    public double getPower(){
+        return lift.getPower();
+    }
+    public double[] getPIDTerms(){
+        return new double[]{p_term, i_term, d_term};
     }
 }
