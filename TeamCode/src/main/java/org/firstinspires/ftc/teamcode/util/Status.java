@@ -14,15 +14,15 @@ public class Status {
     public static final double TURN_KI = 0.0004;
 
     // Intake
-    public static final double FREIGHT_DETECTION = 0.0;
+    public static final double FREIGHT_DETECTION = 5.0;
 
     // Lift
-    public static final double SENSITIVITY = 1;
+    public static final double SENSITIVITY = 100;
     public static final double ROTATABLE_THRESHOLD = 0;
-    public static final double UPPER_LIMIT = 754;
+    public static final double UPPER_LIMIT = 100000;
     public static final double RAISE_SPEED = 1;
     public static final double LOWER_SPEED = 0.1;
-    public static final double kP = 0.008;
+    public static final double kP = 0.003;
     public static final double kI = 0;
     public static final double kD = 0;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{

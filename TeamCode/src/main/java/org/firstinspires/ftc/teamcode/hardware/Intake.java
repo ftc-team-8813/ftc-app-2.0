@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -10,10 +12,10 @@ import org.firstinspires.ftc.teamcode.util.Status;
 public class Intake {
     private final DcMotor intake_front;
     private final DcMotor intake_back;
-    private final ColorRangeSensor dist;
+    private final DistanceSensor dist;
 
 
-    public Intake(DcMotor intake_front, DcMotor intake_back, ColorRangeSensor dist){
+    public Intake(DcMotor intake_front, DcMotor intake_back, DistanceSensor dist){
         this.intake_front = intake_front;
         this.intake_back = intake_back;
         this.dist = dist;
@@ -35,6 +37,6 @@ public class Intake {
     }
 
     public boolean freightDetected() {
-        return dist.getDistance(DistanceUnit.MM) > Status.FREIGHT_DETECTION;
+        return dist.getDistance(DistanceUnit.CM) < Status.FREIGHT_DETECTION;
     }
 }

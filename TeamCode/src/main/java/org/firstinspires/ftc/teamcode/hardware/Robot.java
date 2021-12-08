@@ -1,18 +1,13 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
-import android.text.method.Touch;
-
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 
-import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -21,7 +16,6 @@ public class Robot
 {
     // Hardware Vars
     public Drivetrain drivetrain;
-    public Odometry odometry;
     public Intake intake;
     public Lift lift;
     public Duck duck;
@@ -70,11 +64,10 @@ public class Robot
 
         // Sensors
         BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
-        ColorRangeSensor freight_checker = hardwareMap.get(ColorRangeSensor.class, "freight checker");
+        DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");
 
         // Sub-Assemblies
-        this.odometry = new Odometry(front_left, front_right, back_left, imu);
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, this.odometry);
+        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
         this.intake = new Intake(intake_front, intake_back, freight_checker);
         this.lift = new Lift(lift, arm, bucket);
         this.duck = new Duck(duck);

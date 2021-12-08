@@ -36,7 +36,6 @@ public class AutonomousTest extends LoggingOpMode
 
     @Override
     public void start() {
-        robot.odometry.resetEncoders();
     }
 
     @Override

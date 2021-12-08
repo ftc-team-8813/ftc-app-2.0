@@ -31,8 +31,6 @@ public class OdoCalibration extends LoggingOpMode {
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-
-        robot.odometry.podsDown();
     }
 
     @Override
@@ -40,7 +38,7 @@ public class OdoCalibration extends LoggingOpMode {
         Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double yaw = angles.firstAngle;
 
-        double[] odo_data = robot.odometry.getCurrentPositions();
+        double[] odo_data = new double[]{0.0, 0.0, 0.0};
         double l_enc = odo_data[0];
         double r_enc = odo_data[1];
         double average = (l_enc - r_enc) / 2;

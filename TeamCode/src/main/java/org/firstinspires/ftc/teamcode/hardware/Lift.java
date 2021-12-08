@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.Status;
@@ -21,9 +22,11 @@ public class Lift {
 
 
     public Lift(DcMotor lift, Servo arm, Servo bucket){
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lift.setDirection(DcMotorSimple.Direction.REVERSE);
+
         this.lift = lift; // Encoder and motor on same port
-        this.lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        this.lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.arm = arm;
         this.bucket = bucket;
     }
@@ -54,7 +57,7 @@ public class Lift {
     }
 
     public void updateLift(){
-        double curr_pos = lift.getCurrentPosition();
+        double curr_pos = getCurrentLiftPos();
         double error = target_pos - curr_pos;
 
         p_term = error * Status.kP;

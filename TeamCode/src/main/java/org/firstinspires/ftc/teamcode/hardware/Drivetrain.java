@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 public class Drivetrain {
@@ -11,7 +10,6 @@ public class Drivetrain {
     private final DcMotor front_right;
     private final DcMotor back_left;
     private final DcMotor back_right;
-    private final Odometry odometry;
 
     private double target_y = 0;
     private double target_x = 0;
@@ -30,12 +28,11 @@ public class Drivetrain {
     public boolean reached = true;
     public boolean turned = true;
 
-    public Drivetrain(DcMotor front_left, DcMotor front_right, DcMotor back_left, DcMotor back_right, Odometry odometry){
+    public Drivetrain(DcMotor front_left, DcMotor front_right, DcMotor back_left, DcMotor back_right){
         this.front_left = front_left;
         this.front_right = front_right;
         this.back_left = back_left;
         this.back_right = back_right;
-        this.odometry = odometry;
 
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -49,10 +46,10 @@ public class Drivetrain {
 
     public void teleMove(double forward, double strafe, double turn){
         // Reversed because of bevel gears
-        front_left.setPower(-1 * (forward + strafe + turn));
-        front_right.setPower(-1 * (forward - strafe - turn));
-        back_left.setPower(-1 * (forward - strafe + turn));
-        back_right.setPower(-1 * (forward + strafe - turn));
+        front_left.setPower(forward - strafe + turn);
+        front_right.setPower(forward - strafe - turn);
+        back_left.setPower(forward + strafe + turn);
+        back_right.setPower(forward + strafe - turn);
     }
 
     public void stop(){
@@ -85,7 +82,7 @@ public class Drivetrain {
     }
 
     public void update(){
-        double[] odo_data = odometry.getOdoData();
+        double[] odo_data = new double[]{0.0, 0.0, 0.0};
         double heading = odo_data[2];
         delta_y = odo_data[0] - target_y; // Flipped to change power direction
         delta_x = target_x - odo_data[1];

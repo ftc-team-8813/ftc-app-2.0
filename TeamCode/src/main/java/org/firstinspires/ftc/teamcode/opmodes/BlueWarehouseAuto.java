@@ -34,7 +34,6 @@ public class BlueWarehouseAuto extends LoggingOpMode
 
     @Override
     public void start() {
-        robot.odometry.resetEncoders();
         auto.timer.reset();
     }
 

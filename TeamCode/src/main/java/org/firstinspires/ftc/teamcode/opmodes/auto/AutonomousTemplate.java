@@ -11,7 +11,6 @@ import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Duck;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.util.Logger;
@@ -32,7 +31,6 @@ public class AutonomousTemplate {
     private Robot robot;
     private Server server;
     private Drivetrain drivetrain;
-    private Odometry odometry;
     private Duck duck;
     private Lift lift;
 
@@ -71,7 +69,6 @@ public class AutonomousTemplate {
         this.timer = new ElapsedTime();
 
         drivetrain = robot.drivetrain;
-        odometry = robot.odometry;
         duck = robot.duck;
         lift = robot.lift;
     }
@@ -100,7 +97,6 @@ public class AutonomousTemplate {
     }
 
     public void init_odometry(double y, double x, double heading){
-        odometry.setStartPosition(y, x, heading);
         drivetrain.setStart(y, x, heading); // Must match Odo start position
     }
 
@@ -145,16 +141,10 @@ public class AutonomousTemplate {
             timer.reset();
         }
 
-        double[] odo_data = odometry.getOdoData();
-        telemetry.addData("Y: ", odo_data[0]);
-        telemetry.addData("X: ", odo_data[1]);
-        telemetry.addData("Heading: ", odo_data[2]);
-
         telemetry.addData("Id: ", id);
         telemetry.addData("Shipping Height: ", shipping_height);
         telemetry.addData("X Coord of Block: ", x_coord);
 
-        odometry.update();
         lift.updateLift();
         telemetry.update();
 
