@@ -36,12 +36,6 @@ public class ServerControl extends ControlModule{
             buf.putDouble(pid_terms[1]); // I Term
             buf.putDouble(pid_terms[2]); // D Term
 
-            double[] delta_poses = robot.drivetrain.getPositionDeltas();
-            buf.putDouble(delta_poses[0]);
-            buf.putDouble(delta_poses[1]);
-            buf.putDouble(delta_poses[2]);
-
-
             buf.flip();
             resp.respond(buf);
         });

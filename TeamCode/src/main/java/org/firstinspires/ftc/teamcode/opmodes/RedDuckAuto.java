@@ -38,7 +38,20 @@ public class RedDuckAuto extends LoggingOpMode
     @Override
     public void loop() {
         switch (id){
-
+            case 0:
+                auto.check_image();
+                auto.set_timer(2);
+                break;
+            case 1:
+                robot.lift.extend(Status.STAGES.get("low"), true);
+                break;
+            case 2:
+                robot.lift.rotate(Status.EXTENSIONS.get("out"));
+                auto.set_timer(0.5);
+                break;
+            case 3:
+                robot.lift.extend(Status.STAGES.get("high"), true);
+                break;
         }
 
         id = auto.update();

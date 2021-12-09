@@ -14,32 +14,35 @@ public class Status {
     public static final double TURN_KI = 0.0004;
 
     // Intake
-    public static final double FREIGHT_DETECTION = 5.0;
+    public static final double FREIGHT_DETECTION = 10.0;
 
     // Lift
     public static final double SENSITIVITY = 100;
-    public static final double ROTATABLE_THRESHOLD = 0;
+    public static final double ROTATABLE_OUT_THRESHOLD = 10000;
+    public static final double ROTATABLE_IN_THRESHOLD = 30000;
+    public static final double RETRACT_POWER_THRESHOLD = 1000;
     public static final double UPPER_LIMIT = 100000;
-    public static final double RAISE_SPEED = 1;
-    public static final double LOWER_SPEED = 0.1;
-    public static final double kP = 0.003;
+    public static final double MAX_SPEED = 0.1;
+    public static final double RETRACT_SPEED = 0.3;
+    public static final double kP = 0.0005;
     public static final double kI = 0;
     public static final double kD = 0;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
-        put("low", 200.0);
-        put("mid", 351.0);
-        put("high", 710.0);
+        put("neutral", 21577.0);
+        put("high", 40000.0);
     }};
 
     // Arm
     public static final HashMap<String, Double> EXTENSIONS = new HashMap<String, Double>(){{
-        put("out", 0.0); // Only extends one side so no need for left/right/mid
-        put("in", 0.0);
+        put("out", 0.45); // Only extends one side so no need for left/right/mid
+        put("in", 0.79);
     }};
 
     // Deposit
     public static final HashMap<String, Double> DEPOSITS = new HashMap<String, Double>(){{
-        put("out", 0.0); // Only extends one side so no need for left/right/mid
-        put("in", 0.0);
+        put("dump", 0.03); // Only extends one side so no need for left/right/mid
+        put("carry", 0.7);
+        put("front", 0.33);
+        put("back", 0.98);
     }};
 }

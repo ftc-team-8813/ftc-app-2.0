@@ -9,7 +9,6 @@ import org.firstinspires.ftc.teamcode.util.Status;
 public class Lift {
     private final DcMotor lift;
     private final Servo arm;
-    private final Servo bucket;
 
     private boolean lift_reached = true;
 
@@ -21,29 +20,24 @@ public class Lift {
     private double d_term;
 
 
-    public Lift(DcMotor lift, Servo arm, Servo bucket){
+    public Lift(DcMotor lift, Servo arm){
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lift.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.lift = lift; // Encoder and motor on same port
         this.arm = arm;
-        this.bucket = bucket;
     }
 
     public void extend(double target_ticks, boolean tracking){
         if (0 <= target_ticks && target_ticks <= Status.UPPER_LIMIT){
             target_pos = target_ticks;
-            lift_reached = tracking;
+            lift_reached = !tracking;
         }
     }
 
     public void rotate(double target_pos){
         arm.setPosition(target_pos);
-    }
-
-    public void deposit(double target_pos){
-        bucket.setPosition(target_pos);
     }
 
     public boolean ifReached(double check_pos){
@@ -69,12 +63,12 @@ public class Lift {
         d_term = derivative * Status.kD;
 
         double power = p_term + i_term + d_term;
-        if (power < 0){
-            power *= Status.LOWER_SPEED;
+
+        if (curr_pos < Status.RETRACT_POWER_THRESHOLD){
+            lift.setPower(power * Status.RETRACT_SPEED);
         } else {
-            power *= Status.RAISE_SPEED;
+            lift.setPower(power * Status.MAX_SPEED);
         }
-        lift.setPower(power);
         past_error = error;
     }
 
@@ -86,9 +80,6 @@ public class Lift {
     }
     public double getCurrentArmPos(){
         return arm.getPosition();
-    }
-    public double getCurrentDropperPos(){
-        return bucket.getPosition();
     }
     public double getPower(){
         return lift.getPower();

@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
+import org.firstinspires.ftc.teamcode.vision.ImageDraw;
 
 public class Robot
 {
@@ -68,8 +69,8 @@ public class Robot
 
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
-        this.intake = new Intake(intake_front, intake_back, freight_checker);
-        this.lift = new Lift(lift, arm, bucket);
+        this.intake = new Intake(intake_front, intake_back, freight_checker, bucket);
+        this.lift = new Lift(lift, arm);
         this.duck = new Duck(duck);
     }
 }
