@@ -45,10 +45,10 @@ public class Drivetrain {
     }
 
     public void teleMove(double forward, double strafe, double turn){
-        // Reversed because of bevel gears
-        front_left.setPower(forward - strafe + turn);
+        // Slowing right side to keep forward moving straight
+        front_left.setPower((forward - strafe + turn) * 0.87);
         front_right.setPower(forward - strafe - turn);
-        back_left.setPower(forward + strafe + turn);
+        back_left.setPower((forward + strafe + turn) * 0.87);
         back_right.setPower(forward + strafe - turn);
     }
 
