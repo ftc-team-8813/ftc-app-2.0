@@ -12,34 +12,33 @@ public class Status {
     public static final double TURN_KI = 0.0004;
 
     // Intake
-    public static final double FREIGHT_DETECTION = 10.0;
+    public static final double FREIGHT_DETECTION = 2.6;
 
     // Lift
     public static final double SENSITIVITY = 1000;
-    public static final double ROTATABLE_OUT_THRESHOLD = 10000;
-    public static final double ROTATABLE_IN_THRESHOLD = 30000;
+    public static final double ROTATABLE_THRESHOLD = 30000;
     public static final double RETRACT_POWER_THRESHOLD = 7500;
     public static final double UPPER_LIMIT = 100000;
-    public static final double MAX_SPEED = 0.1;
-    public static final double RETRACT_SPEED = 0.4;
-    public static final double kP = 0.0005;
+    public static final double MAX_SPEED = 0.35;
+    public static final double RETRACT_SPEED = 0.6;
+    public static final double kP = 0.0017;
     public static final double kI = 0;
     public static final double kD = 0;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
         put("neutral", 21577.0);
-        put("high", 40000.0);
+        put("high", 42000.0);
     }};
 
     // Arm
     public static final HashMap<String, Double> EXTENSIONS = new HashMap<String, Double>(){{
         put("out", 0.45); // Only extends one side so no need for left/right/mid
-        put("in", 0.79);
+        put("in", 0.8);
     }};
 
     // Deposit
     public static final HashMap<String, Double> DEPOSITS = new HashMap<String, Double>(){{
         put("dump", 0.03); // Only extends one side so no need for left/right/mid
-        put("carry", 0.7);
+        put("carry", 0.65);
         put("front", 0.33);
         put("back", 0.98);
     }};

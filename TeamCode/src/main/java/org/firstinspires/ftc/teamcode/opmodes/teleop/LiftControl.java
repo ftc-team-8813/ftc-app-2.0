@@ -16,6 +16,7 @@ public class LiftControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_y;
     private ControllerMap.ButtonEntry btn_x;
     private ControllerMap.ButtonEntry btn_dpad_down;
+    private ElapsedTime timer;
 
 
     public LiftControl(String name){super(name);}
@@ -23,6 +24,7 @@ public class LiftControl extends ControlModule{
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.lift = robot.lift;
+        timer = new ElapsedTime();
 
         ax_right_stick_y = controllerMap.getAxisMap("lift:adjust", "gamepad2", "right_stick_y");
         btn_y = controllerMap.getButtonMap("lift:extend_high", "gamepad2", "y");
@@ -36,9 +38,9 @@ public class LiftControl extends ControlModule{
 
         lift.extend(lift.getTargetLiftPos() + delta_extension, false);
 
-        if (lift.getPower() > 0 && lift.getCurrentLiftPos() > Status.ROTATABLE_OUT_THRESHOLD){
+        if (lift.getPower() > 0.1 && lift.getCurrentLiftPos() > Status.ROTATABLE_THRESHOLD){
             lift.rotate(Status.EXTENSIONS.get("out"));
-        } else if (lift.getPower() < 0 && lift.getCurrentLiftPos() < Status.ROTATABLE_IN_THRESHOLD){
+        } else if (lift.getPower() < 0.1 && lift.getCurrentLiftPos() < Status.ROTATABLE_THRESHOLD){
             lift.rotate(Status.EXTENSIONS.get("in"));
         }
 

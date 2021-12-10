@@ -15,7 +15,7 @@ public class IntakeControl extends ControlModule {
     private ControllerMap.ButtonEntry btn_right_bumper;
 
     private double direction = 1; // 1 = Intake, -1 Outtake
-    private double side; // 1 = Front, 0 = Center, -1 = Back, 2 = Dump
+    private double side = 3; // 1 = Front, 0 = Center, -1 = Back, 2 = Dump
 
 
     public IntakeControl(String name) {
@@ -41,18 +41,23 @@ public class IntakeControl extends ControlModule {
             side = 0;
         } else  {
             direction = 1;
+            side = 3;
         }
 
         if (ax_intake_front.get() > 0.5){
             intake.setIntakeFront(direction);
-            side = 1;
+            if (side != 0) {
+                side = 1;
+            }
         } else {
             intake.setIntakeFront(0);
         }
 
         if (ax_intake_back.get() > 0.5){
             intake.setIntakeBack(direction);
-            side = -1;
+            if (side != 0) {
+                side = -1;
+            }
         } else {
             intake.setIntakeBack(0);
         }
