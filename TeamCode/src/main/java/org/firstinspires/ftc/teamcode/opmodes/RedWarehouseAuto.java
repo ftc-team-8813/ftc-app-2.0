@@ -39,9 +39,150 @@ public class RedWarehouseAuto extends LoggingOpMode
 
     @Override
     public void loop() {
-        auto.check_image();
         switch (id){
-
+            case 0:
+                auto.check_image();
+                auto.set_timer(1.5);
+                break;
+            case 1:
+                robot.drivetrain.teleMove(.38,0,0);
+                auto.set_timer(1);
+                break;
+            case 2:
+                robot.drivetrain.teleMove(0,0,0);
+                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+                break;
+            case 3:
+                robot.lift.rotate(Status.EXTENSIONS.get("out"));
+                auto.set_timer(1);
+                break;
+            case 4:
+                switch(auto.shipping_height){
+                    case 1:
+                        robot.lift.extend(Status.STAGES.get("low"), true);
+                        auto.set_timer(2);
+                        break;
+                    case 2:
+                        robot.lift.extend(Status.STAGES.get("mid"), true);
+                        auto.set_timer(2);
+                        break;
+                    case 3:
+                        robot.lift.extend(Status.STAGES.get("high"), true);
+                        auto.set_timer(2);
+                        break;
+                    case 0:
+                        robot.lift.extend(Status.STAGES.get("high"), true);
+                        auto.set_timer(2);
+                        break;
+                }
+                break;
+            case 5:
+                robot.intake.deposit(Status.DEPOSITS.get("dump"));
+                auto.set_timer(2);
+                break;
+            case 6:
+                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+                break;
+            case 7:
+                robot.intake.deposit(Status.DEPOSITS.get("carry"));
+                auto.set_timer(.5);
+                break;
+            case 8:
+                robot.lift.rotate(Status.EXTENSIONS.get("in"));
+                auto.set_timer(1);
+                break;
+            case 9:
+                robot.lift.extend(0, true);
+                break;
+            case 10:
+                robot.intake.deposit(Status.DEPOSITS.get("back"));
+                robot.drivetrain.teleMove(0,0,0);
+                auto.set_timer(.5);
+                break;
+            case 11:
+                robot.intake.setIntakeBack(1);
+                robot.drivetrain.teleMove(-.5,0,0);
+                auto.set_timer(1.5);
+                break;
+            case 12:
+                robot.drivetrain.teleMove(-.25,0,0);
+                auto.set_timer(2);
+                break;
+            case 13:
+                robot.intake.deposit(Status.DEPOSITS.get("carry"));
+                auto.set_timer(.5);
+                break;
+            case 14:
+                robot.intake.stop();
+                robot.drivetrain.teleMove(0,0,0);
+                auto.set_timer(.25);
+            case 15:
+                robot.intake.setIntakeBack(-1);
+                robot.drivetrain.teleMove(.45,0,0);
+                auto.set_timer(3);
+                break;
+            case 16:
+                robot.intake.stop();
+                robot.drivetrain.teleMove(0,0,0);
+                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+                break;
+            case 17:
+                robot.lift.rotate(Status.EXTENSIONS.get("out"));
+                auto.set_timer(1);
+                break;
+            case 18:
+                robot.lift.extend(Status.STAGES.get("high"), true);
+                auto.set_timer(1);
+                break;
+            case 19:
+                robot.intake.deposit(Status.DEPOSITS.get("dump"));
+                auto.set_timer(.75);
+                break;
+            case 20:
+                robot.intake.deposit(Status.DEPOSITS.get("carry"));
+                auto.set_timer(.5);
+                break;
+            case 21:
+                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+                break;
+            case 22:
+                robot.lift.rotate(Status.EXTENSIONS.get("in"));
+                auto.set_timer(1.5);
+                break;
+            case 23:
+                robot.lift.extend(0, true);
+                break;
+            case 24:
+                robot.intake.deposit(Status.DEPOSITS.get("back"));
+                robot.drivetrain.teleMove(0,0,0);
+                auto.set_timer(.5);
+                break;
+            case 25:
+                robot.intake.setIntakeBack(1);
+                robot.drivetrain.teleMove(-.5,0,0);
+                auto.set_timer(1.5);
+                break;
+            case 26:
+                robot.drivetrain.teleMove(-.25,0,0);
+                auto.set_timer(2);
+                break;
+            case 27:
+                robot.intake.deposit(Status.DEPOSITS.get("carry"));
+                auto.set_timer(.5);
+                break;
+            case 28:
+                robot.intake.stop();
+                robot.drivetrain.teleMove(0,0,0);
+                auto.set_timer(.25);
+            case 29:
+                robot.intake.setIntakeBack(-1);
+                robot.drivetrain.teleMove(.45,0,0);
+                auto.set_timer(3);
+                break;
+            case 30:
+                robot.intake.stop();
+                robot.drivetrain.teleMove(0,0,0);
+                break;
         }
 
         id = auto.update();
@@ -52,3 +193,4 @@ public class RedWarehouseAuto extends LoggingOpMode
         auto.stop();
     }
 }
+
