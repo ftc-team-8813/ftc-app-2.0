@@ -32,7 +32,9 @@ public class Lift {
     public void extend(double target_ticks, boolean tracking){
         if (0 <= target_ticks && target_ticks <= Status.UPPER_LIMIT){
             target_pos = target_ticks;
-            lift_reached = !tracking;
+            if (tracking){
+                lift_reached = false;
+            }
         }
     }
 

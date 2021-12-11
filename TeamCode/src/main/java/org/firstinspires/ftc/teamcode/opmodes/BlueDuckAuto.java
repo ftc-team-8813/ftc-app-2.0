@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.opmodes.auto.AutonomousTemplate;
 import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
-@Autonomous(name="Blue Duck Auto", group="Blues")
+@Deprecated
 public class BlueDuckAuto extends LoggingOpMode
 {
     private Robot robot;

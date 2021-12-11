@@ -9,11 +9,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Duck;
+import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 import org.firstinspires.ftc.teamcode.vision.CapstoneDetector;
@@ -31,6 +33,7 @@ public class AutonomousTemplate {
     private Robot robot;
     private Server server;
     private Drivetrain drivetrain;
+    private Intake intake;
     private Duck duck;
     private Lift lift;
 
@@ -71,6 +74,7 @@ public class AutonomousTemplate {
         drivetrain = robot.drivetrain;
         duck = robot.duck;
         lift = robot.lift;
+        intake = robot.intake;
     }
 
     public void init_server(){
@@ -98,6 +102,12 @@ public class AutonomousTemplate {
 
     public void init_odometry(double y, double x, double heading){
         drivetrain.setStart(y, x, heading); // Must match Odo start position
+    }
+
+    public void init_lift(){
+        lift.extend(0, false);
+        lift.rotate(Status.ROTATIONS.get("in"));
+        robot.intake.deposit(Status.DEPOSITS.get("carry"));
     }
 
     public void init_camera(){
@@ -150,6 +160,9 @@ public class AutonomousTemplate {
 
         if (lift.ifReached(lift.getTargetLiftPos())){
             logger.i("Reached Lift: %d", id);
+            id += 1;
+        } else if (intake.freightDetected()){
+            logger.i("Detected Freight: %d", id);
             id += 1;
         } else if (timer.seconds() > timer_delay){
             logger.i("Reached Timer: %d", id);
