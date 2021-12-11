@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.util.Status;
 
 public class LiftControl extends ControlModule{
     private Lift lift;
-    private ControllerMap.AxisEntry ax_right_stick_y;
+    private ControllerMap.AxisEntry ax_left_stick_y;
     private ControllerMap.ButtonEntry btn_y;
     private ControllerMap.ButtonEntry btn_x;
     private ControllerMap.ButtonEntry btn_dpad_down;
@@ -26,7 +26,7 @@ public class LiftControl extends ControlModule{
         this.lift = robot.lift;
         timer = new ElapsedTime();
 
-        ax_right_stick_y = controllerMap.getAxisMap("lift:adjust", "gamepad2", "right_stick_y");
+        ax_left_stick_y = controllerMap.getAxisMap("lift:adjust", "gamepad2", "left_stick_y");
         btn_y = controllerMap.getButtonMap("lift:extend_high", "gamepad2", "y");
         btn_x = controllerMap.getButtonMap("lift:extend_neutral", "gamepad2", "x");
         btn_dpad_down = controllerMap.getButtonMap("lift:reset", "gamepad2", "dpad_down");
@@ -34,7 +34,7 @@ public class LiftControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        double delta_extension = -ax_right_stick_y.get() * Status.SENSITIVITY;
+        double delta_extension = -ax_left_stick_y.get() * Status.SENSITIVITY;
 
         lift.extend(lift.getTargetLiftPos() + delta_extension, false);
 

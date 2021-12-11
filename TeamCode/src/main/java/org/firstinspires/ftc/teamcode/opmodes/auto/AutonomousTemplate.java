@@ -51,7 +51,7 @@ public class AutonomousTemplate {
     private double timer_delay = 1000; // Set high to not trigger next move
     private boolean waiting_camera = false;
     private boolean waiting = false;
-    public int shipping_height = -1;
+    public int shipping_height = 0;
     public int x_coord = -1;
 
     static
@@ -113,7 +113,7 @@ public class AutonomousTemplate {
     }
 
     public void check_image(){
-        if (shipping_height != -1){
+        if (shipping_height != 0){
             return;
         }
         webcam.requestNewFrame();
@@ -124,11 +124,11 @@ public class AutonomousTemplate {
         CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
         x_coord = capstone_detector.detect();
         send_frame = capstone_detector.stored_frame;
-        if (125 < x_coord && x_coord < 300) {
+        if (75 < x_coord && x_coord < 300) {
             shipping_height = 1;
-        } else if (330 < x_coord && x_coord < 530) {
+        } else if (300 < x_coord && x_coord < 500) {
             shipping_height = 2;
-        } else if (530 < x_coord && x_coord < 700) {
+        } else if (500 < x_coord && x_coord < 800) {
             shipping_height = 3;
         }
 

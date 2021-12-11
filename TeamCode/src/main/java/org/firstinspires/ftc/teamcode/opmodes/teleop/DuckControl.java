@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
 public class DuckControl extends ControlModule{
     private Duck duck;
-    private ControllerMap.AxisEntry ax_left_stick_y;
+    private ControllerMap.AxisEntry ax_right_stick_y;
 
     public DuckControl(String name){
         super(name);
@@ -16,11 +16,11 @@ public class DuckControl extends ControlModule{
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.duck = robot.duck;
-        ax_left_stick_y = controllerMap.getAxisMap("duck:spin", "gamepad2", "left_stick_y");
+        ax_right_stick_y = controllerMap.getAxisMap("duck:spin", "gamepad2", "right_stick_y");
     }
 
     @Override
     public void update(Telemetry telemetry) {
-        duck.spin(-ax_left_stick_y.get() * 0.5);
+        duck.spin(-ax_right_stick_y.get() * 0.5);
     }
 }

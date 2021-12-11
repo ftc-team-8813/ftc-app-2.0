@@ -41,8 +41,8 @@ public class Lift {
     }
 
     public boolean ifReached(double check_pos){
-        double min = check_pos - 30;
-        double max = check_pos + 30;
+        double min = check_pos - 1000;
+        double max = check_pos + 1000;
         if (!lift_reached && min <= getCurrentLiftPos() && getCurrentLiftPos() <= max){
             lift_reached = true;
             return true;

@@ -84,6 +84,8 @@ public class VisionTest extends LoggingOpMode
 
             Bitmap bmp = Bitmap.createBitmap(capstone_detector.stored_frame.cols(), capstone_detector.stored_frame.rows(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(capstone_detector.stored_frame, bmp);
+//            Bitmap bmp = Bitmap.createBitmap(cvFrame.cols(), cvFrame.rows(), Bitmap.Config.ARGB_8888);
+//            Utils.matToBitmap(cvFrame, bmp);
 
             ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
             bmp.compress(Bitmap.CompressFormat.JPEG, 80, os); // probably quite slow
