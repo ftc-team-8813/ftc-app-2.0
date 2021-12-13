@@ -134,13 +134,13 @@ public class AutonomousTemplate {
         CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
         x_coord = capstone_detector.detect();
         send_frame = capstone_detector.stored_frame;
-        if (75 < x_coord && x_coord < 300) {
-            shipping_height = 1;
-        } else if (300 < x_coord && x_coord < 500) {
-            shipping_height = 2;
-        } else if (500 < x_coord && x_coord < 800) {
-            shipping_height = 3;
-        }
+//        if (75 < x_coord && x_coord < 300) {
+//            shipping_height = 1;
+//        } else if (300 < x_coord && x_coord < 500) {
+//            shipping_height = 2;
+//        } else if (500 < x_coord && x_coord < 800) {
+//            shipping_height = 3;
+//        }
 
         logger.i(String.format("X Coord of Block: %d", x_coord));
         logger.i(String.format("Shipping Height: %d", shipping_height));

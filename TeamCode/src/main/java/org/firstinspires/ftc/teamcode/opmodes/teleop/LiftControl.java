@@ -15,6 +15,7 @@ public class LiftControl extends ControlModule{
     private Lift lift;
     private ControllerMap.AxisEntry ax_left_stick_y;
     private ControllerMap.ButtonEntry btn_y;
+    private ControllerMap.ButtonEntry btn_a;
     private ControllerMap.ButtonEntry btn_x;
     private ControllerMap.ButtonEntry btn_dpad_down;
 
@@ -35,13 +36,19 @@ public class LiftControl extends ControlModule{
 
         ax_left_stick_y = controllerMap.getAxisMap("lift:adjust", "gamepad2", "left_stick_y");
         btn_y = controllerMap.getButtonMap("lift:extend_high", "gamepad2", "y");
+        btn_a = controllerMap.getButtonMap("lift:extend_low", "gamepad2", "a");
         btn_x = controllerMap.getButtonMap("lift:extend_neutral", "gamepad2", "x");
         btn_dpad_down = controllerMap.getButtonMap("lift:reset", "gamepad2", "dpad_down");
     }
 
     @Override
     public void update(Telemetry telemetry) {
-        double delta_extension = -ax_left_stick_y.get() * Status.SENSITIVITY;
+        double delta_extension;
+        if (-ax_left_stick_y.get() < -0.1 || -ax_left_stick_y.get() > 0.1){
+            delta_extension = -ax_left_stick_y.get() * Status.SENSITIVITY;
+        } else {
+            delta_extension = 0;
+        }
 
         lift.extend(lift.getTargetLiftPos() + delta_extension, false);
 
@@ -49,13 +56,15 @@ public class LiftControl extends ControlModule{
             case 0:
                 if (btn_dpad_down.get()){
                     height = 0;
+                } else if (btn_a.get()){
+                    height = 2;
                 } else if (btn_y.get()){
                     height = 3;
                 } else if (btn_x.get()){
                     height = 4;
                 }
 
-                if (btn_y.get() || btn_x.get() || btn_dpad_down.get()) {
+                if (btn_dpad_down.get() || btn_a.get() || btn_y.get() || btn_x.get()) {
                     lift.extend(Status.STAGES.get("pitstop"), true);
                     log.i("Set Pitstop");
                 }
@@ -66,12 +75,22 @@ public class LiftControl extends ControlModule{
                 timer.reset();
                 break;
             case 1:
-                if (height == 0) {
-                    lift.rotate(Status.ROTATIONS.get("in"));
-                } else if (height == 4){
-                    lift.rotate(Status.ROTATIONS.get("neutral_out"));
-                } else {
-                    lift.rotate(Status.ROTATIONS.get("out"));
+                switch (height){
+                    case 0:
+                        lift.rotate(Status.ROTATIONS.get("in"));
+                        break;
+                    case 1:
+                        lift.rotate(Status.ROTATIONS.get("low_out"));
+                        break;
+                    case 2:
+                        lift.rotate(Status.ROTATIONS.get("mid_out"));
+                        break;
+                    case 3:
+                        lift.rotate(Status.ROTATIONS.get("high_out"));
+                        break;
+                    case 4:
+                        lift.rotate(Status.ROTATIONS.get("neutral_out"));
+                        break;
                 }
                 if (timer.seconds() > Status.ROTATE_WAIT_TIME){
                     id += 1;

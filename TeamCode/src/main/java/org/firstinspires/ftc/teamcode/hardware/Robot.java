@@ -68,7 +68,7 @@ public class Robot
         DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");
 
         // Sub-Assemblies
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
+        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu);
         this.intake = new Intake(intake_front, intake_back, freight_checker, bucket);
         this.lift = new Lift(lift, arm);
         this.duck = new Duck(duck);

@@ -17,23 +17,25 @@ public class Status {
     // Lift
     public static final double SENSITIVITY = 800;
     public static final double RETRACT_POWER_THRESHOLD = 7500;
-    public static final double UPPER_LIMIT = 100000;
+    public static final double UPPER_LIMIT = 53000;
     public static final double MAX_SPEED = 0.65;
-    public static final double RETRACT_SPEED = 0.6;
+    public static final double RETRACT_SPEED = 0.75;
     public static final double kP = 0.00053;
     public static final double kI = 0;
     public static final double kD = 0;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
         put("pitstop", 13000.0);
-        put("low", 30000.0);
-        put("mid", 35000.0);
+        put("low", 31500.0);
+        put("mid", 37000.0);
         put("neutral", 15000.0);
-        put("high", 45000.0);
+        put("high", 46500.0);
     }};
 
     // Arm
     public static final HashMap<String, Double> ROTATIONS = new HashMap<String, Double>(){{
-        put("out", 0.5); // Only extends one side so no need for left/right/mid
+        put("high_out", 0.5);
+        put("mid_out", 0.568);
+        put("low_out", 0.58);
         put("neutral_out", 0.68);
         put("in", 0.8);
     }};
@@ -41,7 +43,7 @@ public class Status {
 
     // Deposit
     public static final HashMap<String, Double> DEPOSITS = new HashMap<String, Double>(){{
-        put("dump", 0.0); // Only extends one side so no need for left/right/mid
+        put("dump", 0.0);
         put("carry", 0.65);
         put("front", 0.33);
         put("back", 0.98);

@@ -44,7 +44,7 @@ public class RedDuckAuto extends LoggingOpMode
                 robot.lift.extend(Status.STAGES.get("low"), true);
                 break;
             case 2:
-                robot.lift.rotate(Status.ROTATIONS.get("out"));
+                robot.lift.rotate(Status.ROTATIONS.get("high_out"));
                 auto.set_timer(0.5);
                 break;
             case 3:

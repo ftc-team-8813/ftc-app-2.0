@@ -45,15 +45,15 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 auto.set_timer(1.5);
                 break;
             case 1:
-                robot.drivetrain.teleMove(-.34,0,0);
+                robot.drivetrain.move(-.34,0,0);
                 auto.set_timer(1.5);
                 break;
             case 2:
-                robot.drivetrain.teleMove(0,0,0);
+                robot.drivetrain.move(0,0,0);
                 robot.lift.extend(Status.STAGES.get("pitstop"), true);
                 break;
             case 3:
-                robot.lift.rotate(Status.ROTATIONS.get("out"));
+                robot.lift.rotate(Status.ROTATIONS.get("high_out"));
                 auto.set_timer(.7);
                 break;
             case 4:
@@ -96,21 +96,21 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 break;
             case 10:
                 robot.intake.deposit(Status.DEPOSITS.get("front"));
-                robot.drivetrain.teleMove(0,0,0);
+                robot.drivetrain.move(0,0,0);
                 auto.set_timer(.5);
                 break;
             case 11:
                 robot.intake.setIntakeFront(1);
-                robot.drivetrain.teleMove(.37,0,0);
+                robot.drivetrain.move(.37,0,0);
                 auto.set_timer(3);
                 break;
             case 12:
                 robot.intake.setIntakeFront(1);
-                robot.drivetrain.teleMove(.18,0,0);
+                robot.drivetrain.move(.18,0,0);
                 auto.set_timer(1); // Freight Detector
                 break;
             case 13:
-                robot.drivetrain.teleMove(.25,0,0);
+                robot.drivetrain.move(.25,0,0);
                 auto.set_timer(0); // Refactor Later
                 break;
             case 14:
@@ -119,20 +119,20 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 break;
             case 15:
                 robot.intake.stop();
-                robot.drivetrain.teleMove(0,0,0);
+                robot.drivetrain.move(0,0,0);
                 auto.set_timer(.25);
             case 16:
                 robot.intake.setIntakeFront(-1);
-                robot.drivetrain.teleMove(-.45,0,0);
+                robot.drivetrain.move(-.45,0,0);
                 auto.set_timer(1.3);
                 break;
             case 17:
                 robot.intake.stop();
-                robot.drivetrain.teleMove(0,0,0);
+                robot.drivetrain.move(0,0,0);
                 robot.lift.extend(Status.STAGES.get("pitstop"), true);
                 break;
             case 18:
-                robot.lift.rotate(Status.ROTATIONS.get("out"));
+                robot.lift.rotate(Status.ROTATIONS.get("high_out"));
                 auto.set_timer(1);
                 break;
             case 19:
@@ -159,13 +159,16 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 break;
             case 25:
                 robot.intake.deposit(Status.DEPOSITS.get("front"));
-                robot.drivetrain.teleMove(0,0,0);
+                robot.drivetrain.move(0,0,0);
                 auto.set_timer(.5);
                 break;
             case 26:
-                robot.intake.setIntakeFront(1);
-                robot.drivetrain.teleMove(.5,0,0);
-                auto.set_timer(1.5);
+                robot.drivetrain.move(.3,0,0);
+                auto.set_timer(3.5);
+                break;
+            case 27:
+                robot.drivetrain.move(0, 0, 0);
+                auto.set_timer(0.5);
                 break;
                 /*
             case 27:

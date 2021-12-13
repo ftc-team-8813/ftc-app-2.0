@@ -5,6 +5,7 @@ import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.util.Status;
 
 public class DriveControl extends ControlModule{
     private Drivetrain drivetrain;
@@ -35,6 +36,11 @@ public class DriveControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        drivetrain.teleMove(-ax_drive_left_y.get() * 0.8, ax_drive_left_x.get() * 0.8, ax_drive_right_x.get() * 0.8);
+        if (lift.getCurrentLiftPos() > Status.STAGES.get("pitstop")){
+            drivetrain.move(-ax_drive_left_y.get() * 0.4, ax_drive_left_x.get() * 0.4, ax_drive_right_x.get() * 0.3);
+        } else {
+            drivetrain.move(-ax_drive_left_y.get() * 0.8, ax_drive_left_x.get() * 0.8, ax_drive_right_x.get() * 0.6);
+
+        }
     }
 }

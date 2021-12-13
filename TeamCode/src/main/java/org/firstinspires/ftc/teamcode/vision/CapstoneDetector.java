@@ -27,8 +27,8 @@ public class CapstoneDetector {
         this.logger = logger;
         this.detector_frame = detector_frame;
         this.stored_frame = new Mat();
-        this.lower_hls = new Scalar(40,110,0);
-        this.upper_hls = new Scalar(60,130,255);
+        this.lower_hls = new Scalar(100,10,60);
+        this.upper_hls = new Scalar(140,80,100);
         contours = new ArrayList<>();
     }
 
@@ -37,11 +37,10 @@ public class CapstoneDetector {
         Mat blurred = new Mat();
         Mat hls = new Mat();
         Mat masked = new Mat();
-        Mat binary = new Mat();
 
         Imgproc.resize(detector_frame, resized, new Size(800, 400));
         Imgproc.blur(resized, blurred, new Size(5, 5));
-        Imgproc.cvtColor(blurred, hls, Imgproc.COLOR_BGR2HLS);
+        Imgproc.cvtColor(blurred, hls, Imgproc.COLOR_RGB2HSV);
 
         Core.inRange(hls, lower_hls, upper_hls, masked);
         Imgproc.findContours(masked, contours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
