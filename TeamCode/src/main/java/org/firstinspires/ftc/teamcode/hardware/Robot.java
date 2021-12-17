@@ -4,6 +4,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -66,11 +67,12 @@ public class Robot
         // Sensors
         BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
         DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");
+        DigitalChannel limit_switch = hardwareMap.get(DigitalChannel.class, "lift limit");
 
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu);
         this.intake = new Intake(intake_front, intake_back, freight_checker, bucket);
-        this.lift = new Lift(lift, arm);
+        this.lift = new Lift(lift, arm, limit_switch);
         this.duck = new Duck(duck);
     }
 }

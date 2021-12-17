@@ -59,10 +59,11 @@ public class Drivetrain {
         back_right.setPower(forward + strafe - turn);
     }
 
-    public void teleMove(double forward, double strafe, double turn){
+    public void headlessMove(double forward, double strafe, double turn){
         double heading = angles.firstAngle;
         double factor = Math.sin(Math.abs(heading));
         double sign = Math.signum(heading);
+        if (sign == 0) sign = 1;
         move(forward * factor * sign, strafe * (1 - factor) * sign, turn);
     }
 

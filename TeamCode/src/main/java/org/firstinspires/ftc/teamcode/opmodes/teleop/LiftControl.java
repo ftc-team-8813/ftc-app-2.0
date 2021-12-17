@@ -22,6 +22,7 @@ public class LiftControl extends ControlModule{
     private int height = -1; // 0 = bottom, 1 = low, 2 = mid, 3 = high, 4 = neutral
     private ElapsedTime timer;
     private int id = 0;
+    private boolean was_reset = false;
 
     private Logger log;
 
@@ -39,6 +40,8 @@ public class LiftControl extends ControlModule{
         btn_a = controllerMap.getButtonMap("lift:extend_low", "gamepad2", "a");
         btn_x = controllerMap.getButtonMap("lift:extend_neutral", "gamepad2", "x");
         btn_dpad_down = controllerMap.getButtonMap("lift:reset", "gamepad2", "dpad_down");
+
+        lift.rotate(Status.ROTATIONS.get("in"));
     }
 
     @Override
@@ -66,7 +69,6 @@ public class LiftControl extends ControlModule{
 
                 if (btn_dpad_down.get() || btn_a.get() || btn_y.get() || btn_x.get()) {
                     lift.extend(Status.STAGES.get("pitstop"), true);
-                    log.i("Set Pitstop");
                 }
                 if (lift.ifReached(Status.STAGES.get("pitstop"))){
                     log.i("Reached Pitstop");
@@ -97,32 +99,50 @@ public class LiftControl extends ControlModule{
                 }
                 break;
             case 2:
+                double target_height = lift.getCurrentLiftPos();
                 switch (height){
                     case 0:
-                        lift.extend(0, false);
+                        target_height = 0;
                         break;
                     case 1:
-                        lift.extend(Status.STAGES.get("low"), false);
+                        target_height = Status.STAGES.get("low");
                         break;
                     case 2:
-                        lift.extend(Status.STAGES.get("mid"), false);
+                        target_height = Status.STAGES.get("mid");
                         break;
                     case 3:
-                        lift.extend(Status.STAGES.get("high"), false);
+                        target_height = Status.STAGES.get("high");
                         break;
                     case 4:
-                        lift.extend(Status.STAGES.get("neutral"), false);
+                        target_height = Status.STAGES.get("neutral");
                         break;
                 }
+                lift.extend(target_height, true);
+                if (lift.ifReached(target_height)){
+                    log.i("Reached Height");
+                    id += 1;
+                }
+                break;
+            case 3:
                 height = -1;
                 id = 0;
                 break;
         }
 
         lift.updateLift();
-        telemetry.addData("Lift Timer: ", timer.seconds());
-        telemetry.addData("Id: ", id);
+
+        if (!was_reset && lift.limitPressed()){
+            log.i("Reset at Home");
+            lift.resetEncoder();
+            was_reset = true;
+        } else if (!lift.limitPressed()){
+            was_reset = false;
+        }
+
         telemetry.addData("Lift Real Pos: ", lift.getCurrentLiftPos());
         telemetry.addData("Lift Target Pos: ", lift.getTargetLiftPos());
+        telemetry.addData("Lift Id: ", id);
+        telemetry.addData("Was Reset", was_reset);
+        telemetry.addData("Lift Limit: ", lift.limitPressed());
     }
 }

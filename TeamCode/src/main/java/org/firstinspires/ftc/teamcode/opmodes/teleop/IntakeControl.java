@@ -35,6 +35,8 @@ public class IntakeControl extends ControlModule {
         ax_left_trigger = controllerMap.getAxisMap("intake:intake_back", "gamepad1", "left_trigger");
         btn_left_bumper = controllerMap.getButtonMap("intake:outtake_override", "gamepad1", "left_bumper");
         btn_right_bumper = controllerMap.getButtonMap("lift:deposit", "gamepad2", "right_bumper");
+
+        intake.deposit(Status.DEPOSITS.get("carry"));
     }
 
     @Override
@@ -71,9 +73,9 @@ public class IntakeControl extends ControlModule {
             intake.setIntakeBack(-1);
         }
 
-        if (lift.getCurrentLiftPos() > 1000) {
+        if (lift.getTargetLiftPos() > 1000) {
             if (btn_right_bumper.get()) {
-                intake.deposit(Status.DEPOSITS.get("dump")); // Moving here to use as button instead of toggle
+                intake.deposit(Status.DEPOSITS.get("dump"));
                 side = 2;
             } else {
                 side = 0;

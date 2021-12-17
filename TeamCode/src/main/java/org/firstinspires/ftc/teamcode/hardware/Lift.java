@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.Status;
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.util.Status;
 public class Lift {
     private final DcMotor lift;
     private final Servo arm;
+    private final DigitalChannel limit_switch;
 
     private boolean lift_reached = true;
 
@@ -20,13 +22,19 @@ public class Lift {
     private double d_term;
 
 
-    public Lift(DcMotor lift, Servo arm){
+    public Lift(DcMotor lift, Servo arm, DigitalChannel limit_switch){
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lift.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.lift = lift; // Encoder and motor on same port
         this.arm = arm;
+        this.limit_switch = limit_switch;
+    }
+
+    public void resetEncoder(){
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void extend(double target_ticks, boolean tracking){
@@ -76,6 +84,9 @@ public class Lift {
 
     public double getCurrentLiftPos(){
         return lift.getCurrentPosition();
+    }
+    public boolean limitPressed(){
+        return !limit_switch.getState();
     }
     public double getTargetLiftPos(){
         return target_pos;
