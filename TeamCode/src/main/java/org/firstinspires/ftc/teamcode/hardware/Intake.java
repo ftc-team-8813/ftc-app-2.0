@@ -13,15 +13,23 @@ public class Intake {
     private final DcMotor intake_front;
     private final DcMotor intake_back;
     private final DistanceSensor dist;
+    private final Servo bucket;
+
+    private boolean freight_detected = false;
 
 
-    public Intake(DcMotor intake_front, DcMotor intake_back, DistanceSensor dist){
+    public Intake(DcMotor intake_front, DcMotor intake_back, DistanceSensor dist, Servo bucket){
         this.intake_front = intake_front;
         this.intake_back = intake_back;
         this.dist = dist;
-        // TODO Make positive one to be intake
+        this.bucket = bucket;
     }
 
+
+
+    public void deposit(double target_pos){
+        bucket.setPosition(target_pos);
+    }
 
     public void setIntakeFront(double power){
         intake_front.setPower(power);
@@ -37,6 +45,22 @@ public class Intake {
     }
 
     public boolean freightDetected() {
-        return dist.getDistance(DistanceUnit.CM) < Status.FREIGHT_DETECTION;
+        if (!freight_detected && getFreightDistance() < Status.FREIGHT_DETECTION){
+            freight_detected = true;
+            return true;
+        }
+        return false;
+    }
+
+    public void detectFreight(){
+        freight_detected = false;
+    }
+
+    public void stopDetectingFreight(){
+        freight_detected = true;
+    }
+
+    public double getFreightDistance(){
+        return dist.getDistance(DistanceUnit.CM);
     }
 }

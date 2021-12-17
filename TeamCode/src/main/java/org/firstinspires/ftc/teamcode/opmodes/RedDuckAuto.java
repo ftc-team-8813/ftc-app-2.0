@@ -1,14 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.auto.AutonomousTemplate;
 import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
-@Autonomous(name="Red Duck Auto", group="Reds")
+@Deprecated
 public class RedDuckAuto extends LoggingOpMode
 {
     private Robot robot;
@@ -38,7 +36,20 @@ public class RedDuckAuto extends LoggingOpMode
     @Override
     public void loop() {
         switch (id){
-
+            case 0:
+                auto.check_image();
+                auto.set_timer(2);
+                break;
+            case 1:
+                robot.lift.extend(Status.STAGES.get("low"), true);
+                break;
+            case 2:
+                robot.lift.rotate(Status.ROTATIONS.get("high_out"));
+                auto.set_timer(0.5);
+                break;
+            case 3:
+                robot.lift.extend(Status.STAGES.get("high"), true);
+                break;
         }
 
         id = auto.update();

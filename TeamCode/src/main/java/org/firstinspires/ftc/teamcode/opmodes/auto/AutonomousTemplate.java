@@ -9,11 +9,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Duck;
+import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 import org.firstinspires.ftc.teamcode.vision.CapstoneDetector;
@@ -31,6 +33,7 @@ public class AutonomousTemplate {
     private Robot robot;
     private Server server;
     private Drivetrain drivetrain;
+    private Intake intake;
     private Duck duck;
     private Lift lift;
 
@@ -51,7 +54,7 @@ public class AutonomousTemplate {
     private double timer_delay = 1000; // Set high to not trigger next move
     private boolean waiting_camera = false;
     private boolean waiting = false;
-    public int shipping_height = -1;
+    public int shipping_height = 0;
     public int x_coord = -1;
 
     static
@@ -71,6 +74,7 @@ public class AutonomousTemplate {
         drivetrain = robot.drivetrain;
         duck = robot.duck;
         lift = robot.lift;
+        intake = robot.intake;
     }
 
     public void init_server(){
@@ -100,6 +104,12 @@ public class AutonomousTemplate {
         drivetrain.setStart(y, x, heading); // Must match Odo start position
     }
 
+    public void init_lift(){
+        lift.extend(0, false);
+        lift.rotate(Status.ROTATIONS.get("in"));
+        robot.intake.deposit(Status.DEPOSITS.get("carry"));
+    }
+
     public void init_camera(){
         webcam = Webcam.forSerial(WEBCAM_SERIAL);
         if (webcam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + WEBCAM_SERIAL);
@@ -113,7 +123,7 @@ public class AutonomousTemplate {
     }
 
     public void check_image(){
-        if (shipping_height != -1){
+        if (shipping_height != 0){
             return;
         }
         webcam.requestNewFrame();
@@ -124,13 +134,13 @@ public class AutonomousTemplate {
         CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
         x_coord = capstone_detector.detect();
         send_frame = capstone_detector.stored_frame;
-        if (125 < x_coord && x_coord < 300) {
-            shipping_height = 1;
-        } else if (330 < x_coord && x_coord < 530) {
-            shipping_height = 2;
-        } else if (530 < x_coord && x_coord < 700) {
-            shipping_height = 3;
-        }
+//        if (75 < x_coord && x_coord < 300) {
+//            shipping_height = 1;
+//        } else if (300 < x_coord && x_coord < 500) {
+//            shipping_height = 2;
+//        } else if (500 < x_coord && x_coord < 800) {
+//            shipping_height = 3;
+//        }
 
         logger.i(String.format("X Coord of Block: %d", x_coord));
         logger.i(String.format("Shipping Height: %d", shipping_height));
@@ -150,6 +160,9 @@ public class AutonomousTemplate {
 
         if (lift.ifReached(lift.getTargetLiftPos())){
             logger.i("Reached Lift: %d", id);
+            id += 1;
+        } else if (intake.freightDetected()){
+            logger.i("Detected Freight: %d", id);
             id += 1;
         } else if (timer.seconds() > timer_delay){
             logger.i("Reached Timer: %d", id);

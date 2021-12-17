@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.Status;
@@ -9,7 +10,7 @@ import org.firstinspires.ftc.teamcode.util.Status;
 public class Lift {
     private final DcMotor lift;
     private final Servo arm;
-    private final Servo bucket;
+    private final DigitalChannel limit_switch;
 
     private boolean lift_reached = true;
 
@@ -21,20 +22,27 @@ public class Lift {
     private double d_term;
 
 
-    public Lift(DcMotor lift, Servo arm, Servo bucket){
+    public Lift(DcMotor lift, Servo arm, DigitalChannel limit_switch){
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lift.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.lift = lift; // Encoder and motor on same port
         this.arm = arm;
-        this.bucket = bucket;
+        this.limit_switch = limit_switch;
+    }
+
+    public void resetEncoder(){
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void extend(double target_ticks, boolean tracking){
         if (0 <= target_ticks && target_ticks <= Status.UPPER_LIMIT){
             target_pos = target_ticks;
-            lift_reached = tracking;
+            if (tracking){
+                lift_reached = false;
+            }
         }
     }
 
@@ -42,13 +50,9 @@ public class Lift {
         arm.setPosition(target_pos);
     }
 
-    public void deposit(double target_pos){
-        bucket.setPosition(target_pos);
-    }
-
     public boolean ifReached(double check_pos){
-        double min = check_pos - 30;
-        double max = check_pos + 30;
+        double min = check_pos - 1000;
+        double max = check_pos + 1000;
         if (!lift_reached && min <= getCurrentLiftPos() && getCurrentLiftPos() <= max){
             lift_reached = true;
             return true;
@@ -69,26 +73,26 @@ public class Lift {
         d_term = derivative * Status.kD;
 
         double power = p_term + i_term + d_term;
-        if (power < 0){
-            power *= Status.LOWER_SPEED;
+
+        if (curr_pos < Status.RETRACT_POWER_THRESHOLD){
+            lift.setPower(power * Status.RETRACT_SPEED);
         } else {
-            power *= Status.RAISE_SPEED;
+            lift.setPower(power * Status.MAX_SPEED);
         }
-        lift.setPower(power);
         past_error = error;
     }
 
     public double getCurrentLiftPos(){
         return lift.getCurrentPosition();
     }
+    public boolean limitPressed(){
+        return !limit_switch.getState();
+    }
     public double getTargetLiftPos(){
         return target_pos;
     }
     public double getCurrentArmPos(){
         return arm.getPosition();
-    }
-    public double getCurrentDropperPos(){
-        return bucket.getPosition();
     }
     public double getPower(){
         return lift.getPower();

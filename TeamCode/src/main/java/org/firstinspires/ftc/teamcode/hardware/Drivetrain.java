@@ -1,8 +1,13 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 public class Drivetrain {
@@ -10,6 +15,7 @@ public class Drivetrain {
     private final DcMotor front_right;
     private final DcMotor back_left;
     private final DcMotor back_right;
+    private final Orientation angles;
 
     private double target_y = 0;
     private double target_x = 0;
@@ -28,11 +34,12 @@ public class Drivetrain {
     public boolean reached = true;
     public boolean turned = true;
 
-    public Drivetrain(DcMotor front_left, DcMotor front_right, DcMotor back_left, DcMotor back_right){
+    public Drivetrain(DcMotor front_left, DcMotor front_right, DcMotor back_left, DcMotor back_right, BNO055IMU imu){
         this.front_left = front_left;
         this.front_right = front_right;
         this.back_left = back_left;
         this.back_right = back_right;
+        this.angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -44,12 +51,20 @@ public class Drivetrain {
         this.target_heading = heading;
     }
 
-    public void teleMove(double forward, double strafe, double turn){
-        // Reversed because of bevel gears
-        front_left.setPower(forward - strafe + turn);
+    public void move(double forward, double strafe, double turn){
+        // Slowing right side to keep forward moving straight
+        front_left.setPower((forward - strafe + turn) * 0.87);
         front_right.setPower(forward - strafe - turn);
-        back_left.setPower(forward + strafe + turn);
+        back_left.setPower((forward + strafe + turn) * 0.87);
         back_right.setPower(forward + strafe - turn);
+    }
+
+    public void headlessMove(double forward, double strafe, double turn){
+        double heading = angles.firstAngle;
+        double factor = Math.sin(Math.abs(heading));
+        double sign = Math.signum(heading);
+        if (sign == 0) sign = 1;
+        move(forward * factor * sign, strafe * (1 - factor) * sign, turn);
     }
 
     public void stop(){
@@ -101,7 +116,7 @@ public class Drivetrain {
         double strafe_power = (strafe_distance * Status.STRAFE_KP) + (strafe_integral * Status.STRAFE_KI) * target_speed;
         double turn_power = ((heading_integral * Status.TURN_KI) + (delta_heading * Status.TURN_KP)) * target_speed;
 
-        teleMove(forward_power, strafe_power, turn_power);
+        move(forward_power, strafe_power, turn_power);
     }
 
     public double[] getPositionDeltas(){
