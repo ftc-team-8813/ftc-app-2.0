@@ -89,7 +89,7 @@ public class VisionTest extends LoggingOpMode
             Utils.matToBitmap(cvFrame, bmp);
 
             ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
-            bmp.compress(Bitmap.CompressFormat.JPEG, 80, os); // probably quite slow
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, os); // probably quite slow
             serverFrameUsed = true;
             byte[] data = os.toByteArray();
             resp.respond(ByteBuffer.wrap(data));

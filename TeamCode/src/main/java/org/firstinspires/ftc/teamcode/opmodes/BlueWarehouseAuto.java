@@ -115,10 +115,9 @@ public class BlueWarehouseAuto extends LoggingOpMode
             case 11:
                 robot.intake.setIntakeFront(1);
                 robot.drivetrain.move(.37,0,0);
-                auto.set_timer(2.7);
+                auto.set_timer(2.4);
                 break;
             case 12:
-                robot.intake.setIntakeFront(1);
                 robot.drivetrain.move(.12,0,0);
                 auto.set_timer(1.5); // Freight Detector
                 break;
@@ -127,20 +126,19 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 auto.set_timer(0); // Refactor Later
                 break;
             case 14:
+                robot.intake.setIntakeFront(-1);
                 robot.intake.deposit(Status.DEPOSITS.get("carry"));
                 auto.set_timer(.5);
                 break;
             case 15:
-                robot.intake.stop();
                 robot.drivetrain.move(0,0,0);
                 auto.set_timer(.25);
             case 16:
-                robot.intake.setIntakeFront(-1);
+                robot.intake.stop();
                 robot.drivetrain.move(-.42,0,0);
                 auto.set_timer(1);
                 break;
             case 17:
-                robot.intake.stop();
                 robot.drivetrain.move(0,0,0);
                 robot.lift.extend(Status.STAGES.get("pitstop"), true);
                 break;

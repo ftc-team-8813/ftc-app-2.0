@@ -110,13 +110,13 @@ public class RedWarehouseAuto extends LoggingOpMode
                 break;
             case 11:
                 robot.intake.setIntakeBack(1);
-                robot.drivetrain.move(-.37,0,0);
-                auto.set_timer(2.9);
+                robot.drivetrain.move(-.28,0,0);
+                auto.set_timer(3.3);
                 break;
             case 12:
                 robot.intake.setIntakeBack(-1);
                 robot.drivetrain.move(0,0,0);
-                auto.set_timer(1.5);
+                auto.set_timer(1.7);
                 break;
             case 13:
                 robot.intake.deposit(Status.DEPOSITS.get("carry"));
@@ -128,8 +128,8 @@ public class RedWarehouseAuto extends LoggingOpMode
                 auto.set_timer(.25);
             case 15:
                 robot.intake.setIntakeBack(1);
-                robot.drivetrain.move(.37,0,0);
-                auto.set_timer(1.5);
+                robot.drivetrain.move(.34,0,0);
+                auto.set_timer(.8);
                 break;
             case 16:
                 robot.intake.stop();
