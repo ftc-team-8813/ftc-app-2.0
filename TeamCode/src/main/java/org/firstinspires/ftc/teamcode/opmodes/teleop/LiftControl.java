@@ -5,6 +5,7 @@ import static java.lang.Math.round;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
@@ -13,11 +14,13 @@ import org.firstinspires.ftc.teamcode.util.Status;
 
 public class LiftControl extends ControlModule{
     private Lift lift;
+    private Intake intake;
     private ControllerMap.AxisEntry ax_left_stick_y;
     private ControllerMap.ButtonEntry btn_y;
     private ControllerMap.ButtonEntry btn_a;
     private ControllerMap.ButtonEntry btn_x;
     private ControllerMap.ButtonEntry btn_dpad_down;
+    private ControllerMap.AxisEntry ax_left_trigger;
 
     private int height = -1; // 0 = bottom, 1 = low, 2 = mid, 3 = high, 4 = neutral
     private ElapsedTime timer;
@@ -32,6 +35,7 @@ public class LiftControl extends ControlModule{
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.lift = robot.lift;
+        this.intake = robot.intake;
         timer = new ElapsedTime();
         log = new Logger("Lift Control");
 
@@ -39,7 +43,8 @@ public class LiftControl extends ControlModule{
         btn_y = controllerMap.getButtonMap("lift:extend_high", "gamepad2", "y");
         btn_a = controllerMap.getButtonMap("lift:extend_low", "gamepad2", "a");
         btn_x = controllerMap.getButtonMap("lift:extend_neutral", "gamepad2", "x");
-        btn_dpad_down = controllerMap.getButtonMap("lift:reset", "gamepad2", "dpad_down");
+        btn_dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");
+        ax_left_trigger = controllerMap.getAxisMap("lift:reset", "gamepad2", "left_trigger");
 
         lift.rotate(Status.ROTATIONS.get("in"));
     }
@@ -53,7 +58,11 @@ public class LiftControl extends ControlModule{
             delta_extension = 0;
         }
 
-        lift.extend(lift.getTargetLiftPos() + delta_extension, false);
+        lift.extend(lift.getLiftTargetPos() + delta_extension, false);
+
+        if (ax_left_trigger.get() > 0.8){
+            lift.resetLitTarget();
+        }
 
         switch (id) {
             case 0:
@@ -67,16 +76,27 @@ public class LiftControl extends ControlModule{
                     height = 4;
                 }
 
-                if (btn_dpad_down.get() || btn_a.get() || btn_y.get() || btn_x.get()) {
-                    lift.extend(Status.STAGES.get("pitstop"), true);
+                if (height != -1){
+                    intake.deposit(Status.DEPOSITS.get("carry"));
+                } else {
+                    timer.reset();
                 }
+
+                if (timer.seconds() > Status.BUCKET_WAIT_TIME){
+                    log.i("Carrying Deposit");
+                    id += 1;
+                }
+                break;
+            case 1:
+                lift.extend(Status.STAGES.get("pitstop"), true);
                 if (lift.ifReached(Status.STAGES.get("pitstop"))){
                     log.i("Reached Pitstop");
                     id += 1;
                 }
+
                 timer.reset();
                 break;
-            case 1:
+            case 2:
                 switch (height){
                     case 0:
                         lift.rotate(Status.ROTATIONS.get("in"));
@@ -94,12 +114,13 @@ public class LiftControl extends ControlModule{
                         lift.rotate(Status.ROTATIONS.get("neutral_out"));
                         break;
                 }
-                if (timer.seconds() > Status.ROTATE_WAIT_TIME){
+                if (timer.seconds() > Status.PITSTOP_WAIT_TIME){
                     id += 1;
+                    log.i("Rotated Arm");
                 }
                 break;
-            case 2:
-                double target_height = lift.getCurrentLiftPos();
+            case 3:
+                double target_height = lift.getLiftCurrentPos();
                 switch (height){
                     case 0:
                         target_height = 0;
@@ -123,7 +144,7 @@ public class LiftControl extends ControlModule{
                     id += 1;
                 }
                 break;
-            case 3:
+            case 4:
                 height = -1;
                 id = 0;
                 break;
@@ -139,8 +160,8 @@ public class LiftControl extends ControlModule{
             was_reset = false;
         }
 
-        telemetry.addData("Lift Real Pos: ", lift.getCurrentLiftPos());
-        telemetry.addData("Lift Target Pos: ", lift.getTargetLiftPos());
+        telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
+        telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());
         telemetry.addData("Lift Id: ", id);
         telemetry.addData("Was Reset", was_reset);
         telemetry.addData("Lift Limit: ", lift.limitPressed());

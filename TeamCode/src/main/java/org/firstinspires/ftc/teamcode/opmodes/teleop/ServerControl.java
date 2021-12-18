@@ -28,7 +28,7 @@ public class ServerControl extends ControlModule{
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
             ByteBuffer buf = ByteBuffer.allocate(500);
 
-            buf.putDouble(robot.lift.getCurrentLiftPos());
+            buf.putDouble(robot.lift.getLiftCurrentPos());
 
             buf.putDouble(robot.lift.getPower());
             double[] pid_terms = robot.lift.getPIDTerms();

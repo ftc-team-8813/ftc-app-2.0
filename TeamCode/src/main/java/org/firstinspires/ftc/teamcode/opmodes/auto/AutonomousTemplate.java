@@ -131,8 +131,8 @@ public class AutonomousTemplate {
             throw new IllegalArgumentException("New frame not available");
         }
         Utils.bitmapToMat(frame_handler.currFramebuffer, detector_frame);
-        CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
-        x_coord = capstone_detector.detect();
+        CapstoneDetector capstone_detector = new CapstoneDetector(logger);
+        x_coord = capstone_detector.detect(detector_frame);
         send_frame = capstone_detector.stored_frame;
 //        if (75 < x_coord && x_coord < 300) {
 //            shipping_height = 1;
@@ -158,7 +158,7 @@ public class AutonomousTemplate {
         lift.updateLift();
         telemetry.update();
 
-        if (lift.ifReached(lift.getTargetLiftPos())){
+        if (lift.ifReached(lift.getLiftTargetPos())){
             logger.i("Reached Lift: %d", id);
             id += 1;
         } else if (intake.freightDetected()){

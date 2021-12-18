@@ -24,8 +24,6 @@ public class Robot
 
     public EventBus eventBus = new EventBus();
     public Scheduler scheduler = new Scheduler(eventBus);
-    private final Logger log = new Logger("Robot");
-
 
     ///////////////////////////////
     // Singleton things          //

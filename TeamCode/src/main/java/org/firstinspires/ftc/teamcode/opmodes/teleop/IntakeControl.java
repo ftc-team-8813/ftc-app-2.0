@@ -42,7 +42,7 @@ public class IntakeControl extends ControlModule {
     @Override
     public void update(Telemetry telemetry) {
         if (intake.getFreightDistance() < Status.FREIGHT_DETECTION){
-            direction = -1;
+            direction = -0.4;
             side = 0;
             carrying = true;
         } else  {
@@ -73,7 +73,7 @@ public class IntakeControl extends ControlModule {
             intake.setIntakeBack(-1);
         }
 
-        if (lift.getTargetLiftPos() > 1000) {
+        if (lift.getLiftTargetPos() > 1000) {
             if (btn_right_bumper.get()) {
                 intake.deposit(Status.DEPOSITS.get("dump"));
                 side = 2;
