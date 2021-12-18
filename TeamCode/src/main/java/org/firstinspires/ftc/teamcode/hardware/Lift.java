@@ -53,7 +53,7 @@ public class Lift {
     public boolean ifReached(double check_pos){
         double min = check_pos - 1000;
         double max = check_pos + 1000;
-        if (!lift_reached && min <= getCurrentLiftPos() && getCurrentLiftPos() <= max){
+        if (!lift_reached && min <= getLiftCurrentPos() && getLiftCurrentPos() <= max){
             lift_reached = true;
             return true;
         }
@@ -61,7 +61,7 @@ public class Lift {
     }
 
     public void updateLift(){
-        double curr_pos = getCurrentLiftPos();
+        double curr_pos = getLiftCurrentPos();
         double error = target_pos - curr_pos;
 
         p_term = error * Status.kP;
@@ -82,14 +82,17 @@ public class Lift {
         past_error = error;
     }
 
-    public double getCurrentLiftPos(){
+    public double getLiftCurrentPos(){
         return lift.getCurrentPosition();
     }
     public boolean limitPressed(){
         return !limit_switch.getState();
     }
-    public double getTargetLiftPos(){
+    public double getLiftTargetPos(){
         return target_pos;
+    }
+    public void resetLitTarget(){
+        target_pos = 0;
     }
     public double getCurrentArmPos(){
         return arm.getPosition();
