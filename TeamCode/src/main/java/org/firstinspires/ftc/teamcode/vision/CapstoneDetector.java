@@ -27,7 +27,7 @@ public class CapstoneDetector {
         contours = new ArrayList<>();
     }
 
-    public int detect(Mat detector_frame){
+    public double detect(Mat detector_frame){
         Mat resized = new Mat();
         Mat blurred = new Mat();
         Mat rgb = new Mat();
@@ -52,10 +52,10 @@ public class CapstoneDetector {
             double max_area = Collections.max(areas);
             int index = areas.indexOf(max_area);
 
-            Moments p = Imgproc.moments(contours.get(index), false);
-            int x = (int) (p.get_m10() / p.get_m00());
+            MatOfPoint contour = contours.get(index);
+            double x_coord = contour.get(0,0)[0];
 
-            return x;
+            return x_coord;
         }
 
         return -1;

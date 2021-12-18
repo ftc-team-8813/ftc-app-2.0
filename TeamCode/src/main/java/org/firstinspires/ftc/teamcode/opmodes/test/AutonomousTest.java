@@ -40,7 +40,7 @@ public class AutonomousTest extends LoggingOpMode
 
     @Override
     public void loop() {
-        auto.check_image();
+        auto.check_image(false);
 
         telemetry.addData("Shipping Height: ", auto.shipping_height);
         id = auto.update();

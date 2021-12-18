@@ -25,7 +25,6 @@ public class CurrentTele extends LoggingOpMode
     private ControllerMap controllerMap;
     private ControlMgr controlMgr;
 
-    private Logger log;
     private EventBus evBus;
     private Scheduler scheduler;
     static
@@ -40,7 +39,6 @@ public class CurrentTele extends LoggingOpMode
         robot = Robot.initialize(hardwareMap, "Main TeleOp");
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
-        log = new Logger("Tele Op");
 
         controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         
