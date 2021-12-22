@@ -15,16 +15,16 @@ public class Status {
     public static final double FREIGHT_DETECTION = 2.4;
 
     // Lift
-    public static final double SENSITIVITY = 400;
+    public static final double SENSITIVITY = 250;
     public static final double RETRACT_POWER_THRESHOLD = 7500;
     public static final double UPPER_LIMIT = 53000;
-    public static final double MAX_SPEED = 0.9;
-    public static final double RETRACT_SPEED = 0.95;
+    public static final double MAX_SPEED = 1;
+    public static final double RETRACT_SPEED = 1;
     public static final double kP = 0.0005;
     public static final double kI = 0;
     public static final double kD = 0;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
-        put("pitstop", 13000.0);
+        put("pitstop", 14000.0);
         put("neutral", 15000.0);
         put("low", 34400.0);
         put("mid", 43000.0);
@@ -37,7 +37,7 @@ public class Status {
         put("mid_out", 0.568);
         put("low_out", 0.58);
         put("neutral_out", 0.7);
-        put("in", 0.834);
+        put("in", 0.84);
     }};
     public static final double BUCKET_WAIT_TIME = 0.2;
     public static final double PITSTOP_WAIT_TIME = 0.15;
