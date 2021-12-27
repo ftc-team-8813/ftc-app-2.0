@@ -15,7 +15,7 @@ public class IntakeControl extends ControlModule {
     private ControllerMap.ButtonEntry btn_left_bumper;
     private ControllerMap.ButtonEntry btn_right_bumper;
 
-    private double direction = 1; // 1 = Intake, -1 Outtake
+    private double direction = 0.7; // 1 = Intake, -1 Outtake
     private double side = 3; // 1 = Front, 0 = Center, -1 = Back, 2 = Dump
     private boolean carrying = true;
 
@@ -85,9 +85,13 @@ public class IntakeControl extends ControlModule {
         if (side == 0){
             intake.deposit(Status.DEPOSITS.get("carry"));
         } else if (side == 1){
-            intake.deposit(Status.DEPOSITS.get("front"));
+            if (lift.getLiftCurrentPos() < 2000) {
+                intake.deposit(Status.DEPOSITS.get("front"));
+            }
         } else if (side == -1){
-            intake.deposit(Status.DEPOSITS.get("back"));
+            if (lift.getLiftCurrentPos() < 2000) {
+                intake.deposit(Status.DEPOSITS.get("back"));
+            }
         }
 
         telemetry.addData("Freight Distance: ", intake.getFreightDistance());

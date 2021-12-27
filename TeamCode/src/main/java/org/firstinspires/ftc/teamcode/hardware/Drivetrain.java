@@ -34,7 +34,7 @@ public class Drivetrain {
     public boolean reached = true;
     public boolean turned = true;
 
-    public Drivetrain(DcMotor front_left, DcMotor front_right, DcMotor back_left, DcMotor back_right, BNO055IMU imu){
+    public Drivetrain(DcMotor front_left, DcMotor front_right, DcMotor back_left, DcMotor back_right, BNO055IMU imu) {
         this.front_left = front_left;
         this.front_right = front_right;
         this.back_left = back_left;
@@ -45,13 +45,13 @@ public class Drivetrain {
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
-    public void setStart(double y, double x, double heading){
+    public void setStart(double y, double x, double heading) {
         this.target_y = y;
         this.target_x = x;
         this.target_heading = heading;
     }
 
-    public void move(double forward, double strafe, double turn){
+    public void move(double forward, double strafe, double turn) {
         // Slowing right side to keep forward moving straight
         front_left.setPower((forward - strafe + turn) * 0.87);
         front_right.setPower(forward - strafe - turn);
@@ -59,7 +59,7 @@ public class Drivetrain {
         back_right.setPower(forward + strafe - turn);
     }
 
-    public void headlessMove(double forward, double strafe, double turn){
+    public void headlessMove(double forward, double strafe, double turn) {
         double heading = angles.firstAngle;
         double factor = Math.sin(Math.abs(heading));
         double sign = Math.signum(heading);
@@ -67,7 +67,7 @@ public class Drivetrain {
         move(forward * factor * sign, strafe * (1 - factor) * sign, turn);
     }
 
-    public void stop(){
+    public void stop() {
         front_left.setPower(0);
         front_right.setPower(0);
         back_left.setPower(0);
@@ -75,55 +75,27 @@ public class Drivetrain {
     }
 
     // Only updates reached status in one loop cycle
-    public boolean ifReached(){
-        if (!reached && Math.abs(delta_y) < 2 && Math.abs(delta_x) < 2 && Math.abs(delta_heading) < 5){
+    public boolean ifReached() {
+        if (!reached && Math.abs(delta_y) < 2 && Math.abs(delta_x) < 2 && Math.abs(delta_heading) < 5) {
             reached = true;
             return true;
         }
         return false;
     }
 
-    public void goToPosition(double y, double x, double speed){
-        target_y = y;
-        target_x = x;
-        target_speed = speed;
-        reached = false;
-    }
+    public enum encoderNames {FRONT_RIGHT, BACK_RIGHT, FRONT_LEFT, BACK_LEFT}
 
-    public void goToHeading(double heading, double speed){
-        target_heading = heading;
-        target_speed = speed;
-        turned = false;
-    }
-
-    public void update(){
-        double[] odo_data = new double[]{0.0, 0.0, 0.0};
-        double heading = odo_data[2];
-        delta_y = odo_data[0] - target_y; // Flipped to change power direction
-        delta_x = target_x - odo_data[1];
-        delta_heading = target_heading + odo_data[2]; // Adding to flip rotation direction
-
-        double relative_heading = Math.atan2(delta_y, delta_x) * (180/Math.PI) + heading;
-        double vector = Math.sqrt(Math.pow(delta_y, 2) + Math.pow(delta_x, 2));
-        double strafe_distance = Math.sin(relative_heading * (Math.PI/180)) * vector;
-        double forward_distance = Math.cos(relative_heading * (Math.PI/180)) * vector;
-
-        forward_integral += forward_distance;
-        strafe_integral += strafe_distance;
-        heading_integral += delta_heading;
-
-        double forward_power = (forward_distance * Status.FORWARD_KP) + (forward_integral * Status.FORWARD_KI) * target_speed;
-        double strafe_power = (strafe_distance * Status.STRAFE_KP) + (strafe_integral * Status.STRAFE_KI) * target_speed;
-        double turn_power = ((heading_integral * Status.TURN_KI) + (delta_heading * Status.TURN_KP)) * target_speed;
-
-        move(forward_power, strafe_power, turn_power);
-    }
-
-    public double[] getPositionDeltas(){
-        return new double[]{delta_y, delta_x, delta_heading};
-    }
-
-    public double[] getTargets(){
-        return new double[]{target_y, target_x, target_heading};
+    public int getEncoderValue(encoderNames motor) {
+        switch (motor) {
+            case FRONT_RIGHT:
+                return front_right.getCurrentPosition();
+            case BACK_RIGHT:
+                return back_right.getCurrentPosition();
+            case FRONT_LEFT:
+                return front_left.getCurrentPosition();
+            case BACK_LEFT:
+                return back_left.getCurrentPosition();
+        }
+    return 0;
     }
 }

@@ -21,10 +21,12 @@ public class LiftControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_x;
     private ControllerMap.ButtonEntry btn_dpad_down;
     private ControllerMap.AxisEntry ax_left_trigger;
+    private ControllerMap.AxisEntry ax_right_trigger;
 
-    private int height = -1; // 0 = bottom, 1 = low, 2 = mid, 3 = high, 4 = neutral
+    private int height = -1; // 0 = bottom, 1 = low, 2 = mid, 3 = high, 4 = neutral, 5 = really high
     private ElapsedTime timer;
     private int id = 0;
+    private int id2 = 0;
     private boolean was_reset = false;
 
     private Logger log;
@@ -45,6 +47,7 @@ public class LiftControl extends ControlModule{
         btn_x = controllerMap.getButtonMap("lift:extend_neutral", "gamepad2", "x");
         btn_dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");
         ax_left_trigger = controllerMap.getAxisMap("lift:reset", "gamepad2", "left_trigger");
+        ax_right_trigger = controllerMap.getAxisMap("lift:extend_really_high", "gamepad2", "right_trigger");
 
         lift.rotate(Status.ROTATIONS.get("in"));
     }
@@ -61,7 +64,17 @@ public class LiftControl extends ControlModule{
         lift.extend(lift.getLiftTargetPos() + delta_extension, false);
 
         if (ax_left_trigger.get() > 0.8){
-            lift.resetLitTarget();
+            //lift.resetLitTarget();
+            id2++;
+            if(id2 > 1){ id2=0; }
+            switch (id2) {
+                case 0:
+                    lift.moveOutrigger(Status.OUTRIGGER_UP);
+                    break;
+                case 1:
+                    lift.moveOutrigger(Status.OUTRIGGER_DOWN);
+                    break;
+            }
         }
 
         switch (id) {
@@ -74,6 +87,8 @@ public class LiftControl extends ControlModule{
                     height = 3;
                 } else if (btn_x.get()){
                     height = 4;
+                } else if (ax_right_trigger.get() > 0.8){
+                    height = 5;
                 }
 
                 if (height != -1){
@@ -113,6 +128,10 @@ public class LiftControl extends ControlModule{
                     case 4:
                         lift.rotate(Status.ROTATIONS.get("neutral_out"));
                         break;
+                    case 5:
+                        lift.rotate(Status.ROTATIONS.get("high_out"));
+                        lift.moveOutrigger(Status.OUTRIGGER_DOWN);
+                        break;
                 }
                 if (timer.seconds() > Status.PITSTOP_WAIT_TIME){
                     id += 1;
@@ -137,6 +156,8 @@ public class LiftControl extends ControlModule{
                     case 4:
                         target_height = Status.STAGES.get("neutral");
                         break;
+                    case 5:
+                        target_height = Status.STAGES.get("really high");
                 }
                 lift.extend(target_height, true);
                 if (lift.ifReached(target_height)){

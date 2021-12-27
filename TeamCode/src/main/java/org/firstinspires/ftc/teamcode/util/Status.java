@@ -12,23 +12,24 @@ public class Status {
     public static final double TURN_KI = 0.0004;
 
     // Intake
-    public static final double FREIGHT_DETECTION = 2.4;
+    public static final double FREIGHT_DETECTION = 2.8;
 
     // Lift
     public static final double SENSITIVITY = 250;
-    public static final double RETRACT_POWER_THRESHOLD = 7500;
-    public static final double UPPER_LIMIT = 53000;
+    public static final double RETRACT_POWER_THRESHOLD = 8000;
+    public static final double UPPER_LIMIT = 70000;
     public static final double MAX_SPEED = 1;
     public static final double RETRACT_SPEED = 1;
-    public static final double kP = 0.0005;
+    public static final double kP = 0.0007;
     public static final double kI = 0;
     public static final double kD = 0;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
         put("pitstop", 14000.0);
         put("neutral", 15000.0);
         put("low", 34400.0);
-        put("mid", 43000.0);
+        put("mid", 41500.0);
         put("high", 46500.0);
+        put("really high", 68000.0);
     }};
 
     // Arm
@@ -41,12 +42,14 @@ public class Status {
     }};
     public static final double BUCKET_WAIT_TIME = 0.2;
     public static final double PITSTOP_WAIT_TIME = 0.15;
+    public static final double OUTRIGGER_UP = 1.0;
+    public static final double OUTRIGGER_DOWN = 0.0;
 
     // Deposit
     public static final HashMap<String, Double> DEPOSITS = new HashMap<String, Double>(){{
         put("dump", 0.1);
         put("carry", 0.7);
-        put("front", 0.27);
+        put("front", 0.36);
         put("back", 0.98);
     }};
 }
