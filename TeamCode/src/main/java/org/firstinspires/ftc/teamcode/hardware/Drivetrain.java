@@ -43,6 +43,16 @@ public class Drivetrain {
 
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        front_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        back_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        front_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        back_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        front_right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        back_right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        front_left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        back_left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void setStart(double y, double x, double heading) {
