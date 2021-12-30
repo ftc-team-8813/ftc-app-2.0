@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
@@ -50,6 +51,7 @@ public class CurrentTele extends LoggingOpMode
         controlMgr.addModule(new IntakeControl("Intake Control"));
         controlMgr.addModule(new LiftControl("FourBar Control"));
         controlMgr.addModule(new DuckControl("Duck Control"));
+        controlMgr.addModule(new AutoDrive());
         
         controlMgr.initModules();
     }

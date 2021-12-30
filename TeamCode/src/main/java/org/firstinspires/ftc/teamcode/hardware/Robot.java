@@ -51,7 +51,7 @@ public class Robot
         // Motors
         DcMotor front_left = hardwareMap.get(DcMotor.class, "front left");
         DcMotor front_right = hardwareMap.get(DcMotor.class, "front right");
-        DcMotor back_left = hardwareMap.get(DcMotor.class, "back left"); // Doubles as right odo pod
+        DcMotor back_left = hardwareMap.get(DcMotor.class, "back left");
         DcMotor back_right = hardwareMap.get(DcMotor.class, "back right");
         DcMotor lift = hardwareMap.get(DcMotor.class, "lift");
         DcMotor intake_front = hardwareMap.get(DcMotor.class, "intake front");
@@ -61,6 +61,7 @@ public class Robot
         // Servos
         Servo bucket = hardwareMap.get(Servo.class, "bucket");
         Servo arm = hardwareMap.get(Servo.class, "arm");
+        Servo outrigger = hardwareMap.get(Servo.class, "outrigger");
 
         // Sensors
         BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
@@ -70,7 +71,7 @@ public class Robot
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu);
         this.intake = new Intake(intake_front, intake_back, freight_checker, bucket);
-        this.lift = new Lift(lift, arm, limit_switch);
+        this.lift = new Lift(lift, arm, limit_switch, outrigger);
         this.duck = new Duck(duck);
     }
 }

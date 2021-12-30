@@ -11,6 +11,7 @@ public class Lift {
     private final DcMotor lift;
     private final Servo arm;
     private final DigitalChannel limit_switch;
+    private final Servo outrigger;
 
     private boolean lift_reached = true;
 
@@ -22,7 +23,7 @@ public class Lift {
     private double d_term;
 
 
-    public Lift(DcMotor lift, Servo arm, DigitalChannel limit_switch){
+    public Lift(DcMotor lift, Servo arm, DigitalChannel limit_switch, Servo outrigger){
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lift.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -30,6 +31,7 @@ public class Lift {
         this.lift = lift; // Encoder and motor on same port
         this.arm = arm;
         this.limit_switch = limit_switch;
+        this.outrigger = outrigger;
     }
 
     public void resetEncoder(){
@@ -59,6 +61,8 @@ public class Lift {
         }
         return false;
     }
+
+    public void moveOutrigger(double target_pos) { outrigger.setPosition((target_pos)); }
 
     public void updateLift(){
         double curr_pos = getLiftCurrentPos();
