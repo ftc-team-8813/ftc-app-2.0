@@ -100,10 +100,6 @@ public class AutonomousTemplate {
         server.startServer();
     }
 
-    public void init_odometry(double y, double x, double heading){
-        drivetrain.setStart(y, x, heading); // Must match Odo start position
-    }
-
     public void init_lift(){
         lift.extend(0, false);
         lift.rotate(Status.ROTATIONS.get("in"));

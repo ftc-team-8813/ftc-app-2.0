@@ -75,10 +75,10 @@ public class LiftControl extends ControlModule{
             if(id2 > 1){ id2 = 0; }
             switch (id2) {
                 case 0:
-                    lift.moveOutrigger(Status.OUTRIGGER_UP);
+                    lift.moveOutrigger(Status.OUTRIGGERS.get("up"));
                     break;
                 case 1:
-                    lift.moveOutrigger(Status.OUTRIGGER_DOWN);
+                    lift.moveOutrigger(Status.OUTRIGGERS.get("down"));
                     break;
             }
             left_trigger_was_pressed = true;
@@ -143,7 +143,7 @@ public class LiftControl extends ControlModule{
                         break;
                     case 6:
                         lift.rotate(Status.ROTATIONS.get("high_out"));
-                        lift.moveOutrigger(Status.OUTRIGGER_DOWN);
+                        lift.moveOutrigger(Status.OUTRIGGERS.get("down"));
                         break;
                 }
                 if (timer.seconds() > Status.PITSTOP_WAIT_TIME){
