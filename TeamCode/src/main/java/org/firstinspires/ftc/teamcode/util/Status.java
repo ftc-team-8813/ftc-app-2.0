@@ -13,7 +13,8 @@ public class Status {
 
     //Drivetrain Odometry
     public static final double WHEEL_DIAMETER = 96; //mm
-    public static final double TICKS_PER_ROTATION = 28;
+    public static final double TICKS_PER_ROTATION = 28; //encoder counts/revolution of the bare motor
+    public static final double turnP = 1.3; //no unit
 
     // Intake
     public static final double FREIGHT_DETECTION = 2.8;
@@ -49,14 +50,18 @@ public class Status {
     }};
     public static final double BUCKET_WAIT_TIME = 0.2;
     public static final double PITSTOP_WAIT_TIME = 0.15;
-    public static final double OUTRIGGER_UP = 1.0;
-    public static final double OUTRIGGER_DOWN = 0.0;
+
+    // Outrigger
+    public static final HashMap<String, Double> OUTRIGGERS = new HashMap<String, Double>(){{
+        put("up", 1.0);
+        put("down", 0.0);
+    }};
 
     // Deposit
     public static final HashMap<String, Double> DEPOSITS = new HashMap<String, Double>(){{
-        put("dump", 0.1);
+        put("dump", 0.0);
         put("carry", 0.7);
-        put("front", 0.36);
-        put("back", 0.98);
+        put("front", 0.355);
+        put("back", 1.0);
     }};
 }
