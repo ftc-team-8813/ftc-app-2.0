@@ -20,6 +20,7 @@ public class Robot
 {
     // Hardware Vars
     public Drivetrain drivetrain;
+    public AutoDrive navigation;
     public Intake intake;
     public Lift lift;
     public Duck duck;
@@ -69,16 +70,17 @@ public class Robot
         outrigger.setPwmRange(new PwmControl.PwmRange(500,2500));
 
         // Sensors
-        BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu2");
+        BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu2");
         DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");
         DigitalChannel limit_switch = hardwareMap.get(DigitalChannel.class, "lift limit");
 
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
+        this.navigation = new AutoDrive(drivetrain, imu);
         this.intake = new Intake(intake_front, intake_back, freight_checker, bucket);
         this.lift = new Lift(lift, arm, limit_switch, outrigger);
         this.duck = new Duck(duck);
-        this.imu = new IMU(imu);
+        this.imu = new IMU(imu_sensor);
         this.imu.initialize(eventBus, scheduler);
     }
 }

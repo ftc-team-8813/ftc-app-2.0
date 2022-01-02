@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.auto.AutonomousTemplate;
@@ -45,11 +46,9 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 auto.set_timer(1.5);
                 break;
             case 1:
-                robot.drivetrain.move(-.54,0,0);
-                auto.set_timer(.6);
+                robot.navigation.moveToPosition(-12, 0, 0);
                 break;
             case 2:
-                robot.drivetrain.move(0,0,0);
                 robot.lift.extend(Status.STAGES.get("pitstop"), true);
                 break;
             case 3:
@@ -115,8 +114,6 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 break;
             case 11:
                 robot.intake.setIntakeFront(1);
-                robot.drivetrain.move(.7,.03,0);
-                auto.set_timer(1.2);
                 break;
             case 12:
                 robot.drivetrain.move(.2,0,0);

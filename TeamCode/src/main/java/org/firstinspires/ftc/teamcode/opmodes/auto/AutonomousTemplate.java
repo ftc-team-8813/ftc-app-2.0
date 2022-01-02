@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Duck;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
@@ -33,6 +34,7 @@ public class AutonomousTemplate {
     private Robot robot;
     private Server server;
     private Drivetrain drivetrain;
+    private AutoDrive navigation;
     private Intake intake;
     private Duck duck;
     private Lift lift;
@@ -72,6 +74,7 @@ public class AutonomousTemplate {
         this.timer = new ElapsedTime();
 
         drivetrain = robot.drivetrain;
+        navigation = robot.navigation;
         duck = robot.duck;
         lift = robot.lift;
         intake = robot.intake;
@@ -162,10 +165,14 @@ public class AutonomousTemplate {
         telemetry.addData("Shipping Height: ", shipping_height);
         telemetry.addData("X Coord of Block: ", x_coord);
 
+        navigation.getFieldPos();
         lift.updateLift();
         telemetry.update();
 
-        if (lift.ifReached(lift.getLiftTargetPos())){
+        if (navigation.ifReached()){
+            logger.i("Reached CoordinateL %d", id);
+            id += 1;
+        } else if (lift.ifReached(lift.getLiftTargetPos())){
             logger.i("Reached Lift: %d", id);
             id += 1;
         } else if (timer.seconds() > timer_delay){
