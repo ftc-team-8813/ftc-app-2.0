@@ -22,16 +22,17 @@ public class CapstoneDetector {
     public CapstoneDetector(Logger logger){
         this.logger = logger;
         this.stored_frame = new Mat();
-        this.lower_range = new Scalar(100,50,70);
-        this.upper_range = new Scalar(150,150,105);
+        this.lower_range = new Scalar(98, 121, 48);
+        this.upper_range = new Scalar(132, 155, 98);
         contours = new ArrayList<>();
     }
 
-    public int detect(Mat detector_frame){
+    public double detect(Mat detector_frame){
         Mat resized = new Mat();
         Mat blurred = new Mat();
         Mat rgb = new Mat();
         Mat masked = new Mat();
+        Mat drawn = new Mat();
 
         Imgproc.resize(detector_frame, resized, new Size(800, 400));
         Imgproc.blur(resized, blurred, new Size(5, 5));
@@ -44,18 +45,24 @@ public class CapstoneDetector {
         ArrayList<Double> areas = new ArrayList<>();
         for (int i = 0; i < contours.size(); i++){
             MatOfPoint contour = contours.get(i);
-            double area = Imgproc.contourArea(contour);
-            areas.add(area);
+            double y_coord = contour.get(0,0)[1];
+            if (y_coord < 126 && y_coord > 56){
+                double area = Imgproc.contourArea(contour);
+                areas.add(area);
+            }
         }
 
         if (!areas.isEmpty()) {
             double max_area = Collections.max(areas);
             int index = areas.indexOf(max_area);
 
-            Moments p = Imgproc.moments(contours.get(index), false);
-            int x = (int) (p.get_m10() / p.get_m00());
+            MatOfPoint contour = contours.get(index);
+            Imgproc.cvtColor(masked, drawn, Imgproc.COLOR_GRAY2RGB);
+            Imgproc.drawContours(drawn, contours, index, new Scalar(0, 255, 0), 2);
+            stored_frame = drawn;
+            double x_coord = contour.get(0,0)[0];
 
-            return x;
+            return x_coord;
         }
 
         return -1;

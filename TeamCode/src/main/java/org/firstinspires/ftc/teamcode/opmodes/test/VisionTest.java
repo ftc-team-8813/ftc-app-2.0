@@ -81,15 +81,15 @@ public class VisionTest extends LoggingOpMode
 
             CapstoneDetector detector = new CapstoneDetector(log);
             double x_coord = detector.detect(cvFrame);
-            log.i("X Coord: ", x_coord);
+            log.i("X Coord: %f", x_coord);
 
-            Bitmap bmp = Bitmap.createBitmap(detector.stored_frame.cols(), detector.stored_frame.rows(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(detector.stored_frame, bmp);
-//            Bitmap bmp = Bitmap.createBitmap(cvFrame.cols(), cvFrame.rows(), Bitmap.Config.ARGB_8888);
-//            Utils.matToBitmap(cvFrame, bmp);
+//            Bitmap bmp = Bitmap.createBitmap(detector.stored_frame.cols(), detector.stored_frame.rows(), Bitmap.Config.ARGB_8888);
+//            Utils.matToBitmap(detector.stored_frame, bmp);
+            Bitmap bmp = Bitmap.createBitmap(cvFrame.cols(), cvFrame.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(cvFrame, bmp);
 
             ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
-            bmp.compress(Bitmap.CompressFormat.JPEG, 80, os); // probably quite slow
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, os); // probably quite slow
             serverFrameUsed = true;
             byte[] data = os.toByteArray();
             resp.respond(ByteBuffer.wrap(data));

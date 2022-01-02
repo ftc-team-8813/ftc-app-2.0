@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -23,6 +24,7 @@ public class Intake {
         this.intake_back = intake_back;
         this.dist = dist;
         this.bucket = bucket;
+        this.intake_back.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
 

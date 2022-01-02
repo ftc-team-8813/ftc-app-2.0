@@ -37,7 +37,7 @@ public class RedDuckAuto extends LoggingOpMode
     public void loop() {
         switch (id){
             case 0:
-                auto.check_image();
+                auto.check_image(false);
                 auto.set_timer(2);
                 break;
             case 1:

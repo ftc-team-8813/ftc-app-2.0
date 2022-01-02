@@ -55,7 +55,7 @@ public class AutonomousTemplate {
     private boolean waiting_camera = false;
     private boolean waiting = false;
     public int shipping_height = 0;
-    public int x_coord = -1;
+    public double x_coord = -1;
 
     static
     {
@@ -100,10 +100,6 @@ public class AutonomousTemplate {
         server.startServer();
     }
 
-    public void init_odometry(double y, double x, double heading){
-        drivetrain.setStart(y, x, heading); // Must match Odo start position
-    }
-
     public void init_lift(){
         lift.extend(0, false);
         lift.rotate(Status.ROTATIONS.get("in"));
@@ -122,7 +118,7 @@ public class AutonomousTemplate {
         waiting = true;
     }
 
-    public void check_image(){
+    public void check_image(boolean save_image){
         if (shipping_height != 0){
             return;
         }
@@ -134,15 +130,26 @@ public class AutonomousTemplate {
         CapstoneDetector capstone_detector = new CapstoneDetector(logger);
         x_coord = capstone_detector.detect(detector_frame);
         send_frame = capstone_detector.stored_frame;
-//        if (75 < x_coord && x_coord < 300) {
-//            shipping_height = 1;
-//        } else if (300 < x_coord && x_coord < 500) {
-//            shipping_height = 2;
-//        } else if (500 < x_coord && x_coord < 800) {
-//            shipping_height = 3;
-//        }
+        if (name.equals("Red Warehouse Auto")){
+            if (75 < x_coord && x_coord < 314) {
+                shipping_height = 1;
+            } else if (314 < x_coord && x_coord < 520) {
+                shipping_height = 2;
+            } else if (520 < x_coord && x_coord < 800) {
+                shipping_height = 3;
+            }
+        } else if (name.equals("Blue Warehouse Auto")){
+            if (75 < x_coord && x_coord < 305) {
+                shipping_height = 1;
+            } else if (305 < x_coord && x_coord < 520) {
+                shipping_height = 2;
+            } else if (520 < x_coord && x_coord < 800) {
+                shipping_height = 3;
+            }
+        }
 
-        logger.i(String.format("X Coord of Block: %d", x_coord));
+
+        logger.i(String.format("X Coord of Block: %f", x_coord));
         logger.i(String.format("Shipping Height: %d", shipping_height));
     }
 
@@ -160,9 +167,6 @@ public class AutonomousTemplate {
 
         if (lift.ifReached(lift.getLiftTargetPos())){
             logger.i("Reached Lift: %d", id);
-            id += 1;
-        } else if (intake.freightDetected()){
-            logger.i("Detected Freight: %d", id);
             id += 1;
         } else if (timer.seconds() > timer_delay){
             logger.i("Reached Timer: %d", id);
