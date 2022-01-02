@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 import java.util.List;
+import org.firstinspires.ftc.teamcode.util.Status;
 
 public class DriveControl extends ControlModule{
     private Drivetrain drivetrain;
@@ -43,7 +44,6 @@ public class DriveControl extends ControlModule{
         this.drivetrain = robot.drivetrain;
         this.imu = robot.imu;
         this.lift = robot.lift;
-
 
         ax_drive_left_x = controllerMap.getAxisMap("drive:left_x", "gamepad1", "left_stick_x");
         ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");
@@ -88,10 +88,11 @@ public class DriveControl extends ControlModule{
         telemetry.addData("Turn Correction Error", error);
         */
 
-        drivetrain.move(-ax_drive_left_y.get() * 0.4 * speed_scalar,
-                ax_drive_left_x.get() * 0.4 * speed_scalar,
-                -ax_drive_right_x.get() * 0.4 * speed_scalar);
+        telemetry.addData("Roll: %05f", imu.getRoll());
+        telemetry.addData("Pitch: %05f", imu.getPitch());
 
-
+        drivetrain.acceleratedMove(-ax_drive_left_y.get() * 0.4 * speed_scalar,
+                                     ax_drive_left_x.get() * 0.4 * speed_scalar,
+                                      ax_drive_right_x.get() * 0.4 * speed_scalar);
     }
 }

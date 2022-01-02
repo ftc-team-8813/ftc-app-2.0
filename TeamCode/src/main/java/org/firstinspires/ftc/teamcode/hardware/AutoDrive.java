@@ -65,10 +65,11 @@ public class AutoDrive {
     }
 
     public boolean ifReached(){
-        double min_x = target_x - 0.5;
-        double max_x = target_x - 0.5;
-        double min_y = target_y - 0.5;
-        double max_y = target_y - 0.5;
+        double deadband = 0.5;
+        double min_x = target_x - deadband;
+        double max_x = target_x - deadband;
+        double min_y = target_y - deadband;
+        double max_y = target_y - deadband;
         if (!drivetrain_reached && min_x < field_x && field_x < max_x && min_y < field_y && field_y < max_y){
             drivetrain_reached = true;
             return true;
@@ -166,7 +167,6 @@ public class AutoDrive {
         //telemetry.addData("r = ", r);
         //telemetry.addData("Server status ", server.getStatus());
         telemetry.addData("Loop Time in seconds", loop_time);
-
     }
 }
 

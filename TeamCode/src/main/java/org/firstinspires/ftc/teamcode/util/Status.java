@@ -3,15 +3,11 @@ package org.firstinspires.ftc.teamcode.util;
 import java.util.HashMap;
 
 public class Status {
-    // Odometry
-    public static final double FORWARD_KP = 0.007;
-    public static final double STRAFE_KP = 0.033;
-    public static final double TURN_KP = 0.03;
-    public static final double FORWARD_KI = 0.0009; // 0.003
-    public static final double STRAFE_KI = 0.0002; // 0.003
-    public static final double TURN_KI = 0.0004;
+    // Drivetrain
+    public static final double TIP_TERM = 0.1;
+    public static final double MAX_VELOCITY = 0;
 
-    //Drivetrain Odometry
+    //Odometry
     public static final double WHEEL_DIAMETER = 96; //mm
     public static final double TICKS_PER_ROTATION = 28; //encoder counts/revolution of the bare motor
     public static final double turnP = 1.3; //no unit

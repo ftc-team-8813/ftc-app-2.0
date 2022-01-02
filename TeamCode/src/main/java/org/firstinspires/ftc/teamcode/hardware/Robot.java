@@ -4,6 +4,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -53,10 +54,10 @@ public class Robot
     {
         // Hardware Maps
         // Motors
-        DcMotor front_left = hardwareMap.get(DcMotor.class, "front left");
-        DcMotor front_right = hardwareMap.get(DcMotor.class, "front right");
-        DcMotor back_left = hardwareMap.get(DcMotor.class, "back left");
-        DcMotor back_right = hardwareMap.get(DcMotor.class, "back right");
+        DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "front left");
+        DcMotorEx front_right = hardwareMap.get(DcMotorEx.class, "front right");
+        DcMotorEx back_left = hardwareMap.get(DcMotorEx.class, "back left");
+        DcMotorEx back_right = hardwareMap.get(DcMotorEx.class, "back right");
         DcMotor lift = hardwareMap.get(DcMotor.class, "lift");
         DcMotor intake_front = hardwareMap.get(DcMotor.class, "intake front");
         DcMotor intake_back = hardwareMap.get(DcMotor.class, "intake back");
@@ -75,12 +76,12 @@ public class Robot
         DigitalChannel limit_switch = hardwareMap.get(DigitalChannel.class, "lift limit");
 
         // Sub-Assemblies
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
+        this.imu = new IMU(imu_sensor);
+        this.imu.initialize(eventBus, scheduler);
+        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu);
         this.navigation = new AutoDrive(drivetrain, imu);
         this.intake = new Intake(intake_front, intake_back, freight_checker, bucket);
         this.lift = new Lift(lift, arm, limit_switch, outrigger);
         this.duck = new Duck(duck);
-        this.imu = new IMU(imu_sensor);
-        this.imu.initialize(eventBus, scheduler);
     }
 }
