@@ -22,7 +22,6 @@ public class Encoder_Auto_test extends LoggingOpMode
     @Override
     public void init() {
         super.init();
-        this.autoDrive = new AutoDrive();
         this.robot = Robot.initialize(hardwareMap, name);
         this.auto = new AutonomousTemplate(
                 name,
@@ -33,7 +32,6 @@ public class Encoder_Auto_test extends LoggingOpMode
         );
         auto.init_camera();
         auto.init_lift();
-        autoDrive.initialize(robot, null, new ControlMgr(robot, null));
     }
 
     @Override
@@ -53,6 +51,5 @@ public class Encoder_Auto_test extends LoggingOpMode
     @Override
     public void stop() {
         auto.stop();
-        autoDrive.stop();
     }
 }

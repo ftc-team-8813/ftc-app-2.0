@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode.hardware;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -14,14 +15,11 @@ import java.io.IOException;
 import java.lang.Math;
 import java.nio.ByteBuffer;
 
-public class AutoDrive extends ControlModule {
-
-    public AutoDrive() {
-        super("Auto Drive");
-    }
-
+public class AutoDrive {
+    private Drivetrain drivetrain;
     private IMU imu;
-    private Robot robot;
+
+    private boolean drivetrain_reached;
 
     private double delta_x; // change in robot x-position (forward/backward)
     private double delta_y; // change in robot y-position (strafing)
@@ -60,40 +58,22 @@ public class AutoDrive extends ControlModule {
     private double loop_start = 0.0;
     private double loop_end = 0.0;
     private double loop_time = 0.0;
-    private Server server;
 
-    /*
-    private double center_x; // x-position of arc center
-    private double center_y; // y-position of arc center
-    private double q; // angle between y-axis and robot heading after loop cycle
-    private double r; // radius of arc robot moves in when its heading changes in a loop cycle
-     */
+    public AutoDrive(Drivetrain drivetrain, IMU imu){
+        this.drivetrain = drivetrain;
+        this.imu = imu;
+    }
 
-    private Drivetrain drivetrain;
-
-    @Override
-    public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
-        drivetrain = robot.drivetrain;
-        this.imu = robot.imu;
-
-        try
-        {
-            server = new Server(new InetSocketServer(20000));
+    public boolean ifReached(){
+        double min_x = target_x - 0.5;
+        double max_x = target_x - 0.5;
+        double min_y = target_y - 0.5;
+        double max_y = target_y - 0.5;
+        if (!drivetrain_reached && min_x < field_x && field_x < max_x && min_y < field_y && field_y < max_y){
+            drivetrain_reached = true;
+            return true;
         }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-        server.registerProcessor(1, (cmd, payload, resp)->{
-            ByteBuffer buff = ByteBuffer.allocate(24); // 8 bytes per double, 3 doubles
-            buff.putDouble(error_x);
-            buff.putDouble(error_y);
-            buff.putDouble(error_a);
-            buff.flip();
-            resp.respond(buff);
-        });
-        server.startServer();
-
+        return false;
     }
 
     public void getFieldPos() {
@@ -160,9 +140,9 @@ public class AutoDrive extends ControlModule {
         double turn = -Range.clip(error_a * Kturn, -power_cap, power_cap);
 
         drivetrain.move(forward, strafe, turn);
+        drivetrain_reached = false;
     }
 
-    @Override
     public void update(Telemetry telemetry) {
 
         getFieldPos();
@@ -187,12 +167,6 @@ public class AutoDrive extends ControlModule {
         //telemetry.addData("Server status ", server.getStatus());
         telemetry.addData("Loop Time in seconds", loop_time);
 
-    }
-
-    @Override
-    public void stop()
-    {
-        server.close();
     }
 }
 

@@ -51,7 +51,6 @@ public class CurrentTele extends LoggingOpMode
         controlMgr.addModule(new IntakeControl("Intake Control"));
         controlMgr.addModule(new LiftControl("FourBar Control"));
         controlMgr.addModule(new DuckControl("Duck Control"));
-        controlMgr.addModule(new AutoDrive());
         
         controlMgr.initModules();
     }

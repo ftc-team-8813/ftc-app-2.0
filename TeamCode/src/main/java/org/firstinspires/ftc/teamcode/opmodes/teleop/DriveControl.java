@@ -52,10 +52,6 @@ public class DriveControl extends ControlModule{
         btn_a = controllerMap.getButtonMap("lift:extend_low", "gamepad2", "a");
         btn_x = controllerMap.getButtonMap("lift:extend_neutral", "gamepad2", "x");
         btn_dpad_down = controllerMap.getButtonMap("lift:reset", "gamepad2", "dpad_down");
-        List<AutoDrive> autoDrives = manager.getModules(AutoDrive.class);
-        if (autoDrives.size()>0) {
-            autoDrive = autoDrives.get(0);
-        }
     }
 
 
