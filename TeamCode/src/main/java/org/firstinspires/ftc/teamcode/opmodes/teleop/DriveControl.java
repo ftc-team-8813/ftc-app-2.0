@@ -88,9 +88,14 @@ public class DriveControl extends ControlModule{
         telemetry.addData("Turn Correction Error", error);
         */
 
-        telemetry.addData("Roll: %05f", imu.getRoll());
-        telemetry.addData("Pitch: %05f", imu.getPitch());
-
+        telemetry.addData("Roll:", imu.getRoll());
+        telemetry.addData("Pitch:", imu.getPitch());
+        //telemetry.addData("x Acceleration: ", imu.getInternalImu().getLinearAcceleration().xAccel);
+        //telemetry.addData("y Acceleration: ", imu.getInternalImu().getLinearAcceleration().yAccel);
+        //telemetry.addData("z Acceleration: ", imu.getInternalImu().getLinearAcceleration().zAccel);
+        telemetry.addData("Y rotation rate", imu.getInternalImu().getAngularVelocity().toAngleUnit(AngleUnit.RADIANS).yRotationRate);
+        telemetry.addData("Tip Sign: ", drivetrain.tip_sign);
+        telemetry.addData("Strafe Print: ", drivetrain.strafe_print);
         drivetrain.acceleratedMove(-ax_drive_left_y.get() * 0.4 * speed_scalar,
                                      ax_drive_left_x.get() * 0.4 * speed_scalar,
                                       ax_drive_right_x.get() * 0.4 * speed_scalar);

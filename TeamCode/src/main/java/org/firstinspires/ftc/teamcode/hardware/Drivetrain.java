@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
 import org.checkerframework.checker.units.qual.A;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -26,6 +27,9 @@ public class Drivetrain {
     private double past_strafe_power;
 
     private double init_roll;
+    private double tip_accel_was;
+    public double tip_sign;
+    public double strafe_print;
 
     private double forward_follower;
     private double strafe_follower;
@@ -69,6 +73,11 @@ public class Drivetrain {
     }
 
     public void acceleratedMove(double forward, double strafe, double turn) {
+
+          double tip_accel = imu.getInternalImu().getLinearAcceleration().yAccel;
+
+          tip_sign = Math.signum(tip_accel);
+
 //        double forward_error = (forward - forward_follower);
 //        double strafe_error = (strafe - strafe_follower);
 //
@@ -82,9 +91,12 @@ public class Drivetrain {
 //        } else {
 //            strafe_follower += Math.signum(strafe_error) * Status.ACCEL_LIMIT_STRAFE; //strafe p
 //        }
-        double strafe_factor = init_roll-imu.getRoll();
 
-        if (strafe_factor < 4) strafe_factor = 0;
+        double strafe_factor = init_roll - imu.getRoll();
+
+        if (strafe_factor < 3) strafe_factor = 0;
+
+        strafe_print = init_roll;
 
         move(forward, strafe + (strafe_factor * Status.TIP_TERM), turn);
     }
