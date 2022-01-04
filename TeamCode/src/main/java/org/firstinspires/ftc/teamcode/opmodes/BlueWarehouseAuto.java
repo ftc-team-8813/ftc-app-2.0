@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
@@ -14,7 +15,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
 {
     private Robot robot;
     private AutonomousTemplate auto;
-    private String name = "Blue Warehouse Auto";
+    private final String name = "Blue Warehouse Auto";
     private int id = 0;
 
 
@@ -46,8 +47,8 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 auto.set_timer(1.5);
                 break;
             case 1:
-                robot.navigation.moveToPosition(-12, 0, 0);
-                break;
+                robot.navigation.moveToPosition(0.0, -1.20, 0.0, .5);
+                if (robot.navigation.ifReached()){break;}
             case 2:
                 robot.lift.extend(Status.STAGES.get("pitstop"), true);
                 break;

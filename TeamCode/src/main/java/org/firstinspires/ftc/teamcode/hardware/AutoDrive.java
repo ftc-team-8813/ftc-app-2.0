@@ -16,8 +16,8 @@ import java.lang.Math;
 import java.nio.ByteBuffer;
 
 public class AutoDrive {
-    private Drivetrain drivetrain;
-    private IMU imu;
+    private final Drivetrain drivetrain;
+    private final IMU imu;
 
     private boolean drivetrain_reached;
 
@@ -65,7 +65,7 @@ public class AutoDrive {
     }
 
     public boolean ifReached(){
-        double deadband = 0.5;
+        double deadband = 0.01;
         double min_x = target_x - deadband;
         double max_x = target_x - deadband;
         double min_y = target_y - deadband;
@@ -121,13 +121,13 @@ public class AutoDrive {
 
     }
 
-    public void moveToPosition(double x, double y, double a) {
-        final double power_cap = 0.1; // NOT ACTUALLY CAPPING THE MOTOR POWER! Caps the values of fwd, strafe, and turn
+    public void moveToPosition(double x, double y, double a, double power) {
+        final double power_cap = power; // NOT ACTUALLY CAPPING THE MOTOR POWER! Caps the values of fwd, strafe, and turn
 
         target_x = x;
         target_y = y;
         target_a = a;
-        final double K = 0.01;
+        final double K = 0.1;
         final double Kturn = 0.05;
 
         error_x = target_x - field_x;
@@ -139,9 +139,14 @@ public class AutoDrive {
         double forward = Range.clip(error_d * Math.cos(theta) * K, -power_cap, power_cap);
         double strafe = -Range.clip(error_d * Math.sin(theta) * K, -power_cap, power_cap);
         double turn = -Range.clip(error_a * Kturn, -power_cap, power_cap);
+        if (ifReached()){
+            forward = 0.0;
+            strafe = 0.0;
+            turn = 0.0;
+        }
 
         drivetrain.move(forward, strafe, turn);
-        drivetrain_reached = false;
+
     }
 
     public void update(Telemetry telemetry) {
