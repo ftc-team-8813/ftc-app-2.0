@@ -4,8 +4,7 @@ import java.util.HashMap;
 
 public class Status {
     // Drivetrain
-    public static final double ACCEL_LIMIT = 0.1;
-    public static final double TIP_P = 0.1;
+    public static final double TIP_TERM = 1;
     public static final double MAX_VELOCITY = 0;
 
     //Odometry
