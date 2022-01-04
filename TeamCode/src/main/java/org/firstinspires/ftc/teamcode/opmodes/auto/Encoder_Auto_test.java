@@ -42,7 +42,7 @@ public class Encoder_Auto_test extends LoggingOpMode
     @Override
     public void loop() {
 
-        autoDrive.moveToPosition(0, 0,0);
+        autoDrive.moveToPosition(0.0, 32.0,0.0, 0.0, true);
         autoDrive.update(telemetry);
         robot.eventBus.update();
         robot.scheduler.loop();

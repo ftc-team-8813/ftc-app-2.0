@@ -13,8 +13,10 @@ public class Status {
     public static final double turnP = 1.3; //no unit
 
     // Intake
-    public static final double FREIGHT_DETECTION = 2.8;
+    public static final double FREIGHT_DETECTION = 2.6;
     public static final long TIME_BEFORE_INTAKING = 100000000; // nanoseconds
+
+
 
     // Lift
     public static final double SENSITIVITY = 500;

@@ -13,7 +13,7 @@ public class BlueDuckAuto extends LoggingOpMode
 {
     private Robot robot;
     private AutonomousTemplate auto;
-    private String name = "Blue Duck Auto";
+    private final String name = "Blue Duck Auto";
     private int id;
 
     @Override
@@ -41,7 +41,7 @@ public class BlueDuckAuto extends LoggingOpMode
 
         }
 
-        id = auto.update();
+        id = auto.update(1);
     }
 
     @Override

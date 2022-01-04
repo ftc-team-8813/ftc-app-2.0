@@ -16,8 +16,8 @@ import java.lang.Math;
 import java.nio.ByteBuffer;
 
 public class AutoDrive {
-    private Drivetrain drivetrain;
-    private IMU imu;
+    private final Drivetrain drivetrain;
+    private final IMU imu;
 
     private boolean drivetrain_reached;
 
@@ -66,15 +66,14 @@ public class AutoDrive {
 
     public boolean ifReached(){
         double deadband = 0.5;
-        double min_x = target_x - deadband;
-        double max_x = target_x - deadband;
-        double min_y = target_y - deadband;
-        double max_y = target_y - deadband;
-        if (!drivetrain_reached && min_x < field_x && field_x < max_x && min_y < field_y && field_y < max_y){
+        double deadband_a = 0.05;
+        if (!drivetrain_reached && Math.abs(error_x) <= deadband && Math.abs(error_y) <= deadband && Math.abs(error_a) <= deadband_a){
             drivetrain_reached = true;
             return true;
+        } else {
+            return false;
         }
-        return false;
+
     }
 
     public void getFieldPos() {
@@ -121,14 +120,14 @@ public class AutoDrive {
 
     }
 
-    public void moveToPosition(double x, double y, double a) {
-        final double power_cap = 0.1; // NOT ACTUALLY CAPPING THE MOTOR POWER! Caps the values of fwd, strafe, and turn
+    public void moveToPosition(double x, double y, double a, double power, boolean tracking) {
+        final double power_cap = power; // NOT ACTUALLY CAPPING THE MOTOR POWER! Caps the values of fwd, strafe, and turn
 
         target_x = x;
         target_y = y;
         target_a = a;
         final double K = 0.01;
-        final double Kturn = 0.05;
+        final double Kturn = 0.01;
 
         error_x = target_x - field_x;
         error_y = target_y - field_y;
@@ -140,8 +139,18 @@ public class AutoDrive {
         double strafe = -Range.clip(error_d * Math.sin(theta) * K, -power_cap, power_cap);
         double turn = -Range.clip(error_a * Kturn, -power_cap, power_cap);
 
+        if (ifReached()){
+            forward = 0.0;
+            strafe = 0.0;
+            turn = 0.0;
+        }
+
+        if (tracking){
+            drivetrain_reached = false;
+        }
+
         drivetrain.move(forward, strafe, turn);
-        drivetrain_reached = false;
+
     }
 
     public void update(Telemetry telemetry) {
@@ -162,11 +171,9 @@ public class AutoDrive {
 
         telemetry.addData("x position: ", field_x);
         telemetry.addData("y position: ", field_y);
-        //telemetry.addData("center_Y", center_y);
         telemetry.addData("angle: ", heading);
-        //telemetry.addData("r = ", r);
         //telemetry.addData("Server status ", server.getStatus());
-        telemetry.addData("Loop Time in seconds", loop_time);
+        //telemetry.addData("Loop Time in seconds", loop_time);
     }
 }
 
