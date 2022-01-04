@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.checkerframework.checker.units.qual.A;
 import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
-import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
+import org.firstinspires.ftc.teamcode.opmodes.auto.AutonomousTemplate;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
+import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 @Autonomous(name="Auto Drive Test", group="Blues")
@@ -20,7 +23,6 @@ public class Encoder_Auto_test extends LoggingOpMode
     public void init() {
         super.init();
         this.robot = Robot.initialize(hardwareMap, name);
-        this.autoDrive = new AutoDrive(robot.drivetrain, robot.imu);
         this.auto = new AutonomousTemplate(
                 name,
                 this.robot,
