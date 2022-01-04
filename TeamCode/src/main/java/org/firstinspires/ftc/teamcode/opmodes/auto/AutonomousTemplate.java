@@ -172,14 +172,20 @@ public class AutonomousTemplate {
         if (navigation.ifReached()){
             logger.i("Reached CoordinateL %d", id);
             id += 1;
+            intake.stopDetectingFreight();
         } else if (lift.ifReached(lift.getLiftTargetPos())){
             logger.i("Reached Lift: %d", id);
+            id += 1;
+            intake.stopDetectingFreight();
+        } else if (intake.freightDetected()){
+            logger.i("Grabbed Freight: %d", id);
             id += 1;
         } else if (timer.seconds() > timer_delay){
             logger.i("Reached Timer: %d", id);
             id += 1;
             waiting = false;
             timer.reset();
+            intake.stopDetectingFreight();
         }
 
         return id;
