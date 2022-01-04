@@ -277,7 +277,7 @@ public class IMU
         
         this.evBus = evBus;
         worker.scheduler = scheduler;
-        workerInterval = scheduler.addRepeatingTrigger(0.05, "IMU Worker Timer");
+        workerInterval = scheduler.addRepeatingTrigger(0.02, "IMU Worker Timer");
         workerSub = evBus.subscribe(TimerEvent.class, worker, "IMU Worker", workerInterval.eventChannel);
     }
     

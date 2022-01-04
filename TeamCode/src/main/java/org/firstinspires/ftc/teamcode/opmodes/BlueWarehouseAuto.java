@@ -46,7 +46,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 auto.set_timer(1.5);
                 break;
             case 1:
-                robot.navigation.moveToPosition(-12, 0, 0);
+                robot.navigation.moveToPosition(0, -12.0, 0);
                 break;
             case 2:
                 robot.lift.extend(Status.STAGES.get("pitstop"), true);
