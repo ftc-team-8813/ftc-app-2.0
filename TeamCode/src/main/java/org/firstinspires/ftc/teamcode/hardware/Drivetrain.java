@@ -14,18 +14,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.Status;
-import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 public class Drivetrain {
-    public final DcMotorEx front_left;
-    public final DcMotorEx front_right;
-    public final DcMotorEx back_left;
-    public final DcMotorEx back_right;
+    private final DcMotorEx front_left;
+    private final DcMotorEx front_right;
+    private final DcMotorEx back_left;
+    private final DcMotorEx back_right;
     private final IMU imu;
-
-    // private double P = -0.0001; // for active braking
 
     public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, IMU imu) {
         this.front_left = front_left;

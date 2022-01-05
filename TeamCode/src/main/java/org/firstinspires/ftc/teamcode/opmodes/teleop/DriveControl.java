@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 import java.util.List;
+import org.firstinspires.ftc.teamcode.util.Status;
 
 public class DriveControl extends ControlModule{
     private Drivetrain drivetrain;
@@ -29,6 +30,9 @@ public class DriveControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_dpad_down;
     private AutoDrive autoDrive;
 
+    private double heading_was;
+    private double heading_delta;
+
     //private double target_angle=0.0; // robot target heading for correction
     //private double turn_scaling=0.1; //scales the right joystick x value for turn correction
 
@@ -43,7 +47,6 @@ public class DriveControl extends ControlModule{
         this.drivetrain = robot.drivetrain;
         this.imu = robot.imu;
         this.lift = robot.lift;
-
 
         ax_drive_left_x = controllerMap.getAxisMap("drive:left_x", "gamepad1", "left_stick_x");
         ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");
@@ -88,10 +91,22 @@ public class DriveControl extends ControlModule{
         telemetry.addData("Turn Correction Error", error);
         */
 
-        drivetrain.move(-ax_drive_left_y.get() * 0.4 * speed_scalar,
-                ax_drive_left_x.get() * 0.4 * speed_scalar,
-                -ax_drive_right_x.get() * 0.4 * speed_scalar);
+        //telemetry.addData("x Acceleration: ", imu.getInternalImu().getLinearAcceleration().xAccel);
+        //telemetry.addData("y Acceleration: ", imu.getInternalImu().getLinearAcceleration().yAccel);
+        //telemetry.addData("z Acceleration: ", imu.getInternalImu().getLinearAcceleration().zAccel);
+        telemetry.addData("Heading: ", imu.getHeading());
+        telemetry.addData("Heading Delta: ", heading_delta);
+        teleMove(-ax_drive_left_y.get() * 0.45 * speed_scalar,
+                                     ax_drive_left_x.get() * 0.45 * speed_scalar,
+                                      ax_drive_right_x.get() * 0.45 * speed_scalar);
+    }
 
+    public void teleMove(double forward, double strafe, double turn) {
+        heading_delta = imu.getHeading() - heading_was;
+        //if (Math.abs(heading_delta) > 4) heading_delta = 0;
+        if (turn != 0) heading_delta = 0;
 
+        drivetrain.move(forward, (strafe * 0.6), (turn * 0.6) + (heading_delta * Status.TURN_CORRECTION_P));
+        heading_was = imu.getHeading();
     }
 }
