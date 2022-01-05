@@ -13,7 +13,7 @@ public class RedWarehouseAuto extends LoggingOpMode
 {
     private Robot robot;
     private AutonomousTemplate auto;
-    private String name = "Red Warehouse Auto";
+    private final String name = "Red Warehouse Auto";
     private int id = 0;
 
 
@@ -176,7 +176,7 @@ public class RedWarehouseAuto extends LoggingOpMode
                 break;
         }
 
-        id = auto.update();
+        id = auto.update(1);
     }
 
     @Override

@@ -83,6 +83,7 @@ public class DriveControl extends ControlModule{
                     -turn_correction);
         }
 
+        AutoDrive.update(telemetry);
 
         telemetry.addData("Z rotation rate", imu.getInternalImu().getAngularVelocity().toAngleUnit(AngleUnit.RADIANS).zRotationRate);
         telemetry.addData("Y rotation rate", imu.getInternalImu().getAngularVelocity().toAngleUnit(AngleUnit.RADIANS).yRotationRate);

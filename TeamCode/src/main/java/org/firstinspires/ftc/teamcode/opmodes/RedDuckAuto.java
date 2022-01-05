@@ -11,7 +11,7 @@ public class RedDuckAuto extends LoggingOpMode
 {
     private Robot robot;
     private AutonomousTemplate auto;
-    private String name = "Red Duck Auto";
+    private final String name = "Red Duck Auto";
     private int id;
 
     @Override
@@ -52,7 +52,7 @@ public class RedDuckAuto extends LoggingOpMode
                 break;
         }
 
-        id = auto.update();
+        id = auto.update(1);
     }
 
     @Override
