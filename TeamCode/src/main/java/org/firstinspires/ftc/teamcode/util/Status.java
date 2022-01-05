@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class Status {
     // Drivetrain
-    public static final double TURN_CORRECTION_P = 0.04;
+    public static final double TURN_CORRECTION_P = 0.04; //tele op
     public static final double MAX_VELOCITY = 0;
 
     //Odometry
