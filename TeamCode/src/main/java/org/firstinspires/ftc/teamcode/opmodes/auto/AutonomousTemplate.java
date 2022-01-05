@@ -176,8 +176,6 @@ public class AutonomousTemplate {
             intake.stopDetectingFreight();
         } else if (intake.freightDetected() && state == 3){
             logger.i("Grabbed Freight: %d", id);
-            waiting = false;
-            timer.reset();
             id += 1;
 
         }
@@ -192,7 +190,7 @@ public class AutonomousTemplate {
         navigation.update(telemetry);
         telemetry.addData("Drivetrain Position Reached", navigation.ifReached());
         telemetry.addData("Lift Position Reached", lift.ifReached(lift.getLiftTargetPos()));
-
+        telemetry.addData("Freight Detected",intake.freightDetected() );
         return id;
     }
 

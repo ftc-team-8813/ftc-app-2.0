@@ -66,7 +66,7 @@ public class AutoDrive {
 
     public boolean ifReached(){
         double deadband = 0.5;
-        double deadband_a = 0.05;
+        double deadband_a = 0.017;
         if (!drivetrain_reached && Math.abs(error_x) <= deadband && Math.abs(error_y) <= deadband && Math.abs(error_a) <= deadband_a){
             drivetrain_reached = true;
             return true;
@@ -126,8 +126,8 @@ public class AutoDrive {
         target_x = x;
         target_y = y;
         target_a = a;
-        final double K = 0.01;
-        final double Kturn = 0.01;
+        final double K = 0.04;
+        final double Kturn = 0.1;
 
         error_x = target_x - field_x;
         error_y = target_y - field_y;
