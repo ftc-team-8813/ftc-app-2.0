@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.auto.AutonomousTemplate;
@@ -14,8 +15,9 @@ public class BlueWarehouseAuto extends LoggingOpMode
 {
     private Robot robot;
     private AutonomousTemplate auto;
-    private String name = "Blue Warehouse Auto";
-    private int id;
+    private final String name = "Blue Warehouse Auto";
+    private int id = 0;
+    public int state = 0; // 0 = driving, 1 = lifting, 2 = waiting for timer, 3 = sensing freight
 
 
     @Override
@@ -30,6 +32,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 telemetry
         );
         auto.init_camera();
+        auto.init_lift();
     }
 
     @Override
@@ -39,96 +42,106 @@ public class BlueWarehouseAuto extends LoggingOpMode
 
     @Override
     public void loop() {
+        int state = 0; // STATE: 0=driving, 1=lifting, 2=waiting 3=detecting freight
         switch (id){
             case 0:
-                auto.check_image();
-                auto.set_timer(1.5);
+                auto.check_image(false); state = 2;
+                auto.set_timer(0.5);
                 break;
             case 1:
-                robot.drivetrain.teleMove(-.39,0,0);
-                auto.set_timer(1);
+                robot.lift.extend(Status.STAGES.get("pitstop"), true); state = 1;
+                robot.navigation.moveToPosition(0.0, -25.0, 0.0, 3.0, true); state = 0;
                 break;
             case 2:
-                robot.drivetrain.teleMove(0,0,0);
-                robot.lift.extend(Status.STAGES.get("pitstop"), true);
-//                auto.set_timer(2);
-                break;
-            case 3:
-                robot.lift.rotate(Status.EXTENSIONS.get("out"));
-                auto.set_timer(1);
-                break;
-            case 4:
                 switch(auto.shipping_height){
                     case 1:
-                        robot.lift.extend(Status.STAGES.get("low"), true);
-                        auto.set_timer(1);
+                        robot.lift.rotate(Status.ROTATIONS.get("low_out")); state = 2;
                         break;
                     case 2:
-                        robot.lift.extend(Status.STAGES.get("mid"), true);
-                        auto.set_timer(1);
+                        robot.lift.rotate(Status.ROTATIONS.get("mid_out")); state = 2;
                         break;
                     case 3:
-                        robot.lift.extend(Status.STAGES.get("high"), true);
-                        auto.set_timer(1);
+                        robot.lift.rotate(Status.ROTATIONS.get("high_out")); state = 2;
                         break;
                     case 0:
-                        robot.lift.extend(Status.STAGES.get("high"), true);
-                        auto.set_timer(1);
+                        robot.lift.rotate(Status.ROTATIONS.get("high_out")); state = 2;
+                        break;
+                }
+                auto.set_timer(.7);
+                break;
+            case 3:
+                switch(auto.shipping_height){
+                    case 1:
+                        robot.lift.extend(Status.STAGES.get("low"), true); state = 2;
+                        auto.set_timer(.7);
+                        break;
+                    case 2:
+                        robot.lift.extend(Status.STAGES.get("mid"), true); state = 2;
+                        auto.set_timer(.7);
+                        break;
+                    case 3:
+                        robot.lift.extend(Status.STAGES.get("high"), true); state = 2;
+                        auto.set_timer(.7);
+                        break;
+                    case 0:
+                        robot.lift.extend(Status.STAGES.get("high"), true); state = 2;
+                        auto.set_timer(.7);
                         break;
                 }
                 break;
+            case 4:
+                robot.intake.deposit(Status.DEPOSITS.get("dump")); state = 2;
+                auto.set_timer(0.5);
+                break;
             case 5:
-                robot.intake.deposit(Status.DEPOSITS.get("dump"));
-                auto.set_timer(.75);
+                robot.intake.deposit(Status.DEPOSITS.get("carry")); state = 2;
+                auto.set_timer(.2);
                 break;
             case 6:
-                robot.intake.deposit(Status.DEPOSITS.get("carry"));
+                robot.lift.extend(Status.STAGES.get("pitstop"), true); state = 2;
                 auto.set_timer(.5);
                 break;
             case 7:
-                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+                robot.lift.rotate(Status.ROTATIONS.get("in")); state = 2;
+                auto.set_timer(.7);
                 break;
             case 8:
-                robot.lift.rotate(Status.EXTENSIONS.get("in"));
-                auto.set_timer(1);
+                robot.lift.extend(0, true); state = 1;
                 break;
             case 9:
-                robot.lift.extend(0, true);
+                robot.intake.deposit(Status.DEPOSITS.get("front"));
+                robot.intake.setIntakeFront(1);
+                robot.navigation.moveToPosition(4.2,40.0,0.0, .4, true); state = 0;
                 break;
             case 10:
-                robot.intake.deposit(Status.DEPOSITS.get("front"));
-                robot.drivetrain.teleMove(0,0,0);
-                auto.set_timer(.5);
+                robot.intake.detectFreight();
+                robot.drivetrain.move(0.6, 0,0); state = 3;
                 break;
             case 11:
-                robot.intake.setIntakeFront(1);
-                robot.drivetrain.teleMove(.5,0,0);
-                auto.set_timer(1.5);
+                robot.intake.deposit(Status.DEPOSITS.get("carry"));
+                robot.intake.setIntakeFront(-1);
+                robot.navigation.moveToPosition(4.2,24.0,0.0, 0.5, true); state = 0;
                 break;
             case 12:
-                robot.drivetrain.teleMove(.25,0,0);
-                auto.set_timer(2);
+                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+                robot.navigation.moveToPosition(4.2,0.0,0.0, 0.6, true); state = 0;
                 break;
             case 13:
-                robot.intake.deposit(Status.DEPOSITS.get("carry"));
-                auto.set_timer(.5);
+                robot.lift.extend(Status.STAGES.get("high"), true);
+                robot.navigation.moveToPosition(4.2,-24.0,0.0, 0.6, true); state = 0;
                 break;
             case 14:
-                robot.intake.stop();
-                robot.drivetrain.teleMove(0,0,0);
-                auto.set_timer(.25);
-            case 15:
-                robot.intake.setIntakeFront(-1);
-                robot.drivetrain.teleMove(-.45,0,0);
-                auto.set_timer(3);
+                robot.lift.rotate(Status.ROTATIONS.get("high_out")); state = 2;
+                auto.set_timer(0.9);
                 break;
-            case 16:
-                robot.intake.stop();
-                robot.drivetrain.teleMove(0,0,0);
+            case 15:
+                robot.intake.deposit(Status.DEPOSITS.get("dump")); state = 2;
+                auto.set_timer(0.5);
                 break;
         }
-
-        id = auto.update();
+        id = auto.update(state);
+        robot.eventBus.update();
+        robot.scheduler.loop();
     }
 
     @Override

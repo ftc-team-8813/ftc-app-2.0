@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
@@ -14,8 +13,8 @@ public class RedWarehouseAuto extends LoggingOpMode
 {
     private Robot robot;
     private AutonomousTemplate auto;
-    private String name = "Red Warehouse Auto";
-    private int id;
+    private final String name = "Red Warehouse Auto";
+    private int id = 0;
 
 
     @Override
@@ -30,6 +29,7 @@ public class RedWarehouseAuto extends LoggingOpMode
                 telemetry
         );
         auto.init_camera();
+        auto.init_lift();
     }
 
     @Override
@@ -41,38 +41,47 @@ public class RedWarehouseAuto extends LoggingOpMode
     public void loop() {
         switch (id){
             case 0:
-                auto.check_image();
-                auto.set_timer(1.5);
+                auto.check_image(false);
+                auto.set_timer(2);
                 break;
             case 1:
-                robot.drivetrain.teleMove(.38,0,0);
-                auto.set_timer(1);
+                robot.drivetrain.move(.4,0,0);
+                auto.set_timer(.8);
                 break;
             case 2:
-                robot.drivetrain.teleMove(0,0,0);
+                robot.drivetrain.move(0,0,0);
                 robot.lift.extend(Status.STAGES.get("pitstop"), true);
                 break;
             case 3:
-                robot.lift.rotate(Status.EXTENSIONS.get("out"));
-                auto.set_timer(1);
+                switch(auto.shipping_height){
+                    case 1:
+                        robot.lift.rotate(Status.ROTATIONS.get("low_out"));
+                        break;
+                    case 2:
+                        robot.lift.rotate(Status.ROTATIONS.get("mid_out"));
+                        break;
+                    case 3:
+                        robot.lift.rotate(Status.ROTATIONS.get("high_out"));
+                        break;
+                    case 0:
+                        robot.lift.rotate(Status.ROTATIONS.get("high_out"));
+                        break;
+                }
+                auto.set_timer(.9);
                 break;
             case 4:
                 switch(auto.shipping_height){
                     case 1:
                         robot.lift.extend(Status.STAGES.get("low"), true);
-                        auto.set_timer(2);
                         break;
                     case 2:
                         robot.lift.extend(Status.STAGES.get("mid"), true);
-                        auto.set_timer(2);
                         break;
                     case 3:
                         robot.lift.extend(Status.STAGES.get("high"), true);
-                        auto.set_timer(2);
                         break;
                     case 0:
                         robot.lift.extend(Status.STAGES.get("high"), true);
-                        auto.set_timer(2);
                         break;
                 }
                 break;
@@ -81,14 +90,14 @@ public class RedWarehouseAuto extends LoggingOpMode
                 auto.set_timer(2);
                 break;
             case 6:
-                robot.lift.extend(Status.STAGES.get("pitstop"), true);
-                break;
-            case 7:
                 robot.intake.deposit(Status.DEPOSITS.get("carry"));
                 auto.set_timer(.5);
                 break;
+            case 7:
+                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+                break;
             case 8:
-                robot.lift.rotate(Status.EXTENSIONS.get("in"));
+                robot.lift.rotate(Status.ROTATIONS.get("in"));
                 auto.set_timer(1);
                 break;
             case 9:
@@ -96,17 +105,18 @@ public class RedWarehouseAuto extends LoggingOpMode
                 break;
             case 10:
                 robot.intake.deposit(Status.DEPOSITS.get("back"));
-                robot.drivetrain.teleMove(0,0,0);
+                robot.drivetrain.move(0,0,0);
                 auto.set_timer(.5);
                 break;
             case 11:
                 robot.intake.setIntakeBack(1);
-                robot.drivetrain.teleMove(-.5,0,0);
-                auto.set_timer(1.5);
+                robot.drivetrain.move(-.28,0,0);
+                auto.set_timer(3.3);
                 break;
             case 12:
-                robot.drivetrain.teleMove(-.25,0,0);
-                auto.set_timer(2);
+                robot.intake.setIntakeBack(-1);
+                robot.drivetrain.move(0,0,0);
+                auto.set_timer(1.7);
                 break;
             case 13:
                 robot.intake.deposit(Status.DEPOSITS.get("carry"));
@@ -114,29 +124,28 @@ public class RedWarehouseAuto extends LoggingOpMode
                 break;
             case 14:
                 robot.intake.stop();
-                robot.drivetrain.teleMove(0,0,0);
+                robot.drivetrain.move(0,0,0);
                 auto.set_timer(.25);
             case 15:
-                robot.intake.setIntakeBack(-1);
-                robot.drivetrain.teleMove(.45,0,0);
-                auto.set_timer(3);
+                robot.intake.setIntakeBack(1);
+                robot.drivetrain.move(.34,0,0);
+                auto.set_timer(.8);
                 break;
             case 16:
                 robot.intake.stop();
-                robot.drivetrain.teleMove(0,0,0);
+                robot.drivetrain.move(0,0,0);
                 robot.lift.extend(Status.STAGES.get("pitstop"), true);
                 break;
             case 17:
-                robot.lift.rotate(Status.EXTENSIONS.get("out"));
+                robot.lift.rotate(Status.ROTATIONS.get("high_out"));
                 auto.set_timer(1);
                 break;
             case 18:
                 robot.lift.extend(Status.STAGES.get("high"), true);
-                auto.set_timer(1);
                 break;
             case 19:
                 robot.intake.deposit(Status.DEPOSITS.get("dump"));
-                auto.set_timer(.75);
+                auto.set_timer(2);
                 break;
             case 20:
                 robot.intake.deposit(Status.DEPOSITS.get("carry"));
@@ -146,7 +155,7 @@ public class RedWarehouseAuto extends LoggingOpMode
                 robot.lift.extend(Status.STAGES.get("pitstop"), true);
                 break;
             case 22:
-                robot.lift.rotate(Status.EXTENSIONS.get("in"));
+                robot.lift.rotate(Status.ROTATIONS.get("in"));
                 auto.set_timer(1.5);
                 break;
             case 23:
@@ -154,38 +163,20 @@ public class RedWarehouseAuto extends LoggingOpMode
                 break;
             case 24:
                 robot.intake.deposit(Status.DEPOSITS.get("back"));
-                robot.drivetrain.teleMove(0,0,0);
+                robot.drivetrain.move(0,0,0);
                 auto.set_timer(.5);
                 break;
             case 25:
-                robot.intake.setIntakeBack(1);
-                robot.drivetrain.teleMove(-.5,0,0);
-                auto.set_timer(1.5);
+                robot.drivetrain.move(-.3,0,0);
+                auto.set_timer(3.5);
                 break;
             case 26:
-                robot.drivetrain.teleMove(-.25,0,0);
-                auto.set_timer(2);
-                break;
-            case 27:
-                robot.intake.deposit(Status.DEPOSITS.get("carry"));
-                auto.set_timer(.5);
-                break;
-            case 28:
-                robot.intake.stop();
-                robot.drivetrain.teleMove(0,0,0);
-                auto.set_timer(.25);
-            case 29:
-                robot.intake.setIntakeBack(-1);
-                robot.drivetrain.teleMove(.45,0,0);
-                auto.set_timer(3);
-                break;
-            case 30:
-                robot.intake.stop();
-                robot.drivetrain.teleMove(0,0,0);
+                robot.drivetrain.move(0, 0, 0);
+                auto.set_timer(0.5);
                 break;
         }
 
-        id = auto.update();
+        id = auto.update(1);
     }
 
     @Override
