@@ -156,18 +156,35 @@ public class AutonomousTemplate {
 
         chassis_reached = navigation.ifReached();
         lift_reached = lift.ifReached(lift.getLiftTargetPos());
-        freight_sensed = intake.freightDetected();
+        freight_sensed = intake.autoFreightDetected();
 
         navigation.getFieldPos();
         lift.updateLift();
-        telemetry.update();
 
         telemetry.addData("Shipping Height: ", shipping_height);
         telemetry.addData("X Coord of Block: ", x_coord);
         navigation.update(telemetry);
         telemetry.addData("Drivetrain Position Reached", navigation.ifReached());
         telemetry.addData("Lift Position Reached", lift.ifReached(lift.getLiftTargetPos()));
-        telemetry.addData("Freight Detected",intake.freightDetected() );
+        telemetry.addData("Freight Detected",intake.autoFreightDetected());
+
+        telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
+        telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());
+
+        telemetry.update();
+    }
+
+    public void autoLiftRetract() {
+//        if (lift.limitPressed()) {
+//            lift.lift_motor.setPower(0);
+//            lift.resetLiftTarget();
+//            lift_reached = true;
+//            lift.auto_override = false;
+//        } else {
+//            lift.lift_motor.setPower(-0.5);
+//            lift.auto_override = true;
+//        }
+        lift.extend(0, true);
     }
 
     public void stop(){

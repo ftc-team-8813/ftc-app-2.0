@@ -107,7 +107,7 @@ public class DriveControl extends ControlModule{
         //if (Math.abs(heading_delta) > 4) heading_delta = 0;
         if (turn != 0) heading_delta = 0;
 
-        drivetrain.move(forward, (strafe * 0.6), (turn * 0.6) + (heading_delta * Status.TURN_CORRECTION_P));
+        drivetrain.move(forward, (strafe * 0.7), (turn * 0.6) + (heading_delta * Status.TURN_CORRECTION_P));
         heading_was = imu.getHeading();
     }
 }

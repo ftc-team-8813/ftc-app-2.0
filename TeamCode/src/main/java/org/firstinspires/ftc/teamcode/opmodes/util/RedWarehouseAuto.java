@@ -1,22 +1,21 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.util;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.opmodes.auto.AutonomousTemplate;
 import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
-@Autonomous(name="Blue Warehouse Auto", group="Blues")
-public class BlueWarehouseAuto extends LoggingOpMode
+@Autonomous(name="Red Warehouse Auto", group="Reds")
+public class RedWarehouseAuto extends LoggingOpMode
 {
     private Robot robot;
     private AutonomousTemplate auto;
-    private final String name = "Blue Warehouse Auto";
+    private final String name = "Red Warehouse Auto";
     private int id1 = 0;
     private int id2 = 0;
     private ElapsedTime timer1;
@@ -61,15 +60,15 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 if (timer1.seconds() > 0.3) {id1+=1; id2+=1; waiting1 = false;};
                 break;
             case 1: //go to goal
-                robot.navigation.moveToPosition(1, -25.0, 0.0, 0.6, true);
+                robot.navigation.moveToPosition(0, 25.0, 0.0, 0.6, true);
                 break;
             case 2: //go to warehouse, make sure slides are in before bucket goes down
-                robot.navigation.moveToPosition(1,27.0,0.0, 0.6, true);
+                robot.navigation.moveToPosition(0,-27.0,0.0, 0.6, true);
                 if (auto.chassis_reached && id2 == 9) {id1+=1; auto.chassis_reached = false;}
                 break;
             case 3: //intake, once done tell slides to start extending
-                robot.intake.setIntakeFront(0.9);
-                robot.navigation.moveToPosition(-1,40,0,.35,true);
+                robot.intake.setIntakeBack(0.9);
+                robot.navigation.moveToPosition(-1,-37,.1,.2,true);
                 if (!waiting1) {timer1.reset(); waiting1 = true;}
                 if (timer1.seconds() > 3) {id1+=1; id2+=1; waiting1 = false;};
                 if(auto.freight_sensed) {id1+=1; id2+=1; waiting1 = false;}
@@ -78,65 +77,65 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 robot.intake.setIntakeBack(-0.8);
                 robot.intake.setIntakeFront(-0.8);
                 robot.navigation.wall_shove = true;
-                robot.navigation.moveToPosition(1.5,33.0,0.0, 0.6, true);
+                robot.navigation.moveToPosition(6,-36.0,0, 0.5, true);
                 if (auto.chassis_reached && id2 == 12) {id1+=1; id2+=1; auto.chassis_reached = false; robot.navigation.zeroX();}
                 break;
             case 5: //back to goal, wait for scoring before next case
-                robot.navigation.moveToPosition(1.5,-21,0.0, 0.6, true);
-                robot.intake.setIntakeFront(-0.5);
+                robot.navigation.moveToPosition(6,27,0.0, 0.6, true);
+                robot.intake.setIntakeBack(-0.5);
                 if (auto.chassis_reached && id2 == 14) {id2+=1; auto.chassis_reached = false; robot.navigation.wall_shove = false;}
                 break;
             case 6: //go to warehouse, make sure slides are in before bucket goes down
                 robot.navigation.wall_shove = true;
-                robot.navigation.moveToPosition(1.5,30.0,0.0, 0.6, true);
+                robot.navigation.moveToPosition(6,-30.0,0.0, 0.6, true);
                 if (auto.chassis_reached && id2 == 20) {id1+=1; auto.chassis_reached = false; robot.navigation.wall_shove = false;}
                 break;
             case 7: //intake, once done tell slides to start extending
-                robot.intake.setIntakeFront(0.9);
-                robot.navigation.moveToPosition(-3,44,0,.35,true);
+                robot.intake.setIntakeBack(0.9);
+                robot.navigation.moveToPosition(-6,-41,.1,.2,true);
                 if (!waiting1) {timer1.reset(); waiting1 = true;}
                 if (timer1.seconds() > 3) {id1+=1; id2+=1; waiting1 = false;};
                 if(auto.freight_sensed) {id1+=1; id2+=1; waiting1 = false;}
                 break;
             case 8: //outtake and back to warehouse entrance
-                robot.intake.setIntakeFront(-0.8);
+                robot.intake.setIntakeBack(-0.8);
                 robot.navigation.wall_shove = true;
-                robot.navigation.moveToPosition(2,33.0,0.0, 0.6, true);
+                robot.navigation.moveToPosition(8,-36.0,0.0, 0.6, true);
                 if (auto.chassis_reached && id2 == 23) {id1+=1; id2+=1; auto.chassis_reached = false; robot.navigation.zeroX();}
                 break;
             case 9: //back to goal, wait for scoring before next case
-                robot.navigation.moveToPosition(2,-20,0.0, 0.6, true);
-                robot.intake.setIntakeFront(-0.5);
+                robot.navigation.moveToPosition(8,29,0.0, 0.6, true);
+                robot.intake.setIntakeBack(-0.5);
                 if (auto.chassis_reached && id2 == 25) {id2+=1; auto.chassis_reached = false; robot.navigation.wall_shove = false;}
                 break;
             case 10: //go to warehouse, make sure slides are in before bucket goes down
                 robot.navigation.wall_shove = true;
-                robot.navigation.moveToPosition(2,31.0,0.0, 0.6, true);
+                robot.navigation.moveToPosition(8,-30.0,0.0, 0.6, true);
                 if (auto.chassis_reached && id2 == 31) {id1+=1; auto.chassis_reached = false; robot.navigation.wall_shove = false;}
                 break;
             case 11: //intake, once done tell slides to start extending
-                robot.intake.setIntakeFront(0.9);
-                robot.navigation.moveToPosition(-6,47,0,.35,true);
+                robot.intake.setIntakeBack(0.9);
+                robot.navigation.moveToPosition(-9,-41,.1,.2,true);
                 if (!waiting1) {timer1.reset(); waiting1 = true;}
                 if (timer1.seconds() > 3) {id1+=1; id2+=1; waiting1 = false;};
                 if(auto.freight_sensed) {id1+=1; id2+=1; waiting1 = false;}
                 break;
             case 12: //outtake and back to warehouse entrance
-                robot.intake.setIntakeFront(-0.8);
+                robot.intake.setIntakeBack(-0.8);
                 robot.navigation.wall_shove = true;
-                robot.navigation.moveToPosition(2.5,33.0,0.0, 0.6, true);
+                robot.navigation.moveToPosition(10,-36.0,0.0, 0.6, true);
                 if (auto.chassis_reached && id2 == 34) {id1+=1; id2+=1; auto.chassis_reached = false; robot.navigation.zeroX();}
                 break;
             case 13: //back to goal, wait for scoring before next case
-                robot.navigation.moveToPosition(2.5,-20,0.0, 0.6, true);
-                robot.intake.setIntakeFront(-0.5);
+                robot.navigation.moveToPosition(10,31,0.0, 0.6, true);
+                robot.intake.setIntakeBack(-0.5);
                 if (auto.chassis_reached && id2 == 36) {id2+=1; auto.chassis_reached = false; robot.navigation.wall_shove = false;}
                 break;
             case 14: //park
                 //robot.navigation.wall_shove = true;
                 robot.intake.setIntakeFront(0);
                 robot.intake.setIntakeBack(0);
-                robot.navigation.moveToPosition(2,45,0.0, 0.8, true);
+                robot.navigation.moveToPosition(10,-40,0.0, 0.8, true);
                 break;
         }
         //--------------------------------------------------------------------------------------------------------
@@ -176,7 +175,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
                         robot.lift.extend(Status.STAGES.get("mid"), true);
                         break;
                     case 3:
-                        robot.lift.extend(Status.STAGES.get("high") + 500, true);
+                        robot.lift.extend(Status.STAGES.get("high") + 900, true);
                         break;
                     case 0:
                         robot.lift.extend(Status.STAGES.get("high"), true);
@@ -208,7 +207,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 if (auto.lift_reached) id2+=1;
                 break;
             case 9: //flip the bucket down, wait for intake
-                robot.intake.deposit(Status.DEPOSITS.get("front"));
+                robot.intake.deposit(Status.DEPOSITS.get("back"));
                 break;
             case 10: //flip the bucket up
                 robot.intake.deposit(Status.DEPOSITS.get("carry"));
@@ -225,7 +224,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
 //                if (timer2.seconds() > Status.PITSTOP_WAIT_TIME) {id2+=1; waiting2 = false;};
                 break;
             case 13: //extend slides
-                robot.lift.extend(Status.STAGES.get("high") + 500, true);
+                robot.lift.extend(Status.STAGES.get("high") + 1400, true);
                 if (auto.lift_reached) id2+=1;
                 break;
             case 14: //wait for chassis
@@ -254,7 +253,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 if (auto.lift_reached) id2+=1;
                 break;
             case 20: //flip the bucket down, wait for intake
-                robot.intake.deposit(Status.DEPOSITS.get("front"));
+                robot.intake.deposit(Status.DEPOSITS.get("back"));
                 break;
             case 21: //flip the bucket up
                 robot.intake.deposit(Status.DEPOSITS.get("carry"));
@@ -271,7 +270,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
 //                if (timer2.seconds() > Status.PITSTOP_WAIT_TIME) {id2+=1; waiting2 = false;};
                 break;
             case 24: //extend slides
-                robot.lift.extend(Status.STAGES.get("high") + 500, true);
+                robot.lift.extend(Status.STAGES.get("high") + 1400, true);
                 if (auto.lift_reached) id2+=1;
                 break;
             case 25: //wait for chassis
@@ -300,7 +299,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 if (auto.lift_reached) id2+=1;
                 break;
             case 31: //flip the bucket down, wait for intake
-                robot.intake.deposit(Status.DEPOSITS.get("front"));
+                robot.intake.deposit(Status.DEPOSITS.get("back"));
                 break;
             case 32: //flip the bucket up
                 robot.intake.deposit(Status.DEPOSITS.get("carry"));
@@ -317,7 +316,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
 //                if (timer2.seconds() > Status.PITSTOP_WAIT_TIME) {id2+=1; waiting2 = false;};
                 break;
             case 35: //extend slides
-                robot.lift.extend(Status.STAGES.get("high") + 500, true);
+                robot.lift.extend(Status.STAGES.get("high") + 1400, true);
                 if (auto.lift_reached) id2+=1;
                 break;
             case 36: //wait for chassis

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -59,19 +60,30 @@ public class AutoDrive {
     private double loop_end = 0.0;
     private double loop_time = 0.0;
 
+    public boolean wall_shove = false;
+
     public AutoDrive(Drivetrain drivetrain, IMU imu){
         this.drivetrain = drivetrain;
         this.imu = imu;
     }
 
     public boolean ifReached(){
-        double deadband = 0.5;
-        double deadband_a = 0.01;
-        if (!drivetrain_reached && Math.abs(error_x) <= deadband && Math.abs(error_y) <= deadband && Math.abs(error_a) <= deadband_a){
-            drivetrain_reached = true;
-            return true;
+        double deadband = 1;
+        double deadband_a = 0.011;
+        if (wall_shove) {
+            if (Math.abs(error_y) <= deadband) {
+                drivetrain_reached = true;
+                return true;
+            } else {
+                return false;
+            }
         } else {
-            return false;
+            if (!drivetrain_reached && Math.abs(error_x) <= deadband && Math.abs(error_y) <= deadband && Math.abs(error_a) <= deadband_a) {
+                drivetrain_reached = true;
+                return true;
+            } else {
+                return false;
+            }
         }
 
     }
@@ -126,8 +138,8 @@ public class AutoDrive {
         target_x = x;
         target_y = y;
         target_a = a;
-        final double K = 0.04;
-        final double Kturn = 0.2;
+        final double K = 0.035;
+        final double Kturn = .6;
 
         error_x = target_x - field_x;
         error_y = target_y - field_y;
@@ -139,6 +151,13 @@ public class AutoDrive {
         double strafe = -Range.clip(error_d * Math.sin(theta) * K, -power_cap, power_cap);
         double turn = -Range.clip(error_a * Kturn, -power_cap, power_cap);
 
+//        if (wall_shove) {
+//            error_x = 0;
+//            target_x = 0;
+//            strafe = -0.2;
+//            field_x = 0;
+//        }
+
         if (ifReached()){
             forward = 0.0;
             strafe = 0.0;
@@ -149,8 +168,14 @@ public class AutoDrive {
             drivetrain_reached = false;
         }
 
+
+
         drivetrain.move(forward, strafe, turn);
 
+    }
+
+    public void zeroX() {
+        field_x = 0;
     }
 
     public void update(Telemetry telemetry) {
