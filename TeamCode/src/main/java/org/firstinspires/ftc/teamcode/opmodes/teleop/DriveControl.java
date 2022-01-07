@@ -30,6 +30,9 @@ public class DriveControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_dpad_down;
     private AutoDrive autoDrive;
 
+    private double heading_was;
+    private double heading_delta;
+
     //private double target_angle=0.0; // robot target heading for correction
     //private double turn_scaling=0.1; //scales the right joystick x value for turn correction
 
@@ -80,6 +83,7 @@ public class DriveControl extends ControlModule{
                     -turn_correction);
         }
 
+        AutoDrive.update(telemetry);
 
         telemetry.addData("Z rotation rate", imu.getInternalImu().getAngularVelocity().toAngleUnit(AngleUnit.RADIANS).zRotationRate);
         telemetry.addData("Y rotation rate", imu.getInternalImu().getAngularVelocity().toAngleUnit(AngleUnit.RADIANS).yRotationRate);
@@ -88,11 +92,22 @@ public class DriveControl extends ControlModule{
         telemetry.addData("Turn Correction Error", error);
         */
 
-        telemetry.addData("Roll: %05f", imu.getRoll());
-        telemetry.addData("Pitch: %05f", imu.getPitch());
+        //telemetry.addData("x Acceleration: ", imu.getInternalImu().getLinearAcceleration().xAccel);
+        //telemetry.addData("y Acceleration: ", imu.getInternalImu().getLinearAcceleration().yAccel);
+        //telemetry.addData("z Acceleration: ", imu.getInternalImu().getLinearAcceleration().zAccel);
+        telemetry.addData("Heading: ", imu.getHeading());
+        telemetry.addData("Heading Delta: ", heading_delta);
+        teleMove(-ax_drive_left_y.get() * 0.45 * speed_scalar,
+                                     ax_drive_left_x.get() * 0.45 * speed_scalar,
+                                      ax_drive_right_x.get() * 0.45 * speed_scalar);
+    }
 
-        drivetrain.acceleratedMove(-ax_drive_left_y.get() * 0.4 * speed_scalar,
-                                     ax_drive_left_x.get() * 0.4 * speed_scalar,
-                                      ax_drive_right_x.get() * 0.4 * speed_scalar);
+    public void teleMove(double forward, double strafe, double turn) {
+        heading_delta = imu.getHeading() - heading_was;
+        //if (Math.abs(heading_delta) > 4) heading_delta = 0;
+        if (turn != 0) heading_delta = 0;
+
+        drivetrain.move(forward, (strafe * 0.7), (turn * 0.6) + (heading_delta * Status.TURN_CORRECTION_P));
+        heading_was = imu.getHeading();
     }
 }

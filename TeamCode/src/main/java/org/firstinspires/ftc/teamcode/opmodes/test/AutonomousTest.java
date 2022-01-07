@@ -15,7 +15,7 @@ public class AutonomousTest extends LoggingOpMode
 {
     private Robot robot;
     private AutonomousTemplate auto;
-    private String name = "Autonomous Test";
+    private final String name = "Autonomous Test";
     private int id;
 
     @Override
@@ -43,7 +43,7 @@ public class AutonomousTest extends LoggingOpMode
         auto.check_image(false);
 
         telemetry.addData("Shipping Height: ", auto.shipping_height);
-        id = auto.update();
+        auto.update();
     }
 
     @Override
