@@ -17,10 +17,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 public class Drivetrain {
-    private final DcMotorEx front_left;
-    private final DcMotorEx front_right;
-    private final DcMotorEx back_left;
-    private final DcMotorEx back_right;
+    public final DcMotorEx front_left;
+    public final DcMotorEx front_right;
+    public final DcMotorEx back_left;
+    public final DcMotorEx back_right;
     private final IMU imu;
 
     public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, IMU imu) {

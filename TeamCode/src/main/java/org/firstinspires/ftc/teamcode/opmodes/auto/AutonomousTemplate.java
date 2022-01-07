@@ -52,12 +52,13 @@ public class AutonomousTemplate {
 
     private ElapsedTime camera_timer;
     public ElapsedTime timer;
-    private int id = 0;
-    private double timer_delay = 1000; // Set high to not trigger next move
     private final boolean waiting_camera = false;
-    private boolean waiting = false;
     public int shipping_height = 0;
     public double x_coord = -1;
+
+    public boolean lift_reached = false;
+    public boolean chassis_reached = false;
+    public boolean freight_sensed = false;
 
     static
     {
@@ -116,11 +117,6 @@ public class AutonomousTemplate {
         webcam.open(ImageFormat.YUY2, 800, 448, 30, frame_handler);
     }
 
-    public void set_timer(double delay){
-        timer_delay = delay;
-        waiting = true;
-    }
-
     public void check_image(boolean save_image){
         if (shipping_height != 0){
             return;
@@ -156,42 +152,39 @@ public class AutonomousTemplate {
         logger.i(String.format("Shipping Height: %d", shipping_height));
     }
 
-    public int update(int state) { // STATE: 0=driving, 1=lifting, 2=waiting 3=detecting freight
-        if (!waiting) {
-            timer.reset();
-        }
-        if (navigation.ifReached() && state == 0){
-            logger.i("Reached CoordinateL %d", id);
-            id += 1;
-            intake.stopDetectingFreight();
-        } else if (lift.ifReached(lift.getLiftTargetPos()) && state == 1){
-            logger.i("Reached Lift: %d", id);
-            id += 1;
-            intake.stopDetectingFreight();
-        } else if (timer.seconds() > timer_delay && state == 2){
-            logger.i("Reached Timer: %d", id);
-            id += 1;
-            waiting = false;
-            timer.reset();
-            intake.stopDetectingFreight();
-        } else if (intake.freightDetected() && state == 3){
-            logger.i("Grabbed Freight: %d", id);
-            id += 1;
+    public void update() { // STATE: 0=driving, 1=lifting, 2=waiting 3=detecting freight
 
-        }
+        chassis_reached = navigation.ifReached();
+        lift_reached = lift.ifReached(lift.getLiftTargetPos());
+        freight_sensed = intake.autoFreightDetected();
 
         navigation.getFieldPos();
         lift.updateLift();
-        telemetry.update();
 
-        telemetry.addData("Id: ", id);
         telemetry.addData("Shipping Height: ", shipping_height);
         telemetry.addData("X Coord of Block: ", x_coord);
         navigation.update(telemetry);
         telemetry.addData("Drivetrain Position Reached", navigation.ifReached());
         telemetry.addData("Lift Position Reached", lift.ifReached(lift.getLiftTargetPos()));
-        telemetry.addData("Freight Detected",intake.freightDetected() );
-        return id;
+        telemetry.addData("Freight Detected",intake.autoFreightDetected());
+
+        telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
+        telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());
+
+        telemetry.update();
+    }
+
+    public void autoLiftRetract() {
+//        if (lift.limitPressed()) {
+//            lift.lift_motor.setPower(0);
+//            lift.resetLiftTarget();
+//            lift_reached = true;
+//            lift.auto_override = false;
+//        } else {
+//            lift.lift_motor.setPower(-0.5);
+//            lift.auto_override = true;
+//        }
+        lift.extend(0, true);
     }
 
     public void stop(){
