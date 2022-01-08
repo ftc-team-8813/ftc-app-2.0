@@ -27,8 +27,8 @@ public class CapstoneDetector {
         this.logger = logger;
         this.detector_frame = detector_frame;
         this.stored_frame = new Mat();
-        this.lower_hls = new Scalar(100,10,60);
-        this.upper_hls = new Scalar(140,80,100);
+        this.lower_hls = new Scalar(0,125,20);
+        this.upper_hls = new Scalar(50,180,50);
         contours = new ArrayList<>();
     }
 
@@ -40,13 +40,14 @@ public class CapstoneDetector {
 
         Imgproc.resize(detector_frame, resized, new Size(800, 400));
         Imgproc.blur(resized, blurred, new Size(5, 5));
-        Imgproc.cvtColor(blurred, hls, Imgproc.COLOR_RGB2HSV);
+        Imgproc.cvtColor(blurred, hls, Imgproc.COLOR_BGR2HLS);
 
         Core.inRange(hls, lower_hls, upper_hls, masked);
         Imgproc.findContours(masked, contours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
         stored_frame = masked;
 
+        // Calculates area for EVERY contour
         ArrayList<Double> areas = new ArrayList<>();
         for (int i = 0; i < contours.size(); i++){
             MatOfPoint contour = contours.get(i);
@@ -54,6 +55,7 @@ public class CapstoneDetector {
             areas.add(area);
         }
 
+        // Returns center of contour
         if (!areas.isEmpty()) {
             double max_area = Collections.max(areas);
             int index = areas.indexOf(max_area);
