@@ -140,12 +140,12 @@ public class AutoDrive {
         target_x = x;
         target_y = y;
         target_a = a;
-        final double KP = 0.035;
-        final double KI = 0.01;
-        final double KD = 0.01;
+        final double KP = 0.046;
+        final double KI = 0.000285;
+        final double KD = 0;
         final double KPturn = .6;
-        final double KIturn = 0.2;
-        final double KDturn = 0.2;
+        final double KIturn = 0;
+        final double KDturn = 0;
 
         error_x = target_x - field_x;
         error_y = target_y - field_y;
@@ -153,7 +153,7 @@ public class AutoDrive {
         double error_d = Math.sqrt((error_x * error_x) + (error_y * error_y)); // distance between target position and actual position
         double theta = Math.atan2(error_x, error_y) - heading; // angle between direction of motion and heading
 
-        error_d = Range.clip(error_d, -1, 1);
+        error_d = Range.clip(error_d, -1/KP, 1/KP);
 
         double forward = (error_d * Math.cos(theta));
         double strafe = (error_d * Math.sin(theta));
@@ -205,6 +205,10 @@ public class AutoDrive {
 
     public void zeroX() {
         field_x = 0;
+    }
+
+    public double[] getFieldPositions(){
+        return new double[]{field_x, field_y, heading};
     }
 
     public void update(Telemetry telemetry) {

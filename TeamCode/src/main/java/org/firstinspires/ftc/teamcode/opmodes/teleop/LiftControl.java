@@ -47,7 +47,7 @@ public class LiftControl extends ControlModule{
         btn_y = controllerMap.getButtonMap("lift:extend_high", "gamepad2", "y");
         btn_a = controllerMap.getButtonMap("lift:extend_low", "gamepad2", "a");
         btn_x = controllerMap.getButtonMap("lift:extend_neutral", "gamepad2", "x");
-        btn_dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");robot.intake.setIntakeFront(-0.8);
+        btn_dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");
         ax_left_trigger = controllerMap.getAxisMap("lift:reset", "gamepad2", "left_trigger");
         ax_right_trigger = controllerMap.getAxisMap("lift:extend_really_high", "gamepad2", "right_trigger");
         btn_dpad_up = controllerMap.getButtonMap("Lift:extend_high2", "gamepad2", "dpad_up");

@@ -31,7 +31,7 @@ public class Status {
         put("pitstop", 12500.0);
         put("neutral", 9700.0);
         put("low", 34400.0);
-        put("mid", 41500.0);
+        put("mid", 41300.0);
         put("high", 46550.0);
         put("high2", 48750.0);
         put("really high", 68000.0);
