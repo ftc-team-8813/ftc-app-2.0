@@ -21,7 +21,7 @@ public class AutonomousTest extends LoggingOpMode
     @Override
     public void init() {
         super.init();
-        this.robot = Robot.initialize(hardwareMap, name);
+        this.robot = Robot.initialize(hardwareMap, name, 0);
         this.auto = new AutonomousTemplate(
                 name,
                 this.robot,

@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.util.Status;
 
@@ -22,7 +23,7 @@ public class Lift {
     private double p_term;
     private double i_term;
     private double d_term;
-
+    private final ElapsedTime timer = new ElapsedTime();
 
     public Lift(DcMotor lift, DcMotor lift2, Servo arm, DigitalChannel limit_switch, Servo outrigger){
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -74,10 +75,10 @@ public class Lift {
 
         p_term = error * Status.kP;
 
-        integral += error;
+        integral += error * timer.seconds();
         i_term = integral * Status.kI;
 
-        double derivative = error - past_error;
+        double derivative = (error - past_error) / timer.seconds();
         d_term = derivative * Status.kD;
 
         double power = p_term + i_term + d_term;
@@ -95,6 +96,7 @@ public class Lift {
             lift.setPower(-1);
             lift2.setPower(-1);
         }
+        timer.reset();
     }
 
     public double getLiftCurrentPos(){

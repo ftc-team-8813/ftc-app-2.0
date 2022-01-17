@@ -74,7 +74,7 @@ public class VisionTest extends LoggingOpMode
             throw new RuntimeException(e);
         }
 
-        robot = Robot.initialize(hardwareMap, "Vision Test");
+        robot = Robot.initialize(hardwareMap, "Vision Test", 0);
 
         server.registerProcessor(0x01, (cmd, payload, resp) -> { // Get frame
             if (serverFrameCopy == null || serverFrameUsed) return;

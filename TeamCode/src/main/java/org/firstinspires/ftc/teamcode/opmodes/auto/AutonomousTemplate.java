@@ -66,7 +66,7 @@ public class AutonomousTemplate {
 
     public AutonomousTemplate(String name, Robot robot, HardwareMap hardware_map, ControllerMap controller_map, Telemetry telemetry){
         this.name = name;
-        this.robot = Robot.initialize(hardware_map, "Autonomous");
+        this.robot = Robot.initialize(hardware_map, "Autonomous", 0);
         this.logger = new Logger(name);
         this.telemetry = telemetry;
         this.controller_map = controller_map;

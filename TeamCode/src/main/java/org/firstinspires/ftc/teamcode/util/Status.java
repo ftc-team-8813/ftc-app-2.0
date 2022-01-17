@@ -11,6 +11,8 @@ public class Status {
     public static final double WHEEL_DIAMETER = 96; //mm
     public static final double TICKS_PER_ROTATION = 28; //encoder counts/revolution of the bare motor
     public static final double turnP = 1.3; //no unit
+    public static final double LIGHT_MULTIPLIER = 1.5; //initial light sensor value x LIGHT_MULTIPLIER = value expected at tape crossing
+    public static final double TAPE_Y_OFFSET = 15.56; //inches from zero to tape line. Sign varies depending on autonomous mode. Positive is blue, negative is red.
 
     // Intake
     public static final double FREIGHT_DETECTION = 2.6;
@@ -22,9 +24,9 @@ public class Status {
     public static final double UPPER_LIMIT = 70000;
     public static final double MAX_SPEED = 1;
     public static final double RETRACT_SPEED = 1;
-    public static final double kP = 0.0003;
-    public static final double kI = 0;
-    public static final double kD = 0.0001;
+    public static final double kP = 0.00021;
+    public static final double kI = 0.000001;
+    public static final double kD = 0.000004 ;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
         put("pitstop", 10000.0);
         put("neutral", 10100.0);

@@ -17,7 +17,7 @@ public class PIDTuner extends LoggingOpMode {
     @Override
     public void init() {
         super.init();
-        robot = Robot.initialize(hardwareMap, "PID Tuner");
+        robot = Robot.initialize(hardwareMap, "PID Tuner", 0);
         start_move = controller_map.getButtonMap("start_move", "gamepad1", "a");
         strafe_p = controller_map.getButtonMap("strafe_p", "gamepad1", "left_stick_y");
         forward_p = controller_map.getButtonMap("forward_p", "gamepad1", "right_stick_y");

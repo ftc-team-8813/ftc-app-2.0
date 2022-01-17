@@ -18,12 +18,13 @@ public class BlueWarehouseAuto extends LoggingOpMode
     private final String name = "Blue Warehouse Auto";
     private int id = 0;
     public int state = 0; // 0 = driving, 1 = lifting, 2 = waiting for timer, 3 = sensing freight
+    private final int direction = 1;
 
 
     @Override
     public void init() {
         super.init();
-        this.robot = Robot.initialize(hardwareMap, name);
+        this.robot = Robot.initialize(hardwareMap, name, direction);
         this.auto = new AutonomousTemplate(
                 name,
                 this.robot,

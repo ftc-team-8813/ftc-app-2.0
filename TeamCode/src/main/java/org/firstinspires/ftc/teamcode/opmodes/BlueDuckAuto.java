@@ -19,7 +19,7 @@ public class BlueDuckAuto extends LoggingOpMode
     @Override
     public void init() {
         super.init();
-        this.robot = Robot.initialize(hardwareMap, name);
+        this.robot = Robot.initialize(hardwareMap, name, 1);
         this.auto = new AutonomousTemplate(
                 name,
                 this.robot,
