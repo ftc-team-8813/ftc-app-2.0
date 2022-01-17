@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class Status {
     // Drivetrain
-    public static final double TURN_CORRECTION_P = 0.04;
+    public static final double TURN_CORRECTION_P = 0.04; //tele op
     public static final double MAX_VELOCITY = 0;
 
     //Odometry
@@ -15,7 +15,7 @@ public class Status {
     public static final double TAPE_Y_OFFSET = 15.56; //inches from zero to tape line. Sign varies depending on autonomous mode. Positive is blue, negative is red.
 
     // Intake
-    public static final double FREIGHT_DETECTION = 2.6;
+    public static final double FREIGHT_DETECTION = 2.7;
     public static final long TIME_BEFORE_INTAKING = 100000000; // nanoseconds
 
     // Lift
