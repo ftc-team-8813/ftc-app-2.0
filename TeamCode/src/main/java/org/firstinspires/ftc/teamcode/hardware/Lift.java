@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.util.Status;
 
 public class Lift {
     private final DcMotor lift;
+    private final DcMotor lift2;
     private final Servo arm;
     private final DigitalChannel limit_switch;
     private final Servo outrigger;
@@ -23,12 +24,15 @@ public class Lift {
     private double d_term;
 
 
-    public Lift(DcMotor lift, Servo arm, DigitalChannel limit_switch, Servo outrigger){
+    public Lift(DcMotor lift, DcMotor lift2, Servo arm, DigitalChannel limit_switch, Servo outrigger){
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lift2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lift.setDirection(DcMotorSimple.Direction.REVERSE);
+        lift2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.lift = lift; // Encoder and motor on same port
+        this.lift2 = lift2; // No encoder
         this.arm = arm;
         this.limit_switch = limit_switch;
         this.outrigger = outrigger;
@@ -80,10 +84,17 @@ public class Lift {
 
         if (curr_pos < Status.RETRACT_POWER_THRESHOLD){
             lift.setPower(power * Status.RETRACT_SPEED);
+            lift2.setPower(power * Status.RETRACT_SPEED);
         } else {
             lift.setPower(power * Status.MAX_SPEED);
+            lift2.setPower(power * Status.MAX_SPEED);
         }
         past_error = error;
+
+        if (lift.getTargetPosition() == 0 && Math.signum(power) == -1 && curr_pos < 5000 && !limitPressed()) {
+            lift.setPower(-1);
+            lift2.setPower(-1);
+        }
     }
 
     public double getLiftCurrentPos(){
@@ -95,7 +106,7 @@ public class Lift {
     public double getLiftTargetPos(){
         return target_pos;
     }
-    public void resetLitTarget(){
+    public void resetLiftTarget(){
         target_pos = 0;
     }
     public double getCurrentArmPos(){

@@ -60,10 +60,21 @@ public class DriveControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        if (btn_a.get() || btn_x.get() || btn_y.get()){
+//        if (lift.getLiftTargetPos() > Status.STAGES.get("speed mode threshold")) {
+//            speed_scalar = 1.5;
+//        } else if (btn_x.get()) {
+//            speed_scalar = 1;
+//        } else if (btn_dpad_down.get()){
+//            speed_scalar = 2;
+//        }
+        if (lift.getLiftTargetPos() > Status.STAGES.get("neutral") - 1000 && lift.getLiftTargetPos() < Status.STAGES.get("neutral") + 3000) {
             speed_scalar = 1;
-        } else if (btn_dpad_down.get()){
+        }
+        if (lift.getLiftTargetPos() == Status.STAGES.get("pitstop") || lift.getLiftTargetPos() == 0) {
             speed_scalar = 2;
+        }
+        if (lift.getLiftCurrentPos() > Status.STAGES.get("mid")) {
+            speed_scalar = 0.8;
         }
 
         // TURN CORRECTION - NOT WANTED YET

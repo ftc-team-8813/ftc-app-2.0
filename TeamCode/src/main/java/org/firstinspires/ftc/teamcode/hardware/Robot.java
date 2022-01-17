@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -8,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
@@ -26,6 +29,7 @@ public class Robot
     public Lift lift;
     public Duck duck;
     public IMU imu;
+    public I2cDevice MrRange;
 
     public EventBus eventBus = new EventBus();
     public Scheduler scheduler = new Scheduler(eventBus);
@@ -59,9 +63,9 @@ public class Robot
         DcMotorEx back_left = hardwareMap.get(DcMotorEx.class, "back left");
         DcMotorEx back_right = hardwareMap.get(DcMotorEx.class, "back right");
         DcMotor lift = hardwareMap.get(DcMotor.class, "lift");
+        DcMotor lift2 = hardwareMap.get(DcMotor.class, "lift2");
         DcMotor intake_front = hardwareMap.get(DcMotor.class, "intake front");
         DcMotor intake_back = hardwareMap.get(DcMotor.class, "intake back");
-        DcMotor duck = hardwareMap.get(DcMotor.class, "duck");
 
         // Servos
         ServoImplEx bucket = hardwareMap.get(ServoImplEx.class, "bucket");
@@ -69,11 +73,13 @@ public class Robot
         Servo arm = hardwareMap.get(Servo.class, "arm");
         ServoImplEx outrigger = hardwareMap.get(ServoImplEx.class, "outrigger");
         outrigger.setPwmRange(new PwmControl.PwmRange(500,2500));
-
+        CRServoImplEx duckFront = hardwareMap.get(CRServoImplEx.class, "duck front");
+        CRServoImplEx duckback = hardwareMap.get(CRServoImplEx.class, "duck back");
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu2");
         DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");
         DigitalChannel limit_switch = hardwareMap.get(DigitalChannel.class, "lift limit");
+
 
         // Sub-Assemblies
         this.imu = new IMU(imu_sensor);
@@ -81,7 +87,7 @@ public class Robot
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu);
         this.navigation = new AutoDrive(drivetrain, imu);
         this.intake = new Intake(intake_front, intake_back, freight_checker, bucket);
-        this.lift = new Lift(lift, arm, limit_switch, outrigger);
-        this.duck = new Duck(duck);
+        this.lift = new Lift(lift, lift2, arm, limit_switch, outrigger);
+        this.duck = new Duck(duckFront, duckback);
     }
 }
