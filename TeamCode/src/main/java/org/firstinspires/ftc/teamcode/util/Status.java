@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class Status {
     // Drivetrain
-    public static final double TURN_CORRECTION_P = 0.04; //tele op
+    public static final double TURN_CORRECTION_P = 0.01; //tele op
     public static final double MAX_VELOCITY = 0;
 
     //Odometry
@@ -20,35 +20,36 @@ public class Status {
 
     // Lift
     public static final double SENSITIVITY = 500;
+    public static final double NEUTRAL_SENSITIVITY = 1500;
     public static final double RETRACT_POWER_THRESHOLD = 8000;
     public static final double UPPER_LIMIT = 70000;
     public static final double MAX_SPEED = 1;
     public static final double RETRACT_SPEED = 1;
     public static final double kP = 0.00021;
-    public static final double kI = 0.000001;
-    public static final double kD = 0.000004 ;
+    public static final double kI = 0.0000016;
+    public static final double kD = 0.000005;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
         put("pitstop", 10000.0);
         put("neutral", 10100.0);
-        put("low", 34400.0);
-        put("mid", 41500.0);
-        put("high", 46500.0);
-        put("high2", 48500.0);
+        put("low", 34750.0);
+        put("mid", 42000.0);
+        put("high", 47550.0);
+        put("high2", 49250.0);
         put("really high", 68000.0);
         put("speed mode threshold", 35000.0);
     }};
 
     // Arm
     public static final HashMap<String, Double> ROTATIONS = new HashMap<String, Double>(){{
-        put("high_out", 0.436);
+        put("high_out", 0.44);
         put("mid_out", 0.568);
         put("low_out", 0.58);
         put("neutral_out", 0.6);
-        put("high_out2", 0.43);
+        put("high_out2", 0.46);
         put("in", 0.82);
     }};
     public static final double BUCKET_WAIT_TIME = 0.5;
-    public static final double PITSTOP_WAIT_TIME = 0.5;
+    public static final double PITSTOP_WAIT_TIME = 0.35;
     public static final double PITSTOP_WAIT_TIME_OUT = 0.01;
 
     // Outrigger
@@ -63,6 +64,6 @@ public class Status {
         put("carry", 0.7);
         put("front", 0.355);
         put("back", 1.0);
-        put("tilt", 0.7); //when the slides are extending, the bucket tilts a little bit to save time
+        put("tilt", 0.63); //when the slides are extending, the bucket tilts a little bit to save time
     }};
 }

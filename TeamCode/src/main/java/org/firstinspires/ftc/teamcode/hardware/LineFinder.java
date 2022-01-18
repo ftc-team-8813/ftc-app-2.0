@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.vision.ImageDraw;
 
 public class LineFinder {
     private final ColorSensor line_finder;
-    private int alpha_init;
+    private double alpha_init;
 
     public LineFinder(ColorSensor line_finder){
         this.line_finder = line_finder;
@@ -19,7 +19,7 @@ public class LineFinder {
         alpha_init = line_finder.alpha();
     }
     public boolean lineFound() {
-        return line_finder.alpha() >= alpha_init * Status.LIGHT_MULTIPLIER;
+        return (double) line_finder.alpha() <= alpha_init * Status.LIGHT_MULTIPLIER;
     }
     public void update(Telemetry telemetry){
         telemetry.addData("light", line_finder.alpha());

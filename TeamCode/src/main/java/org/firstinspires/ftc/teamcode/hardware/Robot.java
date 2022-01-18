@@ -75,6 +75,7 @@ public class Robot
         DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");
         DigitalChannel limit_switch = hardwareMap.get(DigitalChannel.class, "lift limit");
         ColorSensor line_finder = hardwareMap.get(ColorSensor.class, "line finder");
+        DistanceSensor x_dist = hardwareMap.get(DistanceSensor.class, "dist x");
 
 
         // Sub-Assemblies
@@ -82,7 +83,7 @@ public class Robot
         this.lineFinder = new LineFinder(line_finder);
         this.imu.initialize(eventBus, scheduler);
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu);
-        this.navigation = new AutoDrive(drivetrain, imu, lineFinder, direction);
+        this.navigation = new AutoDrive(drivetrain, imu, lineFinder, x_dist, direction);
         this.intake = new Intake(intake_front, intake_back, freight_checker, bucket);
         this.lift = new Lift(lift, lift2, arm, limit_switch, outrigger);
         this.duck = new Duck(duckFront, duckback);

@@ -85,7 +85,7 @@ public class DriveControl extends ControlModule{
         teleMove(-ax_drive_left_y.get() * 0.45 * speed_scalar,
                                      ax_drive_left_x.get() * 0.45 * speed_scalar,
                                       ax_drive_right_x.get() * 0.45 * speed_scalar);
-        //lineFinder.update(telemetry);
+        lineFinder.update(telemetry);
     }
 
     public void teleMove(double forward, double strafe, double turn) {

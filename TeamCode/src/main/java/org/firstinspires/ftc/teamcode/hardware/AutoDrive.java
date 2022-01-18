@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.hardware;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 import java.lang.Math;
@@ -10,6 +12,7 @@ public class AutoDrive {
     private final Drivetrain drivetrain;
     private final IMU imu;
     private final LineFinder lineFinder;
+    private final DistanceSensor x_dist;
 
     private boolean drivetrain_reached;
 
@@ -51,10 +54,17 @@ public class AutoDrive {
     private double loop_end = 0.0;
     private double loop_time = 0.0;
 
-    public AutoDrive(Drivetrain drivetrain, IMU imu, LineFinder line_finder, int direction){
+    public AutoDrive(Drivetrain drivetrain, IMU imu, LineFinder line_finder, DistanceSensor x_dist,  int direction){
         this.drivetrain = drivetrain;
         this.imu = imu;
         this.lineFinder = line_finder;
+        this.x_dist = x_dist;
+    }
+
+    public void againstWall(){
+        if (x_dist.getDistance(DistanceUnit.MM) < 22.0) {
+            field_x = 0;
+        }
     }
 
     public boolean ifReached(){
@@ -107,9 +117,8 @@ public class AutoDrive {
 
         field_x += delta_field_x;
         field_y += delta_field_y;
-
         if(lineFinder.lineFound()){
-            field_y = direction*Status.TAPE_Y_OFFSET;
+            field_y = direction * Status.TAPE_Y_OFFSET;
         }
 
         loop_end = System.nanoTime() / 1000000000.0;
@@ -169,6 +178,8 @@ public class AutoDrive {
         telemetry.addData("x position: ", field_x);
         telemetry.addData("y position: ", field_y);
         telemetry.addData("angle: ", heading);
+
+        telemetry.addData("line found", lineFinder.lineFound());
         //telemetry.addData("Server status ", server.getStatus());
         //telemetry.addData("Loop Time in seconds", loop_time);
     }

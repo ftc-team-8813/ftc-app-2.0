@@ -28,7 +28,7 @@ public class LiftControl extends ControlModule{
     private ElapsedTime timer;
     private int id = 0;
     private int id2 = 0;
-    private boolean was_reset = false;
+    private final boolean was_reset = false;
     private boolean left_trigger_was_pressed = false;
     private final double var_pit_stop_wait = Status.PITSTOP_WAIT_TIME;
 
@@ -61,7 +61,11 @@ public class LiftControl extends ControlModule{
         double delta_extension;
 
         if (-ax_left_stick_y.get() < -0.1 || -ax_left_stick_y.get() > 0.1){
-            delta_extension = -ax_left_stick_y.get() * Status.SENSITIVITY;
+            if (lift.getLiftTargetPos() < Status.STAGES.get("neutral") + 20000) {
+                delta_extension = -ax_left_stick_y.get()*Status.NEUTRAL_SENSITIVITY;
+            } else {
+                delta_extension = -ax_left_stick_y.get() * Status.SENSITIVITY;
+            }
         } else {
             delta_extension = 0;
         }
