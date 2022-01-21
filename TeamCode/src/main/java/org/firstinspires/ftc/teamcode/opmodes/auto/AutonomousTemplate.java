@@ -31,33 +31,34 @@ import java.nio.ByteBuffer;
 
 public class AutonomousTemplate {
     String name;
-    private Robot robot;
+    private final Robot robot;
     private Server server;
-    private Drivetrain drivetrain;
-    private AutoDrive navigation;
-    private Intake intake;
-    private Duck duck;
-    private Lift lift;
+    private final Drivetrain drivetrain;
+    private final AutoDrive navigation;
+    private final Intake intake;
+    private final Duck duck;
+    private final Lift lift;
 
-    private ControllerMap controller_map;
-    private ControlMgr control_mgr;
-    private Telemetry telemetry;
+    private final ControllerMap controller_map;
+    private final ControlMgr control_mgr;
+    private final Telemetry telemetry;
     public Logger logger;
 
     private Webcam webcam;
     private Webcam.SimpleFrameHandler frame_handler;
     private final String WEBCAM_SERIAL = "3522DE6F";
-    private Mat detector_frame = new Mat();
+    private final Mat detector_frame = new Mat();
     private Mat send_frame = new Mat();
 
     private ElapsedTime camera_timer;
     public ElapsedTime timer;
-    private int id = 0;
-    private double timer_delay = 1000; // Set high to not trigger next move
-    private boolean waiting_camera = false;
-    private boolean waiting = false;
+    private final boolean waiting_camera = false;
     public int shipping_height = 0;
     public double x_coord = -1;
+
+    public boolean lift_reached = false;
+    public boolean chassis_reached = false;
+    public boolean freight_sensed = false;
 
     static
     {
@@ -100,6 +101,17 @@ public class AutonomousTemplate {
             byte[] data = os.toByteArray();
             resp.respond(ByteBuffer.wrap(data));
         });
+        server.registerProcessor(0x2, (cmd, payload, resp) -> {
+            ByteBuffer buf = ByteBuffer.allocate(300);
+
+            double[] nav_poses = robot.navigation.getFieldPositions();
+            buf.putDouble(nav_poses[0]);
+            buf.putDouble(nav_poses[1]);
+            buf.putDouble(nav_poses[2]);
+
+            buf.flip();
+            resp.respond(buf);
+        });
         server.startServer();
     }
 
@@ -116,11 +128,6 @@ public class AutonomousTemplate {
         webcam.open(ImageFormat.YUY2, 800, 448, 30, frame_handler);
     }
 
-    public void set_timer(double delay){
-        timer_delay = delay;
-        waiting = true;
-    }
-
     public void check_image(boolean save_image){
         if (shipping_height != 0){
             return;
@@ -130,23 +137,23 @@ public class AutonomousTemplate {
             throw new IllegalArgumentException("New frame not available");
         }
         Utils.bitmapToMat(frame_handler.currFramebuffer, detector_frame);
-        CapstoneDetector capstone_detector = new CapstoneDetector(logger);
-        x_coord = capstone_detector.detect(detector_frame);
+        CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
+        x_coord = capstone_detector.detect();
         send_frame = capstone_detector.stored_frame;
         if (name.equals("Red Warehouse Auto")){
-            if (75 < x_coord && x_coord < 314) {
+            if (75 < x_coord && x_coord < 270) {
                 shipping_height = 1;
-            } else if (314 < x_coord && x_coord < 520) {
+            } else if (270 < x_coord && x_coord < 466) {
                 shipping_height = 2;
-            } else if (520 < x_coord && x_coord < 800) {
+            } else if (466 < x_coord && x_coord < 800) {
                 shipping_height = 3;
             }
         } else if (name.equals("Blue Warehouse Auto")){
-            if (75 < x_coord && x_coord < 305) {
+            if (75 < x_coord && x_coord < 301) {
                 shipping_height = 1;
-            } else if (305 < x_coord && x_coord < 520) {
+            } else if (301 < x_coord && x_coord < 503) {
                 shipping_height = 2;
-            } else if (520 < x_coord && x_coord < 800) {
+            } else if (503 < x_coord && x_coord < 800) {
                 shipping_height = 3;
             }
         }
@@ -156,39 +163,39 @@ public class AutonomousTemplate {
         logger.i(String.format("Shipping Height: %d", shipping_height));
     }
 
-    public int update() {
-        if (!waiting) {
-            timer.reset();
-        }
+    public void update() { // STATE: 0=driving, 1=lifting, 2=waiting 3=detecting freight
 
-        telemetry.addData("Id: ", id);
-        telemetry.addData("Shipping Height: ", shipping_height);
-        telemetry.addData("X Coord of Block: ", x_coord);
+        chassis_reached = navigation.ifReached();
+        lift_reached = lift.ifReached(lift.getLiftTargetPos());
+        freight_sensed = intake.autoFreightDetected();
 
         navigation.getFieldPos();
         lift.updateLift();
+
+        telemetry.addData("Shipping Height: ", shipping_height);
+        telemetry.addData("X Coord of Block: ", x_coord);
+        navigation.update(telemetry);
+        telemetry.addData("Drivetrain Position Reached", navigation.ifReached());
+        telemetry.addData("Lift Position Reached", lift.ifReached(lift.getLiftTargetPos()));
+        telemetry.addData("Freight Detected",intake.autoFreightDetected());
+
+        telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
+        telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());
+
         telemetry.update();
+    }
 
-        if (navigation.ifReached()){
-            logger.i("Reached CoordinateL %d", id);
-            id += 1;
-            intake.stopDetectingFreight();
-        } else if (lift.ifReached(lift.getLiftTargetPos())){
-            logger.i("Reached Lift: %d", id);
-            id += 1;
-            intake.stopDetectingFreight();
-        } else if (intake.freightDetected()){
-            logger.i("Grabbed Freight: %d", id);
-            id += 1;
-        } else if (timer.seconds() > timer_delay){
-            logger.i("Reached Timer: %d", id);
-            id += 1;
-            waiting = false;
-            timer.reset();
-            intake.stopDetectingFreight();
-        }
-
-        return id;
+    public void autoLiftRetract() {
+//        if (lift.limitPressed()) {
+//            lift.lift_motor.setPower(0);
+//            lift.resetLiftTarget();
+//            lift_reached = true;
+//            lift.auto_override = false;
+//        } else {
+//            lift.lift_motor.setPower(-0.5);
+//            lift.auto_override = true;
+//        }
+        lift.extend(0, true);
     }
 
     public void stop(){

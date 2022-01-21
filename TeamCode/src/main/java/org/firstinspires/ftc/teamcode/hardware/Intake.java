@@ -54,6 +54,10 @@ public class Intake {
         return false;
     }
 
+    public boolean autoFreightDetected() {
+        return (getFreightDistance() < Status.FREIGHT_DETECTION);
+    }
+
     public void detectFreight(){
         freight_detected = false;
     }

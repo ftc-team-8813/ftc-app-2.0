@@ -190,13 +190,7 @@ public class LiftControl extends ControlModule{
 
         lift.updateLift();
 
-        if (!was_reset && lift.limitPressed()){
-            log.i("Reset at Home");
-            lift.resetEncoder();
-            was_reset = true;
-        } else if (!lift.limitPressed()){
-            was_reset = false;
-        }
+
 
         telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
         telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());

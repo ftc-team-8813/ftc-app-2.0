@@ -46,7 +46,7 @@ public class VisionTest extends LoggingOpMode
 
     private Robot robot;
 
-    private Logger log = new Logger("Vision Test");
+    private final Logger log = new Logger("Vision Test");
 
     static
     {
@@ -79,8 +79,8 @@ public class VisionTest extends LoggingOpMode
         server.registerProcessor(0x01, (cmd, payload, resp) -> { // Get frame
             if (serverFrameCopy == null || serverFrameUsed) return;
 
-            CapstoneDetector detector = new CapstoneDetector(log);
-            double x_coord = detector.detect(cvFrame);
+            CapstoneDetector detector = new CapstoneDetector(cvFrame, log);
+            double x_coord = detector.detect();
             log.i("X Coord: %f", x_coord);
 
 //            Bitmap bmp = Bitmap.createBitmap(detector.stored_frame.cols(), detector.stored_frame.rows(), Bitmap.Config.ARGB_8888);

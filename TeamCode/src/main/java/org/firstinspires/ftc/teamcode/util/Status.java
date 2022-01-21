@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class Status {
     // Drivetrain
-    public static final double TIP_TERM = 0.1;
+    public static final double TURN_CORRECTION_P = 0.04; //tele op
     public static final double MAX_VELOCITY = 0;
 
     //Odometry
@@ -13,8 +13,10 @@ public class Status {
     public static final double turnP = 1.3; //no unit
 
     // Intake
-    public static final double FREIGHT_DETECTION = 2.8;
+    public static final double FREIGHT_DETECTION = 2.7;
     public static final long TIME_BEFORE_INTAKING = 100000000; // nanoseconds
+
+
 
     // Lift
     public static final double SENSITIVITY = 500;
@@ -22,16 +24,16 @@ public class Status {
     public static final double UPPER_LIMIT = 70000;
     public static final double MAX_SPEED = 1;
     public static final double RETRACT_SPEED = 1;
-    public static final double kP = 0.0007;
+    public static final double kP = 0.00043;
     public static final double kI = 0;
     public static final double kD = 0;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
-        put("pitstop", 10500.0);
+        put("pitstop", 12500.0);
         put("neutral", 9700.0);
         put("low", 34400.0);
-        put("mid", 41500.0);
-        put("high", 46500.0);
-        put("high2", 50000.0);
+        put("mid", 41300.0);
+        put("high", 46550.0);
+        put("high2", 48750.0);
         put("really high", 68000.0);
     }};
 
@@ -45,7 +47,7 @@ public class Status {
         put("in", 0.82);
     }};
     public static final double BUCKET_WAIT_TIME = 0.2;
-    public static final double PITSTOP_WAIT_TIME = 0.15;
+    public static final double PITSTOP_WAIT_TIME = 0.2;
 
     // Outrigger
     public static final HashMap<String, Double> OUTRIGGERS = new HashMap<String, Double>(){{
