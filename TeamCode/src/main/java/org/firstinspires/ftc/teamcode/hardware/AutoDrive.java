@@ -61,11 +61,6 @@ public class AutoDrive {
         this.x_dist = x_dist;
     }
 
-    public void againstWall(){
-        if (x_dist.getDistance(DistanceUnit.MM) < 22.0) {
-            field_x = 0;
-        }
-    }
 
     public boolean ifReached(){
         double deadband = 0.5;
@@ -117,8 +112,14 @@ public class AutoDrive {
 
         field_x += delta_field_x;
         field_y += delta_field_y;
+
+        //sensor-based position reset
         if(lineFinder.lineFound()){
             field_y = direction * Status.TAPE_Y_OFFSET;
+        }
+
+        if (x_dist.getDistance(DistanceUnit.MM) < 22.0) {
+            field_x = 0;
         }
 
         loop_end = System.nanoTime() / 1000000000.0;
@@ -151,6 +152,7 @@ public class AutoDrive {
             turn = 0.0;
         }
 
+
         if (tracking){
             drivetrain_reached = false;
         }
@@ -179,7 +181,6 @@ public class AutoDrive {
         telemetry.addData("y position: ", field_y);
         telemetry.addData("angle: ", heading);
 
-        telemetry.addData("line found", lineFinder.lineFound());
         //telemetry.addData("Server status ", server.getStatus());
         //telemetry.addData("Loop Time in seconds", loop_time);
     }

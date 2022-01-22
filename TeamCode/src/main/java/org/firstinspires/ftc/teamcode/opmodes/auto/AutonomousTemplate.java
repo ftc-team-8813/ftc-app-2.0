@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Duck;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
+import org.firstinspires.ftc.teamcode.hardware.LineFinder;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
@@ -170,6 +171,7 @@ public class AutonomousTemplate {
 
         telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
         telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());
+        telemetry.addData("Line Found: ", robot.lineFinder.lineFound());
 
         telemetry.update();
     }

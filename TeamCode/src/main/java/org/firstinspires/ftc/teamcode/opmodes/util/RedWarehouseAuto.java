@@ -77,7 +77,7 @@ public class RedWarehouseAuto extends LoggingOpMode
             case 4: //outtake and back to warehouse entrance
                 robot.intake.setIntakeBack(-0.8);
                 robot.intake.setIntakeFront(-0.8);
-                robot.navigation.againstWall();
+
                 if (auto.chassis_reached && id2 == 12) {id1+=1; id2+=1; auto.chassis_reached = false; }
                 break;
 //            case 5: //back to goal, wait for scoring before next case
