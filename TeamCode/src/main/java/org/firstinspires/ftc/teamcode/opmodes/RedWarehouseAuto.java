@@ -1,135 +1,358 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.util;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
-import org.firstinspires.ftc.teamcode.hardware.Duck;
-import org.firstinspires.ftc.teamcode.hardware.Intake;
+import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.DuckControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.OdometryControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.ServerControl;
-import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.util.Scheduler;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
+import org.firstinspires.ftc.teamcode.opmodes.auto.AutonomousTemplate;
+import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.util.event.LifecycleEvent;
-import org.opencv.android.OpenCVLoader;
 
-
-import static org.firstinspires.ftc.teamcode.util.event.LifecycleEvent.START;
-
-// we going to use the event bus system for this so that everything can be done on one thread
-@Autonomous(name="Red Warehouse Auto")
+@Autonomous(name="Red Warehouse Auto", group="Reds")
 public class RedWarehouseAuto extends LoggingOpMode
 {
     private Robot robot;
-    private Drivetrain drivetrain;
-    private Odometry odometry;
-    private Duck duck;
-    private ControllerMap controllerMap;
-    private ControlMgr controlMgr;
-    private EventBus evBus;
-    private ElapsedTime timer;
+    private AutonomousTemplate auto;
+    private final String name = "Red Warehouse Auto";
+    private int id1 = 0;
+    private int id2 = 0;
+    private ElapsedTime timer1;
+    private boolean waiting1 = false;
+    private ElapsedTime timer2;
+    private boolean waiting2 = false;
 
-    private int id = 0;
-    private boolean was_moving = false;
-    private boolean moving = false;
-
-
-    static
-    {
-        OpenCVLoader.initDebug();
-    }
 
     @Override
-    public void init()
-    {
+    public void init() {
         super.init();
-        robot = Robot.initialize(hardwareMap, "Autonomous");
-        controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
-        controlMgr = new ControlMgr(robot, controllerMap);
-        timer = new ElapsedTime();
-
-//        controlMgr.addModule(new ServerControl("Server Control"));
-//        controlMgr.initModules();
-
-        drivetrain = robot.drivetrain;
-        odometry = robot.odometry;
-        duck = robot.duck;
-
-        odometry.podsUp();
+        this.robot = Robot.initialize(hardwareMap, name, 1);
+        this.auto = new AutonomousTemplate(
+                name,
+                this.robot,
+                hardwareMap,
+                new ControllerMap(gamepad1, gamepad2, new EventBus()),
+                telemetry
+        );
+        timer1 = new ElapsedTime();
+        timer2 = new ElapsedTime();
+        auto.init_camera();
+        auto.init_lift();
     }
 
     @Override
     public void start() {
-
+        timer1.reset();
+        timer2.reset();
     }
 
     @Override
     public void loop() {
-        switch (id){
+
+        //--------------------------------------------------------------------------------------------------------
+        //CHASSIS AND INTAKE -------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------
+        switch (id1){
+            case 0: //vision
+                auto.check_image(false);
+                if (!waiting1) {timer1.reset(); waiting1 = true;}
+                if (timer1.seconds() > 0.3) {id1+=1; id2+=1; waiting1 = false;}
+                break;
+            case 1: //go to goal
+                robot.navigation.moveToPosition(0, 25.0, 0.0, 0.6, true);
+                break;
+            case 2: //go to warehouse, make sure slides are in before bucket goes down
+                robot.navigation.moveToPosition(0,-27.0,0.0, 0.6, true);
+                if (auto.chassis_reached && id2 == 9) {id1+=1; auto.chassis_reached = false;}
+                break;
+            case 3: //intake, once done tell slides to start extending
+                robot.intake.setIntakeBack(0.9);
+                robot.navigation.moveToPosition(-1,-37,.1,.2,true);
+                if (!waiting1) {timer1.reset(); waiting1 = true;}
+                if (timer1.seconds() > 3) {id1+=1; id2+=1; waiting1 = false;}
+                if(auto.freight_sensed) {id1+=1; id2+=1; waiting1 = false;}
+                break;
+            case 4: //outtake and back to warehouse entrance
+                robot.intake.setIntakeBack(-0.8);
+                robot.intake.setIntakeFront(-0.8);
+
+                if (auto.chassis_reached && id2 == 12) {id1+=1; id2+=1; auto.chassis_reached = false; }
+                break;
+//            case 5: //back to goal, wait for scoring before next case
+//                robot.navigation.moveToPosition(6,27,0.0, 0.6, true);
+//                robot.intake.setIntakeBack(-0.5);
+//                if (auto.chassis_reached && id2 == 14) {id2+=1; auto.chassis_reached = false; }
+//                break;
+//            case 6: //go to warehouse, make sure slides are in before bucket goes down
+//
+//                robot.navigation.moveToPosition(6,-30.0,0.0, 0.6, true);
+//                if (auto.chassis_reached && id2 == 20) {id1+=1; auto.chassis_reached = false; }
+//                break;
+//            case 7: //intake, once done tell slides to start extending
+//                robot.intake.setIntakeBack(0.9);
+//                robot.navigation.moveToPosition(-6,-41,.1,.2,true);
+//                if (!waiting1) {timer1.reset(); waiting1 = true;}
+//                if (timer1.seconds() > 3) {id1+=1; id2+=1; waiting1 = false;};
+//                if(auto.freight_sensed) {id1+=1; id2+=1; waiting1 = false;}
+//                break;
+//            case 8: //outtake and back to warehouse entrance
+//                robot.intake.setIntakeBack(-0.8);
+//
+//                robot.navigation.moveToPosition(8,-36.0,0.0, 0.6, true);
+//                if (auto.chassis_reached && id2 == 23) {id1+=1; id2+=1; auto.chassis_reached = false; }
+//                break;
+//            case 9: //back to goal, wait for scoring before next case
+//                robot.navigation.moveToPosition(8,29,0.0, 0.6, true);
+//                robot.intake.setIntakeBack(-0.5);
+//                if (auto.chassis_reached && id2 == 25) {id2+=1; auto.chassis_reached = false; }
+//                break;
+//            case 10: //go to warehouse, make sure slides are in before bucket goes down
+//
+//                robot.navigation.moveToPosition(8,-30.0,0.0, 0.6, true);
+//                if (auto.chassis_reached && id2 == 31) {id1+=1; auto.chassis_reached = false; }
+//                break;
+//            case 11: //intake, once done tell slides to start extending
+//                robot.intake.setIntakeBack(0.9);
+//                robot.navigation.moveToPosition(-9,-41,.1,.2,true);
+//                if (!waiting1) {timer1.reset(); waiting1 = true;}
+//                if (timer1.seconds() > 3) {id1+=1; id2+=1; waiting1 = false;};
+//                if(auto.freight_sensed) {id1+=1; id2+=1; waiting1 = false;}
+//                break;
+//            case 12: //outtake and back to warehouse entrance
+//                robot.intake.setIntakeBack(-0.8);
+//
+//                robot.navigation.moveToPosition(10,-36.0,0.0, 0.6, true);
+//                if (auto.chassis_reached && id2 == 34) {id1+=1; id2+=1; auto.chassis_reached = false; }
+//                break;
+//            case 13: //back to goal, wait for scoring before next case
+//                robot.navigation.moveToPosition(10,31,0.0, 0.6, true);
+//                robot.intake.setIntakeBack(-0.5);
+//                if (auto.chassis_reached && id2 == 36) {id2+=1; auto.chassis_reached = false; }
+//                break;
+//            case 14: //park
+//                //
+//                robot.intake.setIntakeFront(0);
+//                robot.intake.setIntakeBack(0);
+//                robot.navigation.moveToPosition(10,-40,0.0, 0.8, true);
+//                break;
+        }
+        //--------------------------------------------------------------------------------------------------------
+        //LIFT ---------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------
+        switch (id2){
             case 0:
-                if (!moving){
-                    timer.reset();
-                }
-                drivetrain.teleMove(.5, 0, 0);
-                if (timer.seconds() >= 0.75){
-                    moving = false;
-                } else {
-                    moving = true;
-                }
                 break;
-            case 1:
-                if (!moving){
-                    timer.reset();
-                }
-                drivetrain.teleMove(0, -0.3, 0);
-                if (timer.seconds() >= 2){
-                    moving = false;
-                } else {
-                    moving = true;
-                }
+            case 1: //pit stop while camera is running
+                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+                if (auto.lift_reached && id1 == 1) id2+=1;
                 break;
-            case 2:
-                moving = false;
-                was_moving = false;
-                drivetrain.teleMove(0, 0, 0);
+            case 2: //flip arm out
+                switch(auto.shipping_height){
+                    case 1:
+                        robot.lift.rotate(Status.ROTATIONS.get("low_out"));
+                        break;
+                    case 2:
+                        robot.lift.rotate(Status.ROTATIONS.get("mid_out"));
+                        break;
+                    case 3:
+                        robot.lift.rotate(Status.ROTATIONS.get("high_out"));
+                        break;
+                    case 0:
+                        robot.lift.rotate(Status.ROTATIONS.get("high_out"));
+                        break;
+                }
+                if (!waiting2) {timer2.reset(); waiting2 = true;}
+                if (timer2.seconds() > Status.PITSTOP_WAIT_TIME) {id2+=1; waiting2 = false;}
+                break;
+            case 3: //extend slides
+                switch(auto.shipping_height){
+                    case 1:
+                        robot.lift.extend(Status.STAGES.get("low"), true);
+                        break;
+                    case 2:
+                        robot.lift.extend(Status.STAGES.get("mid"), true);
+                        break;
+                    case 3:
+                        robot.lift.extend(Status.STAGES.get("high") + 900, true);
+                        break;
+                    case 0:
+                        robot.lift.extend(Status.STAGES.get("high"), true);
+                        break;
+                }
+                if (auto.lift_reached && auto.chassis_reached) id2+=1;
+                break;
+            case 4: //dump
+                robot.intake.deposit(Status.DEPOSITS.get("dump"));
+                if (!waiting2) {timer2.reset(); waiting2 = true;}
+                if (timer2.seconds() > 0.15) {id2+=1; id1+=1; waiting2 = false;}
+                break;
+            case 5: //flip up again, tell chassis to drive back to warehouse
+                robot.intake.deposit(Status.DEPOSITS.get("carry"));
+                if (!waiting2) {timer2.reset(); waiting2 = true;}
+                if (timer2.seconds() > 0.1) {id2+=1; waiting2 = false;}
+                break;
+            case 6: //retract
+                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+                if (auto.lift_reached) id2+=1;
+                break;
+            case 7: //flip arm back in
+                robot.lift.rotate(Status.ROTATIONS.get("in"));
+                if (!waiting2) {timer2.reset(); waiting2 = true;}
+                if (timer2.seconds() > Status.PITSTOP_WAIT_TIME + 0.05) {id2+=1; waiting2 = false;}
+                break;
+            case 8: //retract slides fully
+                auto.autoLiftRetract();
+                if (auto.lift_reached) id2+=1;
+                break;
+            case 9: //flip the bucket down, wait for intake
+                robot.intake.deposit(Status.DEPOSITS.get("back"));
+                break;
+            case 10: //flip the bucket up
+                robot.intake.deposit(Status.DEPOSITS.get("carry"));
+                if (!waiting2) {timer2.reset(); waiting2 = true;}
+                if (timer2.seconds() > 0.1) {id2+=1; waiting2 = false;}
+                break;
+            case 11: //pit stop
+                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+                if (auto.lift_reached) id2+=1;
+                break;
+            case 12: //flip arm out
+                robot.lift.rotate(Status.ROTATIONS.get("high_out"));
+//                if (!waiting2) {timer2.reset(); waiting2 = true;}
+//                if (timer2.seconds() > Status.PITSTOP_WAIT_TIME) {id2+=1; waiting2 = false;};
+                break;
+            case 13: //extend slides
+                robot.lift.extend(Status.STAGES.get("high") + 1400, true);
+                if (auto.lift_reached) id2+=1;
+                break;
+//            case 14: //wait for chassis
+//                break;
+//            case 15: //dump
+//                robot.intake.deposit(Status.DEPOSITS.get("dump"));
+//                if (!waiting2) {timer2.reset(); waiting2 = true;}
+//                if (timer2.seconds() > 0.2) {id2+=1; id1+=1; waiting2 = false;}
+//                break;
+//            case 16: //flip up again, tell chassis to drive back to warehouse
+//                robot.intake.deposit(Status.DEPOSITS.get("carry"));
+//                if (!waiting2) {timer2.reset(); waiting2 = true;}
+//                if (timer2.seconds() > 0.1) {id2+=1; waiting2 = false;};
+//                break;
+//            case 17: //retract
+//                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+//                if (auto.lift_reached) id2+=1;
+//                break;
+//            case 18: //flip arm back in
+//                robot.lift.rotate(Status.ROTATIONS.get("in"));
+//                if (!waiting2) {timer2.reset(); waiting2 = true;}
+//                if (timer2.seconds() > Status.PITSTOP_WAIT_TIME + 0.05) {id2+=1; waiting2 = false;};
+//                break;
+//            case 19: //retract fully
+//                auto.autoLiftRetract();
+//                if (auto.lift_reached) id2+=1;
+//                break;
+//            case 20: //flip the bucket down, wait for intake
+//                robot.intake.deposit(Status.DEPOSITS.get("back"));
+//                break;
+//            case 21: //flip the bucket up
+//                robot.intake.deposit(Status.DEPOSITS.get("carry"));
+//                if (!waiting2) {timer2.reset(); waiting2 = true;}
+//                if (timer2.seconds() > 0.1) {id2+=1; waiting2 = false;};
+//                break;
+//            case 22: //pit stop
+//                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+//                if (auto.lift_reached) id2+=1;
+//                break;
+//            case 23: //flip arm out
+//                robot.lift.rotate(Status.ROTATIONS.get("high_out"));
+////                if (!waiting2) {timer2.reset(); waiting2 = true;}
+////                if (timer2.seconds() > Status.PITSTOP_WAIT_TIME) {id2+=1; waiting2 = false;};
+//                break;
+//            case 24: //extend slides
+//                robot.lift.extend(Status.STAGES.get("high") + 1400, true);
+//                if (auto.lift_reached) id2+=1;
+//                break;
+//            case 25: //wait for chassis
+//                break;
+//            case 26: //dump
+//                robot.intake.deposit(Status.DEPOSITS.get("dump"));
+//                if (!waiting2) {timer2.reset(); waiting2 = true;}
+//                if (timer2.seconds() > 0.2) {id2+=1; waiting2 = false;};
+//                break;
+//            case 27: //flip up again, tell chassis to drive back to warehouse
+//                robot.intake.deposit(Status.DEPOSITS.get("carry"));
+//                if (!waiting2) {timer2.reset(); waiting2 = true;}
+//                if (timer2.seconds() > 0.1) {id2+=1; id1+=1; waiting2 = false;};
+//                break;
+//            case 28: //retract
+//                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+//                if (auto.lift_reached) id2+=1;
+//                break;
+//            case 29: //flip arm back in
+//                robot.lift.rotate(Status.ROTATIONS.get("in"));
+//                if (!waiting2) {timer2.reset(); waiting2 = true;}
+//                if (timer2.seconds() > Status.PITSTOP_WAIT_TIME + 0.05) {id2+=1; waiting2 = false;};
+//                break;
+//            case 30: //retract fully
+//                auto.autoLiftRetract();
+//                if (auto.lift_reached) id2+=1;
+//                break;
+//            case 31: //flip the bucket down, wait for intake
+//                robot.intake.deposit(Status.DEPOSITS.get("back"));
+//                break;
+//            case 32: //flip the bucket up
+//                robot.intake.deposit(Status.DEPOSITS.get("carry"));
+//                if (!waiting2) {timer2.reset(); waiting2 = true;}
+//                if (timer2.seconds() > 0.1) {id2+=1; waiting2 = false;};
+//                break;
+//            case 33: //pit stop
+//                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+//                if (auto.lift_reached) id2+=1;
+//                break;
+//            case 34: //flip arm out
+//                robot.lift.rotate(Status.ROTATIONS.get("high_out"));
+////                if (!waiting2) {timer2.reset(); waiting2 = true;}
+////                if (timer2.seconds() > Status.PITSTOP_WAIT_TIME) {id2+=1; waiting2 = false;};
+//                break;
+//            case 35: //extend slides
+//                robot.lift.extend(Status.STAGES.get("high") + 1400, true);
+//                if (auto.lift_reached) id2+=1;
+//                break;
+//            case 36: //wait for chassis
+//                break;
+//            case 37: //dump
+//                robot.intake.deposit(Status.DEPOSITS.get("dump"));
+//                if (!waiting2) {timer2.reset(); waiting2 = true;}
+//                if (timer2.seconds() > 0.2) {id2+=1; waiting2 = false;};
+//                break;
+//            case 38: //flip up again, tell chassis to drive back to warehouse
+//                robot.intake.deposit(Status.DEPOSITS.get("carry"));
+//                if (!waiting2) {timer2.reset(); waiting2 = true;}
+//                if (timer2.seconds() > 0.1) {id2+=1; id1+=1; waiting2 = false;};
+//                break;
+//            case 39: //retract
+//                robot.lift.extend(Status.STAGES.get("pitstop"), true);
+//                if (auto.lift_reached) id2+=1;
+//                break;
+//            case 40: //flip arm back in
+//                robot.lift.rotate(Status.ROTATIONS.get("in"));
+//                if (!waiting2) {timer2.reset(); waiting2 = true;}
+//                if (timer2.seconds() > Status.PITSTOP_WAIT_TIME + 0.05) {id2+=1; waiting2 = false;};
+//                break;
+//            case 41:
+//                auto.autoLiftRetract();
+//                break;
         }
-
-        if (!moving && was_moving){
-            id += 1;
-            was_moving = false;
-        }else {
-            was_moving = true;
-        }
-
-        double[] odo_data = odometry.getOdoData();
-        telemetry.addData("Y: ", odo_data[0]);
-        telemetry.addData("X: ", odo_data[1]);
-        telemetry.addData("Heading: ", odo_data[2]);
-
-        double[] delta_positions = drivetrain.getPositionDeltas();
-        telemetry.addData("Forward Power: ", delta_positions[0]);
-        telemetry.addData("Strafe Power: ", delta_positions[1]);
-        telemetry.addData("Turn Power: ", delta_positions[2]);
-
-        telemetry.addData("Moving: ", moving);
-        telemetry.addData("Timer: ", timer.seconds());
-
-        odometry.update();
-        telemetry.update();
+        auto.update();
+        robot.eventBus.update();
+        robot.scheduler.loop();
+        telemetry.addData("id", id1);
+        telemetry.addData("id2", id2);
     }
 
     @Override
-    public void stop()
-    {
-        super.stop();
+    public void stop() {
+        auto.stop();
     }
 }

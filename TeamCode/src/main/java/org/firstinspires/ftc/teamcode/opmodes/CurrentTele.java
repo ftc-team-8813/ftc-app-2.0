@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
+import org.firstinspires.ftc.teamcode.hardware.LineFinder;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
@@ -9,8 +12,8 @@ import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DuckControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.OdometryControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ServerControl;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -26,7 +29,6 @@ public class CurrentTele extends LoggingOpMode
 
     private EventBus evBus;
     private Scheduler scheduler;
-
     static
     {
         OpenCVLoader.initDebug();
@@ -36,10 +38,10 @@ public class CurrentTele extends LoggingOpMode
     public void init()
     {
         super.init();
-        robot = Robot.initialize(hardwareMap, "Main TeleOp");
+        robot = Robot.initialize(hardwareMap, "Main TeleOp", 0);
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
-        
+
         controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         
         controlMgr = new ControlMgr(robot, controllerMap);
@@ -47,14 +49,11 @@ public class CurrentTele extends LoggingOpMode
         // Controller Modules
 //        controlMgr.addModule(new ServerControl("Server Control"));
         controlMgr.addModule(new DriveControl("Drive Control"));
-        controlMgr.addModule(new OdometryControl("Odometry Control"));
         controlMgr.addModule(new IntakeControl("Intake Control"));
         controlMgr.addModule(new LiftControl("FourBar Control"));
         controlMgr.addModule(new DuckControl("Duck Control"));
         
         controlMgr.initModules();
-
-        robot.odometry.podsUp();
     }
     
     @Override

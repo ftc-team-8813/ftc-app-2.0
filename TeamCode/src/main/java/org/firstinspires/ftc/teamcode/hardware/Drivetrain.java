@@ -1,71 +1,84 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorImpl;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
+import org.checkerframework.checker.units.qual.A;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 public class Drivetrain {
-    private final Odometry odometry;
-    private final DcMotor front_left;
-    private final DcMotor front_right;
-    private final DcMotor back_left;
-    private final DcMotor back_right;
+    public final DcMotorEx front_left;
+    public final DcMotorEx front_right;
+    public final DcMotorEx back_left;
+    public final DcMotorEx back_right;
+    private final IMU imu;
 
-    private double target_y;
-    private double target_x;
-    private double target_heading;
-    private double target_speed;
-    private double forward_power;
-    private double strafe_power;
-    private double turn_power;
-
-    public Drivetrain(Odometry odometry, DcMotor front_left, DcMotor front_right, DcMotor back_left, DcMotor back_right){
-        this.odometry = odometry;
+    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, IMU imu) {
         this.front_left = front_left;
         this.front_right = front_right;
         this.back_left = back_left;
         this.back_right = back_right;
+        this.imu = imu;
 
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        front_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        back_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        front_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        back_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        front_right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        back_right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        front_left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        back_left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+
     }
 
-    public void teleMove(double forward, double strafe, double turn){
-        // Reversed because of bevel gears
-        front_left.setPower(-1 * (forward + strafe + turn));
-        front_right.setPower(-1 * (forward - strafe - turn));
-        back_left.setPower(-1 * (forward - strafe + turn));
-        back_right.setPower(-1 * (forward + strafe - turn));
+    public void move(double forward, double strafe, double turn) {
+        // Slowing right side to keep forward moving straight
+        front_left.setPower((forward + strafe + turn));// * 0.87);
+        front_right.setPower(forward - strafe - turn);
+        back_left.setPower((forward - strafe + turn));// * 0.87);
+        back_right.setPower(forward + strafe - turn);
     }
 
-    public void goToPosition(double y, double x, double heading, double speed){
-        target_y = y;
-        target_x = x;
-        target_heading = heading;
-        target_speed = speed;
+    public void stop() {
+        front_left.setPower(0);
+        front_right.setPower(0);
+        back_left.setPower(0);
+        back_right.setPower(0);
     }
 
-    public void goToHeading(double heading){
-        target_heading = heading;
-    }
+    public enum encoderNames {FRONT_RIGHT, BACK_RIGHT, FRONT_LEFT, BACK_LEFT}
 
-    public boolean updatePosition(){
-        double[] odoData = odometry.getOdoData();
-        double delta_y = odoData[0] - target_y; // Flipped to change power direction
-        double delta_x = target_x - odoData[1];
-        double delta_heading = target_heading + odoData[2]; // Adding to flip rotation direction
-
-        forward_power = delta_x * Status.FORWARD_KP * target_speed;
-        strafe_power = delta_y * Status.STRAFE_KP * target_speed;
-        turn_power = delta_heading * Status.TURN_KP * target_speed;
-
-        teleMove(forward_power, strafe_power, turn_power);
-        return delta_y < 1.5 && delta_x < 1.5 && delta_heading < 2;
-    }
-
-    public double[] getPositionDeltas(){
-        return new double[]{forward_power, strafe_power, turn_power};
+    public int getEncoderValue(encoderNames motor) {
+        switch (motor) {
+            case FRONT_RIGHT:
+                return front_right.getCurrentPosition();
+            case BACK_RIGHT:
+                return back_right.getCurrentPosition();
+            case FRONT_LEFT:
+                return front_left.getCurrentPosition();
+            case BACK_LEFT:
+                return back_left.getCurrentPosition();
+        }
+    return 0;
     }
 }
