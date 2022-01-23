@@ -5,6 +5,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
+import org.firstinspires.ftc.teamcode.hardware.LineFinder;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
@@ -29,6 +30,7 @@ public class DriveControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_x;
     private ControllerMap.ButtonEntry btn_dpad_down;
     private AutoDrive autoDrive;
+    private LineFinder lineFinder;
 
     private double heading_was;
     private double heading_delta;
@@ -47,6 +49,7 @@ public class DriveControl extends ControlModule{
         this.drivetrain = robot.drivetrain;
         this.imu = robot.imu;
         this.lift = robot.lift;
+        this.lineFinder = robot.lineFinder;
 
         ax_drive_left_x = controllerMap.getAxisMap("drive:left_x", "gamepad1", "left_stick_x");
         ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");
@@ -60,46 +63,29 @@ public class DriveControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        if (btn_a.get() || btn_x.get() || btn_y.get()){
+//        if (lift.getLiftTargetPos() > Status.STAGES.get("speed mode threshold")) {
+//            speed_scalar = 1.5;
+//        } else if (btn_x.get()) {
+//            speed_scalar = 1;
+//        } else if (btn_dpad_down.get()){
+//            speed_scalar = 2;
+//        }
+        if (lift.getLiftTargetPos() > Status.STAGES.get("neutral") - 1000 && lift.getLiftTargetPos() < Status.STAGES.get("neutral") + 3000) {
             speed_scalar = 1;
-        } else if (btn_dpad_down.get()){
+        }
+        if (lift.getLiftTargetPos() == Status.STAGES.get("pitstop") || lift.getLiftTargetPos() == 0) {
             speed_scalar = 2;
         }
-
-        // TURN CORRECTION - NOT WANTED YET
-        /*
-        double real_angle=0.0;
-        double turn_correction;
-        target_angle += ax_drive_right_x.get()*turn_scaling*speed_scalar;
-
-        real_angle = Math.toRadians(imu.getHeading());
-
-        double error =  real_angle - target_angle;
-        turn_correction = error * Status.turnP;
-
-        if (ax_drive_right_x.get() != 0 || ax_drive_left_x.get() !=0 || ax_drive_left_y.get() !=0 || Math.abs(error)>0) {
-            drivetrain.move(-ax_drive_left_y.get() * 0.4 * speed_scalar,
-                    ax_drive_left_x.get() * 0.4 * speed_scalar,
-                    -turn_correction);
+        if (lift.getLiftCurrentPos() > Status.STAGES.get("mid")) {
+            speed_scalar = 0.8;
         }
 
-        AutoDrive.update(telemetry);
-
-        telemetry.addData("Z rotation rate", imu.getInternalImu().getAngularVelocity().toAngleUnit(AngleUnit.RADIANS).zRotationRate);
-        telemetry.addData("Y rotation rate", imu.getInternalImu().getAngularVelocity().toAngleUnit(AngleUnit.RADIANS).yRotationRate);
-        telemetry.addData("X rotation rate", imu.getInternalImu().getAngularVelocity().toAngleUnit(AngleUnit.RADIANS).xRotationRate);
-
-        telemetry.addData("Turn Correction Error", error);
-        */
-
-        //telemetry.addData("x Acceleration: ", imu.getInternalImu().getLinearAcceleration().xAccel);
-        //telemetry.addData("y Acceleration: ", imu.getInternalImu().getLinearAcceleration().yAccel);
-        //telemetry.addData("z Acceleration: ", imu.getInternalImu().getLinearAcceleration().zAccel);
         telemetry.addData("Heading: ", imu.getHeading());
         telemetry.addData("Heading Delta: ", heading_delta);
         teleMove(-ax_drive_left_y.get() * 0.45 * speed_scalar,
                                      ax_drive_left_x.get() * 0.45 * speed_scalar,
                                       ax_drive_right_x.get() * 0.45 * speed_scalar);
+        lineFinder.update(telemetry);
     }
 
     public void teleMove(double forward, double strafe, double turn) {

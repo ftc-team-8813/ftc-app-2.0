@@ -91,7 +91,11 @@ public class IntakeControl extends ControlModule {
         }
 
         if (side == 0){
-            intake.deposit(Status.DEPOSITS.get("carry"));
+            if (lift.getLiftTargetPos() == Status.STAGES.get("pitstop") || lift.getLiftTargetPos() == 0 || lift.getLiftTargetPos() > Status.STAGES.get("neutral") + 20000) {
+                intake.deposit(Status.DEPOSITS.get("carry"));
+            } else {
+                intake.deposit(Status.DEPOSITS.get("tilt"));
+            }
         } else if (side == 1){
             if (lift.getLiftCurrentPos() < 2000) {
                 intake.deposit(Status.DEPOSITS.get("front"));
