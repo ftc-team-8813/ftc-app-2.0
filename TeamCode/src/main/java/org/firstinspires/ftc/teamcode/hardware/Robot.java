@@ -51,7 +51,6 @@ public class Robot
 
     private Robot(HardwareMap hardwareMap, String initMessage, int direction)
     {
-        // Hardware Maps
         // Motors
         DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "front left");
         DcMotorEx front_right = hardwareMap.get(DcMotorEx.class, "front right");
@@ -70,6 +69,7 @@ public class Robot
         outrigger.setPwmRange(new PwmControl.PwmRange(500,2500));
         CRServoImplEx duckFront = hardwareMap.get(CRServoImplEx.class, "duck front");
         CRServoImplEx duckback = hardwareMap.get(CRServoImplEx.class, "duck back");
+
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu2");
         DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");

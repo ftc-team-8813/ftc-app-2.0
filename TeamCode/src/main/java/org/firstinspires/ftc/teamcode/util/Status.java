@@ -11,7 +11,7 @@ public class Status {
     public static final double WHEEL_DIAMETER = 96; //mm
     public static final double TICKS_PER_ROTATION = 28; //encoder counts/revolution of the bare motor
     public static final double turnP = 1.3; //no unit
-    public static final double LIGHT_MULTIPLIER = 1.5; //initial light sensor value x LIGHT_MULTIPLIER = value expected at tape crossing
+    public static final double LIGHT_MULTIPLIER = 1.25; //initial light sensor value x LIGHT_MULTIPLIER = value expected at tape crossing
     public static final double TAPE_Y_OFFSET = 40; //15.56 !! inches from zero to tape line. Sign varies depending on autonomous mode. Positive is blue, negative is red.
 
     // Intake

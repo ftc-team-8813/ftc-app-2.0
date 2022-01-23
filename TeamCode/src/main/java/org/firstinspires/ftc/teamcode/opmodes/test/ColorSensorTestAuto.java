@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.util;
+package org.firstinspires.ftc.teamcode.opmodes.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -44,7 +44,6 @@ public class ColorSensorTestAuto extends LoggingOpMode
         timer2 = new ElapsedTime();
         auto.init_camera();
         auto.init_lift();
-        lineFinder.initialize();
     }
 
     @Override
@@ -76,9 +75,9 @@ public class ColorSensorTestAuto extends LoggingOpMode
                 robot.navigation.moveToPosition(0, -55.0, 0.0, 0.6, true);
                 break;
         }
-            auto.update();
-            robot.eventBus.update();
-            robot.scheduler.loop();
+        auto.update();
+        robot.eventBus.update();
+        robot.scheduler.loop();
     }
 
     @Override

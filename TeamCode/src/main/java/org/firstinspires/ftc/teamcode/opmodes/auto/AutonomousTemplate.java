@@ -102,17 +102,6 @@ public class AutonomousTemplate {
             byte[] data = os.toByteArray();
             resp.respond(ByteBuffer.wrap(data));
         });
-        server.registerProcessor(0x2, (cmd, payload, resp) -> {
-            ByteBuffer buf = ByteBuffer.allocate(300);
-
-            double[] nav_poses = robot.navigation.getFieldPositions();
-            buf.putDouble(nav_poses[0]);
-            buf.putDouble(nav_poses[1]);
-            buf.putDouble(nav_poses[2]);
-
-            buf.flip();
-            resp.respond(buf);
-        });
         server.startServer();
     }
 
@@ -183,6 +172,7 @@ public class AutonomousTemplate {
         telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
         telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());
         telemetry.addData("Line Found: ", robot.lineFinder.lineFound());
+        robot.lineFinder.update(telemetry);
 
         telemetry.update();
     }
