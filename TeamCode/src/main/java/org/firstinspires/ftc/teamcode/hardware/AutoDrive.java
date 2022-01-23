@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.hardware;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 import java.lang.Math;
@@ -9,6 +11,8 @@ import java.lang.Math;
 public class AutoDrive {
     private final Drivetrain drivetrain;
     private final IMU imu;
+    private final LineFinder lineFinder;
+    private final DistanceSensor x_dist;
 
     private boolean drivetrain_reached;
 
@@ -43,18 +47,6 @@ public class AutoDrive {
     private double error_y;
     private double error_a;
 
-    private double old_error_forward;
-    private double old_error_strafe;
-    private double old_error_a;
-
-    private double d_forward;
-    private double d_strafe;
-    private double d_turn;
-
-    private double i_sum_forward;
-    private double i_sum_strafe;
-    private double i_sum_turn;
-
     private final double strafe_efficiency = 0.9014;
     private final double radians_per_tick = (10 * Math.PI) / (10246); // 10246 was the tick count after we spun the robot 2pi radians 10 times
     private final double inches_per_tick = (1 / Status.TICKS_PER_ROTATION) * (96 * Math.PI / 25.4) * (1 / 15.2);
@@ -62,30 +54,22 @@ public class AutoDrive {
     private double loop_end = 0.0;
     private double loop_time = 0.0;
 
-    public boolean wall_shove = false;
-
-    public AutoDrive(Drivetrain drivetrain, IMU imu){
+    public AutoDrive(Drivetrain drivetrain, IMU imu, LineFinder line_finder, DistanceSensor x_dist,  int direction){
         this.drivetrain = drivetrain;
         this.imu = imu;
+        this.lineFinder = line_finder;
+        this.x_dist = x_dist;
     }
 
+
     public boolean ifReached(){
-        double deadband = 1;
-        double deadband_a = 0.011;
-        if (wall_shove) {
-            if (Math.abs(error_y) <= deadband) {
-                drivetrain_reached = true;
-                return true;
-            } else {
-                return false;
-            }
+        double deadband = 0.5;
+        double deadband_a = 0.017;
+        if (!drivetrain_reached && Math.abs(error_x) <= deadband && Math.abs(error_y) <= deadband && Math.abs(error_a) <= deadband_a){
+            drivetrain_reached = true;
+            return true;
         } else {
-            if (!drivetrain_reached && Math.abs(error_x) <= deadband && Math.abs(error_y) <= deadband && Math.abs(error_a) <= deadband_a) {
-                drivetrain_reached = true;
-                return true;
-            } else {
-                return false;
-            }
+            return false;
         }
 
     }
@@ -129,6 +113,15 @@ public class AutoDrive {
         field_x += delta_field_x;
         field_y += delta_field_y;
 
+        //sensor-based position reset
+        if(lineFinder.lineFound()){
+            field_y = direction * Status.TAPE_Y_OFFSET;
+        }
+
+        if (x_dist.getDistance(DistanceUnit.MM) < 22.0) {
+            field_x = 0;
+        }
+
         loop_end = System.nanoTime() / 1000000000.0;
         loop_time = loop_end - loop_start;
 
@@ -140,12 +133,8 @@ public class AutoDrive {
         target_x = x;
         target_y = y;
         target_a = a;
-        final double KP = 0.046;
-        final double KI = 0.000285;
-        final double KD = 0;
-        final double KPturn = .6;
-        final double KIturn = 0;
-        final double KDturn = 0;
+        final double K = 0.04;
+        final double Kturn = 0.1;
 
         error_x = target_x - field_x;
         error_y = target_y - field_y;
@@ -153,42 +142,9 @@ public class AutoDrive {
         double error_d = Math.sqrt((error_x * error_x) + (error_y * error_y)); // distance between target position and actual position
         double theta = Math.atan2(error_x, error_y) - heading; // angle between direction of motion and heading
 
-        error_d = Range.clip(error_d, -1/KP, 1/KP);
-
-        double forward = (error_d * Math.cos(theta));
-        double strafe = (error_d * Math.sin(theta));
-        double turn = (error_a);
-
-        d_forward = ((forward - old_error_forward) / loop_time) * KD;
-        d_strafe = ((strafe - old_error_strafe) / loop_time) * KD;
-        d_turn = ((turn - old_error_a) / loop_time) * KDturn;
-
-        old_error_forward = forward;
-        old_error_strafe = strafe;
-        old_error_a = turn;
-
-        i_sum_forward += forward * KI * loop_time;
-        i_sum_strafe += strafe * KI * loop_time;
-        i_sum_turn += error_a * KIturn * loop_time;
-
-        i_sum_forward = Range.clip(i_sum_forward, -1, 1);
-        i_sum_strafe = Range.clip(i_sum_strafe, -1, 1);
-        i_sum_turn = Range.clip(i_sum_turn, -1, 1);
-
-        forward = (forward * KP) + i_sum_forward + d_forward;
-        strafe = (strafe * KP) + i_sum_strafe + d_strafe;
-        turn = (turn * KPturn) + i_sum_turn + d_turn;
-
-        forward = Range.clip(forward, -power_cap, power_cap);
-        strafe = -Range.clip(strafe, -power_cap, power_cap);
-        turn = -Range.clip(turn, -power_cap, power_cap);
-
-//        if (wall_shove) {
-//            error_x = 0;
-//            target_x = 0;
-//            strafe = -0.2;
-//            field_x = 0;
-//        }
+        double forward = Range.clip(error_d * Math.cos(theta) * K, -power_cap, power_cap);
+        double strafe = -Range.clip(error_d * Math.sin(theta) * K, -power_cap, power_cap);
+        double turn = -Range.clip(error_a * Kturn, -power_cap, power_cap);
 
         if (ifReached()){
             forward = 0.0;
@@ -196,19 +152,13 @@ public class AutoDrive {
             turn = 0.0;
         }
 
+
         if (tracking){
             drivetrain_reached = false;
         }
 
         drivetrain.move(forward, strafe, turn);
-    }
 
-    public void zeroX() {
-        field_x = 0;
-    }
-
-    public double[] getFieldPositions(){
-        return new double[]{field_x, field_y, heading};
     }
 
     public void update(Telemetry telemetry) {
@@ -230,6 +180,7 @@ public class AutoDrive {
         telemetry.addData("x position: ", field_x);
         telemetry.addData("y position: ", field_y);
         telemetry.addData("angle: ", heading);
+
         //telemetry.addData("Server status ", server.getStatus());
         //telemetry.addData("Loop Time in seconds", loop_time);
     }

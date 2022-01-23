@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
+import org.firstinspires.ftc.teamcode.hardware.LineFinder;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
@@ -37,7 +38,7 @@ public class CurrentTele extends LoggingOpMode
     public void init()
     {
         super.init();
-        robot = Robot.initialize(hardwareMap, "Main TeleOp");
+        robot = Robot.initialize(hardwareMap, "Main TeleOp", 0);
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
 
