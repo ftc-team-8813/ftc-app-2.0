@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Duck;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
+import org.firstinspires.ftc.teamcode.hardware.LineFinder;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
@@ -67,7 +68,7 @@ public class AutonomousTemplate {
 
     public AutonomousTemplate(String name, Robot robot, HardwareMap hardware_map, ControllerMap controller_map, Telemetry telemetry){
         this.name = name;
-        this.robot = Robot.initialize(hardware_map, "Autonomous");
+        this.robot = Robot.initialize(hardware_map, "Autonomous", 0);
         this.logger = new Logger(name);
         this.telemetry = telemetry;
         this.controller_map = controller_map;
@@ -170,6 +171,7 @@ public class AutonomousTemplate {
 
         telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
         telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());
+        telemetry.addData("Line Found: ", robot.lineFinder.lineFound());
 
         telemetry.update();
     }
