@@ -21,6 +21,6 @@ public class DuckControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        duck.spin(-ax_right_stick_y.get() * 0.5);
+        duck.spin(-ax_right_stick_y.get()*1.5);
     }
 }

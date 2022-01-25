@@ -15,7 +15,7 @@ public class DistanceSensorTest extends LoggingOpMode {
     @Override
     public void init() {
         super.init();
-        robot = Robot.initialize(hardwareMap, "REV v3 color distance sensor test program");
+        robot = Robot.initialize(hardwareMap, "REV v3 color distance sensor test program", 0);
     }
 
     @Override
