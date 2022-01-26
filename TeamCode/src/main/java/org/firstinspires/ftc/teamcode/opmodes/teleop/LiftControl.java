@@ -21,16 +21,21 @@ public class LiftControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_x;
     private ControllerMap.ButtonEntry btn_dpad_down;
     private ControllerMap.ButtonEntry btn_dpad_up;
+    private ControllerMap.ButtonEntry btn_right_bumper;
     private ControllerMap.AxisEntry ax_left_trigger;
     private ControllerMap.AxisEntry ax_right_trigger;
 
     private int height = -1; // 0 = bottom, 1 = low, 2 = mid, 3 = high, 4 = neutral, 5 = high2 (goal tipped), 6 = really high (duck cycling)
-    private ElapsedTime timer;
+    private final ElapsedTime timer = new ElapsedTime();
     private int id = 0;
     private int id2 = 0;
     private final boolean was_reset = false;
     private boolean left_trigger_was_pressed = false;
     private final double var_pit_stop_wait = Status.PITSTOP_WAIT_TIME;
+
+    public boolean just_deposited = false;
+    private final ElapsedTime deposit_timer = new ElapsedTime();
+    private boolean timer_counting = false;
 
     private Logger log;
 
@@ -41,7 +46,6 @@ public class LiftControl extends ControlModule{
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.lift = robot.lift;
         this.intake = robot.intake;
-        timer = new ElapsedTime();
         log = new Logger("Lift Control");
 
         ax_left_stick_y = controllerMap.getAxisMap("lift:adjust", "gamepad2", "left_stick_y");
@@ -52,6 +56,7 @@ public class LiftControl extends ControlModule{
         ax_left_trigger = controllerMap.getAxisMap("lift:reset", "gamepad2", "left_trigger");
         ax_right_trigger = controllerMap.getAxisMap("lift:extend_really_high", "gamepad2", "right_trigger");
         btn_dpad_up = controllerMap.getButtonMap("Lift:extend_high2", "gamepad2", "dpad_up");
+        btn_right_bumper = controllerMap.getButtonMap("lift:deposit", "gamepad2", "right_bumper");
 
         lift.rotate(Status.ROTATIONS.get("in"));
     }
@@ -200,9 +205,17 @@ public class LiftControl extends ControlModule{
                 break;
         }
 
+        if (btn_right_bumper.edge() == -1) { //when the bucket flips in, wait for a delay and then retract
+            deposit_timer.reset();
+            timer_counting = true;
+        }
+
+        if (timer_counting && deposit_timer.seconds() > Status.DEPOSIT_TIMER) {
+            height = 0;
+            timer_counting = false;
+        }
+
         lift.updateLift();
-
-
 
         telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
         telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());

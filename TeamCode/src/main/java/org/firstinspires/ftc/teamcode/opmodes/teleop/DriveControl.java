@@ -1,7 +1,11 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.util.Range;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
@@ -31,6 +35,7 @@ public class DriveControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_dpad_down;
     private AutoDrive autoDrive;
     private LineFinder lineFinder;
+    private DistanceSensor x_dist;
 
     private double heading_was;
     private double heading_delta;
@@ -50,6 +55,7 @@ public class DriveControl extends ControlModule{
         this.imu = robot.imu;
         this.lift = robot.lift;
         this.lineFinder = robot.lineFinder;
+        this.x_dist = drivetrain.x_dist;
 
         ax_drive_left_x = controllerMap.getAxisMap("drive:left_x", "gamepad1", "left_stick_x");
         ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");
@@ -89,11 +95,17 @@ public class DriveControl extends ControlModule{
     }
 
     public void teleMove(double forward, double strafe, double turn) {
+        double tele_strafe = strafe * 0.7;
+        double wall_distance = x_dist.getDistance(DistanceUnit.CM);
         heading_delta = imu.getHeading() - heading_was;
         //if (Math.abs(heading_delta) > 4) heading_delta = 0;
         if (turn != 0) heading_delta = 0;
 
-        drivetrain.move(forward, (strafe * 0.7), (turn * 0.6) + (heading_delta * Status.TURN_CORRECTION_P));
+        if (lift.getLiftTargetPos() >= Status.STAGES.get("pitstop") && wall_distance < 40 && strafe < 0.1) {
+            tele_strafe += -Range.clip(wall_distance - 5, 0, 5) * 0.05;
+        }
+
+        drivetrain.move(forward, (tele_strafe), (turn * 0.6) + (heading_delta * Status.TURN_CORRECTION_P));
         heading_was = imu.getHeading();
     }
 }

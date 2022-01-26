@@ -25,7 +25,7 @@ public class Status {
     public static final double UPPER_LIMIT = 70000;
     public static final double MAX_SPEED = 1;
     public static final double RETRACT_SPEED = 1;
-    public static final double kP = 0.00021;
+    public static final double kP = 0.00022;
     public static final double kI = 0.0000016;
     public static final double kD = 0.000005;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
@@ -44,13 +44,14 @@ public class Status {
         put("high_out", 0.44);
         put("mid_out", 0.568);
         put("low_out", 0.58);
-        put("neutral_out", 0.6);
+        put("neutral_out", 0.7);
         put("high_out2", 0.46);
         put("in", 0.82);
     }};
     public static final double BUCKET_WAIT_TIME = 0.5;
     public static final double PITSTOP_WAIT_TIME = 0.35;
     public static final double PITSTOP_WAIT_TIME_OUT = 0.01;
+    public static final double DEPOSIT_TIMER = 0.1; //time between bucket flipping in and slides retracting
 
     // Outrigger
     public static final HashMap<String, Double> OUTRIGGERS = new HashMap<String, Double>(){{
