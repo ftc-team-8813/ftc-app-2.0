@@ -14,8 +14,8 @@ import java.util.Map;
 public class ControllerMap
 {
     
-    private Gamepad gamepad1;
-    private Gamepad gamepad2;
+    public Gamepad gamepad1;
+    public Gamepad gamepad2;
     private EventBus evBus;
     
     private int[] oldButtons = {0, 0};
