@@ -84,7 +84,7 @@ public class Lift {
         double derivative = (error - past_error) / timer.seconds();
         d_term = derivative * Status.kD;
 
-            double power = p_term + i_term + d_term;
+        double power = p_term + i_term + d_term;
 
         if (curr_pos < Status.RETRACT_POWER_THRESHOLD){
             lift.setPower(power * Status.RETRACT_SPEED);
@@ -95,10 +95,10 @@ public class Lift {
         }
         past_error = error;
 
-        if (lift.getTargetPosition() == 0 && Math.signum(power) == -1 && curr_pos < 5000 && !limitPressed()) {
-            lift.setPower(-1);
-            lift2.setPower(-1);
-        }
+//        if (lift.getTargetPosition() == 0 && Math.signum(power) == -1 && curr_pos < 5000 && !limitPressed()) {
+//            lift.setPower(-1);
+//            lift2.setPower(-1);
+//        }
         timer.reset();
     }
 
