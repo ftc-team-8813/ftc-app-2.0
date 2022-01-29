@@ -45,9 +45,10 @@ public class DriveConstants {
      * angular distances although most angular parameters are wrapped in Math.toRadians() for
      * convenience. Make sure to exclude any gear ratio included in MOTOR_CONFIG from GEAR_RATIO.
      */
-    public static double WHEEL_RADIUS = 48 / 25.4; // 96mm mecanum radius in inches
-    public static double GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 196 / 25.4; // inches
+    public static double WHEEL_RADIUS = 48.0 / 25.4; // 96mm mecanum radius in inches
+    public static double GEAR_RATIO = 1.0; // output (wheel) speed / input (motor) speed
+    //public static double TRACK_WIDTH = 196.0 / 25.4; // inches
+    public static double TRACK_WIDTH = 16.2; //tuned
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
@@ -66,18 +67,18 @@ public class DriveConstants {
      * small and gradually increase them later after everything is working. All distance units are
      * inches.
      */
-    public static double MAX_VEL = 30; //theoretical max is 78 in/s
+    public static double MAX_VEL = 50; //theoretical max is 78 in/s
     public static double MAX_ACCEL = 30;
-    public static double MAX_ANG_VEL = Math.toRadians(60);
-    public static double MAX_ANG_ACCEL = Math.toRadians(60);
+    public static double MAX_ANG_VEL = 1;
+    public static double MAX_ANG_ACCEL = 1;
 
 
     public static double encoderTicksToInches(double ticks) {
-        return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
+        return WHEEL_RADIUS * 2.0 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
     }
 
     public static double rpmToVelocity(double rpm) {
-        return rpm * GEAR_RATIO * 2 * Math.PI * WHEEL_RADIUS / 60.0;
+        return rpm * GEAR_RATIO * 2.0 * Math.PI * WHEEL_RADIUS / 60.0;
     }
 
     public static double getMotorVelocityF(double ticksPerSecond) {

@@ -116,7 +116,7 @@ public class AutoDrive {
 
         //sensor-based position reset
         if(lineFinder.lineFound()){
-            field_y = direction * Status.TAPE_Y_OFFSET;
+            field_y = direction * Status.TAPE_X_OFFSET;
         }
 
         if (x_dist.getDistance(DistanceUnit.MM) < 22.0) {
