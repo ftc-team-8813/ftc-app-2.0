@@ -50,7 +50,7 @@ public class AutonomousTemplate {
     private Webcam.SimpleFrameHandler frame_handler;
     private final String WEBCAM_SERIAL = "3522DE6F";
     private final Mat detector_frame = new Mat();
-    private final Mat send_frame = new Mat();
+    private Mat send_frame = new Mat();
 
     private ElapsedTime camera_timer;
     public ElapsedTime timer;
@@ -130,23 +130,23 @@ public class AutonomousTemplate {
             throw new IllegalArgumentException("New frame not available");
         }
         Utils.bitmapToMat(frame_handler.currFramebuffer, detector_frame);
-        //CapstoneDetector capstone_detector = new CapstoneDetector(logger);
-        //x_coord = capstone_detector.detect(detector_frame);
-        //send_frame = capstone_detector.stored_frame;
+        CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
+        x_coord = capstone_detector.detect();
+        send_frame = capstone_detector.stored_frame;
         if (name.equals("Red Warehouse Auto")){
-            if (75 < x_coord && x_coord < 314) {
+            if (75 < x_coord && x_coord < 270) {
                 shipping_height = 1;
-            } else if (314 < x_coord && x_coord < 520) {
+            } else if (270 < x_coord && x_coord < 466) {
                 shipping_height = 2;
-            } else if (520 < x_coord && x_coord < 800) {
+            } else if (466 < x_coord && x_coord < 800) {
                 shipping_height = 3;
             }
         } else if (name.equals("Blue Warehouse Auto")){
-            if (75 < x_coord && x_coord < 305) {
+            if (75 < x_coord && x_coord < 301) {
                 shipping_height = 1;
-            } else if (305 < x_coord && x_coord < 520) {
+            } else if (301 < x_coord && x_coord < 503) {
                 shipping_height = 2;
-            } else if (520 < x_coord && x_coord < 800) {
+            } else if (503 < x_coord && x_coord < 800) {
                 shipping_height = 3;
             }
         }
@@ -176,6 +176,7 @@ public class AutonomousTemplate {
         telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());
         telemetry.addData("Line Found: ", robot.lineFinder.lineFound());
         telemetry.addData("Y distance: ", y_distance);
+        robot.lineFinder.update(telemetry);
 
         telemetry.update();
     }

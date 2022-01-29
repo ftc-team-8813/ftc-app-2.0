@@ -83,7 +83,6 @@ public class IntakeControl extends ControlModule {
             if (side == side_was && current_time >= target_time){
                 intake.setIntakeFront(direction);
             }
-
         } else {
             intake.setIntakeFront(0);
         }

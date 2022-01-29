@@ -53,7 +53,6 @@ public class Robot
 
     private Robot(HardwareMap hardwareMap, String initMessage, int direction)
     {
-        // Hardware Maps
         // Motors
         DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "front left");
         DcMotorEx front_right = hardwareMap.get(DcMotorEx.class, "front right");

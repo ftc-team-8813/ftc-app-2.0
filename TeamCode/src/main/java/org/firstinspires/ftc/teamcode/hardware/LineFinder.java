@@ -15,12 +15,15 @@ public class LineFinder {
     public LineFinder(ColorSensor line_finder){
         this.line_finder = line_finder;
     }
+
     public void initialize(){
         alpha_init = line_finder.alpha();
     }
+
     public boolean lineFound() {
-        return (double) line_finder.alpha() >= alpha_init * Status.LIGHT_MULTIPLIER;
+        return line_finder.alpha() >= (alpha_init * Status.LIGHT_MULTIPLIER);
     }
+
     public void update(Telemetry telemetry){
         telemetry.addData("light", line_finder.alpha());
         telemetry.addData("red", line_finder.red());
