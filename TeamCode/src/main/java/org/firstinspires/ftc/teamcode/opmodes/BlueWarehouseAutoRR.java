@@ -18,9 +18,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
     private Robot robot;
     private AutonomousTemplate auto;
     private final String name = "Blue Warehouse Auto RR";
-    private ElapsedTime timer;
-    private boolean waiting = false;
-    private boolean checking_image = true;
+
     private SampleMecanumDrive drive;
     private TrajectorySequence ts1;
     private TrajectorySequence ts2;
@@ -44,25 +42,14 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
         drive.setPoseEstimate(startPose);
         ts1 = drive.trajectorySequenceBuilder(startPose)
                 .lineTo(new Vector2d(0, 0))
-                .addTemporalMarker(() -> {scorePreload();})
+                .addTemporalMarker(() -> {auto.height = 1;})
                 .build();
-        timer = new ElapsedTime();
         auto.init_camera();
         auto.init_lift();
     }
 
     @Override
-    public void start() {
-        timer.reset();
-    }
-
-    @Override
     public void loop() {
-        if (checking_image) {
-            auto.check_image(false);
-            if (!waiting) {timer.reset(); waiting = true;}
-            if (timer.seconds() > 0.3) {waiting = false; checking_image = false; sequence = 1;} //advances to first move
-        }
 
         if (!drive.isBusy()) {
             if (sequence == 1) {drive.followTrajectorySequenceAsync(ts1); sequence = 2;}
@@ -79,12 +66,8 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
         }
 
         auto.update();
-        //auto.tape_localize();
-        //robot.eventBus.update();
         drive.update();
     }
-
-    public void scorePreload() {}
 
     public void collectFreight() {}
 

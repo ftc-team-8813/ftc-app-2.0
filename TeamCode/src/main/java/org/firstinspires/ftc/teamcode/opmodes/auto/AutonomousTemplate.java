@@ -53,17 +53,14 @@ public class AutonomousTemplate {
     private final Mat detector_frame = new Mat();
     private Mat send_frame = new Mat();
 
-    private ElapsedTime camera_timer;
-    public ElapsedTime timer;
-    private final boolean waiting_camera = false;
     public int shipping_height = 0;
     public double x_coord = -1;
 
     private double y_distance = 0;
 
-    public boolean lift_reached = false;
-    public boolean chassis_reached = false;
-    public boolean freight_sensed = false;
+    private ElapsedTime lift_timer = new ElapsedTime();
+    private int id = 0;
+    public int height = -1;
 
     static
     {
@@ -77,7 +74,6 @@ public class AutonomousTemplate {
         this.telemetry = telemetry;
         this.controller_map = controller_map;
         this.control_mgr = new ControlMgr(robot, this.controller_map);
-        this.timer = new ElapsedTime();
 
         drivetrain = robot.drivetrain;
         this.drive = drive;
@@ -157,36 +153,113 @@ public class AutonomousTemplate {
         logger.i(String.format("Shipping Height: %d", shipping_height));
     }
 
-    public void update() { // STATE: 0=driving, 1=lifting, 2=waiting 3=detecting freight
+    public void liftSequence(){
+        switch (id) {
+            case 0:
+                lift_timer.reset();
+                id += 1;
+                break;
+            case 1:
+                intake.deposit(Status.DEPOSITS.get("carry"));
 
-        //chassis_reached = navigation.ifReached();
-        lift_reached = lift.ifReached(lift.getLiftTargetPos());
-        freight_sensed = intake.autoFreightDetected();
+                if (lift_timer.seconds() > Status.BUCKET_WAIT_TIME){
+                    id += 1;
+                }
+                break;
+            case 2:
+                lift.extend(Status.STAGES.get("pitstop"), true);
+                if (lift.ifReached(Status.STAGES.get("pitstop"))){
+                    id += 1;
+                }
 
-        //navigation.getFieldPos();
-        lift.updateLift();
-
-        telemetry.addData("Shipping Height: ", shipping_height);
-        telemetry.addData("X Coord of Block: ", x_coord);
-        //navigation.update(telemetry);
-        //telemetry.addData("Drivetrain Position Reached", navigation.ifReached());
-        telemetry.addData("Lift Position Reached", lift.ifReached(lift.getLiftTargetPos()));
-        telemetry.addData("Freight Detected",intake.autoFreightDetected());
-
-        telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
-        telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());
-        telemetry.addData("Line Found: ", robot.lineFinder.lineFound());
-        telemetry.addData("Y distance: ", y_distance);
-        robot.lineFinder.update(telemetry);
-
-        telemetry.update();
+                lift_timer.reset();
+                break;
+            case 3:
+                switch (height){
+                    case 0:
+                        lift.rotate(Status.ROTATIONS.get("in"));
+                        break;
+                    case 1:
+                        lift.rotate(Status.ROTATIONS.get("low_out"));
+                        break;
+                    case 2:
+                        lift.rotate(Status.ROTATIONS.get("mid_out"));
+                        break;
+                    case 3:
+                        lift.rotate(Status.ROTATIONS.get("high_out"));
+                        break;
+                    case 4:
+                        lift.rotate(Status.ROTATIONS.get("neutral_out"));
+                        break;
+                    case 5:
+                        lift.rotate(Status.ROTATIONS.get("high_out2"));
+                        break;
+                    case 6:
+                        lift.rotate(Status.ROTATIONS.get("high_out"));
+                        lift.moveOutrigger(Status.OUTRIGGERS.get("down"));
+                        break;
+                }
+                if (height == 0) {
+                    if (lift_timer.seconds() > Status.PITSTOP_WAIT_TIME) {
+                        id += 1;
+                    }
+                } else {
+                    if (lift_timer.seconds() > Status.PITSTOP_WAIT_TIME_OUT) {
+                        id += 1;
+                    }
+                }
+                break;
+            case 4:
+                double target_height = lift.getLiftCurrentPos();
+                switch (height){
+                    case 0:
+                        target_height = 0;
+                        break;
+                    case 1:
+                        target_height = Status.STAGES.get("low");
+                        break;
+                    case 2:
+                        target_height = Status.STAGES.get("mid");
+                        break;
+                    case 3:
+                        target_height = Status.STAGES.get("high");
+                        break;
+                    case 4:
+                        target_height = Status.STAGES.get("neutral");
+                        break;
+                    case 5:
+                        target_height = Status.STAGES.get("high2");
+                        break;
+                    case 6:
+                        target_height = Status.STAGES.get("really high");
+                        break;
+                }
+                lift.extend(target_height, true);
+                if (lift.ifReached(target_height)){
+                    id += 1;
+                }
+                break;
+            case 5:
+                height = -1;
+                id = 0;
+                break;
+        }
     }
+
 
     public void tape_localize() {
         if (robot.lineFinder.lineFound()) {
             y_distance = robot.y_dist.getDistance(DistanceUnit.INCH) - 0.5; //not necessarily accurate depending on heading
             drive.setPoseEstimate(new Pose2d(Status.TAPE_X_OFFSET * robot.direction,y_distance * robot.direction, drive.getPoseEstimate().getHeading()));
         }
+    }
+
+    public void update() { // STATE: 0=driving, 1=lifting, 2=waiting 3=detecting freight
+        if (height > -1){
+            liftSequence();
+        }
+
+        telemetry.update();
     }
 
     public void stop(){
