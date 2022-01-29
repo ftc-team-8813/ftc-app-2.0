@@ -95,10 +95,10 @@ public class Lift {
         }
         past_error = error;
 
-//        if (lift.getTargetPosition() == 0 && Math.signum(power) == -1 && curr_pos < 5000 && !limitPressed()) {
-//            lift.setPower(-1);
-//            lift2.setPower(-1);
-//        }
+        if (lift.getTargetPosition() == 0 && Math.signum(power) == -1 && curr_pos < 5000 && !limitPressed()) {
+            lift.setPower(-1);
+            lift2.setPower(-1);
+        }
         timer.reset();
     }
 

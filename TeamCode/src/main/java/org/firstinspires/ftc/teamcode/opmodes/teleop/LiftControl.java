@@ -210,7 +210,7 @@ public class LiftControl extends ControlModule{
             timer_counting = true;
         }
 
-        if (timer_counting && deposit_timer.seconds() > Status.DEPOSIT_TIMER) {
+        if (timer_counting && deposit_timer.seconds() > Status.DEPOSIT_TIMER && intake.getFreightDistance() > 3) {
             height = 0;
             timer_counting = false;
         }
