@@ -12,6 +12,7 @@ public class DuckControl extends ControlModule{
     private ElapsedTime spinner_speed_timer;
     private double spinner_speed = 0.0;
     private boolean inc_spinner_speed = false;
+    private boolean stop_duck_spin = false;
 
     public DuckControl(String name){
         super(name);
@@ -26,27 +27,43 @@ public class DuckControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        if (ax_right_stick_y.get() > 0.2 || ax_right_stick_y.get() < -0.2) {
-            if (spinner_speed_timer.seconds() >= 1) {
-                inc_spinner_speed = true;
+        if (ax_right_stick_y.get() > 0.14) {
+
+            inc_spinner_speed = spinner_speed_timer.seconds() >= 1;
+            stop_duck_spin = spinner_speed_timer.seconds() >= 1.6;
+            if (stop_duck_spin) {
+                spinner_speed = 0.0;
             }
-            else {
-                inc_spinner_speed = false;
+            if (!inc_spinner_speed && !stop_duck_spin) {
+                spinner_speed = 0.2;
+            }
+            if (inc_spinner_speed && !stop_duck_spin) {
+                spinner_speed = 1.0;
             }
 
-            if (!inc_spinner_speed) {
-                spinner_speed = 0.3;
+        }
+        if (ax_right_stick_y.get() < -0.14) {
+
+            inc_spinner_speed = spinner_speed_timer.seconds() >= 1;
+            stop_duck_spin = spinner_speed_timer.seconds() >= 1.6;
+            if (stop_duck_spin) {
+                spinner_speed = 0.0;
             }
-            if (inc_spinner_speed) {
-                spinner_speed = 1.0;
+            if (!inc_spinner_speed && !stop_duck_spin) {
+                spinner_speed = -0.2;
+            }
+            if (inc_spinner_speed && !stop_duck_spin) {
+                spinner_speed = -1.0;
             }
         }
 
-        if (ax_right_stick_y.get() <= 0.2 && ax_right_stick_y.get() >= -0.2) {
+        if (ax_right_stick_y.get() <= 0.14 && ax_right_stick_y.get() >= -0.14) {
             spinner_speed_timer.reset();
             spinner_speed = 0.0;
+
         }
 
         duck.spin(spinner_speed);
+        telemetry.addData("Duck Spinner Speed: ", spinner_speed);
     }
 }

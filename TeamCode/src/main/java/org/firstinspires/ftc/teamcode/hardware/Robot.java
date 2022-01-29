@@ -76,7 +76,7 @@ public class Robot
         DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");
         DigitalChannel limit_switch = hardwareMap.get(DigitalChannel.class, "lift limit");
         ColorSensor line_finder = hardwareMap.get(ColorSensor.class, "line finder");
-        DistanceSensor x_dist = hardwareMap.get(DistanceSensor.class, "dist x");
+        DistanceSensor x_dist = hardwareMap.get(DistanceSensor.class, "dist y");
 
         // Sub-Assemblies
         this.imu = new IMU(imu_sensor);
