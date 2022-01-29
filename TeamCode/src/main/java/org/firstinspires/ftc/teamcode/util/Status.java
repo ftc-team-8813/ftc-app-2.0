@@ -12,10 +12,10 @@ public class Status {
     public static final double TICKS_PER_ROTATION = 28; //encoder counts/revolution of the bare motor
     public static final double turnP = 1.3; //no unit
     public static final double LIGHT_MULTIPLIER = 1.5; //initial light sensor value x LIGHT_MULTIPLIER = value expected at tape crossing
-    public static final double TAPE_Y_OFFSET = 40; //15.56 !! inches from zero to tape line. Sign varies depending on autonomous mode. Positive is blue, negative is red.
+    public static final double TAPE_X_OFFSET = 40; //15.56 !! inches from zero to tape line. Sign varies depending on autonomous mode. Positive is blue, negative is red.
 
     // Intake
-    public static final double FREIGHT_DETECTION = 2.7;
+    public static final double FREIGHT_DETECTION = 2.5;
     public static final long TIME_BEFORE_INTAKING = 100000000; // nanoseconds
 
     // Lift
@@ -25,7 +25,7 @@ public class Status {
     public static final double UPPER_LIMIT = 70000;
     public static final double MAX_SPEED = 1;
     public static final double RETRACT_SPEED = 1;
-    public static final double kP = 0.00022;
+    public static final double kP = 0.00023;
     public static final double kI = 0.0000016;
     public static final double kD = 0.000005;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
@@ -33,7 +33,7 @@ public class Status {
         put("neutral", 10100.0);
         put("low", 34750.0);
         put("mid", 42000.0);
-        put("high", 47550.0);
+        put("high", 47750.0);
         put("high2", 49250.0);
         put("really high", 68000.0);
         put("speed mode threshold", 35000.0);
@@ -41,17 +41,18 @@ public class Status {
 
     // Arm
     public static final HashMap<String, Double> ROTATIONS = new HashMap<String, Double>(){{
-        put("high_out", 0.44);
+        put("high_out", 0.445);
         put("mid_out", 0.568);
         put("low_out", 0.58);
-        put("neutral_out", 0.7);
+        put("neutral_out", 0.65);
         put("high_out2", 0.46);
-        put("in", 0.82);
+        put("in", 0.813);
     }};
     public static final double BUCKET_WAIT_TIME = 0.5;
     public static final double PITSTOP_WAIT_TIME = 0.35;
     public static final double PITSTOP_WAIT_TIME_OUT = 0.01;
-    public static final double DEPOSIT_TIMER = 0.1; //time between bucket flipping in and slides retracting
+    public static final double DEPOSIT_TIMER = 0.01; //time between bucket flipping in and slides retracting
+    public static final double DEPOSIT_DISTANCE = 2.9; //safe freight checker distance for the slides to auto retract
 
     // Outrigger
     public static final HashMap<String, Double> OUTRIGGERS = new HashMap<String, Double>(){{

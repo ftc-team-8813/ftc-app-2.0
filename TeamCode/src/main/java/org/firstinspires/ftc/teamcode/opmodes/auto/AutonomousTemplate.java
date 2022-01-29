@@ -3,16 +3,17 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Duck;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
-import org.firstinspires.ftc.teamcode.hardware.LineFinder;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
@@ -20,7 +21,6 @@ import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
-import org.firstinspires.ftc.teamcode.vision.CapstoneDetector;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -35,10 +35,11 @@ public class AutonomousTemplate {
     private final Robot robot;
     private Server server;
     private final Drivetrain drivetrain;
-    private final AutoDrive navigation;
+    //private final AutoDrive navigation;
     private final Intake intake;
     private final Duck duck;
     private final Lift lift;
+    private final SampleMecanumDrive drive;
 
     private final ControllerMap controller_map;
     private final ControlMgr control_mgr;
@@ -57,6 +58,8 @@ public class AutonomousTemplate {
     public int shipping_height = 0;
     public double x_coord = -1;
 
+    private double y_distance = 0;
+
     public boolean lift_reached = false;
     public boolean chassis_reached = false;
     public boolean freight_sensed = false;
@@ -66,7 +69,7 @@ public class AutonomousTemplate {
         OpenCVLoader.initDebug();
     }
 
-    public AutonomousTemplate(String name, Robot robot, HardwareMap hardware_map, ControllerMap controller_map, Telemetry telemetry){
+    public AutonomousTemplate(String name, Robot robot, HardwareMap hardware_map, ControllerMap controller_map, Telemetry telemetry, SampleMecanumDrive drive){
         this.name = name;
         this.robot = Robot.initialize(hardware_map, "Autonomous", 0);
         this.logger = new Logger(name);
@@ -76,7 +79,7 @@ public class AutonomousTemplate {
         this.timer = new ElapsedTime();
 
         drivetrain = robot.drivetrain;
-        navigation = robot.navigation;
+        this.drive = drive;
         duck = robot.duck;
         lift = robot.lift;
         intake = robot.intake;
@@ -155,38 +158,33 @@ public class AutonomousTemplate {
 
     public void update() { // STATE: 0=driving, 1=lifting, 2=waiting 3=detecting freight
 
-        chassis_reached = navigation.ifReached();
+        //chassis_reached = navigation.ifReached();
         lift_reached = lift.ifReached(lift.getLiftTargetPos());
         freight_sensed = intake.autoFreightDetected();
 
-        navigation.getFieldPos();
+        //navigation.getFieldPos();
         lift.updateLift();
 
         telemetry.addData("Shipping Height: ", shipping_height);
         telemetry.addData("X Coord of Block: ", x_coord);
-        navigation.update(telemetry);
-        telemetry.addData("Drivetrain Position Reached", navigation.ifReached());
+        //navigation.update(telemetry);
+        //telemetry.addData("Drivetrain Position Reached", navigation.ifReached());
         telemetry.addData("Lift Position Reached", lift.ifReached(lift.getLiftTargetPos()));
         telemetry.addData("Freight Detected",intake.autoFreightDetected());
 
         telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
         telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());
         telemetry.addData("Line Found: ", robot.lineFinder.lineFound());
+        telemetry.addData("Y distance: ", y_distance);
 
         telemetry.update();
     }
 
-    public void autoLiftRetract() {
-//        if (lift.limitPressed()) {
-//            lift.lift_motor.setPower(0);
-//            lift.resetLiftTarget();
-//            lift_reached = true;
-//            lift.auto_override = false;
-//        } else {
-//            lift.lift_motor.setPower(-0.5);
-//            lift.auto_override = true;
-//        }
-        lift.extend(0, true);
+    public void tape_localize() {
+        if (robot.lineFinder.lineFound()) {
+            y_distance = robot.y_dist.getDistance(DistanceUnit.INCH) - 0.5; //not necessarily accurate depending on heading
+            drive.setPoseEstimate(new Pose2d(Status.TAPE_X_OFFSET * robot.direction,y_distance * robot.direction, drive.getPoseEstimate().getHeading()));
+        }
     }
 
     public void stop(){

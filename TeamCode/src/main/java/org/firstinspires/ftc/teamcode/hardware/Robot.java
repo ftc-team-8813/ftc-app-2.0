@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
@@ -20,12 +19,14 @@ public class Robot
 {
     // Hardware Vars
     public Drivetrain drivetrain;
-    public AutoDrive navigation;
     public Intake intake;
     public Lift lift;
     public Duck duck;
     public IMU imu;
     public LineFinder lineFinder;
+    public DistanceSensor y_dist;
+
+    public int direction;
 
     public EventBus eventBus = new EventBus();
     public Scheduler scheduler = new Scheduler(eventBus);
@@ -77,17 +78,19 @@ public class Robot
         DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");
         DigitalChannel limit_switch = hardwareMap.get(DigitalChannel.class, "lift limit");
         ColorSensor line_finder = hardwareMap.get(ColorSensor.class, "line finder");
-        DistanceSensor x_dist = hardwareMap.get(DistanceSensor.class, "dist x");
+        DistanceSensor y_dist = hardwareMap.get(DistanceSensor.class, "dist y");
 
         // Sub-Assemblies
         this.imu = new IMU(imu_sensor);
         this.lineFinder = new LineFinder(line_finder);
         this.imu.initialize(eventBus, scheduler);
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu, x_dist);
-        this.navigation = new AutoDrive(drivetrain, imu, lineFinder, x_dist, direction);
+        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu, y_dist);
+        //this.navigation = new AutoDrive(drivetrain, imu, lineFinder, y_dist, direction);
         this.intake = new Intake(intake_front, intake_back, freight_checker, bucket);
         this.lift = new Lift(lift, lift2, arm, limit_switch, outrigger);
         this.duck = new Duck(duckFront, duckback);
+        this.direction = direction;
+        this.y_dist = y_dist;
 
     }
 }

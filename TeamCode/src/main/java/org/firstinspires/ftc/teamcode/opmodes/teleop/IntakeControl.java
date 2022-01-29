@@ -61,7 +61,7 @@ public class IntakeControl extends ControlModule {
     public void update(Telemetry telemetry) {
         current_time = System.nanoTime();
         if (intake.getFreightDistance() < Status.FREIGHT_DETECTION){
-            direction = -0.6;
+            direction = -0.9;
             side = 0;
             carrying = true;
 
