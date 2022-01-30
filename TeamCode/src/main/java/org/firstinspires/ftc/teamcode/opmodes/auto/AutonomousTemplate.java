@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
+import org.firstinspires.ftc.teamcode.vision.CapstoneDetector;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -175,9 +176,6 @@ public class AutonomousTemplate {
                 break;
             case 3:
                 switch (height){
-                    case 0:
-                        lift.rotate(Status.ROTATIONS.get("in"));
-                        break;
                     case 1:
                         lift.rotate(Status.ROTATIONS.get("low_out"));
                         break;
@@ -198,14 +196,10 @@ public class AutonomousTemplate {
                         lift.moveOutrigger(Status.OUTRIGGERS.get("down"));
                         break;
                 }
-                if (height == 0) {
-                    if (lift_timer.seconds() > Status.PITSTOP_WAIT_TIME) {
-                        id += 1;
-                    }
-                } else {
-                    if (lift_timer.seconds() > Status.PITSTOP_WAIT_TIME_OUT) {
-                        id += 1;
-                    }
+
+                if (lift_timer.seconds() > Status.PITSTOP_WAIT_TIME_OUT) {
+                    lift_timer.reset();
+                    id += 1;
                 }
                 break;
             case 4:
@@ -237,8 +231,40 @@ public class AutonomousTemplate {
                 if (lift.ifReached(target_height)){
                     id += 1;
                 }
+                lift_timer.reset();
                 break;
             case 5:
+                intake.deposit(Status.DEPOSITS.get("dump"));
+
+                if (lift_timer.seconds() > Status.BUCKET_WAIT_TIME){
+                    lift_timer.reset();
+                    id += 1;
+                }
+            case 6:
+                intake.deposit(Status.DEPOSITS.get("carry"));
+
+                if (lift_timer.seconds() > Status.BUCKET_WAIT_TIME){
+                    id += 1;
+                }
+            case 7:
+                lift.extend(Status.STAGES.get("pitstop"), true);
+                if (lift.ifReached(Status.STAGES.get("pitstop"))){
+                    id += 1;
+                }
+
+                lift_timer.reset();
+            case 8:
+                lift.rotate(Status.ROTATIONS.get("in"));
+
+                if (lift_timer.seconds() > Status.PITSTOP_WAIT_TIME) {
+                    id += 1;
+                }
+            case 9:
+                lift.extend(0, true);
+                if (lift.ifReached(0)){
+                    id += 1;
+                }
+            case 10:
                 height = -1;
                 id = 0;
                 break;
