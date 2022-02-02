@@ -92,6 +92,7 @@ public class DriveControl extends ControlModule{
                                      ax_drive_left_x.get() * 0.45 * speed_scalar,
                                       ax_drive_right_x.get() * 0.45 * speed_scalar);
         lineFinder.update(telemetry);
+        telemetry.addData("Line Found: ", lineFinder.lineFound());
     }
 
     public void teleMove(double forward, double strafe, double turn) {
@@ -101,7 +102,7 @@ public class DriveControl extends ControlModule{
         //if (Math.abs(heading_delta) > 4) heading_delta = 0;
         if (turn != 0) heading_delta = 0;
 
-        if ((lift.getLiftTargetPos() == Status.STAGES.get("pitstop") || lift.getLiftTargetPos() > Status.STAGES.get("low")) && wall_distance < 40 && strafe < 0.1 && turn < 0.1) {
+        if ((lift.getLiftTargetPos() == Status.STAGES.get("pitstop") || lift.getLiftTargetPos() > Status.STAGES.get("low")) && wall_distance < 40 && strafe < 0.1 && turn < 0.1 && !lift.duck_cycle_flag) {
             tele_strafe += -Range.clip(wall_distance - 5, 0, 5) * 0.05;
         }
 

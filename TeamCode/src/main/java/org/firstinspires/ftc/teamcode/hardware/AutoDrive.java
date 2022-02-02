@@ -58,7 +58,6 @@ public class AutoDrive {
         this.drivetrain = drivetrain;
         this.imu = imu;
         this.lineFinder = line_finder;
-        this.lineFinder.initialize();
         this.x_dist = x_dist;
     }
 
