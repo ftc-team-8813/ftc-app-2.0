@@ -58,9 +58,14 @@ public class AutonomousTemplate {
 
     private double y_distance = 0;
 
-    private ElapsedTime lift_timer = new ElapsedTime();
+    private ElapsedTime lift_timer;
+    public ElapsedTime lift_dumped_timer;
     private int id = 0;
     public int height = -1;
+
+    public boolean lift_dumped = false;
+    public boolean dump_trigger = false;
+    private boolean lift_timer_waiting = false;
 
     static
     {
@@ -109,6 +114,8 @@ public class AutonomousTemplate {
         lift.extend(0, false);
         lift.rotate(Status.ROTATIONS.get("in"));
         robot.intake.deposit(Status.DEPOSITS.get("carry"));
+        lift_timer = new ElapsedTime();
+        lift_dumped_timer = new ElapsedTime();
     }
 
     public void init_camera(){
@@ -124,13 +131,15 @@ public class AutonomousTemplate {
         }
         webcam.requestNewFrame();
         if (!frame_handler.newFrameAvailable) {
-            throw new IllegalArgumentException("New frame not available");
+            //throw new IllegalArgumentException("New frame not available");
+            shipping_height = 3;
+            return;
         }
         Utils.bitmapToMat(frame_handler.currFramebuffer, detector_frame);
         CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
         x_coord = capstone_detector.detect();
         send_frame = capstone_detector.stored_frame;
-        if (name.equals("Red Warehouse Auto")){
+        if (name.startsWith("Red")){
             if (75 < x_coord && x_coord < 270) {
                 shipping_height = 1;
             } else if (270 < x_coord && x_coord < 466) {
@@ -138,7 +147,7 @@ public class AutonomousTemplate {
             } else if (466 < x_coord && x_coord < 800) {
                 shipping_height = 3;
             }
-        } else if (name.equals("Blue Warehouse Auto")){
+        } else if (name.startsWith("Blue")){
             if (75 < x_coord && x_coord < 301) {
                 shipping_height = 1;
             } else if (301 < x_coord && x_coord < 503) {
@@ -231,39 +240,50 @@ public class AutonomousTemplate {
                 if (lift.ifReached(target_height)){
                     id += 1;
                 }
-                lift_timer.reset();
                 break;
             case 5:
-                intake.deposit(Status.DEPOSITS.get("dump"));
+                if (dump_trigger) {
+                    if (!lift_timer_waiting) {
+                        lift_timer.reset();
+                        lift_timer_waiting = true;
+                    }
+                    intake.deposit(Status.DEPOSITS.get("dump"));
 
-                if (lift_timer.seconds() > Status.BUCKET_WAIT_TIME){
-                    lift_timer.reset();
-                    id += 1;
+                    if (lift_timer.seconds() > Status.AUTO_DEPOSIT_TIME) {
+                        lift_dumped = true;
+                        lift_dumped_timer.reset();
+                        intake.deposit(Status.DEPOSITS.get("carry"));
+                        lift_timer.reset();
+                        lift_timer_waiting = false;
+                        id += 1;
+                    }
                 }
+                break;
             case 6:
-                intake.deposit(Status.DEPOSITS.get("carry"));
-
-                if (lift_timer.seconds() > Status.BUCKET_WAIT_TIME){
+                if (lift_timer.seconds() > 1) {
                     id += 1;
                 }
             case 7:
                 lift.extend(Status.STAGES.get("pitstop"), true);
-                if (lift.ifReached(Status.STAGES.get("pitstop"))){
+                if (lift.ifReached(Status.STAGES.get("pitstop"))) {
                     id += 1;
                 }
 
                 lift_timer.reset();
+                break;
             case 8:
                 lift.rotate(Status.ROTATIONS.get("in"));
 
                 if (lift_timer.seconds() > Status.PITSTOP_WAIT_TIME) {
                     id += 1;
                 }
+                break;
             case 9:
                 lift.extend(0, true);
-                if (lift.ifReached(0)){
+                if (lift.ifReached(0)) {
                     id += 1;
                 }
+                break;
             case 10:
                 height = -1;
                 id = 0;
@@ -271,20 +291,14 @@ public class AutonomousTemplate {
         }
     }
 
-
-    public void tape_localize() {
-        if (robot.lineFinder.lineFound()) {
-            y_distance = robot.y_dist.getDistance(DistanceUnit.INCH) - 0.5; //not necessarily accurate depending on heading
-            drive.setPoseEstimate(new Pose2d(Status.TAPE_X_OFFSET * robot.direction,y_distance * robot.direction, drive.getPoseEstimate().getHeading()));
-        }
-    }
-
-    public void update() { // STATE: 0=driving, 1=lifting, 2=waiting 3=detecting freight
+    public void update() {
         if (height > -1){
             liftSequence();
         }
 
         telemetry.update();
+        lift.updateLift();
+        robot.lineFinder.update(telemetry);
     }
 
     public void stop(){

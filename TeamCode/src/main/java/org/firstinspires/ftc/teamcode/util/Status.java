@@ -11,8 +11,8 @@ public class Status {
     public static final double WHEEL_DIAMETER = 96; //mm
     public static final double TICKS_PER_ROTATION = 28; //encoder counts/revolution of the bare motor
     public static final double turnP = 1.3; //no unit
-    public static final double LIGHT_MULTIPLIER = 1.5; //initial light sensor value x LIGHT_MULTIPLIER = value expected at tape crossing
-    public static final double TAPE_X_OFFSET = 40; //15.56 !! inches from zero to tape line. Sign varies depending on autonomous mode. Positive is blue, negative is red.
+    public static final double LIGHT_MULTIPLIER = 1.2; //initial light sensor value x LIGHT_MULTIPLIER = value expected at tape crossing
+    public static final double TAPE_X_OFFSET = 27.6; //15.56 !! inches from zero to tape line. Sign varies depending on autonomous mode. Positive is blue, negative is red.
 
     // Intake
     public static final double FREIGHT_DETECTION = 2.5;
@@ -26,7 +26,7 @@ public class Status {
     public static final double MAX_SPEED = 1;
     public static final double RETRACT_SPEED = 1;
     public static final double kP = 0.00023;
-    public static final double kI = 0.0000016;
+    public static final double kI = 0.0000026;
     public static final double kD = 0.000005;
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
         put("pitstop", 10000.0);
@@ -51,9 +51,12 @@ public class Status {
     public static final double BUCKET_WAIT_TIME = 0.5;
     public static final double PITSTOP_WAIT_TIME = 0.35;
     public static final double PITSTOP_WAIT_TIME_OUT = 0.01;
-    public static final double DEPOSIT_TIMER = 0.01; //time between bucket flipping in and slides retracting
+    public static final double DEPOSIT_TIMER = 0.1; //time between bucket flipping in and slides retracting
     public static final double DEPOSIT_DISTANCE = 2.9; //safe freight checker distance for the slides to auto retract
-
+    public static final double AUTO_DEPOSIT_TIME = 0.3;
+    public static final double AUTO_DUMP_DRIVE_OFFSET = 0.5; //MAKE THIS LOWER
+    public static final double AUTO_DECELERATE_TIME = 0.1;
+    public static final double AUTO_INTAKE_DELAY = 0.01;
     // Outrigger
     public static final HashMap<String, Double> OUTRIGGERS = new HashMap<String, Double>(){{
         put("up", 1.0);

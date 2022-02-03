@@ -32,6 +32,7 @@ public class LiftControl extends ControlModule{
     private final boolean was_reset = false;
     private boolean left_trigger_was_pressed = false;
     private final double var_pit_stop_wait = Status.PITSTOP_WAIT_TIME;
+    public boolean duck_cycle_flag = false;
 
     public boolean just_deposited = false;
     private final ElapsedTime deposit_timer = new ElapsedTime();
@@ -173,6 +174,7 @@ public class LiftControl extends ControlModule{
                 switch (height){
                     case 0:
                         target_height = 0;
+                        duck_cycle_flag = false;
                         break;
                     case 1:
                         target_height = Status.STAGES.get("low");
@@ -191,6 +193,7 @@ public class LiftControl extends ControlModule{
                         break;
                     case 6:
                         target_height = Status.STAGES.get("really high");
+                        duck_cycle_flag = true;
                         break;
                 }
                 lift.extend(target_height, true);
@@ -216,6 +219,7 @@ public class LiftControl extends ControlModule{
         }
 
         lift.updateLift();
+        lift.duck_cycle_flag = duck_cycle_flag;
 
         telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
         telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());

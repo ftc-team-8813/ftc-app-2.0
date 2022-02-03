@@ -27,6 +27,8 @@ public class Lift {
     public boolean auto_override = false;
     private boolean was_reset = false;
 
+    public boolean duck_cycle_flag = false;
+
     public Lift(DcMotor lift, DcMotor lift2, Servo arm, DigitalChannel limit_switch, Servo outrigger){
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -60,8 +62,8 @@ public class Lift {
     }
 
     public boolean ifReached(double check_pos){
-        double min = check_pos - 1000;
-        double max = check_pos + 1000;
+        double min = check_pos - 1500;
+        double max = check_pos + 1500;
         if (!lift_reached && min <= getLiftCurrentPos() && getLiftCurrentPos() <= max){
             lift_reached = true;
             return true;
@@ -86,13 +88,9 @@ public class Lift {
 
         double power = p_term + i_term + d_term;
 
-        if (curr_pos < Status.RETRACT_POWER_THRESHOLD){
-            lift.setPower(power * Status.RETRACT_SPEED);
-            lift2.setPower(power * Status.RETRACT_SPEED);
-        } else {
-            lift.setPower(power * Status.MAX_SPEED);
-            lift2.setPower(power * Status.MAX_SPEED);
-        }
+        lift.setPower(power);
+        lift2.setPower(power);
+
         past_error = error;
 
         if (lift.getTargetPosition() == 0 && Math.signum(power) == -1 && curr_pos < 5000 && !limitPressed()) {
