@@ -13,15 +13,20 @@ import org.opencv.imgproc.Moments;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 public class CapstoneDetector {
-    public Logger logger;
-    public Mat detector_frame;
-    public Mat stored_frame;
-    public Scalar lower_hls;
-    public Scalar upper_hls;
-    public ArrayList<MatOfPoint> contours;
+    private final Logger logger;
+    private final Mat detector_frame;
+    private Mat stored_frame;
+    private final Scalar lower_hls;
+    private final Scalar upper_hls;
+    private ArrayList<MatOfPoint> contours;
+    private String name = "Blue";
+    private ArrayList<Double> zoned_areas;
+    private ArrayList<int[]> zoned_areas_data;
+
 
     public CapstoneDetector(Mat detector_frame, Logger logger){
         this.logger = logger;
@@ -29,10 +34,13 @@ public class CapstoneDetector {
         this.stored_frame = new Mat();
         this.lower_hls = new Scalar(0,125,20);
         this.upper_hls = new Scalar(50,180,50);
+
         contours = new ArrayList<>();
+        zoned_areas = new ArrayList<>();
+        zoned_areas_data = new ArrayList<>();
     }
 
-    public int detect(){
+    public int[] detect(){
         Mat resized = new Mat();
         Mat blurred = new Mat();
         Mat hls = new Mat();
@@ -47,25 +55,62 @@ public class CapstoneDetector {
 
         stored_frame = masked;
 
-        // Calculates area for EVERY contour
-        ArrayList<Double> areas = new ArrayList<>();
-        for (int i = 0; i < contours.size(); i++){
-            MatOfPoint contour = contours.get(i);
-            double area = Imgproc.contourArea(contour);
-            areas.add(area);
-        }
-
         // Returns center of contour
-        if (!areas.isEmpty()) {
-            double max_area = Collections.max(areas);
-            int index = areas.indexOf(max_area);
-
-            Moments p = Imgproc.moments(contours.get(index), false);
-            int x = (int) (p.get_m10() / p.get_m00());
-
-            return x;
+        if (contours.isEmpty()) {
+            return new int[]{0, -1};
         }
 
-        return -1;
+        for (int i = 0; i < contours.size(); i++){
+            double area = Imgproc.contourArea(contours.get(i));
+            Moments p = Imgproc.moments(contours.get(i), false);
+            int x = (int) (p.get_m10() / p.get_m00());
+            int y = (int) (p.get_m01() / p.get_m00());
+
+            if (name.startsWith("Blue")) {
+                if (75 < y && y < 132) {
+                    int spot = 0;
+                    if (139 < x && x < 193) {
+                        spot = 1;
+                    } else if (353 < x && x < 422) {
+                        spot = 2;
+                    } else if (539 < x && x < 593) {
+                        spot = 3;
+                    }
+
+                    if (spot != 0) {
+                        zoned_areas.add(area);
+                        zoned_areas_data.add(new int[]{spot, x});
+                    }
+                }
+            } else if (name.startsWith("Red")){
+                // TODO Update with Red side boundaries
+                if (70 < y && y < 127) {
+                    int spot = 0;
+                    if (135 < x && x < 187) {
+                        spot = 1;
+                    } else if (332 < x && x < 381) {
+                        spot = 2;
+                    } else if (526 < x && x < 571) {
+                        spot = 3;
+                    }
+
+                    if (spot != 0) {
+                        zoned_areas.add(area);
+                        zoned_areas_data.add(new int[]{spot, x});
+                    }
+                }
+            }
+        }
+
+        double max_area = Collections.max(zoned_areas);
+        return zoned_areas_data.get(zoned_areas.indexOf(max_area));
+    }
+
+    public Mat getStoredFrame(){
+        return stored_frame;
+    }
+
+    public void setName(String name){
+        this.name = name;
     }
 }

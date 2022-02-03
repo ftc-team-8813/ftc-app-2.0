@@ -54,7 +54,7 @@ public class AutonomousTemplate {
     private Mat send_frame = new Mat();
 
     public int shipping_height = 0;
-    public double x_coord = -1;
+    public int x_coord = -1;
 
     private double y_distance = 0;
 
@@ -125,10 +125,11 @@ public class AutonomousTemplate {
         webcam.open(ImageFormat.YUY2, 800, 448, 30, frame_handler);
     }
 
-    public void check_image(boolean save_image){
+    public void check_image(){
         if (shipping_height != 0){
             return;
         }
+
         webcam.requestNewFrame();
         if (!frame_handler.newFrameAvailable) {
             //throw new IllegalArgumentException("New frame not available");
@@ -137,29 +138,14 @@ public class AutonomousTemplate {
         }
         Utils.bitmapToMat(frame_handler.currFramebuffer, detector_frame);
         CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
-        x_coord = capstone_detector.detect();
-        send_frame = capstone_detector.stored_frame;
-        if (name.startsWith("Red")){
-            if (75 < x_coord && x_coord < 270) {
-                shipping_height = 1;
-            } else if (270 < x_coord && x_coord < 466) {
-                shipping_height = 2;
-            } else if (466 < x_coord && x_coord < 800) {
-                shipping_height = 3;
-            }
-        } else if (name.startsWith("Blue")){
-            if (75 < x_coord && x_coord < 301) {
-                shipping_height = 1;
-            } else if (301 < x_coord && x_coord < 503) {
-                shipping_height = 2;
-            } else if (503 < x_coord && x_coord < 800) {
-                shipping_height = 3;
-            }
-        }
+        capstone_detector.setName(name);
+        int[] capstone_data = capstone_detector.detect();
+        shipping_height = capstone_data[0];
+        x_coord = capstone_data[1];
+        send_frame = capstone_detector.getStoredFrame();
 
-
-        logger.i(String.format("X Coord of Block: %f", x_coord));
-        logger.i(String.format("Shipping Height: %d", shipping_height));
+        logger.i(String.format("Shipping Height: %01d", x_coord));
+        logger.i(String.format("X Coord of Block: %03f", shipping_height));
     }
 
     public void liftSequence(){
@@ -296,6 +282,7 @@ public class AutonomousTemplate {
             liftSequence();
         }
 
+        lift.updateLift();
         telemetry.update();
         lift.updateLift();
         robot.lineFinder.update(telemetry);

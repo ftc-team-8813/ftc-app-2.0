@@ -58,7 +58,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
         );
         startPose = new Pose2d(12, 0, Math.toRadians(0));
         drive.setPoseEstimate(startPose);
-        log = new Logger("Blue Autonomous");
+        log = new Logger(name);
 
         auto.init_camera();
         auto.init_lift();
@@ -73,7 +73,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
     @Override
     public void loop() {
         if (checking_image) {
-            auto.check_image(false);
+            auto.check_image();
             if (!waiting) {timer.reset(); waiting = true;}
             if (timer.seconds() > 0.3) {
                 if (auto.shipping_height < 1) auto.shipping_height = 3;
