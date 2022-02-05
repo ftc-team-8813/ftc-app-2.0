@@ -145,7 +145,7 @@ public class AutonomousTemplate {
         send_frame = capstone_detector.getStoredFrame();
 
         logger.i(String.format("Shipping Height: %01d", x_coord));
-        logger.i(String.format("X Coord of Block: %03f", shipping_height));
+        logger.i(String.format("X Coord of Block: %01d", shipping_height));
     }
 
     public void liftSequence(){

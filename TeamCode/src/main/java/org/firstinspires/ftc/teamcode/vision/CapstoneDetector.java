@@ -27,13 +27,12 @@ public class CapstoneDetector {
     private ArrayList<Double> zoned_areas;
     private ArrayList<int[]> zoned_areas_data;
 
-
     public CapstoneDetector(Mat detector_frame, Logger logger){
         this.logger = logger;
         this.detector_frame = detector_frame;
         this.stored_frame = new Mat();
-        this.lower_hls = new Scalar(0,125,20);
-        this.upper_hls = new Scalar(50,180,50);
+        this.lower_hls = new Scalar(50,30,10);
+        this.upper_hls = new Scalar(120,145,100);
 
         contours = new ArrayList<>();
         zoned_areas = new ArrayList<>();
@@ -100,6 +99,9 @@ public class CapstoneDetector {
                     }
                 }
             }
+        }
+        if (zoned_areas.isEmpty()) {
+            return new int[]{0, -1};
         }
 
         double max_area = Collections.max(zoned_areas);

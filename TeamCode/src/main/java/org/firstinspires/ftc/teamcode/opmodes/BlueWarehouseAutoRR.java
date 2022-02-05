@@ -40,6 +40,8 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
     private boolean waiting = false;
     private boolean checking_image = true;
     private ElapsedTime intake_timer;
+    private ElapsedTime back_to_goal_timer;
+    private ElapsedTime back_to_warehouse_timer;
 
     private boolean collecting_freight = false;
 
@@ -64,6 +66,8 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
         auto.init_lift();
         timer = new ElapsedTime();
         intake_timer = new ElapsedTime();
+        back_to_goal_timer = new ElapsedTime();
+        back_to_warehouse_timer = new ElapsedTime();
     }
 
     public void start(){
@@ -99,50 +103,132 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
             drive.followTrajectorySequenceAsync(ts1);
             sequence = 2;
         } else if (sequence == 2 && auto.lift_dumped && auto.lift_dumped_timer.seconds() > Status.AUTO_DUMP_DRIVE_OFFSET && !drive.isBusy()) {
-            ts2 = drive.trajectorySequenceBuilder(ts1.end())
-                    .addTemporalMarker(0.5, 0, () -> {
-                        robot.intake.setIntakeFront(1);
-                        robot.intake.deposit(Status.DEPOSITS.get("front"));
-                    })
-                    .splineToSplineHeading(new Pose2d(44, 0, Math.toRadians(-10)), Math.toRadians(-10))
-                    .forward(6)
-                    .turn(Math.toRadians(-20))
-                    .build();
-            drive.followTrajectorySequenceAsync(ts2);
             auto.lift_dumped = false;
             sequence = 3;
         } else if (sequence == 3) {
-            if (robot.intake.freightDetected()) {
-                robot.intake.deposit(Status.DEPOSITS.get("carry"));
-                drive.setPoseEstimate(ts2.end());
-                sequence = 4;
-                intake_timer.reset();
-            }
+            drive.setDrivePower(new Pose2d(0.7, 0.3, 0));
+            robot.intake.setIntakeFront(1);
+            back_to_warehouse_timer.reset();
+            sequence = 4;
         } else if (sequence == 4) {
-            drive.setDrivePower(new Pose2d(-0.7, 0.4, 0));
-            if (intake_timer.seconds() > Status.AUTO_INTAKE_DELAY) {
+            if (back_to_warehouse_timer.seconds() > 1) {
+                robot.intake.deposit(Status.DEPOSITS.get("front"));
+                drive.setDrivePower(new Pose2d(0.3, -0.1));
+                if (robot.intake.freightDetected() || back_to_warehouse_timer.seconds() > 3) {
+                    robot.intake.deposit(Status.DEPOSITS.get("carry"));
+                    drive.setDrivePower(new Pose2d(-0.7, 0.4, 0));
+                    sequence = 5;
+                    intake_timer.reset();
+                }
+            }
+        } else if (sequence == 5) {
+            //if (intake_timer.seconds() > Status.AUTO_INTAKE_DELAY) {
                 robot.intake.setIntakeBack(-1);
                 robot.intake.setIntakeFront(-1);
-            }
+            //}
             if (robot.lineFinder.lineFound()) {
-                drive.setPoseEstimate(new Pose2d(Status.TAPE_X_OFFSET * robot.direction, 0, drive.getExternalHeading()));
-                //drive.setDriveSignal(new DriveSignal());
-                sequence = 5;
+                back_to_goal_timer.reset();
+                sequence = 6;
             }
-        } else if (sequence == 5 && !drive.isBusy()) {
-            ts3 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                    .forward(-33)
-                    .build();
-            drive.followTrajectorySequenceAsync(ts3);
+        } else if (sequence == 6) {
             auto.height = 3;
-            sequence = 6;
-        } else if (sequence == 6 && !drive.isBusy()) {
-
+            if (back_to_goal_timer.seconds() > 0.6) {
+                drive.setDrivePower(new Pose2d(0, 0.2, 0));
+                sequence = 7;
+            }
+        } else if (sequence == 7 && auto.lift_dumped && auto.lift_dumped_timer.seconds() > Status.AUTO_DUMP_DRIVE_OFFSET && !drive.isBusy()) {
+            auto.lift_dumped = false;
+            sequence = 8;
+        } else if (sequence == 8) {
+            drive.setDrivePower(new Pose2d(0.7, 0.3, 0));
+            robot.intake.setIntakeFront(1);
+            back_to_warehouse_timer.reset();
+            sequence = 9;
+        } else if (sequence == 9) {
+            if (back_to_warehouse_timer.seconds() > 1) {
+                robot.intake.deposit(Status.DEPOSITS.get("front"));
+                drive.setDrivePower(new Pose2d(0.3, 0));
+                if (robot.intake.freightDetected() || back_to_warehouse_timer.seconds() > 3.3) {
+                    robot.intake.deposit(Status.DEPOSITS.get("carry"));
+                    drive.setDrivePower(new Pose2d(-0.7, 0.45, 0));
+                    sequence = 10;
+                    intake_timer.reset();
+                }
+            }
+        } else if (sequence == 10) {
+            //if (intake_timer.seconds() > Status.AUTO_INTAKE_DELAY) {
+            robot.intake.setIntakeBack(-1);
+            robot.intake.setIntakeFront(-1);
+            //}
+            if (robot.lineFinder.lineFound()) {
+                back_to_goal_timer.reset();
+                sequence = 11;
+            }
+        } else if (sequence == 11) {
+            auto.height = 3;
+            if (back_to_goal_timer.seconds() > 0.6) {
+                drive.setDrivePower(new Pose2d(0, 0.2, 0));
+                sequence = 12;
+            }
+        }  else if (sequence == 12 && auto.lift_dumped && auto.lift_dumped_timer.seconds() > Status.AUTO_DUMP_DRIVE_OFFSET && !drive.isBusy()) {
+            auto.lift_dumped = false;
+            sequence = 13;
+        } else if (sequence == 13) {
+            drive.setDrivePower(new Pose2d(0.7, 0.3, 0));
+            robot.intake.setIntakeFront(1);
+            back_to_warehouse_timer.reset();
+            sequence = 14;
+        } else if (sequence == 14) {
+            if (back_to_warehouse_timer.seconds() > 1) {
+                robot.intake.deposit(Status.DEPOSITS.get("front"));
+                drive.setDrivePower(new Pose2d(0.35, 0.1));
+                if (robot.intake.freightDetected() || back_to_warehouse_timer.seconds() > 3.5) {
+                    robot.intake.deposit(Status.DEPOSITS.get("carry"));
+                    drive.setDrivePower(new Pose2d(-0.7, 0.4, 0));
+                    sequence = 15;
+                    intake_timer.reset();
+                }
+            }
+        } else if (sequence == 15) {
+            //if (intake_timer.seconds() > Status.AUTO_INTAKE_DELAY) {
+            robot.intake.setIntakeBack(-1);
+            robot.intake.setIntakeFront(-1);
+            //}
+            if (robot.lineFinder.lineFound()) {
+                back_to_goal_timer.reset();
+                sequence = 16;
+            }
+        } else if (sequence == 16) {
+            auto.height = 3;
+            if (back_to_goal_timer.seconds() > 0.6) {
+                drive.setDrivePower(new Pose2d(0, 0.2, 0));
+                sequence = 17;
+            }
+        } else if (sequence == 17 && auto.lift_dumped && auto.lift_dumped_timer.seconds() > Status.AUTO_DUMP_DRIVE_OFFSET && !drive.isBusy()) {
+            auto.lift_dumped = false;
+            sequence = 18;
+        } else if (sequence == 18) {
+            drive.setDrivePower(new Pose2d(0.7, 0.3, 0));
+            robot.intake.setIntakeFront(0);
+            robot.intake.setIntakeBack(0);
+            back_to_warehouse_timer.reset();
+            sequence = 19;
+        } else if (sequence == 19) {
+            if (back_to_warehouse_timer.seconds() > 1) {
+                robot.intake.deposit(Status.DEPOSITS.get("front"));
+                drive.setDrivePower(new Pose2d(0.35, 0));
+                if (robot.intake.freightDetected() || back_to_warehouse_timer.seconds() > 2.8) {
+                    robot.intake.deposit(Status.DEPOSITS.get("carry"));
+                    drive.setDrivePower(new Pose2d(0, 0, 0));
+                    sequence = 20;
+                    intake_timer.reset();
+                }
+            }
         }
 
         //if (robot.lineFinder.lineFound()) {
-            log.i("Line Finder Alpha Init: %03d", robot.lineFinder.alpha_init);
-            log.i("Line Finder Alpha Value: %03d", robot.lineFinder.line_finder.alpha());
+        //    log.i("Line Finder Alpha Init: %03d", robot.lineFinder.alpha_init);
+        //    log.i("Line Finder Alpha Value: %03d", robot.lineFinder.line_finder.alpha());
         //}
 
         auto.update();
