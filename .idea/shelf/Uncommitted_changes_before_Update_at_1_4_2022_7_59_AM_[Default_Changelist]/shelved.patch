@@ -1,0 +1,13 @@
+Index: opencv-sdk
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/opencv-sdk b/opencv-sdk
+--- a/opencv-sdk	
++++ b/opencv-sdk	
+@@ -1,1 +1,1 @@
+-c8984e8defd87587ae9651d640e0455deb6562a0
+\ No newline at end of file
++b5e302b7238973aed2343bfc9fcd3d7d14147754
+\ No newline at end of file

@@ -31,10 +31,10 @@ public class Status {
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
         put("pitstop", 10000.0);
         put("neutral", 10100.0);
-        put("low", 34750.0);
+        put("low", 35150.0);
         put("mid", 42000.0);
-        put("high", 47750.0);
-        put("high2", 50250.0);
+        put("high", 47850.0);
+        put("high2", 49250.0);
         put("really high", 68000.0);
         put("speed mode threshold", 35000.0);
     }};
@@ -51,7 +51,7 @@ public class Status {
     public static final double BUCKET_WAIT_TIME = 0.5;
     public static final double PITSTOP_WAIT_TIME = 0.35;
     public static final double PITSTOP_WAIT_TIME_OUT = 0.01;
-    public static final double DEPOSIT_TIMER = 0.15; //time between bucket flipping in and slides retracting
+    public static final double DEPOSIT_TIMER = 0.1; //time between bucket flipping in and slides retracting
     public static final double DEPOSIT_DISTANCE = 2.9; //safe freight checker distance for the slides to auto retract
     public static final double AUTO_DEPOSIT_TIME = 0.3;
     public static final double AUTO_DUMP_DRIVE_OFFSET = 0.5; //MAKE THIS LOWER

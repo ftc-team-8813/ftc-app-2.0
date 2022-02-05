@@ -27,13 +27,12 @@ public class CapstoneDetector {
     private ArrayList<Double> zoned_areas;
     private ArrayList<int[]> zoned_areas_data;
 
-
     public CapstoneDetector(Mat detector_frame, Logger logger){
         this.logger = logger;
         this.detector_frame = detector_frame;
         this.stored_frame = new Mat();
-        this.lower_hls = new Scalar(80,27,30);
-        this.upper_hls = new Scalar(170,200,200);
+        this.lower_hls = new Scalar(30,20,20);
+        this.upper_hls = new Scalar(90,255,190);
 
         contours = new ArrayList<>();
         zoned_areas = new ArrayList<>();
@@ -65,10 +64,10 @@ public class CapstoneDetector {
             Moments p = Imgproc.moments(contours.get(i), false);
             int x = (int) (p.get_m10() / p.get_m00());
             int y = (int) (p.get_m01() / p.get_m00());
-//            logger.i("X Pos: %d       Y Pos: %d", x, y);
+//            logger.i("Every Contour X: %d     Every Contour Y: %d", x, y);
 
             if (name.startsWith("Blue")) {
-                if (75 < y && y < 132) {
+                if (20 < y && y < 132) {
                     int spot = 0;
                     if (139 < x && x < 193) {
                         spot = 1;
@@ -85,7 +84,7 @@ public class CapstoneDetector {
                 }
             } else if (name.startsWith("Red")){
                 // TODO Update with Red side boundaries
-                if (70 < y && y < 127) {
+                if (20 < y && y < 127) {
                     int spot = 0;
                     if (135 < x && x < 187) {
                         spot = 1;
@@ -102,10 +101,10 @@ public class CapstoneDetector {
                 }
             }
         }
-
-        if (zoned_areas.isEmpty()){
+        if (zoned_areas.isEmpty()) {
             return new int[]{0, -1};
         }
+
         double max_area = Collections.max(zoned_areas);
         return zoned_areas_data.get(zoned_areas.indexOf(max_area));
     }
