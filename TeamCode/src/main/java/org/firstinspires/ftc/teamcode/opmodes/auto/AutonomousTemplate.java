@@ -145,7 +145,7 @@ public class AutonomousTemplate {
         send_frame = capstone_detector.getStoredFrame();
 
         logger.i(String.format("Shipping Height: %01d", x_coord));
-        logger.i(String.format("X Coord of Block: %03f", shipping_height));
+        logger.i(String.format("X Coord of Block: %01d", shipping_height));
     }
 
     public void liftSequence(){
@@ -210,7 +210,7 @@ public class AutonomousTemplate {
                         target_height = Status.STAGES.get("mid");
                         break;
                     case 3:
-                        target_height = Status.STAGES.get("high");
+                        target_height = Status.STAGES.get("high") - 100;
                         break;
                     case 4:
                         target_height = Status.STAGES.get("neutral");

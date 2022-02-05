@@ -32,8 +32,8 @@ public class CapstoneDetector {
         this.logger = logger;
         this.detector_frame = detector_frame;
         this.stored_frame = new Mat();
-        this.lower_hls = new Scalar(0,125,20);
-        this.upper_hls = new Scalar(50,180,50);
+        this.lower_hls = new Scalar(80,27,30);
+        this.upper_hls = new Scalar(170,200,200);
 
         contours = new ArrayList<>();
         zoned_areas = new ArrayList<>();
@@ -65,6 +65,7 @@ public class CapstoneDetector {
             Moments p = Imgproc.moments(contours.get(i), false);
             int x = (int) (p.get_m10() / p.get_m00());
             int y = (int) (p.get_m01() / p.get_m00());
+//            logger.i("X Pos: %d       Y Pos: %d", x, y);
 
             if (name.startsWith("Blue")) {
                 if (75 < y && y < 132) {
@@ -102,6 +103,9 @@ public class CapstoneDetector {
             }
         }
 
+        if (zoned_areas.isEmpty()){
+            return new int[]{0, -1};
+        }
         double max_area = Collections.max(zoned_areas);
         return zoned_areas_data.get(zoned_areas.indexOf(max_area));
     }

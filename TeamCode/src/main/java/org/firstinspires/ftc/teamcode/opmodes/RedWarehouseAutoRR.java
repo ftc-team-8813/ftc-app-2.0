@@ -21,13 +21,13 @@ import org.opencv.core.Mat;
 
 import java.util.Vector;
 
-@Autonomous(name="Blue Warehouse Auto RR", group="Blues")
-public class BlueWarehouseAutoRR extends LoggingOpMode
+@Autonomous(name="Red Warehouse Auto RR", group="Reds")
+public class RedWarehouseAutoRR extends LoggingOpMode
 {
     private Robot robot;
     private Logger log;
     private AutonomousTemplate auto;
-    private final String name = "Blue Warehouse Auto RR";
+    private final String name = "Red Warehouse Auto RR";
 
     private SampleMecanumDrive drive;
     private TrajectorySequence ts1;
@@ -57,9 +57,9 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
                 telemetry,
                 drive
         );
-        startPose = new Pose2d(12, 0, Math.toRadians(0));
+        startPose = new Pose2d(12, 0, Math.toRadians(180));
         drive.setPoseEstimate(startPose);
-        log = new Logger(name);
+        log = new Logger("Red Autonomous");
 
         auto.init_camera();
         auto.init_lift();
@@ -77,7 +77,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
             auto.check_image();
             if (!waiting) {timer.reset(); waiting = true;}
             if (timer.seconds() > 0.3) {
-                if (auto.shipping_height == 0) auto.shipping_height = 3;
+                if (auto.shipping_height < 1) auto.shipping_height = 3;
                 waiting = false;
                 checking_image = false;
                 sequence = 1;//advances to first move
@@ -102,13 +102,13 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
         } else if (sequence == 2 && auto.lift_dumped && auto.lift_dumped_timer.seconds() > Status.AUTO_DUMP_DRIVE_OFFSET && !drive.isBusy()) {
             ts2 = drive.trajectorySequenceBuilder(ts1.end())
                     .addTemporalMarker(0.5, 0, () -> {
-                        robot.intake.setIntakeFront(0.85);
+                        robot.intake.setIntakeBack(0.85);
                         robot.intake.searchForFreight();
-                        robot.intake.deposit(Status.DEPOSITS.get("front"));
+                        robot.intake.deposit(Status.DEPOSITS.get("back"));
                     })
-                    .lineToLinearHeading(new Pose2d(47,0,Math.toRadians(0)))//.setReversed(true)
-                    .splineToSplineHeading(new Pose2d(52, 0, Math.toRadians(-10)), Math.toRadians(-10))
-                    .turn(Math.toRadians(15))
+                    .lineToLinearHeading(new Pose2d(47,0,Math.toRadians(180)))//.setReversed(true)
+                    .splineToSplineHeading(new Pose2d(52, 0, Math.toRadians(190)), Math.toRadians(10))
+                    .turn(Math.toRadians(10))
                     .forward(-3)
                     .build();
             drive.followTrajectorySequenceAsync(ts2);
@@ -122,7 +122,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
                 intake_timer.reset();
             }
         } else if (sequence == 4) {
-            drive.setDrivePower(new Pose2d(-0.7, 0.5, 0));
+            drive.setDrivePower(new Pose2d(0.7, 0.5, 0));
             if (intake_timer.seconds() > Status.AUTO_INTAKE_DELAY) {
                 robot.intake.setIntakeBack(-1);
                 robot.intake.setIntakeFront(-1);
@@ -133,21 +133,21 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
             }
         } else if (sequence == 5 && !drive.isBusy()) {
             ts3 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                    .forward(-33.5)
+                    .forward(33.5)
                     .build();
             drive.followTrajectorySequenceAsync(ts3);
             auto.height = 3;
             sequence = 6;
         } else if (sequence == 6 && auto.lift_dumped && auto.lift_dumped_timer.seconds() > Status.AUTO_DUMP_DRIVE_OFFSET && !drive.isBusy()) {
-            ts2 = drive.trajectorySequenceBuilder(ts3.end())
+            ts2 = drive.trajectorySequenceBuilder(ts1.end())
                     .addTemporalMarker(0.5, 0, () -> {
-                        robot.intake.setIntakeFront(0.85);
+                        robot.intake.setIntakeBack(0.85);
                         robot.intake.searchForFreight();
-                        robot.intake.deposit(Status.DEPOSITS.get("front"));
+                        robot.intake.deposit(Status.DEPOSITS.get("back"));
                     })
-                    .lineToLinearHeading(new Pose2d(48,1,Math.toRadians(0)))
-                    .splineToSplineHeading(new Pose2d(55, 2, Math.toRadians(-10)), Math.toRadians(-10))
-                    //                   .turn(Math.toRadians(10))
+                    .lineToLinearHeading(new Pose2d(48,1,Math.toRadians(180)))
+                    .splineToSplineHeading(new Pose2d(55, 2, Math.toRadians(190)), Math.toRadians(10))
+ //                   .turn(Math.toRadians(10))
                     .forward(-3)
                     .build();
             drive.followTrajectorySequenceAsync(ts2);
@@ -161,7 +161,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
                 intake_timer.reset();
             }
         } else if (sequence == 8) {
-            drive.setDrivePower(new Pose2d(-0.7, 0.5, 0));
+            drive.setDrivePower(new Pose2d(0.7, 0.5, 0));
             if (intake_timer.seconds() > Status.AUTO_INTAKE_DELAY) {
                 robot.intake.setIntakeBack(-1);
                 robot.intake.setIntakeFront(-1);
@@ -172,7 +172,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
             }
         } else if (sequence == 9 && !drive.isBusy()) {
             ts3 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                    .forward(-33)
+                    .forward(33)
                     .build();
             drive.followTrajectorySequenceAsync(ts3);
             auto.height = 3;
@@ -180,13 +180,13 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
         } else if (sequence == 10 && auto.lift_dumped && auto.lift_dumped_timer.seconds() > Status.AUTO_DUMP_DRIVE_OFFSET && !drive.isBusy()) {
             ts2 = drive.trajectorySequenceBuilder(ts1.end())
                     .addTemporalMarker(0.5, 0, () -> {
-                        robot.intake.setIntakeFront(0.85);
+                        robot.intake.setIntakeBack(0.85);
                         robot.intake.searchForFreight();
-                        robot.intake.deposit(Status.DEPOSITS.get("front"));
+                        robot.intake.deposit(Status.DEPOSITS.get("back"));
                     })
-                    .lineToLinearHeading(new Pose2d(47, 0, Math.toRadians(0)))//.setReversed(true)
-                    .splineToSplineHeading(new Pose2d(52, 1, Math.toRadians(-10)), Math.toRadians(-10))
-                    //                   .turn(Math.toRadians(10))
+                    .lineToLinearHeading(new Pose2d(47, 0, Math.toRadians(180)))//.setReversed(true)
+                    .splineToSplineHeading(new Pose2d(52, 1, Math.toRadians(190)), Math.toRadians(10))
+ //                   .turn(Math.toRadians(10))
                     .forward(-5)
                     .build();
             drive.followTrajectorySequenceAsync(ts2);
@@ -200,7 +200,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
                 intake_timer.reset();
             }
         } else if (sequence == 12) {
-            drive.setDrivePower(new Pose2d(-0.7, 0.5, 0));
+            drive.setDrivePower(new Pose2d(0.7, 0.5, 0));
             if (intake_timer.seconds() > Status.AUTO_INTAKE_DELAY) {
                 robot.intake.setIntakeBack(-1);
                 robot.intake.setIntakeFront(-1);
@@ -211,7 +211,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
             }
         } else if (sequence == 13 && !drive.isBusy()) {
             ts3 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                    .forward(-33)
+                    .forward(33)
                     .build();
             drive.followTrajectorySequenceAsync(ts3);
             auto.height = 3;
