@@ -31,7 +31,7 @@ public class Status {
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
         put("pitstop", 10000.0);
         put("neutral", 10100.0);
-        put("low", 35050.0);
+        put("low", 35150.0);
         put("mid", 42000.0);
         put("high", 47850.0);
         put("high2", 49250.0);

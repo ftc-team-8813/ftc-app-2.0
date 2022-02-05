@@ -80,6 +80,7 @@ public class VisionTest extends LoggingOpMode
             if (serverFrameCopy == null || serverFrameUsed) return;
 
             CapstoneDetector detector = new CapstoneDetector(cvFrame, log);
+            detector.setName("Red");
             int[] capstone_data = detector.detect();
             log.i("Shipping Height: %d / X Coord: %d", capstone_data[0], capstone_data[1]);
 

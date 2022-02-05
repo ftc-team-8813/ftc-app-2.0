@@ -132,7 +132,7 @@ public class RedWarehouseAuto extends LoggingOpMode
             }
         } else if (sequence == 6) {
             auto.height = 3;
-            if (back_to_goal_timer.seconds() > 0.58) {
+            if (back_to_goal_timer.seconds() > 0.593) {
                 drive.setDrivePower(new Pose2d(0, 0.2, 0));
                 sequence = 7;
             }
@@ -166,7 +166,7 @@ public class RedWarehouseAuto extends LoggingOpMode
             }
         } else if (sequence == 11) {
             auto.height = 3;
-            if (back_to_goal_timer.seconds() > 0.58) {
+            if (back_to_goal_timer.seconds() > 0.593) {
                 drive.setDrivePower(new Pose2d(0, 0.2, 0));
                 sequence = 12;
             }
@@ -200,7 +200,7 @@ public class RedWarehouseAuto extends LoggingOpMode
             }
         } else if (sequence == 16) {
             auto.height = 3;
-            if (back_to_goal_timer.seconds() > 0.58) {
+            if (back_to_goal_timer.seconds() > 0.593) {
                 drive.setDrivePower(new Pose2d(0, 0.2, 0));
                 sequence = 17;
             }

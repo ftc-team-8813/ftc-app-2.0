@@ -29,8 +29,8 @@ public class DuckControl extends ControlModule{
     public void update(Telemetry telemetry) {
         if (ax_right_stick_y.get() > 0.14) {
 
-            inc_spinner_speed = spinner_speed_timer.seconds() >= 1;
-            stop_duck_spin = spinner_speed_timer.seconds() >= 1.6;
+            inc_spinner_speed = spinner_speed_timer.seconds() >= 1.2;
+            stop_duck_spin = spinner_speed_timer.seconds() >= 2;
             if (stop_duck_spin) {
                 spinner_speed = 0.0;
             }
@@ -44,8 +44,8 @@ public class DuckControl extends ControlModule{
         }
         if (ax_right_stick_y.get() < -0.14) {
 
-            inc_spinner_speed = spinner_speed_timer.seconds() >= 1;
-            stop_duck_spin = spinner_speed_timer.seconds() >= 1.6;
+            inc_spinner_speed = spinner_speed_timer.seconds() >= 1.2;
+            stop_duck_spin = spinner_speed_timer.seconds() >= 2;
             if (stop_duck_spin) {
                 spinner_speed = 0.0;
             }

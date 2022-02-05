@@ -31,8 +31,8 @@ public class CapstoneDetector {
         this.logger = logger;
         this.detector_frame = detector_frame;
         this.stored_frame = new Mat();
-        this.lower_hls = new Scalar(50,30,10);
-        this.upper_hls = new Scalar(120,145,100);
+        this.lower_hls = new Scalar(30,20,20);
+        this.upper_hls = new Scalar(90,255,190);
 
         contours = new ArrayList<>();
         zoned_areas = new ArrayList<>();
@@ -64,9 +64,10 @@ public class CapstoneDetector {
             Moments p = Imgproc.moments(contours.get(i), false);
             int x = (int) (p.get_m10() / p.get_m00());
             int y = (int) (p.get_m01() / p.get_m00());
+//            logger.i("Every Contour X: %d     Every Contour Y: %d", x, y);
 
             if (name.startsWith("Blue")) {
-                if (75 < y && y < 132) {
+                if (20 < y && y < 132) {
                     int spot = 0;
                     if (139 < x && x < 193) {
                         spot = 1;
@@ -83,7 +84,7 @@ public class CapstoneDetector {
                 }
             } else if (name.startsWith("Red")){
                 // TODO Update with Red side boundaries
-                if (70 < y && y < 127) {
+                if (20 < y && y < 127) {
                     int spot = 0;
                     if (135 < x && x < 187) {
                         spot = 1;
