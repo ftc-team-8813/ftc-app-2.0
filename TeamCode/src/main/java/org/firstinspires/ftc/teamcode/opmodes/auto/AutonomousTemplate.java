@@ -3,11 +3,13 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Duck;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
@@ -34,10 +36,11 @@ public class AutonomousTemplate {
     private final Robot robot;
     private Server server;
     private final Drivetrain drivetrain;
-    private final AutoDrive navigation;
+    //private final AutoDrive navigation;
     private final Intake intake;
     private final Duck duck;
     private final Lift lift;
+    private final SampleMecanumDrive drive;
 
     private final ControllerMap controller_map;
     private final ControlMgr control_mgr;
@@ -48,33 +51,37 @@ public class AutonomousTemplate {
     private Webcam.SimpleFrameHandler frame_handler;
     private final String WEBCAM_SERIAL = "3522DE6F";
     private final Mat detector_frame = new Mat();
-    private final Mat send_frame = new Mat();
+    private Mat send_frame = new Mat();
 
-    private ElapsedTime camera_timer;
-    public ElapsedTime timer;
-    private int id = 0;
-    private double timer_delay = 1000; // Set high to not trigger next move
-    private final boolean waiting_camera = false;
-    private boolean waiting = false;
     public int shipping_height = 0;
-    public double x_coord = -1;
+    public int x_coord = -1;
+
+    private double y_distance = 0;
+
+    private ElapsedTime lift_timer;
+    public ElapsedTime lift_dumped_timer;
+    private int id = 0;
+    public int height = -1;
+
+    public boolean lift_dumped = false;
+    public boolean dump_trigger = false;
+    private boolean lift_timer_waiting = false;
 
     static
     {
         OpenCVLoader.initDebug();
     }
 
-    public AutonomousTemplate(String name, Robot robot, HardwareMap hardware_map, ControllerMap controller_map, Telemetry telemetry){
+    public AutonomousTemplate(String name, Robot robot, HardwareMap hardware_map, ControllerMap controller_map, Telemetry telemetry, SampleMecanumDrive drive){
         this.name = name;
-        this.robot = Robot.initialize(hardware_map, "Autonomous");
+        this.robot = Robot.initialize(hardware_map, "Autonomous", 0);
         this.logger = new Logger(name);
         this.telemetry = telemetry;
         this.controller_map = controller_map;
         this.control_mgr = new ControlMgr(robot, this.controller_map);
-        this.timer = new ElapsedTime();
 
         drivetrain = robot.drivetrain;
-        navigation = robot.navigation;
+        this.drive = drive;
         duck = robot.duck;
         lift = robot.lift;
         intake = robot.intake;
@@ -107,6 +114,8 @@ public class AutonomousTemplate {
         lift.extend(0, false);
         lift.rotate(Status.ROTATIONS.get("in"));
         robot.intake.deposit(Status.DEPOSITS.get("carry"));
+        lift_timer = new ElapsedTime();
+        lift_dumped_timer = new ElapsedTime();
     }
 
     public void init_camera(){
@@ -116,82 +125,167 @@ public class AutonomousTemplate {
         webcam.open(ImageFormat.YUY2, 800, 448, 30, frame_handler);
     }
 
-    public void set_timer(double delay){
-        timer_delay = delay;
-        waiting = true;
-    }
-
-    public void check_image(boolean save_image){
+    public void check_image(){
         if (shipping_height != 0){
             return;
         }
+
         webcam.requestNewFrame();
         if (!frame_handler.newFrameAvailable) {
-            throw new IllegalArgumentException("New frame not available");
+            //throw new IllegalArgumentException("New frame not available");
+            shipping_height = 3;
+            return;
         }
         Utils.bitmapToMat(frame_handler.currFramebuffer, detector_frame);
-        //CapstoneDetector capstone_detector = new CapstoneDetector(logger);
-        //x_coord = capstone_detector.detect(detector_frame);
-        //send_frame = capstone_detector.stored_frame;
-        if (name.equals("Red Warehouse Auto")){
-            if (75 < x_coord && x_coord < 314) {
-                shipping_height = 1;
-            } else if (314 < x_coord && x_coord < 520) {
-                shipping_height = 2;
-            } else if (520 < x_coord && x_coord < 800) {
-                shipping_height = 3;
-            }
-        } else if (name.equals("Blue Warehouse Auto")){
-            if (75 < x_coord && x_coord < 305) {
-                shipping_height = 1;
-            } else if (305 < x_coord && x_coord < 520) {
-                shipping_height = 2;
-            } else if (520 < x_coord && x_coord < 800) {
-                shipping_height = 3;
-            }
-        }
+        CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
+        capstone_detector.setName(name);
+        int[] capstone_data = capstone_detector.detect();
+        shipping_height = capstone_data[0];
+        x_coord = capstone_data[1];
+        send_frame = capstone_detector.getStoredFrame();
 
-
-        logger.i(String.format("X Coord of Block: %f", x_coord));
-        logger.i(String.format("Shipping Height: %d", shipping_height));
+        logger.i(String.format("Shipping Height: %01d", x_coord));
+        logger.i(String.format("X Coord of Block: %01d", shipping_height));
     }
 
-    public int update(int state) { // STATE: 0=driving, 1=lifting, 2=waiting 3=detecting freight
-        if (!waiting) {
-            timer.reset();
-        }
-        if (navigation.ifReached() && state == 0){
-            logger.i("Reached CoordinateL %d", id);
-            id += 1;
-            intake.stopDetectingFreight();
-        } else if (lift.ifReached(lift.getLiftTargetPos()) && state == 1){
-            logger.i("Reached Lift: %d", id);
-            id += 1;
-            intake.stopDetectingFreight();
-        } else if (timer.seconds() > timer_delay && state == 2){
-            logger.i("Reached Timer: %d", id);
-            id += 1;
-            waiting = false;
-            timer.reset();
-            intake.stopDetectingFreight();
-        } else if (intake.freightDetected() && state == 3){
-            logger.i("Grabbed Freight: %d", id);
-            id += 1;
+    public void liftSequence(){
+        switch (id) {
+            case 0:
+                lift_timer.reset();
+                id += 1;
+                break;
+            case 1:
+                intake.deposit(Status.DEPOSITS.get("carry"));
 
+                if (lift_timer.seconds() > Status.BUCKET_WAIT_TIME){
+                    id += 1;
+                }
+                break;
+            case 2:
+                lift.extend(Status.STAGES.get("pitstop"), true);
+                if (lift.ifReached(Status.STAGES.get("pitstop"))){
+                    id += 1;
+                }
+
+                lift_timer.reset();
+                break;
+            case 3:
+                switch (height){
+                    case 1:
+                        lift.rotate(Status.ROTATIONS.get("low_out"));
+                        break;
+                    case 2:
+                        lift.rotate(Status.ROTATIONS.get("mid_out"));
+                        break;
+                    case 3:
+                        lift.rotate(Status.ROTATIONS.get("high_out"));
+                        break;
+                    case 4:
+                        lift.rotate(Status.ROTATIONS.get("neutral_out"));
+                        break;
+                    case 5:
+                        lift.rotate(Status.ROTATIONS.get("high_out2"));
+                        break;
+                    case 6:
+                        lift.rotate(Status.ROTATIONS.get("high_out"));
+                        lift.moveOutrigger(Status.OUTRIGGERS.get("down"));
+                        break;
+                }
+
+                if (lift_timer.seconds() > Status.PITSTOP_WAIT_TIME_OUT) {
+                    lift_timer.reset();
+                    id += 1;
+                }
+                break;
+            case 4:
+                double target_height = lift.getLiftCurrentPos();
+                switch (height){
+                    case 0:
+                        target_height = 0;
+                        break;
+                    case 1:
+                        target_height = Status.STAGES.get("low");
+                        break;
+                    case 2:
+                        target_height = Status.STAGES.get("mid");
+                        break;
+                    case 3:
+                        target_height = Status.STAGES.get("high") - 100;
+                        break;
+                    case 4:
+                        target_height = Status.STAGES.get("neutral");
+                        break;
+                    case 5:
+                        target_height = Status.STAGES.get("high2");
+                        break;
+                    case 6:
+                        target_height = Status.STAGES.get("really high");
+                        break;
+                }
+                lift.extend(target_height, true);
+                if (lift.ifReached(target_height)){
+                    id += 1;
+                }
+                break;
+            case 5:
+                if (dump_trigger) {
+                    if (!lift_timer_waiting) {
+                        lift_timer.reset();
+                        lift_timer_waiting = true;
+                    }
+                    intake.deposit(Status.DEPOSITS.get("dump"));
+
+                    if (lift_timer.seconds() > Status.AUTO_DEPOSIT_TIME) {
+                        lift_dumped = true;
+                        lift_dumped_timer.reset();
+                        intake.deposit(Status.DEPOSITS.get("carry"));
+                        lift_timer.reset();
+                        lift_timer_waiting = false;
+                        id += 1;
+                    }
+                }
+                break;
+            case 6:
+                if (lift_timer.seconds() > 1) {
+                    id += 1;
+                }
+            case 7:
+                lift.extend(Status.STAGES.get("pitstop"), true);
+                if (lift.ifReached(Status.STAGES.get("pitstop"))) {
+                    id += 1;
+                }
+
+                lift_timer.reset();
+                break;
+            case 8:
+                lift.rotate(Status.ROTATIONS.get("in"));
+
+                if (lift_timer.seconds() > Status.PITSTOP_WAIT_TIME) {
+                    id += 1;
+                }
+                break;
+            case 9:
+                lift.extend(0, true);
+                if (lift.ifReached(0)) {
+                    id += 1;
+                }
+                break;
+            case 10:
+                height = -1;
+                id = 0;
+                break;
+        }
+    }
+
+    public void update() {
+        if (height > -1){
+            liftSequence();
         }
 
-        navigation.getFieldPos();
         lift.updateLift();
         telemetry.update();
-
-        telemetry.addData("Id: ", id);
-        telemetry.addData("Shipping Height: ", shipping_height);
-        telemetry.addData("X Coord of Block: ", x_coord);
-        navigation.update(telemetry);
-        telemetry.addData("Drivetrain Position Reached", navigation.ifReached());
-        telemetry.addData("Lift Position Reached", lift.ifReached(lift.getLiftTargetPos()));
-        telemetry.addData("Freight Detected",intake.freightDetected() );
-        return id;
+        lift.updateLift();
+        robot.lineFinder.update(telemetry);
     }
 
     public void stop(){

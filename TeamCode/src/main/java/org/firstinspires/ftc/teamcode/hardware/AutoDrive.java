@@ -1,23 +1,18 @@
 package org.firstinspires.ftc.teamcode.hardware;
-import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.input.ControllerMap;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlModule;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.util.Status;
-import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
-import org.firstinspires.ftc.teamcode.util.websocket.Server;
 
-import java.io.IOException;
 import java.lang.Math;
-import java.nio.ByteBuffer;
 
 public class AutoDrive {
     private final Drivetrain drivetrain;
     private final IMU imu;
+    private final LineFinder lineFinder;
+    private final DistanceSensor x_dist;
 
     private boolean drivetrain_reached;
 
@@ -59,10 +54,13 @@ public class AutoDrive {
     private double loop_end = 0.0;
     private double loop_time = 0.0;
 
-    public AutoDrive(Drivetrain drivetrain, IMU imu){
+    public AutoDrive(Drivetrain drivetrain, IMU imu, LineFinder line_finder, DistanceSensor x_dist,  int direction){
         this.drivetrain = drivetrain;
         this.imu = imu;
+        this.lineFinder = line_finder;
+        this.x_dist = x_dist;
     }
+
 
     public boolean ifReached(){
         double deadband = 0.5;
@@ -115,6 +113,15 @@ public class AutoDrive {
         field_x += delta_field_x;
         field_y += delta_field_y;
 
+        //sensor-based position reset
+        if(lineFinder.lineFound()){
+            field_y = direction * Status.TAPE_X_OFFSET;
+        }
+
+        if (x_dist.getDistance(DistanceUnit.MM) < 22.0) {
+            field_x = 0;
+        }
+
         loop_end = System.nanoTime() / 1000000000.0;
         loop_time = loop_end - loop_start;
 
@@ -145,6 +152,7 @@ public class AutoDrive {
             turn = 0.0;
         }
 
+
         if (tracking){
             drivetrain_reached = false;
         }
@@ -172,6 +180,7 @@ public class AutoDrive {
         telemetry.addData("x position: ", field_x);
         telemetry.addData("y position: ", field_y);
         telemetry.addData("angle: ", heading);
+
         //telemetry.addData("Server status ", server.getStatus());
         //telemetry.addData("Loop Time in seconds", loop_time);
     }

@@ -21,15 +21,22 @@ public class LiftControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_x;
     private ControllerMap.ButtonEntry btn_dpad_down;
     private ControllerMap.ButtonEntry btn_dpad_up;
+    private ControllerMap.ButtonEntry btn_right_bumper;
     private ControllerMap.AxisEntry ax_left_trigger;
     private ControllerMap.AxisEntry ax_right_trigger;
 
     private int height = -1; // 0 = bottom, 1 = low, 2 = mid, 3 = high, 4 = neutral, 5 = high2 (goal tipped), 6 = really high (duck cycling)
-    private ElapsedTime timer;
+    private final ElapsedTime timer = new ElapsedTime();
     private int id = 0;
     private int id2 = 0;
-    private boolean was_reset = false;
+    private final boolean was_reset = false;
     private boolean left_trigger_was_pressed = false;
+    private final double var_pit_stop_wait = Status.PITSTOP_WAIT_TIME;
+    public boolean duck_cycle_flag = false;
+
+    public boolean just_deposited = false;
+    private final ElapsedTime deposit_timer = new ElapsedTime();
+    private boolean timer_counting = false;
 
     private Logger log;
 
@@ -40,7 +47,6 @@ public class LiftControl extends ControlModule{
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.lift = robot.lift;
         this.intake = robot.intake;
-        timer = new ElapsedTime();
         log = new Logger("Lift Control");
 
         ax_left_stick_y = controllerMap.getAxisMap("lift:adjust", "gamepad2", "left_stick_y");
@@ -51,6 +57,7 @@ public class LiftControl extends ControlModule{
         ax_left_trigger = controllerMap.getAxisMap("lift:reset", "gamepad2", "left_trigger");
         ax_right_trigger = controllerMap.getAxisMap("lift:extend_really_high", "gamepad2", "right_trigger");
         btn_dpad_up = controllerMap.getButtonMap("Lift:extend_high2", "gamepad2", "dpad_up");
+        btn_right_bumper = controllerMap.getButtonMap("lift:deposit", "gamepad2", "right_bumper");
 
         lift.rotate(Status.ROTATIONS.get("in"));
     }
@@ -60,7 +67,11 @@ public class LiftControl extends ControlModule{
         double delta_extension;
 
         if (-ax_left_stick_y.get() < -0.1 || -ax_left_stick_y.get() > 0.1){
-            delta_extension = -ax_left_stick_y.get() * Status.SENSITIVITY;
+            if (lift.getLiftTargetPos() < Status.STAGES.get("neutral") + 20000) {
+                delta_extension = -ax_left_stick_y.get()*Status.NEUTRAL_SENSITIVITY;
+            } else {
+                delta_extension = -ax_left_stick_y.get() * Status.SENSITIVITY;
+            }
         } else {
             delta_extension = 0;
         }
@@ -146,9 +157,16 @@ public class LiftControl extends ControlModule{
                         lift.moveOutrigger(Status.OUTRIGGERS.get("down"));
                         break;
                 }
-                if (timer.seconds() > Status.PITSTOP_WAIT_TIME){
-                    id += 1;
-                    log.i("Rotated Arm");
+                if (height == 0) {
+                    if (timer.seconds() > Status.PITSTOP_WAIT_TIME) {
+                        id += 1;
+                        log.i("Rotated Arm");
+                    }
+                } else {
+                    if (timer.seconds() > Status.PITSTOP_WAIT_TIME_OUT) {
+                        id += 1;
+                        log.i("Rotated Arm");
+                    }
                 }
                 break;
             case 3:
@@ -156,6 +174,7 @@ public class LiftControl extends ControlModule{
                 switch (height){
                     case 0:
                         target_height = 0;
+                        duck_cycle_flag = false;
                         break;
                     case 1:
                         target_height = Status.STAGES.get("low");
@@ -174,6 +193,7 @@ public class LiftControl extends ControlModule{
                         break;
                     case 6:
                         target_height = Status.STAGES.get("really high");
+                        duck_cycle_flag = true;
                         break;
                 }
                 lift.extend(target_height, true);
@@ -188,15 +208,18 @@ public class LiftControl extends ControlModule{
                 break;
         }
 
-        lift.updateLift();
-
-        if (!was_reset && lift.limitPressed()){
-            log.i("Reset at Home");
-            lift.resetEncoder();
-            was_reset = true;
-        } else if (!lift.limitPressed()){
-            was_reset = false;
+        if (btn_right_bumper.edge() == -1) { //when the bucket flips in, wait for a delay and then retract
+            deposit_timer.reset();
+            timer_counting = true;
         }
+
+        if (timer_counting && deposit_timer.seconds() > Status.DEPOSIT_TIMER && intake.getFreightDistance() > 3) {
+            height = 0;
+            timer_counting = false;
+        }
+
+        lift.updateLift();
+        lift.duck_cycle_flag = duck_cycle_flag;
 
         telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
         telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());
