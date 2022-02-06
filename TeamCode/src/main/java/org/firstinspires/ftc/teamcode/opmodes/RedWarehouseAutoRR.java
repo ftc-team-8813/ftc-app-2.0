@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import java.util.Vector;
 
 @Autonomous(name="Red Warehouse Auto RR", group="Reds")
-public class RedWarehouseAuto extends LoggingOpMode
+public class RedWarehouseAutoRR extends LoggingOpMode
 {
     private Robot robot;
     private Logger log;
