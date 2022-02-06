@@ -41,17 +41,17 @@ public class ServerControl extends ControlModule{
         });
 
         // Odo Drawer
-        server.registerProcessor(0x2, (cmd, payload, resp) -> {
-            ByteBuffer buf = ByteBuffer.allocate(300);
-
-            double[] nav_poses = robot.navigation.getFieldPositions();
-            buf.putDouble(nav_poses[0]);
-            buf.putDouble(nav_poses[1]);
-            buf.putDouble(nav_poses[2]);
-
-            buf.flip();
-            resp.respond(buf);
-        });
+//        server.registerProcessor(0x2, (cmd, payload, resp) -> {
+//            ByteBuffer buf = ByteBuffer.allocate(300);
+//
+//            double[] nav_poses = robot.navigation.getFieldPositions();
+//            buf.putDouble(nav_poses[0]);
+//            buf.putDouble(nav_poses[1]);
+//            buf.putDouble(nav_poses[2]);
+//
+//            buf.flip();
+//            resp.respond(buf);
+//        });
 
 
         server.startServer();

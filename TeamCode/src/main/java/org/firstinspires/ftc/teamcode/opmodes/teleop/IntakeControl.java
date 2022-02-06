@@ -1,11 +1,16 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Status;
+
+import java.util.Timer;
 
 public class IntakeControl extends ControlModule {
     private Intake intake;
@@ -15,13 +20,20 @@ public class IntakeControl extends ControlModule {
     private ControllerMap.ButtonEntry btn_left_bumper;
     private ControllerMap.ButtonEntry btn_right_bumper;
 
+    private Gamepad gamepad1;
+    private Gamepad gamepad2;
+
     private double direction = 1; // positive = Intake, negative = Outtake
     private double side = 3; // 1 = Front, 0 = Center, -1 = Back, 2 = Dump
     private double side_was = 3; // position of bucket on last loop cycle
     private boolean carrying = true;
 
+
+
     private long current_time = 0;
     private long target_time = Status.TIME_BEFORE_INTAKING;
+
+    private boolean was_rumbling = false;
 
 
     public IntakeControl(String name) {
@@ -40,18 +52,28 @@ public class IntakeControl extends ControlModule {
         btn_right_bumper = controllerMap.getButtonMap("lift:deposit", "gamepad2", "right_bumper");
 
         intake.deposit(Status.DEPOSITS.get("carry"));
+
+        gamepad1 = controllerMap.gamepad1;
+        gamepad2 = controllerMap.gamepad2;
     }
 
     @Override
     public void update(Telemetry telemetry) {
         current_time = System.nanoTime();
         if (intake.getFreightDistance() < Status.FREIGHT_DETECTION){
-            direction = -0.6;
+            direction = -0.9;
             side = 0;
             carrying = true;
+
+            if (!was_rumbling) {
+                gamepad1.rumble(1, 1, 150);
+                gamepad2.rumble(1, 1, 150);
+                was_rumbling = true;
+            }
         } else  {
             direction = 0.9;
             carrying = false;
+            was_rumbling = false;
         }
 
         if (ax_right_trigger.get() > 0.5){
@@ -91,7 +113,11 @@ public class IntakeControl extends ControlModule {
         }
 
         if (side == 0){
-            intake.deposit(Status.DEPOSITS.get("carry"));
+            if (lift.getLiftTargetPos() == Status.STAGES.get("pitstop") || lift.getLiftTargetPos() == 0 || lift.getLiftTargetPos() > Status.STAGES.get("neutral") + 20000) {
+                intake.deposit(Status.DEPOSITS.get("carry"));
+            } else {
+                intake.deposit(Status.DEPOSITS.get("tilt"));
+            }
         } else if (side == 1){
             if (lift.getLiftCurrentPos() < 2000) {
                 intake.deposit(Status.DEPOSITS.get("front"));
@@ -110,4 +136,6 @@ public class IntakeControl extends ControlModule {
 
         telemetry.addData("Freight Distance: ", intake.getFreightDistance());
     }
+
+
 }

@@ -19,7 +19,7 @@ public class OdoCalibration extends LoggingOpMode {
     @Override
     public void init() {
         super.init();
-        robot = Robot.initialize(hardwareMap, "Odo Calibration");
+        robot = Robot.initialize(hardwareMap, "Odo Calibration", 0);
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;

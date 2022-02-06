@@ -22,7 +22,10 @@ android {
             path "CMakeLists.txt"
         }
     }
-    ndkVersion '23.0.7599858'
+    ndkVersion '21.4.7075529'
+    androidResources {
+        noCompress 'tflite'
+    }
 
 }
 
@@ -30,4 +33,6 @@ dependencies {
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
     implementation project(':opencv-sdk')
+    implementation 'org.apache.commons:commons-math3:3.6.1'
+    implementation 'com.acmerobotics.roadrunner:core:0.5.4'
 }
