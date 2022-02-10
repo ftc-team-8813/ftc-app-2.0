@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.opmodes.auto.AutonomousTemplate;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Status;
+import org.firstinspires.ftc.teamcode.util.event.Event;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 import java.util.Vector;
@@ -24,6 +25,7 @@ import java.util.Vector;
 public class RedWarehouseAutoRR extends LoggingOpMode
 {
     private Robot robot;
+    private EventBus ev_bus;
     private Logger log;
     private AutonomousTemplate auto;
     private final String name = "Red Warehouse Auto RR";
@@ -32,13 +34,10 @@ public class RedWarehouseAutoRR extends LoggingOpMode
     private TrajectorySequence ts1;
     private TrajectorySequence ts2;
     private TrajectorySequence ts3;
-    private int sequence = 0;
+    private int sequence = 1;
     private Pose2d startPose;
     private Pose2d intakePoseOffset;
 
-    private ElapsedTime timer;
-    private boolean waiting = false;
-    private boolean checking_image = true;
     private ElapsedTime intake_timer;
     private ElapsedTime back_to_goal_timer;
     private ElapsedTime back_to_warehouse_timer;
@@ -55,6 +54,7 @@ public class RedWarehouseAutoRR extends LoggingOpMode
                 this.robot,
                 hardwareMap,
                 new ControllerMap(gamepad1, gamepad2, new EventBus()),
+                ev_bus,
                 telemetry,
                 drive
         );
@@ -62,9 +62,7 @@ public class RedWarehouseAutoRR extends LoggingOpMode
         drive.setPoseEstimate(startPose);
         log = new Logger(name);
 
-        auto.init_camera();
         auto.init_lift();
-        timer = new ElapsedTime();
         intake_timer = new ElapsedTime();
         back_to_goal_timer = new ElapsedTime();
         back_to_warehouse_timer = new ElapsedTime();
@@ -76,17 +74,6 @@ public class RedWarehouseAutoRR extends LoggingOpMode
 
     @Override
     public void loop() {
-        if (checking_image) {
-            auto.check_image();
-            if (!waiting) {timer.reset(); waiting = true;}
-            if (timer.seconds() > 0.3) {
-                if (auto.shipping_height < 1) auto.shipping_height = 3;
-                waiting = false;
-                checking_image = false;
-                sequence = 1;//advances to first move
-            }
-        }
-
         if (!drive.isBusy()) {
             auto.dump_trigger = true;
         } else auto.dump_trigger = false;

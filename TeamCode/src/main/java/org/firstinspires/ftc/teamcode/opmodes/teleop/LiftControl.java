@@ -27,10 +27,11 @@ public class LiftControl extends ControlModule{
 
     private int height = -1; // 0 = bottom, 1 = low, 2 = mid, 3 = high, 4 = neutral, 5 = high2 (goal tipped), 6 = really high (duck cycling)
     private final ElapsedTime timer = new ElapsedTime();
-    private int id = 0;
-    private int id2 = 0;
+    private int id_lift = 0;
+    private int id_outrigger = 0;
     private final boolean was_reset = false;
-    private boolean left_trigger_was_pressed = false;
+    private boolean outrigger_triggered = false;
+    private boolean drop_outrigger = false;
     private final double var_pit_stop_wait = Status.PITSTOP_WAIT_TIME;
     public boolean duck_cycle_flag = false;
 
@@ -68,7 +69,7 @@ public class LiftControl extends ControlModule{
 
         if (-ax_left_stick_y.get() < -0.1 || -ax_left_stick_y.get() > 0.1){
             if (lift.getLiftTargetPos() < Status.STAGES.get("neutral") + 20000) {
-                delta_extension = -ax_left_stick_y.get()*Status.NEUTRAL_SENSITIVITY;
+                delta_extension = -ax_left_stick_y.get() * Status.NEUTRAL_SENSITIVITY;
             } else {
                 delta_extension = -ax_left_stick_y.get() * Status.SENSITIVITY;
             }
@@ -79,24 +80,17 @@ public class LiftControl extends ControlModule{
         lift.extend(lift.getLiftTargetPos() + delta_extension, false);
 
         if (ax_left_trigger.get() > 0.8){
-            //lift.resetLitTarget();
-            if (!left_trigger_was_pressed){
-               id2+=1;
-            }
-            if(id2 > 1){ id2 = 0; }
-            switch (id2) {
-                case 0:
-                    lift.moveOutrigger(Status.OUTRIGGERS.get("up"));
-                    break;
-                case 1:
-                    lift.moveOutrigger(Status.OUTRIGGERS.get("down"));
-                    break;
-            }
-            left_trigger_was_pressed = true;
+            outrigger_triggered = false;
+        } else {
+            outrigger_triggered = true;
         }
-        else { left_trigger_was_pressed = false; }
 
-        switch (id) {
+        if (!outrigger_triggered){
+            drop_outrigger = true;
+            outrigger_triggered = true;
+        }
+
+        switch (id_lift) {
             case 0:
                 if (btn_dpad_down.get()){
                     height = 0;
@@ -119,20 +113,10 @@ public class LiftControl extends ControlModule{
                 }
 
                 if (timer.seconds() > Status.BUCKET_WAIT_TIME){
-                    log.i("Carrying Deposit");
-                    id += 1;
+                    id_lift += 1;
                 }
                 break;
             case 1:
-                lift.extend(Status.STAGES.get("pitstop"), true);
-                if (lift.ifReached(Status.STAGES.get("pitstop"))){
-                    log.i("Reached Pitstop");
-                    id += 1;
-                }
-
-                timer.reset();
-                break;
-            case 2:
                 switch (height){
                     case 0:
                         lift.rotate(Status.ROTATIONS.get("in"));
@@ -157,19 +141,7 @@ public class LiftControl extends ControlModule{
                         lift.moveOutrigger(Status.OUTRIGGERS.get("down"));
                         break;
                 }
-                if (height == 0) {
-                    if (timer.seconds() > Status.PITSTOP_WAIT_TIME) {
-                        id += 1;
-                        log.i("Rotated Arm");
-                    }
-                } else {
-                    if (timer.seconds() > Status.PITSTOP_WAIT_TIME_OUT) {
-                        id += 1;
-                        log.i("Rotated Arm");
-                    }
-                }
-                break;
-            case 3:
+            case 2:
                 double target_height = lift.getLiftCurrentPos();
                 switch (height){
                     case 0:
@@ -198,13 +170,12 @@ public class LiftControl extends ControlModule{
                 }
                 lift.extend(target_height, true);
                 if (lift.ifReached(target_height)){
-                    log.i("Reached Height");
-                    id += 1;
+                    id_lift += 1;
                 }
                 break;
-            case 4:
+            case 3:
                 height = -1;
-                id = 0;
+                id_lift = 0;
                 break;
         }
 
@@ -213,7 +184,7 @@ public class LiftControl extends ControlModule{
             timer_counting = true;
         }
 
-        if (timer_counting && deposit_timer.seconds() > Status.DEPOSIT_TIMER && intake.getFreightDistance() > 3) {
+        if (timer_counting && deposit_timer.seconds() > Status.DEPOSIT_TIMER) {
             height = 0;
             timer_counting = false;
         }

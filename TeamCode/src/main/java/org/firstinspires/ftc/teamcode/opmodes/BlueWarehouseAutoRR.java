@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.opmodes.auto.AutonomousTemplate;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Status;
+import org.firstinspires.ftc.teamcode.util.event.Event;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 import java.util.Vector;
@@ -24,6 +25,7 @@ import java.util.Vector;
 public class BlueWarehouseAutoRR extends LoggingOpMode
 {
     private Robot robot;
+    private EventBus ev_bus;
     private Logger log;
     private AutonomousTemplate auto;
     private final String name = "Blue Warehouse Auto RR";
@@ -32,13 +34,10 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
     private TrajectorySequence ts1;
     private TrajectorySequence ts2;
     private TrajectorySequence ts3;
-    private int sequence = 0;
+    private int sequence = 1;
     private Pose2d startPose;
     private Pose2d intakePoseOffset;
 
-    private ElapsedTime timer;
-    private boolean waiting = false;
-    private boolean checking_image = true;
     private ElapsedTime intake_timer;
     private ElapsedTime back_to_goal_timer;
     private ElapsedTime back_to_warehouse_timer;
@@ -55,6 +54,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
                 this.robot,
                 hardwareMap,
                 new ControllerMap(gamepad1, gamepad2, new EventBus()),
+                ev_bus,
                 telemetry,
                 drive
         );
@@ -62,9 +62,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
         drive.setPoseEstimate(startPose);
         log = new Logger(name);
 
-        auto.init_camera();
         auto.init_lift();
-        timer = new ElapsedTime();
         intake_timer = new ElapsedTime();
         back_to_goal_timer = new ElapsedTime();
         back_to_warehouse_timer = new ElapsedTime();
@@ -76,17 +74,6 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
 
     @Override
     public void loop() {
-        if (checking_image) {
-            auto.check_image();
-            if (!waiting) {timer.reset(); waiting = true;}
-            if (timer.seconds() > 0.3) {
-                if (auto.shipping_height < 1) auto.shipping_height = 3;
-                waiting = false;
-                checking_image = false;
-                sequence = 1;//advances to first move
-            }
-        }
-
         if (!drive.isBusy()) {
             auto.dump_trigger = true;
         } else auto.dump_trigger = false;
@@ -96,7 +83,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
                     .lineTo(new Vector2d(-14, 0))
                     .addDisplacementMarker(() -> {
                         if (auto.shipping_height < 1) {
-                            auto.height = 3;
+                            auto.raiseLift(3);
                         } else auto.height = auto.shipping_height;
                     })
                     .build();
@@ -131,7 +118,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
                 sequence = 6;
             }
         } else if (sequence == 6) {
-            auto.height = 3;
+            auto.raiseLift(3);
             if (back_to_goal_timer.seconds() > 0.6) {
                 drive.setDrivePower(new Pose2d(0, 0.2, 0));
                 sequence = 7;
@@ -165,7 +152,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
                 sequence = 11;
             }
         } else if (sequence == 11) {
-            auto.height = 3;
+            auto.raiseLift(3);
             if (back_to_goal_timer.seconds() > 0.6) {
                 drive.setDrivePower(new Pose2d(0, 0.2, 0));
                 sequence = 12;
@@ -199,7 +186,7 @@ public class BlueWarehouseAutoRR extends LoggingOpMode
                 sequence = 16;
             }
         } else if (sequence == 16) {
-            auto.height = 3;
+            auto.raiseLift(3);
             if (back_to_goal_timer.seconds() > 0.6) {
                 drive.setDrivePower(new Pose2d(0, 0.2, 0));
                 sequence = 17;

@@ -28,8 +28,6 @@ public class IntakeControl extends ControlModule {
     private double side_was = 3; // position of bucket on last loop cycle
     private boolean carrying = true;
 
-
-
     private long current_time = 0;
     private long target_time = Status.TIME_BEFORE_INTAKING;
 
@@ -114,9 +112,13 @@ public class IntakeControl extends ControlModule {
 
         if (side == 0){
             if (lift.getLiftTargetPos() == Status.STAGES.get("pitstop") || lift.getLiftTargetPos() == 0 || lift.getLiftTargetPos() > Status.STAGES.get("neutral") + 20000) {
-                intake.deposit(Status.DEPOSITS.get("carry"));
+                if (side_was == 1){
+                    intake.deposit(Status.DEPOSITS.get("front_tilt"));
+                } else if (side_was == -1){
+                    intake.deposit(Status.DEPOSITS.get("back_tilt"));
+                }
             } else {
-                intake.deposit(Status.DEPOSITS.get("tilt"));
+                intake.deposit(Status.DEPOSITS.get("neutral_tilt"));
             }
         } else if (side == 1){
             if (lift.getLiftCurrentPos() < 2000) {
