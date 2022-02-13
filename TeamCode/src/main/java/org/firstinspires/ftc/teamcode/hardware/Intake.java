@@ -47,11 +47,7 @@ public class Intake {
     }
 
     public boolean freightDetected() {
-        if (!freight_detected && getFreightDistance() < Status.FREIGHT_DETECTION){
-            freight_detected = true;
-            return true;
-        }
-        return false;
+        return getFreightDistance() < Status.FREIGHT_DETECTION;
     }
 
     public boolean autoFreightDetected() {

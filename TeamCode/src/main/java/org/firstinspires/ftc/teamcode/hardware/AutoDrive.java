@@ -12,7 +12,7 @@ public class AutoDrive {
     private final Drivetrain drivetrain;
     private final IMU imu;
     private final LineFinder lineFinder;
-    private final DistanceSensor x_dist;
+    private final DistanceSensor y_dist;
 
     private boolean drivetrain_reached;
 
@@ -54,11 +54,11 @@ public class AutoDrive {
     private double loop_end = 0.0;
     private double loop_time = 0.0;
 
-    public AutoDrive(Drivetrain drivetrain, IMU imu, LineFinder line_finder, DistanceSensor x_dist,  int direction){
+    public AutoDrive(Drivetrain drivetrain, IMU imu, LineFinder line_finder, DistanceSensor y_dist){
         this.drivetrain = drivetrain;
         this.imu = imu;
         this.lineFinder = line_finder;
-        this.x_dist = x_dist;
+        this.y_dist = y_dist;
     }
 
 
@@ -118,7 +118,7 @@ public class AutoDrive {
             field_y = direction * Status.TAPE_X_OFFSET;
         }
 
-        if (x_dist.getDistance(DistanceUnit.MM) < 22.0) {
+        if (y_dist.getDistance(DistanceUnit.MM) < 22.0) {
             field_x = 0;
         }
 

@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.IMU;
@@ -13,9 +12,6 @@ import org.firstinspires.ftc.teamcode.hardware.LineFinder;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.hardware.AutoDrive;
-import org.firstinspires.ftc.teamcode.util.Status;
-
-import java.util.List;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 public class DriveControl extends ControlModule{
@@ -55,7 +51,7 @@ public class DriveControl extends ControlModule{
         this.imu = robot.imu;
         this.lift = robot.lift;
         this.lineFinder = robot.lineFinder;
-        this.x_dist = drivetrain.x_dist;
+        this.x_dist = drivetrain.y_dist;
 
         ax_drive_left_x = controllerMap.getAxisMap("drive:left_x", "gamepad1", "left_stick_x");
         ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");
@@ -91,7 +87,6 @@ public class DriveControl extends ControlModule{
         teleMove(-ax_drive_left_y.get() * 0.45 * speed_scalar,
                                      ax_drive_left_x.get() * 0.45 * speed_scalar,
                                       ax_drive_right_x.get() * 0.45 * speed_scalar);
-        lineFinder.update(telemetry);
         telemetry.addData("Line Found: ", lineFinder.lineFound());
     }
 

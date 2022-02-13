@@ -18,17 +18,12 @@ public class LineFinder {
         this.line_finder = line_finder;
     }
 
-
-    public boolean lineFound() {
-        return (line_finder.alpha() > (alpha_init * Status.LIGHT_MULTIPLIER));
+    public void initialize(){
+        alpha_init = line_finder.alpha();
     }
 
-    public void update(Telemetry telemetry){
-        telemetry.addData("line found", lineFound());
-        telemetry.addData("init light", alpha_init);
-        telemetry.addData("light", line_finder.alpha());
-//        telemetry.addData("red", line_finder.red());
-//        telemetry.addData("green", line_finder.green());
-//        telemetry.addData("blue", line_finder.blue());
+    public boolean lineFound() {
+        double check_value = alpha_init * Status.LIGHT_MULTIPLIER;
+        return line_finder.alpha() > check_value;
     }
 }

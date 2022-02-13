@@ -5,8 +5,10 @@
           android:versionCode="44"
           android:versionName="7.1">
 
+
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
   <uses-permission android:name="android.permission.INTERNET"/>
+
 
   <application
     android:allowBackup="true"

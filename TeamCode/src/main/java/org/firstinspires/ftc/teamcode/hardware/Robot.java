@@ -14,17 +14,20 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
+import org.firstinspires.ftc.teamcode.util.localhost.WebHost;
 
 public class Robot
 {
     // Hardware Vars
     public Drivetrain drivetrain;
+    public AutoDrive navigation;
     public Intake intake;
     public Lift lift;
     public Duck duck;
     public IMU imu;
     public LineFinder lineFinder;
     public DistanceSensor y_dist;
+    public CapstoneDetector detector;
 
     public int direction;
 
@@ -78,18 +81,20 @@ public class Robot
         DigitalChannel limit_switch = hardwareMap.get(DigitalChannel.class, "lift limit");
         ColorSensor line_finder = hardwareMap.get(ColorSensor.class, "line finder");
         DistanceSensor y_dist = hardwareMap.get(DistanceSensor.class, "dist y");
+        DistanceSensor left_cap = hardwareMap.get(DistanceSensor.class, "leftDS");
+        DistanceSensor right_cap = hardwareMap.get(DistanceSensor.class, "rightDS");
 
         // Sub-Assemblies
         this.imu = new IMU(imu_sensor);
         this.lineFinder = new LineFinder(line_finder);
         this.imu.initialize(eventBus, scheduler);
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu, y_dist);
-        //this.navigation = new AutoDrive(drivetrain, imu, lineFinder, y_dist, direction);
+        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu, y_dist); // TODO Make another subassembly for Capstone Detection
+        this.navigation = new AutoDrive(drivetrain, imu, lineFinder, y_dist);
         this.intake = new Intake(intake_front, intake_back, freight_checker, bucket);
         this.lift = new Lift(lift, lift2, arm, limit_switch, outrigger);
         this.duck = new Duck(duckFront, duckback);
+        this.detector = new CapstoneDetector(left_cap, right_cap);
         this.direction = direction;
         this.y_dist = y_dist;
-
     }
 }
