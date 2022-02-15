@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.util.Status;
 public class Intake {
     private final DcMotor intake_front;
     private final DcMotor intake_back;
-    private final DistanceSensor dist;
+    public final DistanceSensor dist;
     private final Servo bucket;
 
     private boolean freight_detected = false;
@@ -48,18 +48,6 @@ public class Intake {
 
     public boolean freightDetected() {
         return getFreightDistance() < Status.FREIGHT_DETECTION;
-    }
-
-    public boolean autoFreightDetected() {
-        return (getFreightDistance() < Status.FREIGHT_DETECTION);
-    }
-
-    public void searchForFreight(){
-        freight_detected = false;
-    }
-
-    public void stopDetectingFreight(){
-        freight_detected = true;
     }
 
     public double getFreightDistance(){

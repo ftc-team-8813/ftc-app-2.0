@@ -51,7 +51,7 @@ public class DriveControl extends ControlModule{
         this.imu = robot.imu;
         this.lift = robot.lift;
         this.lineFinder = robot.lineFinder;
-        this.x_dist = drivetrain.y_dist;
+        this.x_dist = drivetrain.x_dist;
 
         ax_drive_left_x = controllerMap.getAxisMap("drive:left_x", "gamepad1", "left_stick_x");
         ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");
