@@ -6,6 +6,7 @@ public class Status {
     // Drivetrain
     public static final double TURN_CORRECTION_P = 0.01; //tele op
     public static final double MAX_VELOCITY = 0;
+    public static final double inches_per_tick = (1 / Status.TICKS_PER_ROTATION) * (96 * Math.PI / 25.4) * (1 / 15.2);
 
     //Odometry
     public static final double WHEEL_DIAMETER = 96; //mm

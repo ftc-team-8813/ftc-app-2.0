@@ -61,23 +61,20 @@ public class AutonomousTemplate {
     private final Mat detector_frame = new Mat();
     private Mat send_frame = new Mat();
 
-    private int id = 0;
-    private int lift_id = 0;
-    private int intake_id = 0;
-    private boolean lifting = false;
-    private boolean driving = false;
-    private boolean detecting_freight = false;
-
-    private int drive_trigger;
-    private double inches;
-    private double forward;
-    private double strafe;
-
     public int shipping_height = 0;
     public int x_coord = -1;
 
+    private double y_distance = 0;
+
     private ElapsedTime lift_timer;
+    public ElapsedTime lift_dumped_timer;
+    private int id = 0;
     public int height = -1;
+    public int adjusted_cycle = 0;
+
+    public boolean lift_dumped = false;
+    public boolean dump_trigger = false;
+    private boolean lift_timer_waiting = false;
 
     static
     {
@@ -99,9 +96,6 @@ public class AutonomousTemplate {
         duck = robot.duck;
         lift = robot.lift;
         intake = robot.intake;
-
-        robot.lineFinder.initialize();
-        logger.i("Line Finder Init Value: %f", robot.lineFinder.alpha_init * Status.LIGHT_MULTIPLIER);
     }
 
     public void init_server(){
@@ -132,6 +126,9 @@ public class AutonomousTemplate {
         lift.rotate(Status.ROTATIONS.get("in"));
         robot.intake.deposit(Status.DEPOSITS.get("carry"));
         lift_timer = new ElapsedTime();
+        lift_dumped_timer = new ElapsedTime();
+
+        robot.lineFinder.initialize();
     }
 
     public void init_camera(){
@@ -164,52 +161,10 @@ public class AutonomousTemplate {
         logger.i(String.format("X Coord of Block: %01d", shipping_height));
     }
 
-    public void raiseLift(int height){
-        raiseLift(height, -1, 0, 0);
-    }
-
-    public void raiseLift(int height, int drive_trigger, double inches, double strafe){
-        this.height = height;
-        this.drive_trigger = drive_trigger;
-        this.inches = inches;
-        this.strafe = strafe;
-        lifting = true;
-    }
-
-    public void moveForward(double inches, double strafe){
-        this.inches = inches;
-        this.strafe = strafe;
-        driving = true;
-    }
-
-    public void moveTillFreight(double forward, double strafe){
-        this.forward = forward;
-        this.strafe = strafe;
-    }
-
-    public void lineFind(){
-        if (name.startsWith("Blue")){
-            logger.i("Tried to Move");
-            drivetrain.move(-0.4, -0.2, 0);
-        } else {
-            logger.i("Tried to Move");
-            drivetrain.move(0.4, 0.2, 0);
-        }
-        if (robot.lineFinder.lineFound()){
-            logger.i("Line Finder Current: %d", robot.lineFinder.line_finder.alpha());
-            drivetrain.stop();
-            id += 1;
-        }
-    }
-
-    public void updateLift(){
-        if (lift_id == drive_trigger){
-            logger.i("Moving within Lift");
-            this.moveForward(inches, strafe);
-        }
-        switch (lift_id) {
+    public void liftSequence(){
+        switch (id) {
             case 0:
-                switch (this.height){
+                switch (height){
                     case 1:
                         lift.rotate(Status.ROTATIONS.get("low_out"));
                         break;
@@ -232,7 +187,7 @@ public class AutonomousTemplate {
                 }
 
                 double target_height = lift.getLiftCurrentPos();
-                switch (this.height){
+                switch (height){
                     case 0:
                         target_height = 0;
                         break;
@@ -243,7 +198,7 @@ public class AutonomousTemplate {
                         target_height = Status.STAGES.get("mid");
                         break;
                     case 3:
-                        target_height = Status.STAGES.get("high") - 100;
+                        target_height = Status.STAGES.get("high") + adjusted_cycle;
                         break;
                     case 4:
                         target_height = Status.STAGES.get("neutral");
@@ -257,7 +212,7 @@ public class AutonomousTemplate {
                 }
                 lift.extend(target_height, true);
                 if (lift.ifReached(target_height)){
-                    lift_id += 1;
+                    id += 1;
                     lift_timer.reset();
                 }
                 break;
@@ -266,12 +221,12 @@ public class AutonomousTemplate {
                 if (lift_timer.seconds() > Status.AUTO_DEPOSIT_TIME) {
                     intake.deposit(Status.DEPOSITS.get("carry"));
                     lift_timer.reset();
-                    lift_id += 1;
+                    id += 1;
                 }
                 break;
             case 2:
                 if (lift_timer.seconds() > Status.AUTO_DEPOSIT_TIME) {
-                    lift_id += 1;
+                    id += 1;
                     lift_timer.reset();
                 }
                 break;
@@ -279,99 +234,29 @@ public class AutonomousTemplate {
                 lift.rotate(Status.ROTATIONS.get("in"));
                 lift.extend(0, true);
                 if (lift.ifReached(0)) {
-                    lift_id += 1;
+                    id += 1;
                 }
                 break;
             case 4:
-                this.height = -1;
-                lifting = false;
-                lift_id = 0;
-                id += 1;
+                height = -1;
+                id = 0;
                 break;
         }
     }
 
-    public void updateDrivetrain(){
-        final double TICKS_PER_INCHES = 1 / ((1 / Status.TICKS_PER_ROTATION) * (96 * Math.PI / 25.4) * (1 / 15.2));
-        double diff_ticks = inches * TICKS_PER_INCHES - (drivetrain.front_right.getCurrentPosition() +
-                drivetrain.back_right.getCurrentPosition() +
-                drivetrain.front_left.getCurrentPosition() +
-                drivetrain.back_left.getCurrentPosition()) / 4;
-
-        double forward_power = diff_ticks * 0.0004;
-        logger.i("Diff Ticks: %f", diff_ticks);
-        drivetrain.move(forward_power, strafe, 0);
-        if (Math.abs(diff_ticks) < 200) {
-            drivetrain.stop();
-            drivetrain.resetEncoders();
-            driving = false;
-            id += 1;
-        }
+    public double distance() {
+        double average = (robot.drivetrain.back_right.getCurrentPosition() + robot.drivetrain.back_left.getCurrentPosition() + robot.drivetrain.front_left.getCurrentPosition() + robot.drivetrain.front_right.getCurrentPosition()) / 4.0;
+        return Math.abs(average * Status.inches_per_tick);
     }
 
-    public void updateFreightDetection(){
-        switch (intake_id){
-            case 0:
-                if (name.startsWith("Blue")){
-                    intake.deposit(Status.DEPOSITS.get("front"));
-                } else {
-                    intake.deposit(Status.DEPOSITS.get("back"));
-                }
-                intake_id += 1; // TODO May need timer
-                break;
-            case 1:
-                if (name.startsWith("Blue")){
-                    intake.setIntakeFront(0.7);
-                } else {
-                    intake.setIntakeBack(0.7);
-                }
-                drivetrain.move(forward, strafe, 0);
-                intake_id += 1;
-                break;
-            case 2:
-                if (intake.freightDetected()){
-                    if (name.startsWith("Blue")) {
-                        intake.deposit(Status.DEPOSITS.get("front_tilt"));
-                    } else {
-                        intake.deposit(Status.DEPOSITS.get("back_tilt"));
-                    }
-                    drivetrain.stop();
-                    lift_timer.reset();
-                    intake_id += 1;
-                }
-                break;
-            case 3:
-                // Gives time to keep block in bucket when tilting
-                if (lift_timer.seconds() > 0.5){
-                    intake_id += 1;
-                }
-                break;
-            case 4:
-                intake.deposit(Status.DEPOSITS.get("carry"));
-                detecting_freight = false;
-                intake_id = 0;
-                id += 1;
-                break;
-        }
-    }
-
-    public int update() {
-        if (lifting) {
-            updateLift();
-        }
-        if (driving){
-            updateDrivetrain();
-        }
-        if (detecting_freight){
-            updateFreightDetection();
+    public void update() {
+        if (height > -1){
+            liftSequence();
         }
 
-        ev_bus.update();
-        scheduler.loop();
         lift.updateLift();
         telemetry.update();
         lift.updateLift();
-        return id;
     }
 
     public void stop(){
