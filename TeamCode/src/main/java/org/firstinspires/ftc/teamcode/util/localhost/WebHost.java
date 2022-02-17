@@ -25,10 +25,11 @@ public class WebHost {
     }
 
     public void index(){
-        Spark.get("/", (request, response) -> {
-            response.redirect("index.html");
-            return "";
-        });
+        Spark.get("/", (req, res) -> {
+            Map<String, Object> attributes = new HashMap<>();
+            attributes.put("lift_pos", robot.lift.getLiftCurrentPos());
+            return new ModelAndView(attributes, "index.vm");
+        }, new VelocityTemplateEngine());
     }
 
     public void close(){
