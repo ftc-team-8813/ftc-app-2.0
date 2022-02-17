@@ -107,16 +107,15 @@ public class AutonomousTemplate {
         {
             throw new RuntimeException(e);
         }
-        server.registerProcessor(0x01, (cmd, payload, resp) -> { // Get frame
-            if (detector_frame == null) return;
+        server.registerProcessor(0x01, (cmd, payload, resp) -> {
+            ByteBuffer buf = ByteBuffer.allocate(500);
 
-            Bitmap bmp = Bitmap.createBitmap(send_frame.cols(), send_frame.rows(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(send_frame, bmp);
+            buf.putDouble(distance());
+            buf.putDouble(robot.lift.getLiftCurrentPos());
+            buf.putDouble(robot.lift.getPower());
 
-            ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
-            bmp.compress(Bitmap.CompressFormat.JPEG, 80, os); // probably quite slow
-            byte[] data = os.toByteArray();
-            resp.respond(ByteBuffer.wrap(data));
+            buf.flip();
+            resp.respond(buf);
         });
         server.startServer();
     }
@@ -194,6 +193,7 @@ public class AutonomousTemplate {
                 }
                 lift.extend(target_height, true);
                 if (lift.ifReached(target_height)){
+                    logger.i("Reached Lift Height");
                     id += 1;
                     lift_timer.reset();
                 }

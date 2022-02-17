@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 public class Lift {
@@ -14,6 +15,7 @@ public class Lift {
     private final Servo arm;
     private final DigitalChannel limit_switch;
     private final Servo outrigger;
+    private Logger log = new Logger("Lift");
 
     private boolean lift_reached = true;
 
@@ -80,25 +82,29 @@ public class Lift {
 
             p_term = error * Status.kP;
 
-        integral += error * timer.seconds();
-        i_term = integral * Status.kI;
+            integral += error * timer.seconds();
+            i_term = integral * Status.kI;
 
-        double derivative = (error - past_error) / timer.seconds();
-        d_term = derivative * Status.kD;
+            double derivative = (error - past_error) / timer.seconds();
+            d_term = derivative * Status.kD;
 
-        double power = p_term + i_term + d_term;
+            double power = p_term + i_term + d_term;
 
-        lift.setPower(power);
-        lift2.setPower(power);
+            lift.setPower(power);
+            lift2.setPower(power);
 
-        past_error = error;
+            past_error = error;
 
-        if (lift.getTargetPosition() == 0 && Math.signum(power) == -1 && curr_pos < 5000 && !limitPressed()) {
-            lift.setPower(-1);
-            lift2.setPower(-1);
+            if (lift.getTargetPosition() == 0 && Math.signum(power) == -1 && curr_pos < 5000 && !limitPressed()) {
+                lift.setPower(-1);
+                lift2.setPower(-1);
+            }
+            timer.reset();
+
+            if (limitPressed()){
+                log.i("Limit Switch Pressed");
+            }
         }
-        timer.reset();
-    }
 
         if (!was_reset && limitPressed()){
             resetEncoder();

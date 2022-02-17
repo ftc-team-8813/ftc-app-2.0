@@ -29,12 +29,7 @@ public class ServerControl extends ControlModule{
             ByteBuffer buf = ByteBuffer.allocate(500);
 
             buf.putDouble(robot.lift.getLiftCurrentPos());
-
             buf.putDouble(robot.lift.getPower());
-            double[] pid_terms = robot.lift.getPIDTerms();
-            buf.putDouble(pid_terms[0]); // P Term
-            buf.putDouble(pid_terms[1]); // I Term
-            buf.putDouble(pid_terms[2]); // D Term
 
             buf.flip();
             resp.respond(buf);
