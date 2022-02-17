@@ -107,16 +107,15 @@ public class AutonomousTemplate {
         {
             throw new RuntimeException(e);
         }
-        server.registerProcessor(0x01, (cmd, payload, resp) -> { // Get frame
-            if (detector_frame == null) return;
+        server.registerProcessor(0x01, (cmd, payload, resp) -> {
+            ByteBuffer buf = ByteBuffer.allocate(500);
 
-            Bitmap bmp = Bitmap.createBitmap(send_frame.cols(), send_frame.rows(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(send_frame, bmp);
+            buf.putDouble(distance());
+            buf.putDouble(robot.lift.getLiftCurrentPos());
+            buf.putDouble(robot.lift.getPower());
 
-            ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
-            bmp.compress(Bitmap.CompressFormat.JPEG, 80, os); // probably quite slow
-            byte[] data = os.toByteArray();
-            resp.respond(ByteBuffer.wrap(data));
+            buf.flip();
+            resp.respond(buf);
         });
         server.startServer();
     }
@@ -131,34 +130,16 @@ public class AutonomousTemplate {
         robot.lineFinder.initialize();
     }
 
-    public void init_camera(){
-        webcam = Webcam.forSerial(WEBCAM_SERIAL);
-        if (webcam == null) throw new IllegalArgumentException("Could not find a webcam with serial number " + WEBCAM_SERIAL);
-        frame_handler = new Webcam.SimpleFrameHandler();
-        webcam.open(ImageFormat.YUY2, 800, 448, 30, frame_handler);
-    }
-
-    public void check_image(){
-        if (shipping_height != 0){
-            return;
-        }
-
-        webcam.requestNewFrame();
-        if (!frame_handler.newFrameAvailable) {
-            //throw new IllegalArgumentException("New frame not available");
+    public void getShippingHeight(){
+        double left_distances = robot.detector.getDistances()[0];
+        double right_distances = robot.detector.getDistances()[1];
+        if (left_distances >= 50 && left_distances <= 70){
+            shipping_height = 1;
+        } else if (right_distances >= 50 && right_distances <= 70){
             shipping_height = 3;
-            return;
+        } else {
+            shipping_height = 2;
         }
-        Utils.bitmapToMat(frame_handler.currFramebuffer, detector_frame);
-        CapstoneDetector capstone_detector = new CapstoneDetector(detector_frame, logger);
-        capstone_detector.setName(name);
-        int[] capstone_data = capstone_detector.detect();
-        shipping_height = capstone_data[0];
-        x_coord = capstone_data[1];
-        send_frame = capstone_detector.getStoredFrame();
-
-        logger.i(String.format("Shipping Height: %01d", x_coord));
-        logger.i(String.format("X Coord of Block: %01d", shipping_height));
     }
 
     public void liftSequence(){
@@ -212,22 +193,23 @@ public class AutonomousTemplate {
                 }
                 lift.extend(target_height, true);
                 if (lift.ifReached(target_height)){
+                    logger.i("Reached Lift Height");
                     id += 1;
                     lift_timer.reset();
                 }
                 break;
             case 1:
                 intake.deposit(Status.DEPOSITS.get("dump"));
-                if (lift_timer.seconds() > Status.AUTO_DEPOSIT_TIME) {
-                    intake.deposit(Status.DEPOSITS.get("carry"));
+                if (lift_timer.seconds() > 0.2) {
                     lift_timer.reset();
                     id += 1;
                 }
                 break;
             case 2:
+                intake.deposit(Status.DEPOSITS.get("carry"));
                 if (lift_timer.seconds() > Status.AUTO_DEPOSIT_TIME) {
-                    id += 1;
                     lift_timer.reset();
+                    id += 1;
                 }
                 break;
             case 3:
@@ -256,7 +238,6 @@ public class AutonomousTemplate {
 
         lift.updateLift();
         telemetry.update();
-        lift.updateLift();
     }
 
     public void stop(){
