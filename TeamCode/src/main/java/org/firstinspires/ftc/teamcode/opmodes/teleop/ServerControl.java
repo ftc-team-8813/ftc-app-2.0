@@ -30,6 +30,11 @@ public class ServerControl extends ControlModule{
 
             buf.putDouble(robot.lift.getLiftCurrentPos());
             buf.putDouble(robot.lift.getPower());
+            if (robot.lift.limitPressed()){
+                buf.putDouble(1.0);
+            }else {
+                buf.putDouble(-1.0);
+            }
 
             buf.flip();
             resp.respond(buf);

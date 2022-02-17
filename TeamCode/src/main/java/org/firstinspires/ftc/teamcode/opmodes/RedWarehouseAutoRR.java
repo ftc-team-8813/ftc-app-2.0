@@ -37,6 +37,7 @@ public class RedWarehouseAutoRR extends LoggingOpMode
 
 //    private ElapsedTime loop_timer = new ElapsedTime();
     private ElapsedTime timer;
+    private ElapsedTime intake_timer;
     private ElapsedTime back_to_goal_timer;
     private ElapsedTime back_to_warehouse_timer;
 
@@ -59,6 +60,7 @@ public class RedWarehouseAutoRR extends LoggingOpMode
         auto.init_lift();
         auto.init_server();
         timer = new ElapsedTime();
+        intake_timer = new ElapsedTime();
         back_to_goal_timer = new ElapsedTime();
         back_to_warehouse_timer = new ElapsedTime();
     }
@@ -109,17 +111,19 @@ public class RedWarehouseAutoRR extends LoggingOpMode
                     robot.intake.deposit(Status.DEPOSITS.get("back"));
                     drive.setDrivePower(new Pose2d(-0.2, -0.18));
                     if (robot.intake.freightDetected() || back_to_warehouse_timer.seconds() > 2.25) {
-                        robot.drivetrain.resetEncoders();
-                        robot.intake.deposit(Status.DEPOSITS.get("carry"));
-                        drive.setDrivePower(new Pose2d(0.6, 0.46, 0));
-                        sequence = 5;
+                        robot.intake.deposit(Status.DEPOSITS.get("back_tilt"));
+                        if (back_to_warehouse_timer.seconds() > 3){
+                            robot.intake.setIntakeBack(-1);
+                            robot.intake.setIntakeFront(-1);
+                            robot.drivetrain.resetEncoders();
+                            drive.setDrivePower(new Pose2d(0.6, 0.46, 0));
+                            sequence = 5;
+                        }
                     }
                 }
                 break;
             case 5:
                 //if (intake_timer.seconds() > Status.AUTO_INTAKE_DELAY) {
-                robot.intake.setIntakeBack(-1);
-                robot.intake.setIntakeFront(-1);
                 //}
                 if (robot.lineFinder.lineFound()) {
                     log.i("Line Found");
@@ -170,10 +174,14 @@ public class RedWarehouseAutoRR extends LoggingOpMode
                     robot.intake.deposit(Status.DEPOSITS.get("back"));
                     drive.setDrivePower(new Pose2d(-0.19, -0.13));
                     if (robot.intake.freightDetected() || back_to_warehouse_timer.seconds() > 2.45) {
-                        robot.drivetrain.resetEncoders();
-                        robot.intake.deposit(Status.DEPOSITS.get("carry"));
-                        drive.setDrivePower(new Pose2d(0.7, 0.45, 0));
-                        sequence = 13;
+                        robot.intake.deposit(Status.DEPOSITS.get("back_tilt"));
+                        if (back_to_warehouse_timer.seconds() > 3.2){
+                            robot.intake.setIntakeBack(-1);
+                            robot.intake.setIntakeFront(-1);
+                            robot.drivetrain.resetEncoders();
+                            drive.setDrivePower(new Pose2d(0.6, 0.46, 0));
+                            sequence = 13;
+                        }
                     }
                 }
                 break;
@@ -230,11 +238,15 @@ public class RedWarehouseAutoRR extends LoggingOpMode
                 if (back_to_warehouse_timer.seconds() > 1.23) {
                     robot.intake.deposit(Status.DEPOSITS.get("back"));
                     drive.setDrivePower(new Pose2d(-0.25, -0.19));
-                    if (robot.intake.freightDetected() || back_to_warehouse_timer.seconds() > 2.7) {
-                        robot.drivetrain.resetEncoders();
-                        robot.intake.deposit(Status.DEPOSITS.get("carry"));
-                        drive.setDrivePower(new Pose2d(0.6, 0.45, 0));
-                        sequence = 21;
+                    if (robot.intake.freightDetected() || back_to_warehouse_timer.seconds() > 2.45) {
+                        robot.intake.deposit(Status.DEPOSITS.get("back_tilt"));
+                        if (back_to_warehouse_timer.seconds() > 3){
+                            robot.intake.setIntakeBack(-1);
+                            robot.intake.setIntakeFront(-1);
+                            robot.drivetrain.resetEncoders();
+                            drive.setDrivePower(new Pose2d(0.6, 0.46, 0));
+                            sequence = 21;
+                        }
                     }
                 }
                 break;
@@ -291,10 +303,14 @@ public class RedWarehouseAutoRR extends LoggingOpMode
                     robot.intake.deposit(Status.DEPOSITS.get("back"));
                     drive.setDrivePower(new Pose2d(-0.23, -0.13));
                     if (robot.intake.freightDetected() || back_to_warehouse_timer.seconds() > 2.8) {
-                        robot.drivetrain.resetEncoders();
-                        robot.intake.deposit(Status.DEPOSITS.get("carry"));
-                        drive.setDrivePower(new Pose2d(0.6, 0.41, 0));
-                        sequence = 29;
+                        robot.intake.deposit(Status.DEPOSITS.get("back_tilt"));
+                        if (back_to_warehouse_timer.seconds() > 3.2){
+                            robot.intake.setIntakeBack(-1);
+                            robot.intake.setIntakeFront(-1);
+                            robot.drivetrain.resetEncoders();
+                            drive.setDrivePower(new Pose2d(0.6, 0.41, 0));
+                            sequence = 29;
+                        }
                     }
                 }
                 break;
