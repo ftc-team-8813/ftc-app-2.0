@@ -84,7 +84,7 @@ public class RedWarehouseAutoRR extends LoggingOpMode
             case 1:
                 ts1 = drive.trajectorySequenceBuilder(startPose)
                         .lineTo(new Vector2d(-12, 0))
-                        .addDisplacementMarker(() -> {
+                        .addTemporalMarker(0.5, () -> {
                             if (auto.shipping_height < 1) {
                                 auto.height = 3;
                             } else auto.height = auto.shipping_height;
@@ -109,10 +109,11 @@ public class RedWarehouseAutoRR extends LoggingOpMode
             case 4:
                 if (back_to_warehouse_timer.seconds() > 1.2) {
                     robot.intake.deposit(Status.DEPOSITS.get("back"));
-                    drive.setDrivePower(new Pose2d(-0.2, -0.18));
+                    drive.setDrivePower(new Pose2d(-0.17, -0.14));
                     if (robot.intake.freightDetected() || back_to_warehouse_timer.seconds() > 2.25) {
                         robot.intake.deposit(Status.DEPOSITS.get("back_tilt"));
                         if (back_to_warehouse_timer.seconds() > 3){
+                            robot.intake.deposit(Status.DEPOSITS.get("carry"));
                             robot.intake.setIntakeBack(-1);
                             robot.intake.setIntakeFront(-1);
                             robot.drivetrain.resetEncoders();
@@ -176,6 +177,7 @@ public class RedWarehouseAutoRR extends LoggingOpMode
                     if (robot.intake.freightDetected() || back_to_warehouse_timer.seconds() > 2.45) {
                         robot.intake.deposit(Status.DEPOSITS.get("back_tilt"));
                         if (back_to_warehouse_timer.seconds() > 3.2){
+                            robot.intake.deposit(Status.DEPOSITS.get("carry"));
                             robot.intake.setIntakeBack(-1);
                             robot.intake.setIntakeFront(-1);
                             robot.drivetrain.resetEncoders();
@@ -241,6 +243,7 @@ public class RedWarehouseAutoRR extends LoggingOpMode
                     if (robot.intake.freightDetected() || back_to_warehouse_timer.seconds() > 2.45) {
                         robot.intake.deposit(Status.DEPOSITS.get("back_tilt"));
                         if (back_to_warehouse_timer.seconds() > 3){
+                            robot.intake.deposit(Status.DEPOSITS.get("carry"));
                             robot.intake.setIntakeBack(-1);
                             robot.intake.setIntakeFront(-1);
                             robot.drivetrain.resetEncoders();
@@ -305,6 +308,7 @@ public class RedWarehouseAutoRR extends LoggingOpMode
                     if (robot.intake.freightDetected() || back_to_warehouse_timer.seconds() > 2.8) {
                         robot.intake.deposit(Status.DEPOSITS.get("back_tilt"));
                         if (back_to_warehouse_timer.seconds() > 3.2){
+                            robot.intake.deposit(Status.DEPOSITS.get("carry"));
                             robot.intake.setIntakeBack(-1);
                             robot.intake.setIntakeFront(-1);
                             robot.drivetrain.resetEncoders();
