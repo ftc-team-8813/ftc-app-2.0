@@ -127,7 +127,7 @@ public class AutonomousTemplate {
 
     public void init_lift(){
         lift.extend(0, false);
-        lift.rotate(Status.ROTATIONS.get("in"));
+        lift.rotate(Status.ROTATIONS.get("auto in"));
         robot.intake.deposit(Status.DEPOSITS.get("carry"));
         robot.lift.moveOutrigger(Status.OUTRIGGERS.get("up"));
         lift_timer = new ElapsedTime();
@@ -207,7 +207,7 @@ public class AutonomousTemplate {
                 break;
             case 1:
                 intake.deposit(Status.DEPOSITS.get("dump"));
-                if (lift_timer.seconds() > 0.2) {
+                if (lift_timer.seconds() > 0.24) {
                     lift_timer.reset();
                     id += 1;
                 }
