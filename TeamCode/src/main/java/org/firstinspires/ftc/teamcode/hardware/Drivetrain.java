@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -10,13 +11,15 @@ public class Drivetrain {
     public final DcMotorEx front_right;
     public final DcMotorEx back_left;
     public final DcMotorEx back_right;
+    public final DistanceSensor dist_y;
     private final IMU imu;
 
-    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, IMU imu) {
+    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, IMU imu, DistanceSensor dist_y) {
         this.front_left = front_left;
         this.front_right = front_right;
         this.back_left = back_left;
         this.back_right = back_right;
+        this.dist_y = dist_y;
         this.imu = imu;
 
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);

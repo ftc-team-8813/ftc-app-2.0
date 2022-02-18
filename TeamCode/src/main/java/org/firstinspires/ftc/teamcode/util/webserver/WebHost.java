@@ -1,7 +1,5 @@
-package org.firstinspires.ftc.teamcode.util.localhost;
+package org.firstinspires.ftc.teamcode.util.webserver;
 
-import org.apache.velocity.app.Velocity;
-import org.apache.velocity.app.VelocityEngine;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 
 import java.util.HashMap;

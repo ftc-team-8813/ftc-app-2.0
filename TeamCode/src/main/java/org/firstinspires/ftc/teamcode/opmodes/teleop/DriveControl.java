@@ -85,12 +85,13 @@ public class DriveControl extends ControlModule{
         teleMove(-ax_drive_left_y.get() * 0.45 * speed_scalar,
                                      ax_drive_left_x.get() * 0.45 * speed_scalar,
                                       ax_drive_right_x.get() * 0.45 * speed_scalar);
+        telemetry.addData("Dist Y: ", drivetrain.dist_y.getDistance(DistanceUnit.CM));
         telemetry.addData("Line Found: ", lineFinder.lineFound());
     }
 
     public void teleMove(double forward, double strafe, double turn) {
         double tele_strafe = strafe * 0.7;
-        double wall_distance = 0; // Replace with y_dist sensor
+        double wall_distance = drivetrain.dist_y.getDistance(DistanceUnit.CM);
         heading_delta = imu.getHeading() - heading_was;
         //if (Math.abs(heading_delta) > 4) heading_delta = 0;
         if (turn != 0) heading_delta = 0;

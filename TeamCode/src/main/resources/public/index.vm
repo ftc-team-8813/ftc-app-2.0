@@ -1,6 +1,5 @@
 <!DOCTYPE HTML>
 <html>
-    <h1>{{ message }}</h1>
     <head>
         <script>
             window.onload = function () {
