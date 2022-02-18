@@ -12,7 +12,6 @@ public class AutoDrive {
     private final Drivetrain drivetrain;
     private final IMU imu;
     private final LineFinder lineFinder;
-    private final DistanceSensor y_dist;
 
     private boolean drivetrain_reached;
 
@@ -54,11 +53,10 @@ public class AutoDrive {
     private double loop_end = 0.0;
     private double loop_time = 0.0;
 
-    public AutoDrive(Drivetrain drivetrain, IMU imu, LineFinder line_finder, DistanceSensor y_dist){
+    public AutoDrive(Drivetrain drivetrain, IMU imu, LineFinder line_finder){
         this.drivetrain = drivetrain;
         this.imu = imu;
         this.lineFinder = line_finder;
-        this.y_dist = y_dist;
     }
 
 
@@ -118,9 +116,9 @@ public class AutoDrive {
             field_y = direction * Status.TAPE_X_OFFSET;
         }
 
-        if (y_dist.getDistance(DistanceUnit.MM) < 22.0) {
-            field_x = 0;
-        }
+//        if (y_dist.getDistance(DistanceUnit.MM) < 22.0) {
+//            field_x = 0;
+//        }
 
         loop_end = System.nanoTime() / 1000000000.0;
         loop_time = loop_end - loop_start;

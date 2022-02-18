@@ -113,6 +113,11 @@ public class AutonomousTemplate {
             buf.putDouble(distance());
             buf.putDouble(robot.lift.getLiftCurrentPos());
             buf.putDouble(robot.lift.getPower());
+            if (robot.lineFinder.lineFound()){
+                buf.putDouble(1.0);
+            } else {
+                buf.putDouble(-1.0);
+            }
 
             buf.flip();
             resp.respond(buf);
@@ -124,6 +129,7 @@ public class AutonomousTemplate {
         lift.extend(0, false);
         lift.rotate(Status.ROTATIONS.get("in"));
         robot.intake.deposit(Status.DEPOSITS.get("carry"));
+        robot.lift.moveOutrigger(Status.OUTRIGGERS.get("up"));
         lift_timer = new ElapsedTime();
         lift_dumped_timer = new ElapsedTime();
 
@@ -131,15 +137,16 @@ public class AutonomousTemplate {
     }
 
     public void getShippingHeight(){
-        double left_distances = robot.detector.getDistances()[0];
-        double right_distances = robot.detector.getDistances()[1];
-        if (left_distances >= 50 && left_distances <= 70){
+        double left_distance = robot.detector.getDistances()[0];
+        double right_distance = robot.detector.getDistances()[1];
+        if (right_distance >= 50 && right_distance <= 70){
+            shipping_height = 3; // Checks 3 first to put in high goal as last resort
+        } else if (left_distance >= 50 && left_distance <= 70){
             shipping_height = 1;
-        } else if (right_distances >= 50 && right_distances <= 70){
-            shipping_height = 3;
         } else {
             shipping_height = 2;
         }
+        logger.i("Shipping Height: %d", shipping_height);
     }
 
     public void liftSequence(){

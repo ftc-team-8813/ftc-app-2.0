@@ -61,6 +61,7 @@ public class LiftControl extends ControlModule{
         btn_right_bumper = controllerMap.getButtonMap("lift:deposit", "gamepad2", "right_bumper");
 
         lift.rotate(Status.ROTATIONS.get("in"));
+        robot.lift.moveOutrigger(Status.OUTRIGGERS.get("up"));
     }
 
     @Override

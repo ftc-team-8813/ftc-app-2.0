@@ -100,10 +100,6 @@ public class Lift {
                 lift2.setPower(-1);
             }
             timer.reset();
-
-            if (limitPressed()){
-                log.i("Limit Switch Pressed");
-            }
         }
 
         if (!was_reset && limitPressed()){

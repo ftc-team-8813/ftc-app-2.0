@@ -59,8 +59,8 @@ public class Status {
     public static final double AUTO_INTAKE_DELAY = 0.01;
     // Outrigger
     public static final HashMap<String, Double> OUTRIGGERS = new HashMap<String, Double>(){{
-        put("up", 1.0);
-        put("down", 0.0);
+        put("up", 0.96);
+        put("down", 0.3);
     }};
 
     // Deposit

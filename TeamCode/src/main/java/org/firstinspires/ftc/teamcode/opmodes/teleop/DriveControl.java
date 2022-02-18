@@ -31,7 +31,6 @@ public class DriveControl extends ControlModule{
     private ControllerMap.ButtonEntry btn_dpad_down;
     private AutoDrive autoDrive;
     private LineFinder lineFinder;
-    private DistanceSensor x_dist;
 
     private double heading_was;
     private double heading_delta;
@@ -51,7 +50,6 @@ public class DriveControl extends ControlModule{
         this.imu = robot.imu;
         this.lift = robot.lift;
         this.lineFinder = robot.lineFinder;
-        this.x_dist = drivetrain.x_dist;
 
         ax_drive_left_x = controllerMap.getAxisMap("drive:left_x", "gamepad1", "left_stick_x");
         ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");
@@ -92,7 +90,7 @@ public class DriveControl extends ControlModule{
 
     public void teleMove(double forward, double strafe, double turn) {
         double tele_strafe = strafe * 0.7;
-        double wall_distance = x_dist.getDistance(DistanceUnit.CM);
+        double wall_distance = 0; // Replace with y_dist sensor
         heading_delta = imu.getHeading() - heading_was;
         //if (Math.abs(heading_delta) > 4) heading_delta = 0;
         if (turn != 0) heading_delta = 0;
