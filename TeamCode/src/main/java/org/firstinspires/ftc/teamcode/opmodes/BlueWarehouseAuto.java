@@ -85,7 +85,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
             case 1:
                 ts1 = drive.trajectorySequenceBuilder(startPose)
                         .lineTo(new Vector2d(12, 0))
-                        .addTemporalMarker(0.27, () -> {
+                        .addTemporalMarker(0.255, () -> {
                             if (auto.shipping_height < 1) {
                                 auto.height = 3;
                             } else auto.height = auto.shipping_height;
@@ -199,7 +199,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 }
                 break;
             case 14:
-                if (auto.distance() < 28) {
+                if (auto.distance() < 29.5) {
                     drive.setDrivePower(new Pose2d(-.6, .25, 0));
                 } else {
                     sequence = 15;
@@ -213,7 +213,7 @@ public class BlueWarehouseAuto extends LoggingOpMode
                 }
                 break;
             case 16:
-                if (auto.distance() >= 28) {
+                if (auto.distance() >= 29.5) {
                     drive.setDrivePower(new Pose2d(0, 0.2, 0));
                     back_to_warehouse_timer.reset();
                     back_to_goal_timer.reset();

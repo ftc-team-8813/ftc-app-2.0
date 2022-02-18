@@ -44,7 +44,7 @@ public class Status {
     public static final HashMap<String, Double> ROTATIONS = new HashMap<String, Double>(){{
         put("high_out", 0.445);
         put("mid_out", 0.568);
-        put("low_out", 0.6);
+        put("low_out", 0.574);
         put("neutral_out", 0.7);
         put("high_out2", 0.46);
         put("in", 0.8155);
