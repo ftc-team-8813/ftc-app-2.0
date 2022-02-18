@@ -32,7 +32,7 @@ public class Status {
     public static final HashMap<String, Double> STAGES = new HashMap<String, Double>(){{
         put("pitstop", 10000.0);
         put("neutral", 11500.0);
-        put("low", 35150.0);
+        put("low", 35500.0);
         put("mid", 42000.0);
         put("high", 47950.0);
         put("high2", 50000.0);
@@ -44,10 +44,11 @@ public class Status {
     public static final HashMap<String, Double> ROTATIONS = new HashMap<String, Double>(){{
         put("high_out", 0.445);
         put("mid_out", 0.568);
-        put("low_out", 0.58);
+        put("low_out", 0.576);
         put("neutral_out", 0.7);
         put("high_out2", 0.46);
-        put("in", 0.813);
+        put("in", 0.8155);
+        put("auto in", .83);
     }};
     public static final double BUCKET_WAIT_TIME = 0.2;
     public static final double PITSTOP_WAIT_TIME = 0.35;
