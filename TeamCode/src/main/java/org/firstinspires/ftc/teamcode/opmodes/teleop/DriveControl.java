@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
-import org.firstinspires.ftc.teamcode.hardware.IMU;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.LineFinder;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
@@ -17,7 +16,6 @@ import org.firstinspires.ftc.teamcode.util.Status;
 public class DriveControl extends ControlModule{
     private Drivetrain drivetrain;
     private Lift lift;
-    private IMU imu;
 
 
     private double speed_scalar = 2;
@@ -47,7 +45,6 @@ public class DriveControl extends ControlModule{
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.drivetrain = robot.drivetrain;
-        this.imu = robot.imu;
         this.lift = robot.lift;
         this.lineFinder = robot.lineFinder;
 
@@ -80,7 +77,6 @@ public class DriveControl extends ControlModule{
             speed_scalar = 0.8;
         }
 
-        telemetry.addData("Heading: ", imu.getHeading());
         telemetry.addData("Heading Delta: ", heading_delta);
         teleMove(-ax_drive_left_y.get() * 0.45 * speed_scalar,
                                      ax_drive_left_x.get() * 0.45 * speed_scalar,
@@ -92,7 +88,7 @@ public class DriveControl extends ControlModule{
     public void teleMove(double forward, double strafe, double turn) {
         double tele_strafe = strafe * 0.7;
         double wall_distance = drivetrain.dist_y.getDistance(DistanceUnit.CM);
-        heading_delta = imu.getHeading() - heading_was;
+        heading_delta = 0 - heading_was; // TODO Removed imu.getHeading()
         //if (Math.abs(heading_delta) > 4) heading_delta = 0;
         if (turn != 0) heading_delta = 0;
 
@@ -101,6 +97,6 @@ public class DriveControl extends ControlModule{
         }
 
         drivetrain.move(forward, (tele_strafe), (turn * 0.6) + (heading_delta * Status.TURN_CORRECTION_P));
-        heading_was = imu.getHeading();
+        heading_was = 0; // TODO Removed imu.getHeading()
     }
 }

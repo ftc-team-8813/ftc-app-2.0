@@ -23,7 +23,6 @@ public class Robot
     public Intake intake;
     public Lift lift;
     public Duck duck;
-    public IMU imu;
     public LineFinder lineFinder;
     public CapstoneDetector detector;
 
@@ -83,11 +82,9 @@ public class Robot
         DistanceSensor dist_y = hardwareMap.get(DistanceSensor.class, "dist_y");
 
         // Sub-Assemblies
-        this.imu = new IMU(imu_sensor);
         this.lineFinder = new LineFinder(line_finder);
-        this.imu.initialize(eventBus, scheduler);
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu, dist_y);
-        this.navigation = new AutoDrive(drivetrain, imu, lineFinder);
+        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, dist_y);
+        this.navigation = new AutoDrive(drivetrain, lineFinder);
         this.intake = new Intake(intake_front, intake_back, freight_checker, bucket);
         this.lift = new Lift(lift, lift2, arm, limit_switch, outrigger);
         this.duck = new Duck(duckFront, duckback);

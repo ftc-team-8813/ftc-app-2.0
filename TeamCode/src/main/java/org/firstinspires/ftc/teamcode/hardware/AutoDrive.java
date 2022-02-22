@@ -10,7 +10,6 @@ import java.lang.Math;
 
 public class AutoDrive {
     private final Drivetrain drivetrain;
-    private final IMU imu;
     private final LineFinder lineFinder;
 
     private boolean drivetrain_reached;
@@ -53,9 +52,8 @@ public class AutoDrive {
     private double loop_end = 0.0;
     private double loop_time = 0.0;
 
-    public AutoDrive(Drivetrain drivetrain, IMU imu, LineFinder line_finder){
+    public AutoDrive(Drivetrain drivetrain, LineFinder line_finder){
         this.drivetrain = drivetrain;
-        this.imu = imu;
         this.lineFinder = line_finder;
     }
 
@@ -74,7 +72,7 @@ public class AutoDrive {
 
     public void getFieldPos() {
         loop_start = System.nanoTime() / 1000000000.0;
-        heading = Math.toRadians(imu.getHeading());
+        heading = Math.toRadians(0); // TODO Removed imu.getHeading()
 
         double error;
         double direction;// direction of robot motion

@@ -87,7 +87,7 @@ public class RedParkRed extends LoggingOpMode
                 break;
             case 1:
                 ts1 = drive.trajectorySequenceBuilder(startPose)
-                        .lineTo(new Vector2d(20, 0))
+                        .lineTo(new Vector2d(21.5, 0))
                         .addTemporalMarker(0.255, () -> {
                             if (auto.shipping_height < 1) {
                                 auto.height = 3;
