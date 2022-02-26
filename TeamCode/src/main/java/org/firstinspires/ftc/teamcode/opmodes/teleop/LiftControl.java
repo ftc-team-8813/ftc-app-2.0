@@ -186,8 +186,10 @@ public class LiftControl extends ControlModule{
         }
 
         if (timer_counting && deposit_timer.seconds() > Status.DEPOSIT_TIMER) {
-            height = 0;
-            timer_counting = false;
+            if (!intake.freightDetected()) {
+                height = 0;
+                timer_counting = false;
+            }
         }
 
         lift.updateLift();
