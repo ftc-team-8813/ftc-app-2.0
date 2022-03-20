@@ -51,7 +51,7 @@ public class Robot
     ///////////////////////////////
 
 
-    private Robot(HardwareMap hardwareMap, String initMessage, int direction)
+    public Robot(HardwareMap hardwareMap, String initMessage, int direction)
     {
         // Motors
         DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "front left");
