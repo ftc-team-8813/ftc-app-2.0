@@ -11,14 +11,12 @@ public class Drivetrain {
     public final DcMotorEx front_right;
     public final DcMotorEx back_left;
     public final DcMotorEx back_right;
-    public final DistanceSensor dist_y;
 
-    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, DistanceSensor dist_y) {
+    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right) {
         this.front_left = front_left;
         this.front_right = front_right;
         this.back_left = back_left;
         this.back_right = back_right;
-        this.dist_y = dist_y;
 
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);

@@ -52,9 +52,9 @@ public class CurrentTele extends LoggingOpMode
         // Controller Modules
 //        controlMgr.addModule(new ServerControl("Server Control"));
         controlMgr.addModule(new DriveControl("Drive Control"));
-        controlMgr.addModule(new IntakeControl("Intake Control"));
-        controlMgr.addModule(new LiftControl("FourBar Control"));
-        controlMgr.addModule(new DuckControl("Duck Control"));
+//        controlMgr.addModule(new IntakeControl("Intake Control"));
+//        controlMgr.addModule(new LiftControl("FourBar Control"));
+//        controlMgr.addModule(new DuckControl("Duck Control"));
 
         web_host.index();
         controlMgr.initModules();
@@ -76,10 +76,6 @@ public class CurrentTele extends LoggingOpMode
     public void loop()
     {
         // Loop Updaters
-        double[] sensor_distances = robot.detector.getDistances();
-        telemetry.addData("Left Capstone Dist: ", sensor_distances[0]);
-        telemetry.addData("Right Capstone Dist: ", sensor_distances[1]);
-
         controllerMap.update();
         controlMgr.loop(telemetry);
         scheduler.loop();

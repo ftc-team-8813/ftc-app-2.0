@@ -40,8 +40,6 @@ public class IntakeControl extends ControlModule {
 
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
-        this.intake = robot.intake;
-        this.lift = robot.lift;
         this.intake.stop();
 
         ax_right_trigger = controllerMap.getAxisMap("intake:intake_front", "gamepad1", "right_trigger");
@@ -79,10 +77,10 @@ public class IntakeControl extends ControlModule {
                 side = 1;
             }
             if (side == side_was && current_time >= target_time){
-                intake.setIntakeFront(direction);
+                intake.setIntake(direction);
             }
         } else {
-            intake.setIntakeFront(0);
+            intake.setIntake(0);
         }
 
         if (ax_left_trigger.get() > 0.5){
@@ -90,15 +88,15 @@ public class IntakeControl extends ControlModule {
                 side = -1;
             }
             if (side == side_was && current_time >= target_time) {
-                intake.setIntakeBack(direction);
+                intake.setIntake(direction);
             }
         } else {
-            intake.setIntakeBack(0);
+            intake.setIntake(0);
         }
 
         if (btn_left_bumper.get()){
-            intake.setIntakeFront(-1);
-            intake.setIntakeBack(-1);
+            intake.setIntake(-1);
+            intake.setIntake(-1);
         }
 
         if (lift.getLiftTargetPos() > 1000) {

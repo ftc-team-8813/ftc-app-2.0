@@ -11,39 +11,29 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.util.Status;
 
 public class Intake {
-    private final DcMotor intake_front;
-    private final DcMotor intake_back;
+    private final DcMotor intake;
     public final DistanceSensor dist;
     private final Servo bucket;
 
     private boolean freight_detected = false;
 
 
-    public Intake(DcMotor intake_front, DcMotor intake_back, DistanceSensor dist, Servo bucket){
-        this.intake_front = intake_front;
-        this.intake_back = intake_back;
+    public Intake(DcMotor intake, DistanceSensor dist, Servo bucket){
+        this.intake = intake;
         this.dist = dist;
         this.bucket = bucket;
-        this.intake_back.setDirection(DcMotorSimple.Direction.REVERSE);
     }
-
-
 
     public void deposit(double target_pos){
         bucket.setPosition(target_pos);
     }
 
-    public void setIntakeFront(double power){
-        intake_front.setPower(power);
-    }
-
-    public void setIntakeBack(double power){
-        intake_back.setPower(power);
+    public void setIntake(double power){
+        intake.setPower(power);
     }
 
     public void stop(){
-        intake_front.setPower(0);
-        intake_back.setPower(0);
+        intake.setPower(0);
     }
 
     public boolean freightDetected() {

@@ -20,7 +20,6 @@ public class DuckControl extends ControlModule{
 
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
-        this.duck = robot.duck;
         ax_right_stick_y = controllerMap.getAxisMap("duck:spin", "gamepad2", "right_stick_y");
         spinner_speed_timer = new ElapsedTime();
     }

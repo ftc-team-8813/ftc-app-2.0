@@ -28,14 +28,6 @@ public class ServerControl extends ControlModule{
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
             ByteBuffer buf = ByteBuffer.allocate(500);
 
-            buf.putDouble(robot.lift.getLiftCurrentPos());
-            buf.putDouble(robot.lift.getPower());
-            if (robot.lift.limitPressed()){
-                buf.putDouble(1.0);
-            }else {
-                buf.putDouble(-1.0);
-            }
-
             buf.flip();
             resp.respond(buf);
         });
