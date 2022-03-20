@@ -77,8 +77,8 @@ public class Robot
         DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");
         DigitalChannel limit_switch = hardwareMap.get(DigitalChannel.class, "lift limit");
         ColorSensor line_finder = hardwareMap.get(ColorSensor.class, "line finder");
-        DistanceSensor left_cap = hardwareMap.get(DistanceSensor.class, "leftDS");
-        DistanceSensor right_cap = hardwareMap.get(DistanceSensor.class, "rightDS");
+        DistanceSensor left_cap = hardwareMap.get(DistanceSensor.class, "cap left");
+        DistanceSensor right_cap = hardwareMap.get(DistanceSensor.class, "cap right");
         DistanceSensor dist_y = hardwareMap.get(DistanceSensor.class, "dist_y");
 
         // Sub-Assemblies

@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
+import org.firstinspires.ftc.teamcode.util.webserver.WebHost;
 import org.opencv.android.OpenCVLoader;
 
 @TeleOp(name = "!!THE TeleOp!!")
@@ -24,6 +25,7 @@ public class CurrentTele extends LoggingOpMode
 {
     // Robot and Controller Vars
     private Robot robot;
+    private WebHost web_host;
     private ControllerMap controllerMap;
     private ControlMgr controlMgr;
 
@@ -39,6 +41,7 @@ public class CurrentTele extends LoggingOpMode
     {
         super.init();
         robot = Robot.initialize(hardwareMap, "Main TeleOp", 0);
+        web_host = new WebHost(robot);
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
 
@@ -52,7 +55,8 @@ public class CurrentTele extends LoggingOpMode
         controlMgr.addModule(new IntakeControl("Intake Control"));
         controlMgr.addModule(new LiftControl("FourBar Control"));
         controlMgr.addModule(new DuckControl("Duck Control"));
-        
+
+        web_host.index();
         controlMgr.initModules();
     }
     
@@ -86,6 +90,7 @@ public class CurrentTele extends LoggingOpMode
     @Override
     public void stop()
     {
+        web_host.close();
         controlMgr.stop();
         super.stop();
     }
