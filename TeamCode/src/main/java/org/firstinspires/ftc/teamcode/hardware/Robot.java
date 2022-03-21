@@ -20,6 +20,7 @@ public class Robot
     // Hardware Vars
     public Drivetrain drivetrain;
     public IMU imu;
+    public Lift lift;
 
     public int direction;
 
@@ -29,9 +30,9 @@ public class Robot
     ///////////////////////////////
     // Singleton things          //
     private static Robot instance;
-    public static Robot initialize(HardwareMap hardwareMap, String initMessage, int direction)
+    public static Robot initialize(HardwareMap hardwareMap)
     {
-        instance = new Robot(hardwareMap, initMessage, direction);
+        instance = new Robot(hardwareMap);
         return instance;
     }
     public static void close()
@@ -46,24 +47,25 @@ public class Robot
     ///////////////////////////////
 
 
-    public Robot(HardwareMap hardwareMap, String initMessage, int direction)
+    public Robot(HardwareMap hardwareMap)
     {
         // Motors
         DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "front left");
         DcMotorEx front_right = hardwareMap.get(DcMotorEx.class, "front right");
         DcMotorEx back_left = hardwareMap.get(DcMotorEx.class, "back left");
         DcMotorEx back_right = hardwareMap.get(DcMotorEx.class, "back right");
-        DcMotor lift = hardwareMap.get(DcMotor.class, "lift1");
+        DcMotor lift1 = hardwareMap.get(DcMotor.class, "lift1");
         DcMotor lift2 = hardwareMap.get(DcMotor.class, "lift2");
         DcMotor pivot = hardwareMap.get(DcMotor.class, "pivot");
-        DcMotor intake_front = hardwareMap.get(DcMotor.class, "intake");
+
+        // Servos
 
         // Sensors
-        BNO055IMU bno055IMU = hardwareMap.get(BNO055IMU.class, "imu 1");
+        BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
+        DigitalChannel lift_limit = hardwareMap.get(DigitalChannel.class, "lift limit");
 
         // Sub-Assemblies
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
-        this.imu = new IMU(bno055IMU);
-        imu.initialize(eventBus, scheduler);
+        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
+        this.lift = new Lift(lift1, lift2, pivot, lift_limit);
     }
 }

@@ -23,8 +23,8 @@ public class PivotMotorTest extends LoggingOpMode {
     @Override
     public void loop() {
         pivot.setPower(gamepad1.left_stick_x * 0.3);
-        lift1.setPower(gamepad1.left_stick_y * 0.6);
-        lift2.setPower(gamepad1.right_stick_y * 0.6);
+        lift1.setPower(gamepad1.left_stick_y * 0.9);
+        lift2.setPower(gamepad1.right_stick_y * 0.9);
 
 
         if (gamepad1.a){

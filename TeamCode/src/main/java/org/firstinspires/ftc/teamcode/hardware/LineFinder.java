@@ -23,7 +23,7 @@ public class LineFinder {
     }
 
     public boolean lineFound() {
-        double check_value = alpha_init * Status.LIGHT_MULTIPLIER;
+        double check_value = alpha_init * 1;
         return line_finder.alpha() > check_value;
     }
 }
