@@ -35,13 +35,13 @@ public class Lift {
             lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             lift2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         } else {
-            lift1.setPower(-0.4);
-            lift2.setPower(-0.4);
+            lift1.setPower(-0.3);
+            lift2.setPower(-0.3);
         }
     }
 
     public void raise(double target_ticks, boolean tracking){
-        if (0 < target_ticks && target_ticks < 30000){
+        if (0 < target_ticks && target_ticks < Status.MAX_HEIGHT){
             lift_target = target_ticks;
             lifting = tracking;
         }
@@ -55,7 +55,7 @@ public class Lift {
      * @param target_theta 0 degrees is vertical, left is negative, right is positive
      */
     public void rotate(double target_theta, boolean tracking){
-        if (-90 < target_theta && target_theta < 90){
+        if (-Status.TURN_LIMIT < target_theta && target_theta < Status.TURN_LIMIT){
             pivot_target = target_theta;
             pivoting = tracking;
         }
@@ -101,8 +101,8 @@ public class Lift {
         return -lift1.getCurrentPosition();
     }
 
-    public int getPivotPosition(){
-        return pivoter.getCurrentPosition();
+    public double getPivotPosition(){
+        return pivoter.getCurrentPosition() * Status.DEGREES_PER_TICK;
     }
 
     public boolean liftAtBottom(){
