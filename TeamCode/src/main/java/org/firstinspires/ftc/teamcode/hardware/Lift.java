@@ -34,6 +34,9 @@ public class Lift {
             lift2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             lift2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            pivoter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            pivoter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         } else {
             lift1.setPower(-0.3);
             lift2.setPower(-0.3);
@@ -88,12 +91,12 @@ public class Lift {
     public void update(){
         // Lift
         double lift_error = lift_target - getLiftPosition();
-        lift1.setPower(lift_error * Status.KP);
-        lift2.setPower(lift_error * Status.KP);
+        lift1.setPower(lift_error * Status.LIFT_KP);
+        lift2.setPower(lift_error * Status.LIFT_KP);
 
         // Pivot
         double pivot_error = pivot_target - getPivotPosition();
-        pivoter.setPower(pivot_error * Status.KP);
+        pivoter.setPower(pivot_error * Status.PIVOT_KP);
     }
 
     public int getLiftPosition(){
@@ -102,7 +105,7 @@ public class Lift {
     }
 
     public double getPivotPosition(){
-        return pivoter.getCurrentPosition() * Status.DEGREES_PER_TICK;
+        return -pivoter.getCurrentPosition() * Status.DEGREES_PER_TICK;
     }
 
     public boolean liftAtBottom(){

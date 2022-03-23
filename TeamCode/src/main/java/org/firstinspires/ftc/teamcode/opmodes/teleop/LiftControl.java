@@ -11,9 +11,10 @@ public class LiftControl extends ControlModule {
 
     ControllerMap.AxisEntry left_stick_x;
     ControllerMap.AxisEntry right_stick_y;
+    ControllerMap.ButtonEntry a;
     ControllerMap.ButtonEntry dpad_down;
 
-    private int id;
+    private int id = -1;
     private double preset_rotate;
     private double preset_extend;
 
@@ -27,6 +28,7 @@ public class LiftControl extends ControlModule {
 
         left_stick_x = controllerMap.getAxisMap("lift:rotate", "gamepad2", "left_stick_x");
         right_stick_y = controllerMap.getAxisMap("lift:raise", "gamepad2", "right_stick_y");
+        a = controllerMap.getButtonMap("lift:low", "gamepad2", "a");
         dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");
     }
 
@@ -39,11 +41,11 @@ public class LiftControl extends ControlModule {
     @Override
     public void update(Telemetry telemetry) {
         lift.raise(lift.lift_target + (right_stick_y.get() * 250));
-        lift.rotate(lift.pivot_target + (left_stick_x.get() * 100));
+        lift.rotate(lift.pivot_target + (left_stick_x.get() * 2));
 
-        if (dpad_down.get()){
+        if (a.get()){
             preset_rotate = 20;
-            preset_extend = 20000;
+            preset_extend = 40000;
             id = 0;
         }
 

@@ -1,16 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.util.Range;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
-import org.firstinspires.ftc.teamcode.hardware.IMU;
-import org.firstinspires.ftc.teamcode.hardware.Lift;
-import org.firstinspires.ftc.teamcode.hardware.LineFinder;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Status;
@@ -22,6 +13,7 @@ public class DriveControl extends ControlModule{
     private ControllerMap.AxisEntry ax_drive_left_y;
     private ControllerMap.AxisEntry ax_drive_right_x;
 
+    private double past_heading;
 
     public DriveControl(String name) {
         super(name);
@@ -41,6 +33,9 @@ public class DriveControl extends ControlModule{
     @Override
     public void update(Telemetry telemetry) {
         telemove();
+
+        telemetry.addData("Heading: ", drivetrain.getHeading());
+        telemetry.addData("Angular Velocity: ", drivetrain.getAngularVelocity());
     }
 
     /**
@@ -48,20 +43,11 @@ public class DriveControl extends ControlModule{
      * Faster side will be opposite the direction of rotation
      */
     public void telemove(){
-        double rotation_rate = drivetrain.getIMU().getAngularVelocity().xRotationRate;
-        rotation_rate = 1;
-        if (rotation_rate < 0){
-            drivetrain.move(-ax_drive_left_y.get(),
-                            ax_drive_left_x.get(),
-                            ax_drive_right_x.get(),
-                            1,
-                            rotation_rate * Status.HEADING_CORRECTION_SCALAR);
-        } else {
-            drivetrain.move(-ax_drive_left_y.get(),
-                            ax_drive_left_x.get(),
-                            ax_drive_right_x.get(),
-                           rotation_rate * Status.HEADING_CORRECTION_SCALAR,
-                           1);
-        }
+        double curr_heading = drivetrain.getHeading();
+        double heading_error = curr_heading - past_heading;
+        drivetrain.move(-ax_drive_left_y.get(),
+                        ax_drive_left_x.get(),
+                        ax_drive_right_x.get() + (heading_error * Status.HEADING_CORRECTION_SCALAR));
+        past_heading = curr_heading;
     }
 }

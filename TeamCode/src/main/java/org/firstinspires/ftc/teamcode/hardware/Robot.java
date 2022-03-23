@@ -61,7 +61,8 @@ public class Robot
         DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
 
         // Servos
-        Servo deposit = hardwareMap.get(Servo.class, "deposit");
+        Servo claw = hardwareMap.get(Servo.class, "claw");
+        Servo kickstand = hardwareMap.get(Servo.class, "kickstand");
 
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
@@ -71,6 +72,6 @@ public class Robot
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
         this.lift = new Lift(lift1, lift2, pivot, lift_limit);
-        this.intake = new Intake(intake, freight_checker, deposit);
+        this.intake = new Intake(intake, freight_checker, claw);
     }
 }
