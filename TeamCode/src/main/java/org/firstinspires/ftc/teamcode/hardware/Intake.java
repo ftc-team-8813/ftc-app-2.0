@@ -10,17 +10,17 @@ import org.firstinspires.ftc.teamcode.util.Status;
 public class Intake {
     private final DcMotor intake;
     public final DistanceSensor freight_checker;
-    private final Servo deposit;
+    private final Servo claw;
 
 
-    public Intake(DcMotor intake, DistanceSensor freight_checker, Servo deposit){
+    public Intake(DcMotor intake, DistanceSensor freight_checker, Servo claw){
         this.intake = intake;
         this.freight_checker = freight_checker;
-        this.deposit = deposit;
+        this.claw = claw;
     }
 
     public void deposit(double target_pos){
-        deposit.setPosition(target_pos);
+        claw.setPosition(target_pos);
     }
 
     public void setPower(double power){

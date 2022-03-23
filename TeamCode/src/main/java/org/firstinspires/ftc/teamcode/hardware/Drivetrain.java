@@ -6,8 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
-
 public class Drivetrain {
     private final DcMotorEx front_left;
     private final DcMotorEx front_right;
@@ -24,8 +22,8 @@ public class Drivetrain {
         this.imu = imu;
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
         imu.initialize(parameters);
 
@@ -50,11 +48,11 @@ public class Drivetrain {
 
     }
 
-    public void move(double forward, double strafe, double turn, double left_correction, double right_correction) {
-        front_left.setPower((forward + strafe + turn) * left_correction);
-        front_right.setPower((forward - strafe - turn) * right_correction);
-        back_left.setPower((forward - strafe + turn) * left_correction);
-        back_right.setPower((forward + strafe - turn) * right_correction);
+    public void move(double forward, double strafe, double turn) {
+        front_left.setPower((forward + strafe + turn));
+        front_right.setPower((forward - strafe - turn));
+        back_left.setPower((forward - strafe + turn));
+        back_right.setPower((forward + strafe - turn));
     }
 
     public void stop() {
@@ -64,7 +62,11 @@ public class Drivetrain {
         back_right.setPower(0);
     }
 
-    public BNO055IMU getIMU(){
-        return imu;
+    public double getHeading(){
+        return imu.getAngularOrientation().firstAngle;
+    }
+
+    public double getAngularVelocity(){
+        return imu.getAngularVelocity().xRotationRate;
     }
 }
