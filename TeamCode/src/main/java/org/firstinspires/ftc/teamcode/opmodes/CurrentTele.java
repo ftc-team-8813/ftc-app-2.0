@@ -23,7 +23,6 @@ public class CurrentTele extends LoggingOpMode
 {
     // Robot and Controller Vars
     private Robot robot;
-    private WebHost web_host;
     private ControllerMap controllerMap;
     private ControlMgr controlMgr;
 
@@ -39,7 +38,6 @@ public class CurrentTele extends LoggingOpMode
     {
         super.init();
         robot = Robot.initialize(hardwareMap);
-        web_host = new WebHost(robot);
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
 
@@ -53,7 +51,6 @@ public class CurrentTele extends LoggingOpMode
         controlMgr.addModule(new LiftControl("Lift Control"));
         controlMgr.addModule(new IntakeControl("Intake Control"));
 
-        web_host.index();
         controlMgr.initModules();
     }
     
@@ -83,7 +80,6 @@ public class CurrentTele extends LoggingOpMode
     @Override
     public void stop()
     {
-        web_host.close();
         controlMgr.stop();
         super.stop();
     }

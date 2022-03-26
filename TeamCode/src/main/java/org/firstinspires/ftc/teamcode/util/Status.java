@@ -4,7 +4,8 @@ import java.util.HashMap;
 
 public class Status {
     // Drivetrain
-    public static final double HEADING_CORRECTION_SCALAR = 0.01;
+    public static final double HEADING_CORRECTION_kP = 0.02;
+    public static final double HEADING_CORRECTION_kI = 0.02;
 
     //Odometry
 
@@ -16,11 +17,11 @@ public class Status {
 
     // Lift
     public static final double MAX_HEIGHT = 100000;
-    public static final double PITSTOP = 15000;
-    public static double LIFT_KP = 0.0003;
+    public static final double PITSTOP = 30000;
+    public static double LIFT_KP = 0.0002;
 
     // Pivot
     public static final double TURN_LIMIT = 90;
     public static final double DEGREES_PER_TICK = 0.0248;
-    public static double PIVOT_KP = 0.04;
+    public static double PIVOT_KP = 0.06;
 }

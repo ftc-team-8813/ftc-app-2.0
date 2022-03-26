@@ -4,10 +4,16 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
 
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
+
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 
 public class Storage
 {
@@ -80,6 +86,20 @@ public class Storage
         catch (IOException e) { e.printStackTrace(); }
         scanFile(f.getPath());
         return f;
+    }
+
+    /**
+     * Only works with non-nested json
+     */
+    public static double getJsonValue(String key){
+        File config = Storage.getFile("config.json");
+        try {
+            Gson gson = new Gson();
+            JsonReader reader = new JsonReader(new FileReader(config));
+            HashMap<String, Double> map = gson.fromJson(reader, HashMap.class);
+            return map.get(key);
+        } catch (FileNotFoundException e) {e.printStackTrace();}
+        return -1;
     }
     
     public static File getFile(String path)

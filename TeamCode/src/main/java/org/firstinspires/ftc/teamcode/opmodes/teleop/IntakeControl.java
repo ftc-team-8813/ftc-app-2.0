@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
-import org.firstinspires.ftc.teamcode.util.Status;
+import org.firstinspires.ftc.teamcode.util.Storage;
 
 public class IntakeControl extends ControlModule{
     private Intake intake;
@@ -17,6 +17,9 @@ public class IntakeControl extends ControlModule{
     private ControllerMap.AxisEntry left_trigger;
     private ControllerMap.AxisEntry right_trigger;
 
+    private double HOLD_TIME;
+    private double CLOSE_CLAW_FREIGHT;
+    private double OPEN_CLAW;
     private boolean holding_freight;
 
     public IntakeControl(String name) {
@@ -31,12 +34,15 @@ public class IntakeControl extends ControlModule{
 
         left_trigger = controllerMap.getAxisMap("intake:outtake", "gamepad1", "left_trigger");
         right_trigger = controllerMap.getAxisMap("intake:intake", "gamepad1", "right_trigger");
+
+        HOLD_TIME = Storage.getJsonValue("hold_time");
+        CLOSE_CLAW_FREIGHT = Storage.getJsonValue("close_claw_freight");
+        OPEN_CLAW = Storage.getJsonValue("open_claw");
     }
 
     @Override
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry);
-        intake.setPower(1);
     }
 
     @Override
@@ -47,9 +53,11 @@ public class IntakeControl extends ControlModule{
             holding_freight = true;
         }
 
-        if (timer.seconds() > Status.HOLD_TIME && holding_freight){
-            intake.deposit(Status.CLOSE_DEPOSIT);
+        if (timer.seconds() > HOLD_TIME && holding_freight){
+            intake.deposit(CLOSE_CLAW_FREIGHT);
             holding_freight = false;
+        } else {
+            intake.deposit(OPEN_CLAW);
         }
 
         if (!intake.freightDetected() && (lift.getLiftPosition() < 100)){
