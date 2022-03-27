@@ -20,6 +20,7 @@ public class LiftControl extends ControlModule {
     private int id = -1;
     private double preset_rotate;
     private double preset_extend;
+    private boolean manual;
 
     public LiftControl(String name) {
         super(name);
@@ -45,19 +46,23 @@ public class LiftControl extends ControlModule {
 
     @Override
     public void update(Telemetry telemetry) {
-        lift.raise(lift.lift_target + (-right_stick_y.get() * 1000));
-        lift.rotate(lift.pivot_target + (left_stick_x.get() * 1.5));
+        if (manual) {
+            lift.raise(lift.lift_target + (-right_stick_y.get() * 1000));
+            if (lift.getLiftPosition() >= PITSTOP + 5000) {
+                lift.rotate(lift.pivot_target + (left_stick_x.get() * 1.5));
+            }
+        }
 
         if (a.get()){
             preset_rotate = 20;
             preset_extend = 70000;
             id = 0;
-        }
-
-        if (dpad_down.get()){
+            manual = false;
+        }else if (dpad_down.get()){
             preset_rotate = 0;
             preset_extend = 0;
             id = 0;
+            manual = false;
         }
 
         switch (id){
@@ -75,10 +80,13 @@ public class LiftControl extends ControlModule {
                 break;
             case 3:
                 id = -1;
+                manual = true;
                 break;
         }
 
-        log.i("Id: %d", id);
+//        log.i("Id: %d", id);
+        telemetry.addData("Lifting: ", lift.lifting);
+        telemetry.addData("Pivoting: ", lift.pivoting);
         telemetry.addData("Lift Current: ", lift.getLiftPosition());
         telemetry.addData("Lift Target: ", lift.lift_target);
         telemetry.addData("Pivot Current: ", lift.getPivotPosition());
