@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.hardware.Duck;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
-public class EndgameControl extends ControlModule {
+public class CapperControl extends ControlModule {
     ControllerMap.AxisEntry left_trigger;
     ControllerMap.AxisEntry right_trigger;
 
@@ -21,7 +21,7 @@ public class EndgameControl extends ControlModule {
 
     private boolean endgame = false;
 
-    public EndgameControl(String name) {
+    public CapperControl(String name) {
         super(name);
     }
 

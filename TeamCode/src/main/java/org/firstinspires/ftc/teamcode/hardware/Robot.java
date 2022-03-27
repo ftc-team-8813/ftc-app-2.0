@@ -70,7 +70,6 @@ public class Robot
         CRServo right_intake = hardwareMap.get(CRServo.class, "intake right");
         CRServoImplEx duck_front = hardwareMap.get(CRServoImplEx.class, "duck front");
         CRServoImplEx duck_back = hardwareMap.get(CRServoImplEx.class, "duck back");
-
         CRServoImplEx tape = hardwareMap.get(CRServoImplEx.class, "tape");
         ServoImplEx tape_tilt = hardwareMap.get(ServoImplEx.class, "tape tilt");
         ServoImplEx tape_swivel = hardwareMap.get(ServoImplEx.class, "tape swivel");

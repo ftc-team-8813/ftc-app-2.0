@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.hardware.LineFinder;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.CapperControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DuckControl;
@@ -52,6 +53,7 @@ public class CurrentTele extends LoggingOpMode
         controlMgr.addModule(new LiftControl("Lift Control"));
         controlMgr.addModule(new IntakeControl("Intake Control"));
         controlMgr.addModule(new DuckControl("Duck Control"));
+        controlMgr.addModule(new CapperControl("Capper Control"));
 
         controlMgr.initModules();
     }
