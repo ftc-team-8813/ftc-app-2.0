@@ -14,12 +14,17 @@ import org.firstinspires.ftc.teamcode.opmodes.teleop.ServerControl;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
+import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.Storage;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.util.webserver.WebHost;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.opencv.android.OpenCVLoader;
 
-@TeleOp(name = "!!THE TeleOp!!")
+import java.io.File;
+
+@TeleOp(name = "PIDTuner")
 public class PIDTuner extends LoggingOpMode
 {
     // Robot and Controller Vars
@@ -61,7 +66,14 @@ public class PIDTuner extends LoggingOpMode
     @Override
     public void start()
     {
-        Storage.getFile("pid_values.json");
+        File pid_values = Storage.getFile("pid_values.json");
+        try {
+            JSONObject reader = new JSONObject(pid_values.toString());
+            Status.LIFT_KP = (double) reader.get("lift_kp");
+            Status.PIVOT_KP = (double) reader.get("pivot_kp");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         Persistent.clear();
     }
 

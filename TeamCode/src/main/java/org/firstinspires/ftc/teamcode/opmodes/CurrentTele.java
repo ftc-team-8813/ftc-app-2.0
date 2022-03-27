@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.DuckControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ServerControl;
@@ -23,7 +24,6 @@ public class CurrentTele extends LoggingOpMode
 {
     // Robot and Controller Vars
     private Robot robot;
-    private WebHost web_host;
     private ControllerMap controllerMap;
     private ControlMgr controlMgr;
 
@@ -39,7 +39,6 @@ public class CurrentTele extends LoggingOpMode
     {
         super.init();
         robot = Robot.initialize(hardwareMap);
-        web_host = new WebHost(robot);
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
 
@@ -52,8 +51,8 @@ public class CurrentTele extends LoggingOpMode
         controlMgr.addModule(new DriveControl("Drive Control"));
         controlMgr.addModule(new LiftControl("Lift Control"));
         controlMgr.addModule(new IntakeControl("Intake Control"));
+        controlMgr.addModule(new DuckControl("Duck Control"));
 
-        web_host.index();
         controlMgr.initModules();
     }
     
@@ -83,7 +82,6 @@ public class CurrentTele extends LoggingOpMode
     @Override
     public void stop()
     {
-        web_host.close();
         controlMgr.stop();
         super.stop();
     }

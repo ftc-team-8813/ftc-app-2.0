@@ -69,4 +69,8 @@ public class Drivetrain {
     public double getAngularVelocity(){
         return imu.getAngularVelocity().xRotationRate;
     }
+
+    public void closeIMU(){
+        imu.close();
+    }
 }

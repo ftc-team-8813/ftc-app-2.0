@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
-import org.firstinspires.ftc.teamcode.util.Status;
+import org.firstinspires.ftc.teamcode.util.Storage;
 
 public class Lift {
 
@@ -10,10 +10,19 @@ public class Lift {
     private DcMotor lift2;
     private DcMotor pivoter;
     public DigitalChannel lift_limit;
+
     public double lift_target;
     public double pivot_target;
     private boolean lifting;
     private boolean pivoting;
+    private boolean can_reset;
+
+    private double LIFT_KP;
+    private double PIVOT_KP;
+    private double MAX_HEIGHT;
+    private double TURN_LIMIT;
+    private double DEGREES_PER_TICK;
+    private double PITSTOP;
 
     // Raising makes encoder values more negative
     public Lift(DcMotor lift1, DcMotor lift2, DcMotor pivoter, DigitalChannel lift_limit){
@@ -23,6 +32,13 @@ public class Lift {
         this.lift_limit = lift_limit;
         lift_target = 0;
         pivot_target = 0;
+
+        LIFT_KP = Storage.getJsonValue("lift_kp");
+        PIVOT_KP = Storage.getJsonValue("pivot_kp");
+        MAX_HEIGHT = Storage.getJsonValue("max_height");
+        TURN_LIMIT = Storage.getJsonValue("turn_limit");
+        DEGREES_PER_TICK = Storage.getJsonValue("degrees_per_tick");
+        PITSTOP = Storage.getJsonValue("pitstop");
     }
 
     public void resetLift(){
@@ -37,6 +53,8 @@ public class Lift {
 
             pivoter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             pivoter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            can_reset = false;
         } else {
             lift1.setPower(-0.3);
             lift2.setPower(-0.3);
@@ -44,7 +62,7 @@ public class Lift {
     }
 
     public void raise(double target_ticks, boolean tracking){
-        if (0 < target_ticks && target_ticks < Status.MAX_HEIGHT){
+        if (0 < target_ticks && target_ticks < MAX_HEIGHT){
             lift_target = target_ticks;
             lifting = tracking;
         }
@@ -58,7 +76,7 @@ public class Lift {
      * @param target_theta 0 degrees is vertical, left is negative, right is positive
      */
     public void rotate(double target_theta, boolean tracking){
-        if (-Status.TURN_LIMIT < target_theta && target_theta < Status.TURN_LIMIT){
+        if (-TURN_LIMIT < target_theta && target_theta < TURN_LIMIT && getLiftPosition() > PITSTOP){
             pivot_target = target_theta;
             pivoting = tracking;
         }
@@ -69,8 +87,8 @@ public class Lift {
     }
 
     public boolean liftReached(){
-        double min = lift_target - 100;
-        double max = lift_target + 100;
+        double min = lift_target - 750;
+        double max = lift_target + 750;
         if (min < getLiftPosition() && getLiftPosition() < max && lifting){
             lifting = false;
             return true;
@@ -79,8 +97,8 @@ public class Lift {
     }
 
     public boolean pivotReached(){
-        double min = pivot_target - 10;
-        double max = pivot_target + 10;
+        double min = pivot_target - 1;
+        double max = pivot_target + 1;
         if (min < getPivotPosition() && getPivotPosition() < max && pivoting){
             pivoting = false;
             return true;
@@ -89,14 +107,22 @@ public class Lift {
     }
 
     public void update(){
+        if (liftAtBottom() && can_reset){
+            lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            can_reset = false;
+        } else if (!liftAtBottom()){
+            can_reset = true;
+        }
+
         // Lift
         double lift_error = lift_target - getLiftPosition();
-        lift1.setPower(lift_error * Status.LIFT_KP);
-        lift2.setPower(lift_error * Status.LIFT_KP);
+        lift1.setPower(lift_error * LIFT_KP);
+        lift2.setPower(lift_error * LIFT_KP);
 
         // Pivot
         double pivot_error = pivot_target - getPivotPosition();
-        pivoter.setPower(pivot_error * Status.PIVOT_KP);
+        pivoter.setPower(pivot_error * PIVOT_KP);
     }
 
     public int getLiftPosition(){
@@ -105,7 +131,7 @@ public class Lift {
     }
 
     public double getPivotPosition(){
-        return -pivoter.getCurrentPosition() * Status.DEGREES_PER_TICK;
+        return -pivoter.getCurrentPosition() * DEGREES_PER_TICK;
     }
 
     public boolean liftAtBottom(){

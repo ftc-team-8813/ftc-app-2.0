@@ -17,6 +17,6 @@ public class Duck {
 
     public void spin(double power){
         frontServo.setPower(power);
-        backServo.setPower(power);
+        backServo.setPower(-power);
     }
 }

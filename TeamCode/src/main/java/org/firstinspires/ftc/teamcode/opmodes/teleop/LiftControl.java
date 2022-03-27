@@ -4,16 +4,19 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
-import org.firstinspires.ftc.teamcode.util.Status;
+import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Storage;
 
 public class LiftControl extends ControlModule {
     private Lift lift;
+    private Logger log = new Logger("Lift Control");
 
     ControllerMap.AxisEntry left_stick_x;
     ControllerMap.AxisEntry right_stick_y;
     ControllerMap.ButtonEntry a;
     ControllerMap.ButtonEntry dpad_down;
 
+    private double PITSTOP;
     private int id = -1;
     private double preset_rotate;
     private double preset_extend;
@@ -30,6 +33,8 @@ public class LiftControl extends ControlModule {
         right_stick_y = controllerMap.getAxisMap("lift:raise", "gamepad2", "right_stick_y");
         a = controllerMap.getButtonMap("lift:low", "gamepad2", "a");
         dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");
+
+        PITSTOP = Storage.getJsonValue("pitstop");
     }
 
     @Override
@@ -40,18 +45,24 @@ public class LiftControl extends ControlModule {
 
     @Override
     public void update(Telemetry telemetry) {
-        lift.raise(lift.lift_target + (right_stick_y.get() * 250));
-        lift.rotate(lift.pivot_target + (left_stick_x.get() * 2));
+        lift.raise(lift.lift_target + (-right_stick_y.get() * 1000));
+        lift.rotate(lift.pivot_target + (left_stick_x.get() * 1.5));
 
         if (a.get()){
             preset_rotate = 20;
-            preset_extend = 40000;
+            preset_extend = 70000;
             id = 0;
         }
 
-        switch (id){
+        if (dpad_down.get()){
+            preset_rotate = 0;
+            preset_extend = 0;
+            id = 0;
+        }
+
+        switch (id) {
             case 0:
-                lift.raise(Status.PITSTOP, true);
+                lift.raise(PITSTOP, true);
                 if (lift.liftReached()) id += 1;
                 break;
             case 1:
@@ -67,6 +78,7 @@ public class LiftControl extends ControlModule {
                 break;
         }
 
+        log.i("Id: %d", id);
         telemetry.addData("Lift Current: ", lift.getLiftPosition());
         telemetry.addData("Lift Target: ", lift.lift_target);
         telemetry.addData("Pivot Current: ", lift.getPivotPosition());

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -22,6 +23,7 @@ public class Robot
     public IMU imu;
     public Lift lift;
     public Intake intake;
+    public Duck duck;
 
     public int direction;
 
@@ -63,6 +65,10 @@ public class Robot
         // Servos
         Servo claw = hardwareMap.get(Servo.class, "claw");
         Servo kickstand = hardwareMap.get(Servo.class, "kickstand");
+        CRServoImplEx frontServo = hardwareMap.get(CRServoImplEx.class,"duck front");
+        CRServoImplEx backServo = hardwareMap.get(CRServoImplEx.class,"duck back");
+        CRServo left_intake = hardwareMap.get(CRServo.class, "intake left");
+        CRServo right_intake = hardwareMap.get(CRServo.class, "intake right");
 
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
@@ -72,6 +78,7 @@ public class Robot
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
         this.lift = new Lift(lift1, lift2, pivot, lift_limit);
-        this.intake = new Intake(intake, freight_checker, claw);
+        this.intake = new Intake(intake, freight_checker, claw, left_intake, right_intake);
+        this.duck = new Duck(frontServo,backServo);
     }
 }
