@@ -60,7 +60,7 @@ public class LiftControl extends ControlModule {
             id = 0;
         }
 
-        switch (id){
+        switch (id) {
             case 0:
                 lift.raise(PITSTOP, true);
                 if (lift.liftReached()) id += 1;
