@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.EndgameControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ServerControl;
@@ -50,6 +51,7 @@ public class CurrentTele extends LoggingOpMode
         controlMgr.addModule(new DriveControl("Drive Control"));
         controlMgr.addModule(new LiftControl("Lift Control"));
         controlMgr.addModule(new IntakeControl("Intake Control"));
+        controlMgr.addModule(new EndgameControl("Endgame Control"));
 
         controlMgr.initModules();
     }

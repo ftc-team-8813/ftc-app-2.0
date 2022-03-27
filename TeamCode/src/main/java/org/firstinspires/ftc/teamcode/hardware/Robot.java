@@ -23,6 +23,8 @@ public class Robot
     public IMU imu;
     public Lift lift;
     public Intake intake;
+    public Duck duck;
+    public Capper capper;
 
     public int direction;
 
@@ -66,6 +68,14 @@ public class Robot
         Servo kickstand = hardwareMap.get(Servo.class, "kickstand");
         CRServo left_intake = hardwareMap.get(CRServo.class, "intake left");
         CRServo right_intake = hardwareMap.get(CRServo.class, "intake right");
+        
+        // Swapping Servos
+        CRServoImplEx duck_front = hardwareMap.get(CRServoImplEx.class, "duck front");
+        CRServoImplEx duck_back = hardwareMap.get(CRServoImplEx.class, "duck back");
+        
+        CRServoImplEx tape = hardwareMap.get(CRServoImplEx.class, "tape");
+        ServoImplEx tape_tilt = hardwareMap.get(ServoImplEx.class, "tape tilt");
+        ServoImplEx tape_swivel = hardwareMap.get(ServoImplEx.class, "tape swivel");
 
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
@@ -76,5 +86,7 @@ public class Robot
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
         this.lift = new Lift(lift1, lift2, pivot, lift_limit);
         this.intake = new Intake(intake, freight_checker, claw, left_intake, right_intake);
+        this.duck = new Duck(duck_front, duck_back);
+        this.capper = new Capper(tape, tape_tilt, tape_swivel);
     }
 }
