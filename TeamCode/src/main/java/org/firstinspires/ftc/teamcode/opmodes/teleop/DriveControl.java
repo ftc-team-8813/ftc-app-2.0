@@ -16,11 +16,13 @@ public class DriveControl extends ControlModule{
     private ControllerMap.AxisEntry ax_drive_left_x;
     private ControllerMap.AxisEntry ax_drive_left_y;
     private ControllerMap.AxisEntry ax_drive_right_x;
+    private ControllerMap.ButtonEntry right_bumper;
 
     private double HEADING_CORRECTION_kP;
     private double HEADING_CORRECTION_kI;
     private double target_heading = 0;
     private double past_heading = 0;
+    private boolean endgame = false;
 
     public DriveControl(String name) {
         super(name);
@@ -35,6 +37,8 @@ public class DriveControl extends ControlModule{
         ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");
         ax_drive_right_x = controllerMap.getAxisMap("drive:right_x", "gamepad1", "right_stick_x");
 
+        right_bumper = controllerMap.getButtonMap("endgame", "gamepad1", "right_bumper");
+
         HEADING_CORRECTION_kP = Storage.getJsonValue("heading_correction_kp");
         HEADING_CORRECTION_kI = Storage.getJsonValue("heading_correction_ki");
     }
@@ -42,7 +46,14 @@ public class DriveControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        telemove();
+        if (right_bumper.edge() == -1) {
+            drivetrain.stop();
+            endgame = !endgame;
+        }
+
+        if (!endgame) {
+            telemove();
+        }
 
         telemetry.addData("Target Heading: ", target_heading);
         telemetry.addData("Heading: ", drivetrain.getHeading());
