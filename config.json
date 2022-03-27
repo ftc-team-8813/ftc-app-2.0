@@ -1,12 +1,12 @@
 {
-  "heading_correction_kp": 0,
+  "heading_correction_kp": 0.0001,
   "heading_correction_ki": 0.001,
 
   "freight_detection_threshold": 2.5,
   "hold_time": 0.5,
-  "close_claw_freight": 0,
-  "close_claw_duck": 0,
-  "open_claw": 0,
+  "close_claw_freight": 0.164,
+  "close_claw_duck": 0.03,
+  "open_claw": 0.549,
 
   "max_height": 100000,
   "pitstop": 45000,
