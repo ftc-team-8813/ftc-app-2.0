@@ -3,13 +3,11 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.CRServoImplEx;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
@@ -25,6 +23,7 @@ public class Robot
     public Intake intake;
     public Duck duck;
     public Capper capper;
+    public SensorCapstoneDetector capDetector;
 
     public int direction;
 
@@ -78,8 +77,11 @@ public class Robot
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
         DigitalChannel lift_limit = hardwareMap.get(DigitalChannel.class, "lift limit");
         DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");
+        DistanceSensor cap_left = hardwareMap.get(DistanceSensor.class, "cap left");
+        DistanceSensor cap_right = hardwareMap.get(DistanceSensor.class, "cap right");
 
         // Sub-Assemblies
+        this.capDetector = new SensorCapstoneDetector(cap_left, cap_right);
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
         this.lift = new Lift(lift1, lift2, pivot, lift_limit);
         this.intake = new Intake(intake, freight_checker, claw, left_intake, right_intake);
