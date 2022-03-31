@@ -22,7 +22,7 @@ android {
             path "CMakeLists.txt"
         }
     }
-    ndkVersion '24.0.8215888'
+    ndkVersion '21.4.7075529'
     androidResources {
         noCompress 'tflite'
     }

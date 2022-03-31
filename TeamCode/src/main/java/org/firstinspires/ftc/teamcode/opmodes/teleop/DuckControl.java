@@ -8,10 +8,11 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
 public class DuckControl extends ControlModule{
     private Duck duck;
-    private ControllerMap.AxisEntry ax_right_stick_y;
+    ControllerMap.AxisEntry left_trigger;
+    ControllerMap.AxisEntry right_trigger;
     private ElapsedTime spinner_speed_timer;
     private double spinner_speed = 0.0;
-    private boolean inc_spinner_speed = false;
+    private double time_till_max_speed = 1.2;
     private boolean stop_duck_spin = false;
 
     public DuckControl(String name){
@@ -21,43 +22,35 @@ public class DuckControl extends ControlModule{
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.duck = robot.duck;
-        ax_right_stick_y = controllerMap.getAxisMap("duck:spin", "gamepad2", "right_stick_y");
+        left_trigger = controllerMap.getAxisMap("duck:spinleft", "gamepad2", "left_trigger");
+        right_trigger = controllerMap.getAxisMap("duck:spinright", "gamepad2", "right_trigger");
         spinner_speed_timer = new ElapsedTime();
     }
 
     @Override
     public void update(Telemetry telemetry) {
-        if (ax_right_stick_y.get() > 0.14) {
+        if (right_trigger.get() > 0.05) {
 
-            inc_spinner_speed = spinner_speed_timer.seconds() >= 1.2;
-            stop_duck_spin = spinner_speed_timer.seconds() >= 2;
-            if (stop_duck_spin) {
+            if (spinner_speed_timer.seconds() >= 2) {
                 spinner_speed = 0.0;
             }
-            if (!inc_spinner_speed && !stop_duck_spin) {
-                spinner_speed = 0.2;
-            }
-            if (inc_spinner_speed && !stop_duck_spin) {
-                spinner_speed = 1.0;
+            else{
+                spinner_speed = spinner_speed_timer.seconds() / time_till_max_speed;
             }
 
         }
-        if (ax_right_stick_y.get() < -0.14) {
+        if (left_trigger.get() > 0.05) {
 
-            inc_spinner_speed = spinner_speed_timer.seconds() >= 1.2;
-            stop_duck_spin = spinner_speed_timer.seconds() >= 2;
-            if (stop_duck_spin) {
+            if (spinner_speed_timer.seconds() >= 2) {
                 spinner_speed = 0.0;
             }
-            if (!inc_spinner_speed && !stop_duck_spin) {
-                spinner_speed = -0.2;
+            else {
+                spinner_speed = -spinner_speed_timer.seconds() / time_till_max_speed;
             }
-            if (inc_spinner_speed && !stop_duck_spin) {
-                spinner_speed = -1.0;
-            }
+
         }
 
-        if (ax_right_stick_y.get() <= 0.14 && ax_right_stick_y.get() >= -0.14) {
+        if (left_trigger.get() <= 0.05 && right_trigger.get() <= 0.05) {
             spinner_speed_timer.reset();
             spinner_speed = 0.0;
 

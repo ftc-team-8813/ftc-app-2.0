@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
+import org.firstinspires.ftc.teamcode.hardware.Duck;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
@@ -16,6 +17,7 @@ public class Auto extends LoggingOpMode{
     private Drivetrain drivetrain;
     private Lift lift;
     private Intake intake;
+    private Duck duck;
     private int id = 0;
 
     private double forward;
@@ -26,6 +28,9 @@ public class Auto extends LoggingOpMode{
 
     private double raise_pos;
     private double rotate_pos;
+    private double spinner_speed = 0.0;
+    private boolean stop_duck_spin = false;
+
     @Override
     public void loop() {
         switch(id) {
@@ -47,6 +52,7 @@ public class Auto extends LoggingOpMode{
                 if (timer.seconds() >= 0.7) {
                     id += 1;
                     intake.stop();
+                    timer.reset();
                 }
                 break;
 //            case 3:
@@ -62,7 +68,15 @@ public class Auto extends LoggingOpMode{
 //                }
 //                break;
             case 3:
-
+                stop_duck_spin = timer.seconds() >= 2;
+                if (stop_duck_spin) {
+                    spinner_speed = 0.0;
+                    id += 1;
+                }
+                else{
+                    spinner_speed = timer.seconds() / 1.2;
+                }
+                duck.spin(spinner_speed);
                 break;
 
         }

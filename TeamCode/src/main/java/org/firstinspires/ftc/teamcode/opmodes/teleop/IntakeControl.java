@@ -63,7 +63,7 @@ public class IntakeControl extends ControlModule{
         if (!intake.freightDetected() && (lift.getLiftPosition() < 100)){
             intake.setPower(right_trigger.get() - left_trigger.get());
         }
-        else{
+        else {
             intake.setPower(-left_trigger.get());
         }
     }

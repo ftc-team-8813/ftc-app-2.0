@@ -40,7 +40,7 @@ public class DriveControl extends ControlModule{
         right_bumper = controllerMap.getButtonMap("endgame", "gamepad1", "right_bumper");
 
         HEADING_CORRECTION_kP = Storage.getJsonValue("heading_correction_kp");
-        HEADING_CORRECTION_kI = Storage.getJsonValue("heading_correction_ki");
+        HEADING_CORRECTION_kI = Storage.getJsonValue("heading_correction_target_based");
     }
 
 
