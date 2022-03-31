@@ -25,6 +25,7 @@ public class Drivetrain {
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        parameters.gyroRange = BNO055IMU.GyroRange.DPS2000;
         imu.initialize(parameters);
 
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);

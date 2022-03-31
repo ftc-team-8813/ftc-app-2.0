@@ -20,7 +20,7 @@ public class LiftControl extends ControlModule {
     private int id = -1;
     private double preset_rotate;
     private double preset_extend;
-    private boolean manual;
+    private boolean manual = true;
 
     public LiftControl(String name) {
         super(name);

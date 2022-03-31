@@ -29,7 +29,7 @@ public class Capper {
     }
 
     public void init() {
-        tape_tilt.setPosition(1);
+        tape_tilt.setPosition(0.7);
         tape_swivel.setPosition(0.5);
     }
 

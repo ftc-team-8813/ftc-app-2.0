@@ -14,13 +14,17 @@ public class Lift {
     private Logger log = new Logger("Lift");
 
     public double lift_target;
+    private double lift_summed_error;
     public double pivot_target;
+    private double pivot_summed_error;
     public boolean lifting;
     public boolean pivoting;
     private boolean can_reset;
 
     private double LIFT_KP;
+    private double LIFT_KI;
     private double PIVOT_KP;
+    private double PIVOT_KI;
     private double MAX_HEIGHT;
     private double TURN_LIMIT;
     private double DEGREES_PER_TICK;
@@ -36,7 +40,9 @@ public class Lift {
         pivot_target = 0.01;
 
         LIFT_KP = Storage.getJsonValue("lift_kp");
+        LIFT_KI = Storage.getJsonValue("lift_ki");
         PIVOT_KP = Storage.getJsonValue("pivot_kp");
+        PIVOT_KI = Storage.getJsonValue("pivot_ki");
         MAX_HEIGHT = Storage.getJsonValue("max_height");
         TURN_LIMIT = Storage.getJsonValue("turn_limit");
         DEGREES_PER_TICK = Storage.getJsonValue("degrees_per_tick");
@@ -106,8 +112,8 @@ public class Lift {
     }
 
     public boolean pivotReached() {
-        double min = pivot_target - 1.3;
-        double max = pivot_target + 1.3;
+        double min = pivot_target - 1;
+        double max = pivot_target + 1;
         if (min <= getPivotPosition() && getPivotPosition() <= max && pivoting){
             pivoting = false;
             return true;
@@ -126,12 +132,22 @@ public class Lift {
 
         // Lift
         double lift_error = lift_target - getLiftPosition();
-        lift1.setPower(lift_error * LIFT_KP);
-        lift2.setPower(lift_error * LIFT_KP);
+        lift_summed_error += lift_error;
+
+        double lift_proportional = lift_error * LIFT_KP;
+        double lift_integral = lift_summed_error * LIFT_KI;
+
+        lift1.setPower(lift_proportional);
+        lift2.setPower(lift_integral);
 
         // Pivot
         double pivot_error = pivot_target - getPivotPosition();
-        pivoter.setPower(pivot_error * PIVOT_KP);
+        pivot_summed_error += pivot_error;
+
+        double pivot_proportional = pivot_error * PIVOT_KP;
+        double pivot_integral = pivot_summed_error * PIVOT_KI;
+
+        pivoter.setPower((pivot_proportional + pivot_integral) * 0.5);
     }
 
     public int getLiftPosition() {

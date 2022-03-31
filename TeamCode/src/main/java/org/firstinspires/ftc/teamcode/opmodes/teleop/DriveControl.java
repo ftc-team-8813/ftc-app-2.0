@@ -1,13 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
-import com.qualcomm.robotcore.util.Range;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
-import org.firstinspires.ftc.teamcode.util.Status;
 import org.firstinspires.ftc.teamcode.util.Storage;
 
 public class DriveControl extends ControlModule{
@@ -19,10 +15,12 @@ public class DriveControl extends ControlModule{
     private ControllerMap.ButtonEntry right_bumper;
 
     private double HEADING_CORRECTION_kP;
-    private double HEADING_CORRECTION_kI;
-    private double target_heading = 0;
+    private double HEADING_CORRECTION_TARGET_BASED;
     private double past_heading = 0;
+    private double summed_heading_error;
     private boolean endgame = false;
+
+    private double target_heading = 0;
 
     public DriveControl(String name) {
         super(name);
@@ -40,7 +38,7 @@ public class DriveControl extends ControlModule{
         right_bumper = controllerMap.getButtonMap("endgame", "gamepad1", "right_bumper");
 
         HEADING_CORRECTION_kP = Storage.getJsonValue("heading_correction_kp");
-        HEADING_CORRECTION_kI = Storage.getJsonValue("heading_correction_ki");
+        HEADING_CORRECTION_TARGET_BASED = Storage.getJsonValue("heading_correction_target_based");
     }
 
 
@@ -52,10 +50,10 @@ public class DriveControl extends ControlModule{
         }
 
         if (!endgame) {
-            telemove();
+            hold_target_heading();
         }
 
-        telemetry.addData("Target Heading: ", target_heading);
+        telemetry.addData("Heading Correction kP: ", HEADING_CORRECTION_kP);
         telemetry.addData("Heading: ", drivetrain.getHeading());
         telemetry.addData("Angular Velocity: ", drivetrain.getAngularVelocity());
     }
@@ -67,13 +65,29 @@ public class DriveControl extends ControlModule{
     public void telemove(){
         double curr_heading = drivetrain.getHeading();
         double heading_error = curr_heading - past_heading;
-        if (Math.abs(ax_drive_right_x.get()) > 0.1) heading_error = 0;
+        summed_heading_error += heading_error;
+        if (Math.abs(ax_drive_right_x.get()) > 0.05) heading_error = 0;
 
         drivetrain.move(-ax_drive_left_y.get(),
                         ax_drive_left_x.get(),
                         ax_drive_right_x.get() + (heading_error * HEADING_CORRECTION_kP));
 
         past_heading = curr_heading;
+    }
+
+    public void hold_target_heading(){
+        double curr_heading = target_heading;
+        double turn_power;
+        if (Math.abs(ax_drive_right_x.get()) > 0.05){
+            target_heading = curr_heading;
+            turn_power = ax_drive_right_x.get();
+        } else {
+            double error = target_heading - curr_heading;
+            turn_power = error * HEADING_CORRECTION_TARGET_BASED;
+        }
+        drivetrain.move(-ax_drive_left_y.get(),
+                        ax_drive_left_x.get(),
+                        turn_power);
     }
 
     @Override

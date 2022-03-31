@@ -1,6 +1,6 @@
 {
-  "heading_correction_kp": 0.0001,
-  "heading_correction_ki": 0.001,
+  "heading_correction_kp": 0.033,
+  "heading_correction_target_based": -10,
 
   "freight_detection_threshold": 2.5,
   "hold_time": 0.5,
@@ -9,10 +9,12 @@
   "open_claw": 0.549,
 
   "max_height": 100000,
-  "pitstop": 45000,
+  "pitstop": 35000,
   "lift_kp": 0.0002,
+  "lift_ki": 0.0001,
 
   "turn_limit": 90,
   "degrees_per_tick": 0.0248,
-  "pivot_kp": 0.05
+  "pivot_kp": 0.05,
+  "pivot_ki": 0.01
 }

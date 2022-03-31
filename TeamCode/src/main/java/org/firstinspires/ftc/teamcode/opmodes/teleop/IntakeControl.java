@@ -16,6 +16,7 @@ public class IntakeControl extends ControlModule{
 
     private ControllerMap.AxisEntry left_trigger;
     private ControllerMap.AxisEntry right_trigger;
+    private ControllerMap.ButtonEntry right_bumper;
 
     private double HOLD_TIME;
     private double CLOSE_CLAW_FREIGHT;
@@ -34,6 +35,7 @@ public class IntakeControl extends ControlModule{
 
         left_trigger = controllerMap.getAxisMap("intake:outtake", "gamepad1", "left_trigger");
         right_trigger = controllerMap.getAxisMap("intake:intake", "gamepad1", "right_trigger");
+        right_bumper = controllerMap.getButtonMap("intake:deposit", "gamepad2", "right_bumper");
 
         HOLD_TIME = Storage.getJsonValue("hold_time");
         CLOSE_CLAW_FREIGHT = Storage.getJsonValue("close_claw_freight");
@@ -47,24 +49,18 @@ public class IntakeControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-
-        if (intake.freightDetected() && intake.getPower() > 0.1){ // TODO Make sure positive power is intaking
-            timer.reset();
-            holding_freight = true;
-        }
-
-        if (timer.seconds() > HOLD_TIME && holding_freight){
+        // Starts timer for moving claw
+        if (lift.getLiftPosition() < 10000 && intake.freightDetected()) {
             intake.deposit(CLOSE_CLAW_FREIGHT);
-            holding_freight = false;
-        } else {
+        } else if ((lift.getLiftPosition() >= 10000 && right_bumper.get()) || intake.getPower() > 0.1){
             intake.deposit(OPEN_CLAW);
         }
 
-        if (!intake.freightDetected() && (lift.getLiftPosition() < 100)){
+        // Controls whether driver can intake or outtake
+        if (intake.freightDetected()){
+            intake.setPower(-right_trigger.get() * 0.35);
+        } else {
             intake.setPower(right_trigger.get() - left_trigger.get());
-        }
-        else{
-            intake.setPower(-left_trigger.get());
         }
     }
 }
