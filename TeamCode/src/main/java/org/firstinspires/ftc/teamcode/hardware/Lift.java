@@ -13,12 +13,12 @@ public class Lift {
     public DigitalChannel lift_limit;
     private Logger log = new Logger("Lift");
 
-    public double lift_target;
+    private double lift_target;
     private double lift_summed_error;
-    public double pivot_target;
+    private double pivot_target;
     private double pivot_summed_error;
-    public boolean lifting;
-    public boolean pivoting;
+    private boolean lifting;
+    private boolean pivoting;
     private boolean can_reset;
 
     private double LIFT_KP;
@@ -64,8 +64,8 @@ public class Lift {
 
             can_reset = false;
         } else {
-            lift1.setPower(-0.3);
-            lift2.setPower(-0.3);
+            lift1.setPower(-0.4);
+            lift2.setPower(-0.4);
         }
     }
 
@@ -97,13 +97,6 @@ public class Lift {
     public boolean liftReached() {
         double min = lift_target - 1000;
         double max = lift_target + 1000;
-        log.i("Lift Position: %d", getLiftPosition());
-        log.i("Target Position: %f", lift_target);
-        if (lifting){
-            log.i("%d", 1);
-        } else {
-            log.i("%d", 0);
-        }
         if (min <= getLiftPosition() && getLiftPosition() <= max && lifting) {
             lifting = false;
             return true;
@@ -137,8 +130,8 @@ public class Lift {
         double lift_proportional = lift_error * LIFT_KP;
         double lift_integral = lift_summed_error * LIFT_KI;
 
-        lift1.setPower(lift_proportional);
-        lift2.setPower(lift_integral);
+        lift1.setPower(lift_proportional + lift_integral);
+        lift2.setPower(lift_proportional + lift_integral);
 
         // Pivot
         double pivot_error = pivot_target - getPivotPosition();
@@ -157,6 +150,14 @@ public class Lift {
 
     public double getPivotPosition() {
         return -pivoter.getCurrentPosition() * DEGREES_PER_TICK;
+    }
+
+    public double getLiftTarget(){
+        return lift_target;
+    }
+
+    public double getPivotTarget(){
+        return pivot_target;
     }
 
     public boolean liftAtBottom() {

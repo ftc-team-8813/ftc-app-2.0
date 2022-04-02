@@ -15,7 +15,8 @@ public class DriveControl extends ControlModule{
     private ControllerMap.ButtonEntry right_bumper;
 
     private double HEADING_CORRECTION_kP;
-    private double HEADING_CORRECTION_TARGET_BASED;
+    private double HEADING_CORRECTION_kI;
+    private double SENSITIVITY;
     private double past_heading = 0;
     private double summed_heading_error;
     private boolean endgame = false;
@@ -38,7 +39,8 @@ public class DriveControl extends ControlModule{
         right_bumper = controllerMap.getButtonMap("endgame", "gamepad1", "right_bumper");
 
         HEADING_CORRECTION_kP = Storage.getJsonValue("heading_correction_kp");
-        HEADING_CORRECTION_TARGET_BASED = Storage.getJsonValue("heading_correction_target_based");
+        HEADING_CORRECTION_kI = Storage.getJsonValue("heading_correction_ki");
+        SENSITIVITY = Storage.getJsonValue("sensitivity");
     }
 
 
@@ -56,12 +58,9 @@ public class DriveControl extends ControlModule{
         telemetry.addData("Heading Correction kP: ", HEADING_CORRECTION_kP);
         telemetry.addData("Heading: ", drivetrain.getHeading());
         telemetry.addData("Angular Velocity: ", drivetrain.getAngularVelocity());
+        telemetry.addData("Current Distance: ", drivetrain.getDistance());
     }
 
-    /**
-     * Decreases the power of the faster side
-     * Faster side will be opposite the direction of rotation
-     */
     public void telemove(){
         double curr_heading = drivetrain.getHeading();
         double heading_error = curr_heading - past_heading;
@@ -76,15 +75,13 @@ public class DriveControl extends ControlModule{
     }
 
     public void hold_target_heading(){
-        double curr_heading = target_heading;
-        double turn_power;
-        if (Math.abs(ax_drive_right_x.get()) > 0.05){
-            target_heading = curr_heading;
-            turn_power = ax_drive_right_x.get();
-        } else {
-            double error = target_heading - curr_heading;
-            turn_power = error * HEADING_CORRECTION_TARGET_BASED;
-        }
+        double curr_heading = drivetrain.getHeading();
+        target_heading += -ax_drive_right_x.get() * SENSITIVITY;
+
+        double error = target_heading - curr_heading;
+        summed_heading_error += error;
+        double turn_power = -error * HEADING_CORRECTION_kP + summed_heading_error * HEADING_CORRECTION_kI;
+
         drivetrain.move(-ax_drive_left_y.get(),
                         ax_drive_left_x.get(),
                         turn_power);

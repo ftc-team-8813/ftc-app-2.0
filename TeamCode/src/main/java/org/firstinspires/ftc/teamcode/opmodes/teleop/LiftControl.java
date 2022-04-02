@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Storage;
+import org.slf4j.ILoggerFactory;
 
 public class LiftControl extends ControlModule {
     private Lift lift;
@@ -46,10 +47,14 @@ public class LiftControl extends ControlModule {
 
     @Override
     public void update(Telemetry telemetry) {
+        if (lift.liftReached() || lift.pivotReached()) {
+            id += 1;
+        }
+
         if (manual) {
-            lift.raise(lift.lift_target + (-right_stick_y.get() * 1000));
+            lift.raise(lift.getLiftTarget() + (-right_stick_y.get() * 1000));
             if (lift.getLiftPosition() >= PITSTOP + 5000) {
-                lift.rotate(lift.pivot_target + (left_stick_x.get() * 1.5));
+                lift.rotate(lift.getPivotTarget() + (left_stick_x.get() * 1.5));
             }
         }
 
@@ -68,15 +73,12 @@ public class LiftControl extends ControlModule {
         switch (id) {
             case 0:
                 lift.raise(PITSTOP, true);
-                if (lift.liftReached()) id += 1;
                 break;
             case 1:
                 lift.rotate(preset_rotate, true);
-                if (lift.pivotReached()) id += 1;
                 break;
             case 2:
                 lift.raise(preset_extend, true);
-                if (lift.liftReached()) id += 1;
                 break;
             case 3:
                 id = -1;
@@ -84,14 +86,13 @@ public class LiftControl extends ControlModule {
                 break;
         }
 
-//        log.i("Id: %d", id);
-        telemetry.addData("Lifting: ", lift.lifting);
-        telemetry.addData("Pivoting: ", lift.pivoting);
         telemetry.addData("Lift Current: ", lift.getLiftPosition());
-        telemetry.addData("Lift Target: ", lift.lift_target);
+        telemetry.addData("Lift Target: ", lift.getLiftTarget());
         telemetry.addData("Pivot Current: ", lift.getPivotPosition());
-        telemetry.addData("Pivot Target: ", lift.pivot_target);
+        telemetry.addData("Pivot Target: ", lift.getPivotTarget());
         telemetry.addData("Lift Limit Pressed: ", lift.liftAtBottom());
+
+
         lift.update();
     }
 }
