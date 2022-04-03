@@ -49,18 +49,14 @@ public class IntakeControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        // Starts timer for moving claw
-        if (lift.getLiftPosition() < 10000 && intake.freightDetected()) {
-            intake.deposit(CLOSE_CLAW_FREIGHT);
-        } else if ((lift.getLiftPosition() >= 10000 && right_bumper.get()) || intake.getPower() > 0.1){
-            intake.deposit(OPEN_CLAW);
-        }
+        intake.setPower(right_trigger.get() - left_trigger.get());
 
-        // Controls whether driver can intake or outtake
-        if (intake.freightDetected()){
+        // Starts timer for moving claw
+        if (right_bumper.get()){
+            intake.deposit(OPEN_CLAW);
+        } else if (intake.freightDetected()){
             intake.setPower(-right_trigger.get() * 0.35);
-        } else {
-            intake.setPower(right_trigger.get() - left_trigger.get());
+            intake.deposit(CLOSE_CLAW_FREIGHT);
         }
     }
 }

@@ -137,10 +137,16 @@ public class Lift {
         return pivot_target;
     }
 
-    public boolean inRange(double current, double target, double threshold){
-        double min = target - threshold;
-        double max = target + threshold;
-        return min < current && current < max;
+    public boolean liftReached(){
+        double min = getLiftTarget() - 1000;
+        double max = getLiftTarget() + 1000;
+        return min < getLiftPosition() && getLiftPosition() < max;
+    }
+
+    public boolean pivotReached(){
+        double min = getPivotTarget() - 1000;
+        double max = getPivotTarget() + 1000;
+        return min < getPivotPosition() && getPivotPosition() < max;
     }
 
     public boolean liftAtBottom() {

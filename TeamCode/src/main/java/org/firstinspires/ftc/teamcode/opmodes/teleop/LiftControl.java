@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
@@ -10,6 +11,7 @@ import org.slf4j.ILoggerFactory;
 
 public class LiftControl extends ControlModule {
     private Lift lift;
+    private Intake intake;
     private Logger log = new Logger("Lift Control");
 
     ControllerMap.AxisEntry left_stick_x;
@@ -30,6 +32,7 @@ public class LiftControl extends ControlModule {
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.lift = robot.lift;
+        this.intake = robot.intake;
 
         left_stick_x = controllerMap.getAxisMap("lift:rotate", "gamepad2", "left_stick_x");
         right_stick_y = controllerMap.getAxisMap("lift:raise", "gamepad2", "right_stick_y");
@@ -55,16 +58,15 @@ public class LiftControl extends ControlModule {
         } else {
             switch (id) {
                 case 0:
-                    lift.raise(PITSTOP);
-                    if (lift.inRange(lift.getLiftPosition(), lift.getLiftTarget(), 1000)) id += 1;
+                    if (lift.liftReached()) id += 1;
                     break;
                 case 1:
                     lift.rotate(preset_rotate);
-                    if (lift.inRange(lift.getPivotPosition(), lift.getPivotTarget(), 1)) id += 1;
+                    if (lift.pivotReached()) id += 1;
                     break;
                 case 2:
                     lift.raise(preset_extend);
-                    if (lift.inRange(lift.getLiftPosition(), lift.getLiftTarget(), 1000)) id += 1;
+                    if (lift.liftReached()) id += 1;
                     break;
                 case 3:
                     id = -1;
@@ -83,6 +85,10 @@ public class LiftControl extends ControlModule {
             preset_extend = 250;
             id = 0;
             manual = false;
+        }
+
+        if (intake.freightDetected()){
+            lift.raise(PITSTOP);
         }
 
         log.i("Id: %d", id);
