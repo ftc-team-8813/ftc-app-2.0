@@ -73,62 +73,18 @@ public class Lift {
         }
     }
 
-    public void raise(double target_ticks, boolean tracking) {
+    public void raise(double target_ticks) {
         if (0 <= target_ticks && target_ticks <= MAX_HEIGHT) {
             lift_target = target_ticks;
         }
     }
 
-    public void raise(double target_ticks) {
-        raise(target_ticks, false);
-    }
-
     /**
      * @param target_theta 0 degrees is vertical, left is negative, right is positive
      */
-    public void rotate(double target_theta, boolean tracking) {
-        if (-TURN_LIMIT <= target_theta && target_theta <= TURN_LIMIT && getLiftPosition() > PITSTOP) {
-            pivot_target = target_theta;
-        }
-    }
-
     public void rotate(double target_theta) {
-        rotate(target_theta, false);
-    }
-
-    public boolean liftReached() {
-        double min = lift_target - 1000;
-        double max = lift_target + 1000;
-
-        lift_reached = min <= getLiftPosition() && getLiftPosition() <= max;
-        was_lift_reached = lift_reached && !was_lift_reached;
-
-        if (lift_reached && was_lift_reached){
-            lift_count += 1;
-        }
-        if (lift_count > 3){
-            lift_count = 0;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean pivotReached() {
-        double min = pivot_target - 1;
-        double max = pivot_target + 1;
-
-        pivot_reached = min <= getPivotTarget() && getPivotPosition() <= max;
-        was_pivot_reached = pivot_reached && !was_pivot_reached;
-
-        if (pivot_reached && was_pivot_reached){
-            pivot_count += 1;
-        }
-        if (pivot_count > 3){
-            pivot_count = 0;
-            return true;
-        } else {
-            return false;
+        if (-TURN_LIMIT <= target_theta && target_theta <= TURN_LIMIT && getLiftPosition() > PITSTOP - 1000) {
+            pivot_target = target_theta;
         }
     }
 
@@ -149,7 +105,7 @@ public class Lift {
         double lift_integral = lift_summed_error * LIFT_KI;
         double lift_power = lift_proportional + lift_integral;
 
-        if (lift_power < 0) lift_power *= 0.8;
+        if (lift_power < 0) lift_power *= 0.4;
 
         lift1.setPower(lift_power);
         lift2.setPower(lift_power);

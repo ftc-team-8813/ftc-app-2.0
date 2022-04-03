@@ -55,12 +55,16 @@ public class LiftControl extends ControlModule {
         } else {
             switch (id) {
                 case 0:
-                    lift.raise(PITSTOP, true);
-                    if (lift.inRange(lift.getLiftPosition(), lift.getLiftTarget(), 1000)) id = 1;
+                    lift.raise(PITSTOP);
+                    if (lift.inRange(lift.getLiftPosition(), lift.getLiftTarget(), 1000)) id += 1;
                     break;
                 case 1:
-                    lift.rotate(preset_rotate, true);
-                    if (lift.inRange(lift.getPivotPosition(), lift.getPivotTarget(), 1)) id = 3;
+                    lift.rotate(preset_rotate);
+                    if (lift.inRange(lift.getPivotPosition(), lift.getPivotTarget(), 1)) id += 1;
+                    break;
+                case 2:
+                    lift.raise(preset_extend);
+                    if (lift.inRange(lift.getLiftPosition(), lift.getLiftTarget(), 1000)) id += 1;
                     break;
                 case 3:
                     id = -1;
@@ -81,6 +85,8 @@ public class LiftControl extends ControlModule {
             manual = false;
         }
 
+        log.i("Id: %d", id);
+        log.i("Lift Target: %f", lift.getLiftTarget());
         telemetry.addData("Lift Current: ", lift.getLiftPosition());
         telemetry.addData("Lift Target: ", lift.getLiftTarget());
         telemetry.addData("Pivot Current: ", lift.getPivotPosition());
