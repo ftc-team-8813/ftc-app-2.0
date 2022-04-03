@@ -17,8 +17,12 @@ public class Lift {
     private double lift_summed_error;
     private double pivot_target;
     private double pivot_summed_error;
-    private boolean lifting;
-    private boolean pivoting;
+    private boolean lift_reached;
+    private boolean was_lift_reached;
+    private int lift_count;
+    private boolean pivot_reached;
+    private boolean was_pivot_reached;
+    private int pivot_count;
     private boolean can_reset;
 
     private double LIFT_KP;
@@ -72,7 +76,6 @@ public class Lift {
     public void raise(double target_ticks, boolean tracking) {
         if (0 <= target_ticks && target_ticks <= MAX_HEIGHT) {
             lift_target = target_ticks;
-            lifting = tracking;
         }
     }
 
@@ -86,7 +89,6 @@ public class Lift {
     public void rotate(double target_theta, boolean tracking) {
         if (-TURN_LIMIT <= target_theta && target_theta <= TURN_LIMIT && getLiftPosition() > PITSTOP) {
             pivot_target = target_theta;
-            pivoting = tracking;
         }
     }
 
@@ -97,21 +99,37 @@ public class Lift {
     public boolean liftReached() {
         double min = lift_target - 1000;
         double max = lift_target + 1000;
-        if (min <= getLiftPosition() && getLiftPosition() <= max && lifting) {
-            lifting = false;
-            return true;
+
+        lift_reached = min <= getLiftPosition() && getLiftPosition() <= max;
+        was_lift_reached = lift_reached && !was_lift_reached;
+
+        if (lift_reached && was_lift_reached){
+            lift_count += 1;
         }
-        return false;
+        if (lift_count > 3){
+            lift_count = 0;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public boolean pivotReached() {
         double min = pivot_target - 1;
         double max = pivot_target + 1;
-        if (min <= getPivotPosition() && getPivotPosition() <= max && pivoting){
-            pivoting = false;
-            return true;
+
+        pivot_reached = min <= getPivotTarget() && getPivotPosition() <= max;
+        was_pivot_reached = pivot_reached && !was_pivot_reached;
+
+        if (pivot_reached && was_pivot_reached){
+            pivot_count += 1;
         }
-        return false;
+        if (pivot_count > 3){
+            pivot_count = 0;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void update() {
@@ -120,7 +138,7 @@ public class Lift {
             lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             can_reset = false;
         } else if (!liftAtBottom()) {
-            can_reset = true;
+            can_reset = false;
         }
 
         // Lift
@@ -129,9 +147,12 @@ public class Lift {
 
         double lift_proportional = lift_error * LIFT_KP;
         double lift_integral = lift_summed_error * LIFT_KI;
+        double lift_power = lift_proportional + lift_integral;
 
-        lift1.setPower(lift_proportional + lift_integral);
-        lift2.setPower(lift_proportional + lift_integral);
+        if (lift_power < 0) lift_power *= 0.8;
+
+        lift1.setPower(lift_power);
+        lift2.setPower(lift_power);
 
         // Pivot
         double pivot_error = pivot_target - getPivotPosition();
@@ -158,6 +179,12 @@ public class Lift {
 
     public double getPivotTarget(){
         return pivot_target;
+    }
+
+    public boolean inRange(double current, double target, double threshold){
+        double min = target - threshold;
+        double max = target + threshold;
+        return min < current && current < max;
     }
 
     public boolean liftAtBottom() {

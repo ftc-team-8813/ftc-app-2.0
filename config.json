@@ -17,6 +17,6 @@
 
   "turn_limit": 75,
   "degrees_per_tick": 0.0279,
-  "pivot_kp": 0.03,
+  "pivot_kp": 0.085,
   "pivot_ki": 0
 }

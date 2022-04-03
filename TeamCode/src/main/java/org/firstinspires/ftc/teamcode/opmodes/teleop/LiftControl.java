@@ -47,14 +47,25 @@ public class LiftControl extends ControlModule {
 
     @Override
     public void update(Telemetry telemetry) {
-        if (lift.liftReached() || lift.pivotReached()) {
-            id += 1;
-        }
-
         if (manual) {
             lift.raise(lift.getLiftTarget() + (-right_stick_y.get() * 1000));
-            if (lift.getLiftPosition() >= PITSTOP + 5000) {
+            if (lift.getLiftPosition() >= PITSTOP) {
                 lift.rotate(lift.getPivotTarget() + (left_stick_x.get() * 1.5));
+            }
+        } else {
+            switch (id) {
+                case 0:
+                    lift.raise(PITSTOP, true);
+                    if (lift.inRange(lift.getLiftPosition(), lift.getLiftTarget(), 1000)) id = 1;
+                    break;
+                case 1:
+                    lift.rotate(preset_rotate, true);
+                    if (lift.inRange(lift.getPivotPosition(), lift.getPivotTarget(), 1)) id = 3;
+                    break;
+                case 3:
+                    id = -1;
+                    manual = true;
+                    break;
             }
         }
 
@@ -65,25 +76,9 @@ public class LiftControl extends ControlModule {
             manual = false;
         }else if (dpad_down.get()){
             preset_rotate = 0;
-            preset_extend = 0;
+            preset_extend = 250;
             id = 0;
             manual = false;
-        }
-
-        switch (id) {
-            case 0:
-                lift.raise(PITSTOP, true);
-                break;
-            case 1:
-                lift.rotate(preset_rotate, true);
-                break;
-            case 2:
-                lift.raise(preset_extend, true);
-                break;
-            case 3:
-                id = -1;
-                manual = true;
-                break;
         }
 
         telemetry.addData("Lift Current: ", lift.getLiftPosition());
@@ -91,7 +86,6 @@ public class LiftControl extends ControlModule {
         telemetry.addData("Pivot Current: ", lift.getPivotPosition());
         telemetry.addData("Pivot Target: ", lift.getPivotTarget());
         telemetry.addData("Lift Limit Pressed: ", lift.liftAtBottom());
-
 
         lift.update();
     }
