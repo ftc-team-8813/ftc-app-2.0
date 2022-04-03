@@ -83,7 +83,7 @@ public class Lift {
      * @param target_theta 0 degrees is vertical, left is negative, right is positive
      */
     public void rotate(double target_theta) {
-        if (-TURN_LIMIT <= target_theta && target_theta <= TURN_LIMIT && getLiftPosition() > PITSTOP - 1000) {
+        if (-TURN_LIMIT <= target_theta && target_theta <= TURN_LIMIT && getLiftPosition() > PITSTOP - 5000) {
             pivot_target = target_theta;
         }
     }
@@ -94,7 +94,7 @@ public class Lift {
             lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             can_reset = false;
         } else if (!liftAtBottom()) {
-            can_reset = false;
+            can_reset = true;
         }
 
         // Lift

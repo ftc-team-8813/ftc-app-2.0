@@ -12,11 +12,11 @@
 
   "max_height": 100000,
   "pitstop": 35000,
-  "lift_kp": 0.0002,
+  "lift_kp": 0.0003,
   "lift_ki": 0,
 
   "turn_limit": 75,
   "degrees_per_tick": 0.0279,
-  "pivot_kp": 0.095,
+  "pivot_kp": 0.11,
   "pivot_ki": 0
 }
