@@ -1,24 +1,30 @@
 {
   "forward_kp": 0.0005,
   "heading_correction_kp": 0.01,
-  "heading_correction_ki": 0.0,
+  "heading_correction_kd": 0.0,
   "sensitivity": 10,
 
-  "freight_detection_threshold": 2.5,
+  "freight_detection_threshold": 2,
   "hold_time": 0.5,
   "close_claw_freight": 0.164,
   "close_claw_duck": 0.03,
   "open_claw": 0.549,
 
   "max_height": 100000,
-  "pitstop": 35000,
+  "pitstop": 45000,
   "lift_kp": 0.0003,
   "lift_ki": 0,
   "lift_threshold": 1000,
+  "low_raise": 82000,
+  "low_rotate": 59,
+  "mid_raise": 79500,
+  "mid_rotate": 63,
+  "high_raise": 0,
+  "high_rotate": 0,
 
   "turn_limit": 75,
   "degrees_per_tick": 0.0279,
-  "pivot_kp": 0.11,
-  "pivot_ki": 0,
-  "pivot_threshold": 1
+  "pivot_kp": 0.07,
+  "pivot_ki": 0.002,
+  "pivot_threshold": 0.5
 }

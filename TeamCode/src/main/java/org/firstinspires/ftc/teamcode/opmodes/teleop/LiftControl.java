@@ -7,7 +7,6 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Storage;
-import org.slf4j.ILoggerFactory;
 
 public class LiftControl extends ControlModule {
     private Lift lift;
@@ -17,13 +16,22 @@ public class LiftControl extends ControlModule {
     ControllerMap.AxisEntry left_stick_x;
     ControllerMap.AxisEntry right_stick_y;
     ControllerMap.ButtonEntry a;
+    ControllerMap.ButtonEntry x;
+    ControllerMap.ButtonEntry y;
     ControllerMap.ButtonEntry dpad_down;
 
     private double PITSTOP;
     private int id = -1;
     private double preset_rotate;
-    private double preset_extend;
-    private boolean manual = true;
+    private double preset_raise;
+    private boolean can_pre_raise = false;
+
+    private double LOW_RAISE;
+    private double LOW_ROTATE;
+    private double MID_RAISE;
+    private double MID_ROTATE;
+    private double HIGH_RAISE;
+    private double HIGH_ROTATE;
 
     public LiftControl(String name) {
         super(name);
@@ -37,9 +45,17 @@ public class LiftControl extends ControlModule {
         left_stick_x = controllerMap.getAxisMap("lift:rotate", "gamepad2", "left_stick_x");
         right_stick_y = controllerMap.getAxisMap("lift:raise", "gamepad2", "right_stick_y");
         a = controllerMap.getButtonMap("lift:low", "gamepad2", "a");
+        x = controllerMap.getButtonMap("lift:mid", "gamepad2", "x");
+        y = controllerMap.getButtonMap("lift:high", "gamepad2", "y");
         dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");
 
         PITSTOP = Storage.getJsonValue("pitstop");
+        LOW_RAISE = Storage.getJsonValue("low_raise");
+        LOW_ROTATE = Storage.getJsonValue("low_rotate");
+        MID_RAISE = Storage.getJsonValue("mid_raise");
+        MID_ROTATE = Storage.getJsonValue("mid_rotate");
+        HIGH_RAISE = Storage.getJsonValue("high_raise");
+        HIGH_ROTATE = Storage.getJsonValue("high_rotate");
     }
 
     @Override
@@ -50,7 +66,7 @@ public class LiftControl extends ControlModule {
 
     @Override
     public void update(Telemetry telemetry) {
-        if (manual) {
+        if (id == -1) {
             lift.raise(lift.getLiftTarget() + (-right_stick_y.get() * 1000));
             if (lift.getLiftPosition() >= PITSTOP) {
                 lift.rotate(lift.getPivotTarget() + (left_stick_x.get() * 1.5));
@@ -58,6 +74,7 @@ public class LiftControl extends ControlModule {
         } else {
             switch (id) {
                 case 0:
+                    lift.raise(PITSTOP);
                     if (lift.liftReached()) id += 1;
                     break;
                 case 1:
@@ -65,30 +82,43 @@ public class LiftControl extends ControlModule {
                     if (lift.pivotReached()) id += 1;
                     break;
                 case 2:
-                    lift.raise(preset_extend);
+                    lift.raise(preset_raise);
                     if (lift.liftReached()) id += 1;
                     break;
                 case 3:
                     id = -1;
-                    manual = true;
                     break;
             }
         }
 
         if (a.get()){
-            preset_rotate = 20;
-            preset_extend = 70000;
+            preset_raise = LOW_RAISE;
+            preset_rotate = LOW_ROTATE;
             id = 0;
-            manual = false;
-        }else if (dpad_down.get()){
-            preset_rotate = 0;
-            preset_extend = 250;
+        } else if (x.get()){
+            preset_raise = MID_RAISE;
+            preset_rotate = MID_ROTATE;
             id = 0;
-            manual = false;
+        } else if (y.get()){
+            preset_raise = HIGH_RAISE;
+            preset_rotate = HIGH_ROTATE;
+            id = 0;
         }
 
-        if (intake.freightDetected()){
-            lift.raise(PITSTOP);
+        else if (dpad_down.get()){
+            preset_rotate = 0;
+            preset_raise = 250;
+            id = 0;
+        }
+
+        if (intake.freightDetected() && lift.getLiftPosition() < PITSTOP && can_pre_raise){
+            can_pre_raise = false;
+            preset_rotate = 0;
+            preset_raise = PITSTOP;
+            id = 0;
+            log.i("Auto Raise");
+        } else if (!intake.freightDetected()){
+            can_pre_raise = true;
         }
 
         log.i("Id: %d", id);

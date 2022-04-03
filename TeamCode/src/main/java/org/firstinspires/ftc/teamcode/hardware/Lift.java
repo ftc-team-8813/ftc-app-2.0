@@ -13,16 +13,13 @@ public class Lift {
     public DigitalChannel lift_limit;
     private Logger log = new Logger("Lift");
 
+    private double lift_power;
+    private double pivot_power;
+
     private double lift_target;
     private double lift_summed_error;
     private double pivot_target;
     private double pivot_summed_error;
-    private boolean lift_reached;
-    private boolean was_lift_reached;
-    private int lift_count;
-    private boolean pivot_reached;
-    private boolean was_pivot_reached;
-    private int pivot_count;
     private boolean can_reset;
 
     private double LIFT_KP;
@@ -33,6 +30,8 @@ public class Lift {
     private double TURN_LIMIT;
     private double DEGREES_PER_TICK;
     private double PITSTOP;
+    private double PIVOT_THRESHOLD;
+    private double LIFT_THRESHOLD;
 
     // Raising makes encoder values more negative
     public Lift(DcMotor lift1, DcMotor lift2, DcMotor pivoter, DigitalChannel lift_limit) {
@@ -51,6 +50,8 @@ public class Lift {
         TURN_LIMIT = Storage.getJsonValue("turn_limit");
         DEGREES_PER_TICK = Storage.getJsonValue("degrees_per_tick");
         PITSTOP = Storage.getJsonValue("pitstop");
+        LIFT_THRESHOLD = Storage.getJsonValue("lift_threshold");
+        PIVOT_THRESHOLD = Storage.getJsonValue("pivot_threshold");
     }
 
     public void resetLift() {
@@ -103,12 +104,13 @@ public class Lift {
 
         double lift_proportional = lift_error * LIFT_KP;
         double lift_integral = lift_summed_error * LIFT_KI;
-        double lift_power = lift_proportional + lift_integral;
+        lift_power = lift_proportional + lift_integral;
 
         if (lift_power < 0) lift_power *= 0.4;
 
         lift1.setPower(lift_power);
         lift2.setPower(lift_power);
+
 
         // Pivot
         double pivot_error = pivot_target - getPivotPosition();
@@ -116,8 +118,9 @@ public class Lift {
 
         double pivot_proportional = pivot_error * PIVOT_KP;
         double pivot_integral = pivot_summed_error * PIVOT_KI;
+        pivot_power = (pivot_proportional + pivot_integral) * 0.5;
 
-        pivoter.setPower((pivot_proportional + pivot_integral) * 0.5);
+        pivoter.setPower(pivot_power);
     }
 
     public int getLiftPosition() {
@@ -137,15 +140,23 @@ public class Lift {
         return pivot_target;
     }
 
+    public double getLiftPower(){
+        return lift_power;
+    }
+
+    public double getPivotPower(){
+        return pivot_power;
+    }
+
     public boolean liftReached(){
-        double min = getLiftTarget() - 1000;
-        double max = getLiftTarget() + 1000;
+        double min = getLiftTarget() - LIFT_THRESHOLD;
+        double max = getLiftTarget() + LIFT_THRESHOLD;
         return min < getLiftPosition() && getLiftPosition() < max;
     }
 
     public boolean pivotReached(){
-        double min = getPivotTarget() - 1000;
-        double max = getPivotTarget() + 1000;
+        double min = getPivotTarget() - PIVOT_THRESHOLD;
+        double max = getPivotTarget() + PIVOT_THRESHOLD;
         return min < getPivotPosition() && getPivotPosition() < max;
     }
 

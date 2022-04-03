@@ -15,8 +15,9 @@ public class DriveControl extends ControlModule{
     private ControllerMap.ButtonEntry right_bumper;
 
     private double HEADING_CORRECTION_kP;
-    private double HEADING_CORRECTION_kI;
+    private double HEADING_CORRECTION_kD;
     private double SENSITIVITY;
+    private double past_error;
     private double past_heading = 0;
     private double summed_heading_error;
     private boolean endgame = false;
@@ -39,7 +40,7 @@ public class DriveControl extends ControlModule{
         right_bumper = controllerMap.getButtonMap("endgame", "gamepad1", "right_bumper");
 
         HEADING_CORRECTION_kP = Storage.getJsonValue("heading_correction_kp");
-        HEADING_CORRECTION_kI = Storage.getJsonValue("heading_correction_ki");
+        HEADING_CORRECTION_kD = Storage.getJsonValue("heading_correction_kd");
         SENSITIVITY = Storage.getJsonValue("sensitivity");
     }
 
@@ -79,8 +80,8 @@ public class DriveControl extends ControlModule{
         target_heading += -ax_drive_right_x.get() * SENSITIVITY;
 
         double error = target_heading - curr_heading;
-        summed_heading_error += error;
-        double turn_power = -error * HEADING_CORRECTION_kP + summed_heading_error * HEADING_CORRECTION_kI;
+        double error_diff = error - past_error;
+        double turn_power = -error * HEADING_CORRECTION_kP + error_diff * HEADING_CORRECTION_kD;
 
         drivetrain.move(-ax_drive_left_y.get(),
                         ax_drive_left_x.get(),

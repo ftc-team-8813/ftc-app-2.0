@@ -28,7 +28,8 @@ public class ServerControl extends ControlModule{
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
             ByteBuffer buf = ByteBuffer.allocate(500);
 
-            buf.putDouble(robot.drivetrain.getHeading());
+            buf.putDouble(robot.lift.getLiftPower());
+            buf.putDouble(robot.lift.getPivotPower());
 
             buf.flip();
             resp.respond(buf);
@@ -46,8 +47,6 @@ public class ServerControl extends ControlModule{
 //            buf.flip();
 //            resp.respond(buf);
 //        });
-
-
         server.startServer();
     }
 
