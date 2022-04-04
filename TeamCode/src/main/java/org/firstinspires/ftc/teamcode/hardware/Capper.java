@@ -21,15 +21,15 @@ public class Capper {
         this.tape_tilt = tape_tilt;
         this.tape_swivel = tape_swivel;
         loop_timer = new ElapsedTime();
-    }
 
-    public void init() {
         tape.setPwmRange(new PwmControl.PwmRange(500, 2500));
         tape_tilt.setPwmRange(new PwmControl.PwmRange(500, 2500));
         tape_swivel.setPwmRange(new PwmControl.PwmRange(500, 2500));
-
         tape_tilt.scaleRange(0.35, 1);
-        tape_tilt.setPosition(1);
+    }
+
+    public void init() {
+        tape_tilt.setPosition(0.7);
         tape_swivel.setPosition(0.5);
     }
 
