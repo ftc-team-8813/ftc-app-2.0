@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Scheduler
 {
-    
+
     public class Timer
     {
         public final String name;
@@ -17,7 +17,7 @@ public class Scheduler
         public double delay;
         public final boolean repeat;
         public boolean cancelled;
-        
+
         public Timer(String name, double delay, boolean repeat, int evChannel)
         {
             this.name = name;
@@ -27,13 +27,13 @@ public class Scheduler
             this.cancelled = false;
             this.start = Time.now();
         }
-        
+
         public void reset()
         {
             this.cancelled = false;
             this.start = Time.now();
         }
-        
+
         private void trigger()
         {
             if (cancelled) return;
@@ -49,19 +49,19 @@ public class Scheduler
             }
         }
     }
-    
+
     private List<Timer> timers;
     private EventBus bus;
     private Logger log;
     private int nextChannel = 0;
-    
+
     public Scheduler(EventBus bus)
     {
         timers = new ArrayList<>();
         log = new Logger("Scheduler");
         this.bus = bus;
     }
-    
+
     /**
      * Add a timer to trigger at some set time after it is created
      *
@@ -75,7 +75,7 @@ public class Scheduler
         timers.add(t);
         return t;
     }
-    
+
     /**
      * Same as {@link #addFutureTrigger(double, String)}, but immediately stops the timer. To start
      * the timer later, use {@link Timer#reset()} on the returned Timer object.
@@ -90,7 +90,7 @@ public class Scheduler
         t.cancelled = true;
         return t;
     }
-    
+
     /**
      * Add a repeating timer, which triggers repeatedly after a set delay
      *
@@ -104,7 +104,7 @@ public class Scheduler
         timers.add(t);
         return t;
     }
-    
+
     public void loop()
     {
         for (Timer task : new ArrayList<>(timers)) // copy tasks so we don't have concurrent modification errors

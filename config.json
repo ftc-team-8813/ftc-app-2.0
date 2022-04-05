@@ -12,19 +12,21 @@
 
   "max_height": 100000,
   "pitstop": 45000,
-  "lift_kp": 0.0003,
-  "lift_ki": 0,
-  "lift_threshold": 1000,
+  "lift_kp": 0.00025,
+  "lift_ki": 0.000028,
+  "lift_kd": 0.000001,
+  "lift_threshold": 2500,
   "low_raise": 82000,
   "low_rotate": 59,
   "mid_raise": 79500,
   "mid_rotate": 63,
-  "high_raise": 0,
-  "high_rotate": 0,
+  "high_raise": 55000,
+  "high_rotate": 30,
 
   "turn_limit": 75,
   "degrees_per_tick": 0.0279,
-  "pivot_kp": 0.07,
-  "pivot_ki": 0.002,
-  "pivot_threshold": 0.5
+  "pivot_kp": 0.05,
+  "pivot_ki": 0.06,
+  "pivot_kd": 0.002,
+  "pivot_threshold": 1.0
 }
