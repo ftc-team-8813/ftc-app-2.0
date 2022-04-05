@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Storage;
@@ -18,20 +20,29 @@ public class Lift {
 
     private double lift_target;
     private double lift_summed_error;
+    private double lift_last_error = 0;
     private double pivot_target;
     private double pivot_summed_error;
+    private double pivot_last_error = 0;
     private boolean can_reset;
 
     private double LIFT_KP;
     private double LIFT_KI;
+    private double LIFT_KD;
     private double PIVOT_KP;
     private double PIVOT_KI;
+    private double PIVOT_KD;
     private double MAX_HEIGHT;
     private double TURN_LIMIT;
     private double DEGREES_PER_TICK;
     private double PITSTOP;
     private double PIVOT_THRESHOLD;
     private double LIFT_THRESHOLD;
+
+    public double print_lift_integral = 0;
+    public double print_pivot_integral = 0;
+
+    private ElapsedTime loop_timer;
 
     // Raising makes encoder values more negative
     public Lift(DcMotor lift1, DcMotor lift2, DcMotor pivoter, DigitalChannel lift_limit) {
@@ -42,10 +53,14 @@ public class Lift {
         lift_target = 0.1;
         pivot_target = 0.01;
 
+        loop_timer = new ElapsedTime();
+
         LIFT_KP = Storage.getJsonValue("lift_kp");
         LIFT_KI = Storage.getJsonValue("lift_ki");
+        LIFT_KD = Storage.getJsonValue("lift_kd");
         PIVOT_KP = Storage.getJsonValue("pivot_kp");
         PIVOT_KI = Storage.getJsonValue("pivot_ki");
+        PIVOT_KD = Storage.getJsonValue("pivot_kd");
         MAX_HEIGHT = Storage.getJsonValue("max_height");
         TURN_LIMIT = Storage.getJsonValue("turn_limit");
         DEGREES_PER_TICK = Storage.getJsonValue("degrees_per_tick");
@@ -69,8 +84,8 @@ public class Lift {
 
             can_reset = false;
         } else {
-            lift1.setPower(-0.4);
-            lift2.setPower(-0.4);
+            lift1.setPower(-0.7);
+            lift2.setPower(-0.7);
         }
     }
 
@@ -100,27 +115,43 @@ public class Lift {
 
         // Lift
         double lift_error = lift_target - getLiftPosition();
-        lift_summed_error += lift_error;
+        lift_summed_error += lift_error * loop_timer.seconds();
+
+        if (Math.abs(lift_error) > LIFT_THRESHOLD * 3) lift_summed_error = 0;
 
         double lift_proportional = lift_error * LIFT_KP;
         double lift_integral = lift_summed_error * LIFT_KI;
-        lift_power = lift_proportional + lift_integral;
+        double lift_derivative = (lift_error - lift_last_error) / loop_timer.seconds() * LIFT_KD;
 
-        if (lift_power < 0) lift_power *= 0.4;
+        //if (lift_power < 0) lift_power *= 0.4;
+
+        lift_power = Range.clip(lift_proportional + lift_integral + lift_derivative, -0.8, 1.0);
 
         lift1.setPower(lift_power);
         lift2.setPower(lift_power);
 
-
         // Pivot
         double pivot_error = pivot_target - getPivotPosition();
-        pivot_summed_error += pivot_error;
+        pivot_summed_error += pivot_error * loop_timer.seconds();
+
+        if (Math.abs(pivot_error) > PIVOT_THRESHOLD * 3) pivot_summed_error = 0;
 
         double pivot_proportional = pivot_error * PIVOT_KP;
         double pivot_integral = pivot_summed_error * PIVOT_KI;
-        pivot_power = (pivot_proportional + pivot_integral) * 0.5;
+        double pivot_derivative = (pivot_error - pivot_last_error) / loop_timer.seconds() * PIVOT_KD;
+
+        //pivot_power = (pivot_proportional + pivot_integral) * 0.5;
+
+        pivot_power = Range.clip(pivot_proportional + pivot_integral + pivot_derivative, -0.8, 0.8);
 
         pivoter.setPower(pivot_power);
+
+        loop_timer.reset();
+        lift_last_error = lift_error;
+        pivot_last_error = pivot_error;
+
+        print_lift_integral = lift_summed_error;
+        print_pivot_integral = pivot_summed_error;
     }
 
     public int getLiftPosition() {

@@ -128,6 +128,8 @@ public class LiftControl extends ControlModule {
         telemetry.addData("Pivot Current: ", lift.getPivotPosition());
         telemetry.addData("Pivot Target: ", lift.getPivotTarget());
         telemetry.addData("Lift Limit Pressed: ", lift.liftAtBottom());
+        telemetry.addData("Lift Integral", lift.print_lift_integral);
+        telemetry.addData("Pivot Integral", lift.print_pivot_integral);
 
         lift.update();
     }

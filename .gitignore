@@ -89,3 +89,4 @@ lint/tmp/
 # lint/reports/
 
 *.sh
+.stackdump
