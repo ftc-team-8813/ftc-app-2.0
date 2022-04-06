@@ -28,8 +28,7 @@ public class ServerControl extends ControlModule{
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
             ByteBuffer buf = ByteBuffer.allocate(500);
 
-            buf.putDouble(robot.lift.getLiftPower());
-            buf.putDouble(robot.lift.getPivotPower());
+            buf.putDouble(robot.drivetrain.getHeading());
 
             buf.flip();
             resp.respond(buf);

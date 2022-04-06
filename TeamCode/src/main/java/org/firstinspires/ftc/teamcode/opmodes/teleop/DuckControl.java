@@ -13,6 +13,7 @@ public class DuckControl extends ControlModule{
     private ElapsedTime spinner_speed_timer;
     private double spinner_speed = 0.0;
     private double time_till_max_speed = 1.2;
+    private double max_speed = 0.8;
     private boolean stop_duck_spin = false;
 
     public DuckControl(String name){
@@ -35,7 +36,7 @@ public class DuckControl extends ControlModule{
                 spinner_speed = 0.0;
             }
             else{
-                spinner_speed = spinner_speed_timer.seconds() / time_till_max_speed;
+                spinner_speed = (spinner_speed_timer.seconds() / time_till_max_speed) * max_speed;
             }
 
         }
@@ -45,7 +46,7 @@ public class DuckControl extends ControlModule{
                 spinner_speed = 0.0;
             }
             else {
-                spinner_speed = -spinner_speed_timer.seconds() / time_till_max_speed;
+                spinner_speed = (-spinner_speed_timer.seconds() / time_till_max_speed) * max_speed;
             }
 
         }

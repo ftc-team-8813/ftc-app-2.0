@@ -1,7 +1,7 @@
 {
   "forward_kp": 0.0005,
-  "heading_correction_kp": 0.01,
-  "heading_correction_kd": 0.0,
+  "heading_correction_kp": 0.014,
+  "heading_correction_kd": 0,
   "sensitivity": 10,
 
   "freight_detection_threshold": 2,

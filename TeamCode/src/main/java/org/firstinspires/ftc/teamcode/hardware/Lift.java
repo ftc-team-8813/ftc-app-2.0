@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Storage;
 
 public class Lift {
@@ -42,8 +43,6 @@ public class Lift {
     public double print_lift_integral = 0;
     public double print_pivot_integral = 0;
 
-    private ElapsedTime loop_timer;
-
     // Raising makes encoder values more negative
     public Lift(DcMotor lift1, DcMotor lift2, DcMotor pivoter, DigitalChannel lift_limit) {
         this.lift1 = lift1;
@@ -52,8 +51,6 @@ public class Lift {
         this.lift_limit = lift_limit;
         lift_target = 0.1;
         pivot_target = 0.01;
-
-        loop_timer = new ElapsedTime();
 
         LIFT_KP = Storage.getJsonValue("lift_kp");
         LIFT_KI = Storage.getJsonValue("lift_ki");
@@ -115,13 +112,13 @@ public class Lift {
 
         // Lift
         double lift_error = lift_target - getLiftPosition();
-        lift_summed_error += lift_error * loop_timer.seconds();
+        lift_summed_error += lift_error * LoopTimer.getLoopTime();
 
         if (Math.abs(lift_error) > LIFT_THRESHOLD * 3) lift_summed_error = 0;
 
         double lift_proportional = lift_error * LIFT_KP;
         double lift_integral = lift_summed_error * LIFT_KI;
-        double lift_derivative = (lift_error - lift_last_error) / loop_timer.seconds() * LIFT_KD;
+        double lift_derivative = (lift_error - lift_last_error) / LoopTimer.getLoopTime() * LIFT_KD;
 
         //if (lift_power < 0) lift_power *= 0.4;
 
@@ -132,13 +129,13 @@ public class Lift {
 
         // Pivot
         double pivot_error = pivot_target - getPivotPosition();
-        pivot_summed_error += pivot_error * loop_timer.seconds();
+        pivot_summed_error += pivot_error * LoopTimer.getLoopTime();
 
         if (Math.abs(pivot_error) > PIVOT_THRESHOLD * 3) pivot_summed_error = 0;
 
         double pivot_proportional = pivot_error * PIVOT_KP;
         double pivot_integral = pivot_summed_error * PIVOT_KI;
-        double pivot_derivative = (pivot_error - pivot_last_error) / loop_timer.seconds() * PIVOT_KD;
+        double pivot_derivative = (pivot_error - pivot_last_error) / LoopTimer.getLoopTime() * PIVOT_KD;
 
         //pivot_power = (pivot_proportional + pivot_integral) * 0.5;
 
@@ -146,7 +143,6 @@ public class Lift {
 
         pivoter.setPower(pivot_power);
 
-        loop_timer.reset();
         lift_last_error = lift_error;
         pivot_last_error = pivot_error;
 

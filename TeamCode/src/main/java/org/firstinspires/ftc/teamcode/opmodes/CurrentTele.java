@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ServerControl;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -68,6 +69,7 @@ public class CurrentTele extends LoggingOpMode
     public void start()
     {
         Persistent.clear();
+        LoopTimer.resetTimer();
     }
     
     @Override
@@ -79,6 +81,7 @@ public class CurrentTele extends LoggingOpMode
         scheduler.loop();
         evBus.update();
         telemetry.update();
+        LoopTimer.resetTimer();
     }
     
     @Override
