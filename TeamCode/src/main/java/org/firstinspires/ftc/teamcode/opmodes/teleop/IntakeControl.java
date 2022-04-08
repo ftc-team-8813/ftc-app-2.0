@@ -52,9 +52,10 @@ public class IntakeControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        intake.setPower(right_trigger.get() - left_trigger.get());
         if (intake.freightDetected()){
-            intake.setPower(left_trigger.get() * 0.3);
+            intake.setPower(-left_trigger.get() * 0.3);
+        } else {
+            intake.setPower(right_trigger.get() - left_trigger.get());
         }
 
         // Starts timer for moving claw

@@ -16,9 +16,10 @@ public class Drivetrain {
     private final BNO055IMU imu;
 
     private double FORWARD_KP;
-    private double HEADING_CORRECTION_TARGET_BASED;
-    private double target_forward;
+    private double TURN_KP;
+    private double target_forward = 0;
     private double target_strafe;
+    private double target_heading = 0;
     private double target_power;
     private boolean driving;
 
@@ -30,6 +31,7 @@ public class Drivetrain {
         this.imu = imu;
 
         FORWARD_KP = Storage.getJsonValue("forward_kp");
+        TURN_KP = Storage.getJsonValue("turn_kp");
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -43,23 +45,27 @@ public class Drivetrain {
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public void move(double forward, double strafe, double turn) {
+    public void move(double forward, double strafe, double turn, double turn_correct) {
         front_left.setPower((forward + strafe + turn));
-        front_right.setPower((forward - strafe - turn));
+        front_right.setPower((forward - strafe - turn) * turn_correct);
         back_left.setPower((forward - strafe + turn));
-        back_right.setPower((forward + strafe - turn));
+        back_right.setPower((forward + strafe - turn) * turn_correct);
     }
 
     public void autoMove(double distance, double power){
         target_forward = distance;
         target_power = power;
         driving = true;
+    }
+
+    public void changeHeading(double heading, double power){
+        target_heading = heading;
     }
 
     public boolean ifReached(){
@@ -74,10 +80,12 @@ public class Drivetrain {
 
     public void update(){
         double forward_error = target_forward - getDistance();
-        double turn_error = 0 - getHeading();
-        double turn_power = turn_error * HEADING_CORRECTION_TARGET_BASED;
+        double turn_error = target_heading - getHeading();
 
-        move(forward_error * FORWARD_KP * target_power, 0, -turn_power);
+        double forward_power = forward_error * FORWARD_KP * target_power;
+        double turn_power = -turn_error * TURN_KP;
+
+        move(forward_power, 0, turn_power, 1);
     }
 
     public void stop() {
@@ -101,6 +109,10 @@ public class Drivetrain {
 
     public double getDistance(){
         return (front_left.getCurrentPosition() + front_right.getCurrentPosition() + back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
+    }
+
+    public double getTargetDistance(){
+        return target_forward;
     }
 
     public double getHeading(){

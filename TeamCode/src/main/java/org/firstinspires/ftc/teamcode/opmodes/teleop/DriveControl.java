@@ -53,26 +53,16 @@ public class DriveControl extends ControlModule{
         }
 
         if (!endgame) {
-            hold_target_heading();
+            drivetrain.move(-ax_drive_left_y.get(),
+                            ax_drive_left_x.get(),
+                            ax_drive_right_x.get() * 0.5,
+                            1);
         }
 
         telemetry.addData("Heading: ", drivetrain.getHeading());
         telemetry.addData("Target Heading: ", target_heading);
         telemetry.addData("Angular Velocity: ", drivetrain.getAngularVelocity());
         telemetry.addData("Current Distance: ", drivetrain.getDistance());
-    }
-
-    public void telemove(){
-        double curr_heading = drivetrain.getHeading();
-        double heading_error = curr_heading - past_heading;
-        summed_heading_error += heading_error;
-        if (Math.abs(ax_drive_right_x.get()) > 0.05) heading_error = 0;
-
-        drivetrain.move(-ax_drive_left_y.get(),
-                        ax_drive_left_x.get(),
-                        ax_drive_right_x.get() + (heading_error * HEADING_CORRECTION_kP));
-
-        past_heading = curr_heading;
     }
 
     public void hold_target_heading(){
@@ -85,7 +75,7 @@ public class DriveControl extends ControlModule{
 
         drivetrain.move(-ax_drive_left_y.get(),
                         ax_drive_left_x.get(),
-                        turn_power);
+                        turn_power, 1);
     }
 
     @Override

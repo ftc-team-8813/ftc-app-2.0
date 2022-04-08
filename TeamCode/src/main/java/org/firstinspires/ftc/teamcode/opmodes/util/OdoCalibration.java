@@ -44,9 +44,9 @@ public class OdoCalibration extends LoggingOpMode {
         double average = (l_enc - r_enc) / 2;
 
         if (0 <= yaw && yaw <= 180){
-            robot.drivetrain.move(0, 0, -0.25); // Turns clockwise
+            robot.drivetrain.move(0, 0, -0.25, 1); // Turns clockwise
         } else {
-            robot.drivetrain.move(0, 0, 0);
+            robot.drivetrain.move(0, 0, 0, 1);
         }
 
         telemetry.addData("Yaw: ", yaw);
