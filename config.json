@@ -1,5 +1,6 @@
 {
-  "forward_kp": 0.0005,
+  "forward_kp": 0.002,
+  "turn_kp": 0.0005,
   "heading_correction_kp": 0.014,
   "heading_correction_kd": 0,
   "sensitivity": 10,
@@ -20,13 +21,14 @@
   "low_rotate": 59,
   "mid_raise": 79500,
   "mid_rotate": 63,
-  "high_raise": 55000,
-  "high_rotate": 30,
+  "high_raise": 83000,
+  "high_rotate": 54.5,
 
   "turn_limit": 75,
   "degrees_per_tick": 0.0279,
   "pivot_kp": 0.05,
   "pivot_ki": 0.06,
   "pivot_kd": 0.002,
-  "pivot_threshold": 1.0
+  "pivot_threshold": 1.0,
+  "pivot_lift_trigger": 30
 }

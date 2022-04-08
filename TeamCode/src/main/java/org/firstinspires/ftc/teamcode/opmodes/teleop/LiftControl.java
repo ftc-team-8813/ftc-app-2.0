@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import android.util.Log;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
@@ -19,19 +21,23 @@ public class LiftControl extends ControlModule {
     ControllerMap.ButtonEntry x;
     ControllerMap.ButtonEntry y;
     ControllerMap.ButtonEntry dpad_down;
+    ControllerMap.ButtonEntry dpad_left;
+    ControllerMap.ButtonEntry dpad_right;
 
-    private double PITSTOP;
     private int id = -1;
     private double preset_rotate;
     private double preset_raise;
+    private int preset_side = 1;
     private boolean can_pre_raise = false;
 
+    private double PITSTOP;
     private double LOW_RAISE;
     private double LOW_ROTATE;
     private double MID_RAISE;
     private double MID_ROTATE;
     private double HIGH_RAISE;
     private double HIGH_ROTATE;
+    private double PIVOT_LIFT_TRIGGER;
 
     public LiftControl(String name) {
         super(name);
@@ -48,6 +54,8 @@ public class LiftControl extends ControlModule {
         x = controllerMap.getButtonMap("lift:mid", "gamepad2", "x");
         y = controllerMap.getButtonMap("lift:high", "gamepad2", "y");
         dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");
+        dpad_left = controllerMap.getButtonMap("lift:left_mode", "gamepad2", "dpad_left");
+        dpad_right = controllerMap.getButtonMap("lift:right_mode", "gamepad2", "dpad_right");
 
         PITSTOP = Storage.getJsonValue("pitstop");
         LOW_RAISE = Storage.getJsonValue("low_raise");
@@ -56,6 +64,7 @@ public class LiftControl extends ControlModule {
         MID_ROTATE = Storage.getJsonValue("mid_rotate");
         HIGH_RAISE = Storage.getJsonValue("high_raise");
         HIGH_ROTATE = Storage.getJsonValue("high_rotate");
+        PIVOT_LIFT_TRIGGER = Storage.getJsonValue("pivot_lift_trigger");
     }
 
     @Override
@@ -79,12 +88,16 @@ public class LiftControl extends ControlModule {
                     break;
                 case 1:
                     lift.rotate(preset_rotate);
-                    if (lift.pivotReached()) id += 1;
+                    if (lift.getPivotPosition() > PIVOT_LIFT_TRIGGER && preset_raise > PITSTOP){
+                        id += 1;
+                    } else if (lift.pivotReached()){
+                        Log.i("Pivoted", "pivoted");
+                        id += 1;
+                    }
                     break;
                 case 2:
                     lift.raise(preset_raise);
                     if (lift.liftReached()) id += 1;
-                    break;
                 case 3:
                     id = -1;
                     break;
@@ -93,22 +106,26 @@ public class LiftControl extends ControlModule {
 
         if (a.get()){
             preset_raise = LOW_RAISE;
-            preset_rotate = LOW_ROTATE;
+            preset_rotate = LOW_ROTATE * preset_side;
             id = 0;
         } else if (x.get()){
             preset_raise = MID_RAISE;
-            preset_rotate = MID_ROTATE;
+            preset_rotate = MID_ROTATE * preset_side;
             id = 0;
         } else if (y.get()){
             preset_raise = HIGH_RAISE;
-            preset_rotate = HIGH_ROTATE;
+            preset_rotate = HIGH_ROTATE * preset_side;
             id = 0;
-        }
-
-        else if (dpad_down.get()){
+        } else if (dpad_down.get()){
             preset_rotate = 0;
             preset_raise = 250;
             id = 0;
+        }
+
+        if (dpad_left.get()){
+            preset_side = -1;
+        } else if (dpad_right.get()){
+            preset_side = 1;
         }
 
         if (intake.freightDetected() && lift.getLiftPosition() < PITSTOP && can_pre_raise){
