@@ -33,13 +33,13 @@ import static java.util.Calendar.YEAR;
 
 public class Logger
 {
-    
+
     public static class Level
     {
         private Level()
         {
         }
-        
+
         public static final int NONE = Integer.MIN_VALUE;
         public static final int FATAL = 0;
         public static final int ERROR = 1;
@@ -49,7 +49,7 @@ public class Logger
         public static final int VERBOSE = 5;
         public static final int ALL = Integer.MAX_VALUE;
     }
-    
+
     private static PrintWriter writer;
     private static File file;
     private static boolean open = false;
@@ -58,15 +58,15 @@ public class Logger
     private static int maxLevel = Level.ALL;
     private static ByteArrayOutputStream serverOutput;
     private static PrintWriter serverWriter;
-    
+
     private String tag;
-    
+
     @SuppressLint("SimpleDateFormat")
     public static String getTimestamp()
     {
         return new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
     }
-    
+
     /**
      * Initialize the logger to a default location ('logs/[date].log')
      *
@@ -76,7 +76,7 @@ public class Logger
     {
         init(Storage.createFile("/logs/" + getTimestamp() + ".log"));
     }
-    
+
     /**
      * Initialize the logger with a new file. Closes the previous log file if one is open.
      *
@@ -95,7 +95,7 @@ public class Logger
                         new BufferedOutputStream(
                                 new FileOutputStream(file)), StandardCharsets.UTF_8));
     }
-    
+
     /**
      * Close the log file. Any logging operations after this will produce a NullPointerException
      * until {@link #init(File)} is called again. Does not produce {@link IOException}s.
@@ -118,7 +118,7 @@ public class Logger
             file = null;
         }
     }
-    
+
     /**
      * Set the maximum logging level to print. The default is {@link Level#ALL ALL}.
      *
@@ -128,13 +128,13 @@ public class Logger
     {
         maxLevel = level;
     }
-    
+
     public static void startTimer()
     {
         start = System.currentTimeMillis();
         started = true;
     }
-    
+
     public static void serveLogs(Server server, int commandId)
     {
         serverOutput = new ByteArrayOutputStream();
@@ -149,12 +149,12 @@ public class Logger
             }
         });
     }
-    
+
     public Logger(String tag)
     {
         this.tag = tag;
     }
-    
+
     public synchronized void log(int level, String fmt, Object... args)
     {
         if (writer == null)
@@ -177,7 +177,7 @@ public class Logger
             RobotLog.dd(tag, String.format(fmt, args));
         }
     }
-    
+
     public synchronized void log(int level, Throwable t)
     {
         if (writer == null)
@@ -207,50 +207,50 @@ public class Logger
             RobotLog.ww(tag, t, "");
         }
     }
-    
+
     public synchronized void v(String fmt, Object... args)
     {
         log(99, fmt, args);
     }
-    
+
     public synchronized void d(String fmt, Object... args)
     {
         log(4, fmt, args);
     }
-    
+
     public synchronized void i(String fmt, Object... args)
     {
         log(3, fmt, args);
     }
-    
+
     public synchronized void w(String fmt, Object... args)
     {
         log(2, fmt, args);
     }
-    
+
     public synchronized void e(String fmt, Object... args)
     {
         log(1, fmt, args);
     }
-    
+
     public synchronized void f(String fmt, Object... args)
     {
         log(0, fmt, args);
     }
-    
+
     public synchronized void v(Throwable t) { log(99, t); }
-    
+
     public synchronized void d(Throwable t) { log(4, t); }
-    
+
     public synchronized void i(Throwable t) { log(3, t); }
-    
+
     public synchronized void w(Throwable t) { log(2, t); }
-    
+
     public synchronized void e(Throwable t) { log(1, t); }
-    
+
     public synchronized void f(Throwable t) { log(0, t); }
-    
-    
+
+
     private String base(int level)
     {
         String lvl;

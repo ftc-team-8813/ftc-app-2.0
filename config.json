@@ -1,8 +1,11 @@
 {
-  "heading_correction_kp": 0.0001,
-  "heading_correction_ki": 0.001,
+  "forward_kp": 0.002,
+  "turn_kp": 0.0005,
+  "heading_correction_kp": 0.014,
+  "heading_correction_kd": 0,
+  "sensitivity": 10,
 
-  "freight_detection_threshold": 2.5,
+  "freight_detection_threshold": 2,
   "hold_time": 0.5,
   "close_claw_freight": 0.164,
   "close_claw_duck": 0.03,
@@ -10,9 +13,22 @@
 
   "max_height": 100000,
   "pitstop": 45000,
-  "lift_kp": 0.0002,
+  "lift_kp": 0.00025,
+  "lift_ki": 0.000028,
+  "lift_kd": 0.000001,
+  "lift_threshold": 2500,
+  "low_raise": 82000,
+  "low_rotate": 59,
+  "mid_raise": 79500,
+  "mid_rotate": 63,
+  "high_raise": 83000,
+  "high_rotate": 54.5,
 
-  "turn_limit": 90,
-  "degrees_per_tick": 0.0248,
-  "pivot_kp": 0.05
+  "turn_limit": 75,
+  "degrees_per_tick": 0.0279,
+  "pivot_kp": 0.05,
+  "pivot_ki": 0.06,
+  "pivot_kd": 0.002,
+  "pivot_threshold": 1.0,
+  "pivot_lift_trigger": 30
 }

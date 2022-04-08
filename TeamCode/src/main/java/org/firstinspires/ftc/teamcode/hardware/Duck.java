@@ -1,22 +1,21 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.PwmControl;
 
 public class Duck {
-    private final CRServoImplEx frontServo;
-    private final CRServoImplEx backServo;
+    private final CRServoImplEx duck_front;
+    private final CRServoImplEx duck_back;
 
-    public Duck(CRServoImplEx frontServo, CRServoImplEx backServo){
-        this.frontServo = frontServo;
-        this.backServo = backServo;
-        frontServo.setPwmRange(new PwmControl.PwmRange(500, 2500));
-        backServo.setPwmRange(new PwmControl.PwmRange(500, 2500));
+    public Duck(CRServoImplEx duck_front, CRServoImplEx duck_back){
+        this.duck_front = duck_front;
+        this.duck_back = duck_back;
+        duck_front.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        duck_back.setPwmRange(new PwmControl.PwmRange(500, 2500));
     }
 
     public void spin(double power){
-        frontServo.setPower(power);
-        backServo.setPower(power);
+        duck_front.setPower(power);
+        duck_back.setPower(-power);
     }
 }

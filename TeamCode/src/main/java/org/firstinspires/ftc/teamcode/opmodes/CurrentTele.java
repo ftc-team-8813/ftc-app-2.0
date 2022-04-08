@@ -6,12 +6,15 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.hardware.LineFinder;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.CapperControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.DuckControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ServerControl;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -46,10 +49,12 @@ public class CurrentTele extends LoggingOpMode
         controlMgr = new ControlMgr(robot, controllerMap);
 
         // Controller Modules
-//        controlMgr.addModule(new ServerControl("Server Control"));
+        controlMgr.addModule(new ServerControl("Server Control"));
         controlMgr.addModule(new DriveControl("Drive Control"));
         controlMgr.addModule(new LiftControl("Lift Control"));
         controlMgr.addModule(new IntakeControl("Intake Control"));
+        controlMgr.addModule(new DuckControl("Duck Control"));
+        controlMgr.addModule(new CapperControl("Capper Control"));
 
         controlMgr.initModules();
     }
@@ -64,6 +69,7 @@ public class CurrentTele extends LoggingOpMode
     public void start()
     {
         Persistent.clear();
+        LoopTimer.resetTimer();
     }
     
     @Override
@@ -75,6 +81,7 @@ public class CurrentTele extends LoggingOpMode
         scheduler.loop();
         evBus.update();
         telemetry.update();
+        LoopTimer.resetTimer();
     }
     
     @Override
