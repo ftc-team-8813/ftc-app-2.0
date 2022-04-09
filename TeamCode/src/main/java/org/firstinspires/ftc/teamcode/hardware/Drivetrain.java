@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.Storage;
 
 public class Drivetrain {
@@ -16,12 +17,17 @@ public class Drivetrain {
     private final BNO055IMU imu;
 
     private double FORWARD_KP;
+    private double STRAFE_KP;
     private double TURN_KP;
     private double target_forward = 0;
-    private double target_strafe;
-    private double target_heading = 0;
-    private double target_power;
-    private boolean driving;
+    private double target_strafe = 0;
+    private double target_direction = 0;
+    private double target_forwardpower = 0;
+    private double target_strafepower = 0;
+    private double target_turnpower = 0;
+    private boolean forwarding;
+    private boolean strafing;
+    private boolean turning;
 
     public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu) {
         this.front_left = front_left;
@@ -31,7 +37,8 @@ public class Drivetrain {
         this.imu = imu;
 
         FORWARD_KP = Storage.getJsonValue("forward_kp");
-        TURN_KP = Storage.getJsonValue("turn_kp");
+        STRAFE_KP = 0.002;
+        TURN_KP = 0.0375;
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -60,32 +67,62 @@ public class Drivetrain {
 
     public void autoMove(double distance, double power){
         target_forward = distance;
-        target_power = power;
-        driving = true;
+        target_forwardpower = power;
+        forwarding = true;
+    }
+
+    public void autoStrafe(double distance, double power){
+        target_strafe = distance;
+        target_strafepower = power;
+        strafing = true;
     }
 
     public void changeHeading(double heading, double power){
-        target_heading = heading;
+        target_direction = heading;
+        target_turnpower = power;
+        turning = true;
     }
 
     public boolean ifReached(){
-        double min = target_forward - 100;
-        double max = target_forward + 100;
-        if (min < getDistance() && getDistance() < max && driving){
-            driving = false;
+        double minForward = target_forward - 100;
+        double maxForward = target_forward + 100;
+
+        double minStrafe = target_strafe - 100;
+        double maxStrafe = target_strafe + 100;
+
+        double minHead = target_direction - 1.5;
+        double maxHead = target_direction + 1.5;
+
+        if (minForward < getDistance() && getDistance() < maxForward && forwarding) {
+            forwarding = false;
             return true;
-        }
+            }
+
+        if (minStrafe < getDistance() && getDistance() < maxStrafe && strafing) {
+            strafing = false;
+            return true;
+            }
+
+        if (minHead < getHeading() && getHeading() < maxHead && turning) {
+            turning = false;
+            return true;
+            }
+
         return false;
     }
 
-    public void update(){
+    public void update(Telemetry telemetry){
         double forward_error = target_forward - getDistance();
-        double turn_error = target_heading - getHeading();
+        double strafe_error = target_strafe - getStrafeDistance();
+        double turn_error = target_direction - getHeading();
 
-        double forward_power = forward_error * FORWARD_KP * target_power;
-        double turn_power = -turn_error * TURN_KP;
+        double forward_power = forward_error * FORWARD_KP * target_forwardpower;
+        double strafe_power = strafe_error * STRAFE_KP * target_strafepower;
+        double turn_power = -turn_error * TURN_KP * target_turnpower;
 
         move(forward_power, 0, turn_power, 1);
+        telemetry.addData("Turn Power: ",turn_power);
+        telemetry.addData("Forward Power: ", forward_power);
     }
 
     public void stop() {
@@ -111,12 +148,20 @@ public class Drivetrain {
         return (front_left.getCurrentPosition() + front_right.getCurrentPosition() + back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
     }
 
+    public double getStrafeDistance(){
+        return ((Math.abs(front_left.getCurrentPosition() + back_right.getCurrentPosition())) / 2.0 + Math.abs((front_right.getCurrentPosition() + back_left.getCurrentPosition()) / 2.0)) / 2.0;
+    }
+
     public double getTargetDistance(){
         return target_forward;
     }
 
     public double getHeading(){
         return imu.getAngularOrientation().firstAngle;
+    }
+
+    public double getTargetHeading(){
+        return target_direction;
     }
 
     public double getAngularVelocity(){
