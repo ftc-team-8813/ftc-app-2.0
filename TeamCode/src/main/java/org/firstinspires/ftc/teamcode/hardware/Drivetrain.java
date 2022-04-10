@@ -5,6 +5,8 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.Storage;
@@ -16,18 +18,31 @@ public class Drivetrain {
     private final DcMotorEx back_right;
     private final BNO055IMU imu;
 
+    private double target_forward;
+    private double target_strafe;
+    private double target_turn;
+
+    private double forward_error;
+    private double strafe_error;
+    private double turn_error;
+
+    private boolean auto_moving;
+
+    private boolean reached;
+
+    private double deadband = 35.0;
+    private double deadband_turn = 1;
+
+    private double speed = 0.3;
+    private double speed_turn = 0.3;
+
+    private double turn_integral_sum;
+    private ElapsedTime auto_loop_timer;
+
     private double FORWARD_KP;
     private double STRAFE_KP;
     private double TURN_KP;
-    private double target_forward = 0;
-    private double target_strafe = 0;
-    private double target_direction = 0;
-    private double target_forwardpower = 0;
-    private double target_strafepower = 0;
-    private double target_turnpower = 0;
-    private boolean forwarding;
-    private boolean strafing;
-    private boolean turning;
+    private double TURN_KI;
 
     public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu) {
         this.front_left = front_left;
@@ -37,8 +52,9 @@ public class Drivetrain {
         this.imu = imu;
 
         FORWARD_KP = Storage.getJsonValue("forward_kp");
-        STRAFE_KP = 0.002;
-        TURN_KP = 0.0375;
+        STRAFE_KP = Storage.getJsonValue("strafe_kp");
+        TURN_KP = Storage.getJsonValue("turn_kp");
+        TURN_KI = Storage.getJsonValue("turn_ki");
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -46,6 +62,8 @@ public class Drivetrain {
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
         parameters.gyroRange = BNO055IMU.GyroRange.DPS2000;
         imu.initialize(parameters);
+
+        auto_loop_timer = new ElapsedTime();
 
         resetEncoders();
 
@@ -59,70 +77,59 @@ public class Drivetrain {
     }
 
     public void move(double forward, double strafe, double turn, double turn_correct) {
-        front_left.setPower((forward + strafe + turn));
-        front_right.setPower((forward - strafe - turn) * turn_correct);
-        back_left.setPower((forward - strafe + turn));
-        back_right.setPower((forward + strafe - turn) * turn_correct);
+        front_left.setPower((forward + strafe + (turn+turn_correct)));
+        front_right.setPower((forward - strafe - (turn+turn_correct)));
+        back_left.setPower((forward - strafe + (turn+turn_correct)));
+        back_right.setPower((forward + strafe - (turn+turn_correct)));
     }
 
-    public void autoMove(double distance, double power){
-        target_forward = distance;
-        target_forwardpower = power;
-        forwarding = true;
+    public void autoMove(double forward, double strafe, double turn) {
+        if (!auto_moving) {
+            target_forward += forward;
+            target_strafe += strafe;
+            target_turn += turn;
+        }
+        auto_moving = true;
     }
 
-    public void autoStrafe(double distance, double power){
-        target_strafe = distance;
-        target_strafepower = power;
-        strafing = true;
+    public void autoSpeed(double speed, double speed_turn) {
+        this.speed = speed;
+        this.speed_turn = speed_turn;
     }
 
-    public void changeHeading(double heading, double power){
-        target_direction = heading;
-        target_turnpower = power;
-        turning = true;
+    public boolean ifReached() {
+        if (reached) auto_moving = false;
+        return reached;
     }
 
-    public boolean ifReached(){
-        double minForward = target_forward - 100;
-        double maxForward = target_forward + 100;
+    public void update(Telemetry telemetry) {
+        forward_error = target_forward - getForwardPosition();
+        strafe_error = target_strafe - getStrafePosition();
+        turn_error = target_turn - getHeading();
 
-        double minStrafe = target_strafe - 100;
-        double maxStrafe = target_strafe + 100;
+        if ((Math.abs(forward_error) < deadband) && (Math.abs(strafe_error) < deadband) && (Math.abs(turn_error) < deadband_turn)) {
+            reached = true;
+        } else {
+            reached = false;
+        }
 
-        double minHead = target_direction - 1.5;
-        double maxHead = target_direction + 1.5;
+        turn_integral_sum += turn_error * auto_loop_timer.seconds();
 
-        if (minForward < getDistance() && getDistance() < maxForward && forwarding) {
-            forwarding = false;
-            return true;
-            }
+        if (Math.abs(turn_error) > 10) turn_integral_sum = 0;
 
-        if (minStrafe < getDistance() && getDistance() < maxStrafe && strafing) {
-            strafing = false;
-            return true;
-            }
+        double forward_power = Range.clip(forward_error * FORWARD_KP, -speed, speed);
+        double strafe_power = Range.clip(strafe_error * STRAFE_KP, -speed, speed);
+        double turn_power = Range.clip((-turn_error * TURN_KP) + (-turn_integral_sum * TURN_KI), -speed_turn, speed_turn);
 
-        if (minHead < getHeading() && getHeading() < maxHead && turning) {
-            turning = false;
-            return true;
-            }
-
-        return false;
-    }
-
-    public void update(Telemetry telemetry){
-        double forward_error = target_forward - getDistance();
-        double strafe_error = target_strafe - getStrafeDistance();
-        double turn_error = target_direction - getHeading();
-
-        double forward_power = forward_error * FORWARD_KP * target_forwardpower;
-        double strafe_power = strafe_error * STRAFE_KP * target_strafepower;
-        double turn_power = -turn_error * TURN_KP * target_turnpower;
-
-        move(forward_power, 0, turn_power, 1);
-        telemetry.addData("Turn Power: ",turn_power);
+        move(forward_power, strafe_power, turn_power, 0);
+        telemetry.addData("Turn Power: ", turn_power);
+        telemetry.addData("Strafe Power: ", strafe_power);
         telemetry.addData("Forward Power: ", forward_power);
+        telemetry.addData("Turn Error: ", turn_error);
+        telemetry.addData("Strafe Error: ", strafe_error);
+        telemetry.addData("Forward Error: ", forward_error);
+        telemetry.addData("Turn Integral: ", turn_integral_sum);
+        auto_loop_timer.reset();
     }
 
     public void stop() {
@@ -144,24 +151,16 @@ public class Drivetrain {
         back_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public double getDistance(){
+    public double getForwardPosition(){
         return (front_left.getCurrentPosition() + front_right.getCurrentPosition() + back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
     }
 
-    public double getStrafeDistance(){
-        return ((Math.abs(front_left.getCurrentPosition() + back_right.getCurrentPosition())) / 2.0 + Math.abs((front_right.getCurrentPosition() + back_left.getCurrentPosition()) / 2.0)) / 2.0;
-    }
-
-    public double getTargetDistance(){
-        return target_forward;
+    public double getStrafePosition(){
+        return (front_left.getCurrentPosition() - front_right.getCurrentPosition() - back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
     }
 
     public double getHeading(){
         return imu.getAngularOrientation().firstAngle;
-    }
-
-    public double getTargetHeading(){
-        return target_direction;
     }
 
     public double getAngularVelocity(){

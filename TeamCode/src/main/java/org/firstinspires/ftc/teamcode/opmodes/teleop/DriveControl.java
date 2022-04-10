@@ -62,7 +62,6 @@ public class DriveControl extends ControlModule{
         telemetry.addData("Heading: ", drivetrain.getHeading());
         telemetry.addData("Target Heading: ", target_heading);
         telemetry.addData("Angular Velocity: ", drivetrain.getAngularVelocity());
-        telemetry.addData("Current Distance: ", drivetrain.getDistance());
     }
 
     public void hold_target_heading(){

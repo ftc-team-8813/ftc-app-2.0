@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import android.util.Log;
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -12,7 +10,7 @@ import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.util.Storage;
 
-@Autonomous(name = "Auto")
+@Autonomous(name = "Red Auto")
 public class Auto extends LoggingOpMode{
 
     private Drivetrain drivetrain;
@@ -24,6 +22,8 @@ public class Auto extends LoggingOpMode{
     private int lift_id = -1;
 
     private ElapsedTime timer;
+
+    private boolean updated;
 
     private double PITSTOP;
     private double HIGH_RAISE;
@@ -60,31 +60,56 @@ public class Auto extends LoggingOpMode{
     public void loop() {
         switch (main_id) {
             case 0:
-                drivetrain.autoStrafe(-3000, 0.6);
-                //lift.raise(PITSTOP);
+                drivetrain.autoMove(-475,-200,0);
                 if (drivetrain.ifReached()) {
-                    timer.reset();
                     main_id += 1;
                 }
                 break;
             case 1:
-                drivetrain.changeHeading(-90, 0.4);
-                if(drivetrain.ifReached()) {
+                drivetrain.autoMove(0,0,58);
+                if (drivetrain.ifReached()) {
                     timer.reset();
+                    updated = false;
                     main_id += 1;
                 }
                 break;
             case 2:
-                duck_spin();
+                //lift stuff
+                if (updated) {
+                    main_id += 1;
+                }
                 break;
             case 3:
-                if (lift_id == -1) lift_id = 0;
+                drivetrain.autoMove(0, 0, -30);
+                if (drivetrain.ifReached()) {
+                    updated = false;
+                    main_id += 1;
+                }
+                break;
+            case 4:
+                if (updated) {
+                    main_id += 1;
+                }
+                break;
+            case 5:
+                drivetrain.autoMove(-75, 1000,0);
+                if (drivetrain.ifReached()) {
+                    updated = false;
+                    main_id += 1;
+                }
+                break;
+            case 6:
+                if (updated) {
+                    main_id += 1;
+                }
+            case 7:
+                duck_spin();
                 break;
         }
 
         switch (lift_id){
             case 0:
-                //lift.raise(PITSTOP);
+                lift.raise(PITSTOP);
                 if (lift.liftReached()) lift_id += 1;
                 break;
             case 1:
@@ -129,26 +154,28 @@ public class Auto extends LoggingOpMode{
 //            main_id += 1;
 //        }
 
-        lift.update();
+        //lift.update();
         drivetrain.update(telemetry);
 
-        telemetry.addData("Id: ", main_id);
-        telemetry.addData("Distance: ", drivetrain.getDistance());
+        telemetry.addData("Main ID: ", main_id);
+        telemetry.addData("Lift ID: ", lift_id);
         telemetry.addData("Heading: ", drivetrain.getHeading());
-        telemetry.addData("Target Distance: ", drivetrain.getTargetDistance());
-        telemetry.addData("Target Heading: ", drivetrain.getTargetHeading());
+        telemetry.addData("Forward: ", drivetrain.getForwardPosition());
+        telemetry.addData("Strafe: ", drivetrain.getStrafePosition());
         telemetry.addData("Duck Speed: ", spinner_speed);
         telemetry.addData("Duck Timer: ", timer.seconds());
         telemetry.update();
+
+        updated = true;
     }
     public void duck_spin() {
         duck.spin(spinner_speed);
-        stop_duck_spin = timer.seconds() >= 2.3;
+        stop_duck_spin = timer.seconds() >= 2.8;
         if (stop_duck_spin == true) {
             spinner_speed = 0.0;
            // main_id += 1;
         } else {
-            spinner_speed = timer.seconds() / 1.2;
+            spinner_speed = -(timer.seconds() / 8);
         }
     }
 }
