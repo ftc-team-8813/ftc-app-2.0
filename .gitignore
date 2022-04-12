@@ -88,5 +88,5 @@ lint/outputs/
 lint/tmp/
 # lint/reports/
 
-.sh
-.stackdump
+*.sh
+*.stackdump
