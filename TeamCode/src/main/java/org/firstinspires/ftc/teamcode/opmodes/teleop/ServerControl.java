@@ -28,27 +28,24 @@ public class ServerControl extends ControlModule{
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
             ByteBuffer buf = ByteBuffer.allocate(500);
 
-            buf.putDouble(robot.lift.getLiftCurrentPos());
-
-            buf.putDouble(robot.lift.getPower());
-            double[] pid_terms = robot.lift.getPIDTerms();
-            buf.putDouble(pid_terms[0]); // P Term
-            buf.putDouble(pid_terms[1]); // I Term
-            buf.putDouble(pid_terms[2]); // D Term
+            buf.putDouble(robot.drivetrain.getHeading());
 
             buf.flip();
             resp.respond(buf);
         });
 
         // Odo Drawer
-        server.registerProcessor(0x2, (cmd, payload, resp) -> {
-            ByteBuffer buf = ByteBuffer.allocate(300);
-
-            buf.flip();
-            resp.respond(buf);
-        });
-
-
+//        server.registerProcessor(0x2, (cmd, payload, resp) -> {
+//            ByteBuffer buf = ByteBuffer.allocate(300);
+//
+//            double[] nav_poses = robot.navigation.getFieldPositions();
+//            buf.putDouble(nav_poses[0]);
+//            buf.putDouble(nav_poses[1]);
+//            buf.putDouble(nav_poses[2]);
+//
+//            buf.flip();
+//            resp.respond(buf);
+//        });
         server.startServer();
     }
 

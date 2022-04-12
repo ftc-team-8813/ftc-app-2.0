@@ -122,7 +122,7 @@ public class EventBus
         {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             String callingClassName = stackTrace[3].getClassName();
-            log.d("Push %s on channel %d (from %s)", ev.getClass().getSimpleName(), ev.channel, callingClassName);
+//            log.d("Push %s on channel %d (from %s)", ev.getClass().getSimpleName(), ev.channel, callingClassName);
         }
     }
     
@@ -147,16 +147,16 @@ public class EventBus
                 {
                     if (!ev.suppressDebug)
                     {
-                        log.v("Event: %s on channel %d: %s", ev.getClass().getSimpleName(), ev.channel, ev.toString());
-                        log.v(" -> Send to subscriber '%s'", sub.name);
+//                        log.v("Event: %s on channel %d: %s", ev.getClass().getSimpleName(), ev.channel, ev.toString());
+//                        log.v(" -> Send to subscriber '%s'", sub.name);
                     }
                     double execStart = Time.now();
                     sub.callback.run(ev, this, sub);
                     double elapsed = Time.now() - execStart;
                     if (elapsed > 0.25)
                     {
-                        log.w("Subscriber %s took %.3fs to handle %s (ch=%d)",
-                                sub.name, elapsed, ev.getClass().getSimpleName(), ev.channel);
+//                        log.w("Subscriber %s took %.3fs to handle %s (ch=%d)",
+//                                sub.name, elapsed, ev.getClass().getSimpleName(), ev.channel);
                     }
                 }
             }

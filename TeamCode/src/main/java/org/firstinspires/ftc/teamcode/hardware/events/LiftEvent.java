@@ -4,13 +4,11 @@ import org.firstinspires.ftc.teamcode.util.event.Event;
 
 public class LiftEvent extends Event
 {
-    public static final int LIFT_MOVED = 0;
+    public static final int LIFT_EXTENDED = 0;
+
     
-    public final boolean up;
-    
-    public LiftEvent(int channel, boolean up)
+    public LiftEvent(int channel)
     {
         super(channel);
-        this.up = up;
     }
 }

@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
-import static java.lang.Math.round;
-
-import com.qualcomm.robotcore.util.ElapsedTime;
+import android.util.Log;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
@@ -10,218 +8,146 @@ import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.util.Status;
+import org.firstinspires.ftc.teamcode.util.Storage;
 
-public class LiftControl extends ControlModule{
+public class LiftControl extends ControlModule {
     private Lift lift;
     private Intake intake;
-    private ControllerMap.AxisEntry ax_left_stick_y;
-    private ControllerMap.ButtonEntry btn_y;
-    private ControllerMap.ButtonEntry btn_a;
-    private ControllerMap.ButtonEntry btn_x;
-    private ControllerMap.ButtonEntry btn_dpad_down;
-    private ControllerMap.ButtonEntry btn_dpad_up;
-    private ControllerMap.ButtonEntry btn_right_bumper;
-    private ControllerMap.AxisEntry ax_left_trigger;
-    private ControllerMap.AxisEntry ax_right_trigger;
+    private Logger log = new Logger("Lift Control");
 
-    private int height = -1; // 0 = bottom, 1 = low, 2 = mid, 3 = high, 4 = neutral, 5 = high2 (goal tipped), 6 = really high (duck cycling)
-    private final ElapsedTime timer = new ElapsedTime();
-    private int id = 0;
-    private int id2 = 0;
-    private final boolean was_reset = false;
-    private boolean left_trigger_was_pressed = false;
-    private final double var_pit_stop_wait = Status.PITSTOP_WAIT_TIME;
+    ControllerMap.AxisEntry left_stick_x;
+    ControllerMap.AxisEntry right_stick_y;
+    ControllerMap.ButtonEntry a;
+    ControllerMap.ButtonEntry x;
+    ControllerMap.ButtonEntry y;
+    ControllerMap.ButtonEntry dpad_down;
+    ControllerMap.ButtonEntry dpad_left;
+    ControllerMap.ButtonEntry dpad_right;
 
-    public boolean just_deposited = false;
-    private final ElapsedTime deposit_timer = new ElapsedTime();
-    private boolean timer_counting = false;
+    private int id = -1;
+    private double preset_rotate;
+    private double preset_raise;
+    private int preset_side = 1;
+    private boolean can_pre_raise = false;
 
-    private Logger log;
+    private double PITSTOP;
+    private double LOW_RAISE;
+    private double LOW_ROTATE;
+    private double MID_RAISE;
+    private double MID_ROTATE;
+    private double HIGH_RAISE;
+    private double HIGH_ROTATE;
+    private double PIVOT_LIFT_TRIGGER;
 
-
-    public LiftControl(String name){super(name);}
+    public LiftControl(String name) {
+        super(name);
+    }
 
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.lift = robot.lift;
         this.intake = robot.intake;
-        log = new Logger("Lift Control");
 
-        ax_left_stick_y = controllerMap.getAxisMap("lift:adjust", "gamepad2", "left_stick_y");
-        btn_y = controllerMap.getButtonMap("lift:extend_high", "gamepad2", "y");
-        btn_a = controllerMap.getButtonMap("lift:extend_low", "gamepad2", "a");
-        btn_x = controllerMap.getButtonMap("lift:extend_neutral", "gamepad2", "x");
-        btn_dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");robot.intake.setIntakeFront(-0.8);
-        ax_left_trigger = controllerMap.getAxisMap("lift:reset", "gamepad2", "left_trigger");
-        ax_right_trigger = controllerMap.getAxisMap("lift:extend_really_high", "gamepad2", "right_trigger");
-        btn_dpad_up = controllerMap.getButtonMap("Lift:extend_high2", "gamepad2", "dpad_up");
-        btn_right_bumper = controllerMap.getButtonMap("lift:deposit", "gamepad2", "right_bumper");
+        left_stick_x = controllerMap.getAxisMap("lift:rotate", "gamepad2", "left_stick_x");
+        right_stick_y = controllerMap.getAxisMap("lift:raise", "gamepad2", "right_stick_y");
+        a = controllerMap.getButtonMap("lift:low", "gamepad2", "a");
+        x = controllerMap.getButtonMap("lift:mid", "gamepad2", "x");
+        y = controllerMap.getButtonMap("lift:high", "gamepad2", "y");
+        dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");
+        dpad_left = controllerMap.getButtonMap("lift:left_mode", "gamepad2", "dpad_left");
+        dpad_right = controllerMap.getButtonMap("lift:right_mode", "gamepad2", "dpad_right");
 
-        lift.rotate(Status.ROTATIONS.get("in"));
+        PITSTOP = Storage.getJsonValue("pitstop");
+        LOW_RAISE = Storage.getJsonValue("low_raise");
+        LOW_ROTATE = Storage.getJsonValue("low_rotate");
+        MID_RAISE = Storage.getJsonValue("mid_raise");
+        MID_ROTATE = Storage.getJsonValue("mid_rotate");
+        HIGH_RAISE = Storage.getJsonValue("high_raise");
+        HIGH_ROTATE = Storage.getJsonValue("high_rotate");
+        PIVOT_LIFT_TRIGGER = Storage.getJsonValue("pivot_lift_trigger");
+    }
+
+    @Override
+    public void init_loop(Telemetry telemetry) {
+        super.init_loop(telemetry);
+        lift.resetLift();
     }
 
     @Override
     public void update(Telemetry telemetry) {
-        double delta_extension;
-
-        if (-ax_left_stick_y.get() < -0.1 || -ax_left_stick_y.get() > 0.1){
-            if (lift.getLiftTargetPos() < Status.STAGES.get("neutral") + 20000) {
-                delta_extension = -ax_left_stick_y.get()*Status.NEUTRAL_SENSITIVITY;
-            } else {
-                delta_extension = -ax_left_stick_y.get() * Status.SENSITIVITY;
+        if (id == -1) {
+            lift.raise(lift.getLiftTarget() + (-right_stick_y.get() * 1000));
+            if (lift.getLiftPosition() >= PITSTOP) {
+                lift.rotate(lift.getPivotTarget() + (left_stick_x.get() * 1.5));
             }
         } else {
-            delta_extension = 0;
-        }
-
-        lift.extend(lift.getLiftTargetPos() + delta_extension, false);
-
-        if (ax_left_trigger.get() > 0.8){
-            //lift.resetLitTarget();
-            if (!left_trigger_was_pressed){
-               id2+=1;
-            }
-            if(id2 > 1){ id2 = 0; }
-            switch (id2) {
+            switch (id) {
                 case 0:
-                    lift.moveOutrigger(Status.OUTRIGGERS.get("up"));
+                    lift.raise(PITSTOP);
+                    if (lift.liftReached()) id += 1;
                     break;
                 case 1:
-                    lift.moveOutrigger(Status.OUTRIGGERS.get("down"));
+                    lift.rotate(preset_rotate);
+                    if (lift.getPivotPosition() > PIVOT_LIFT_TRIGGER && preset_raise > PITSTOP){
+                        id += 1;
+                    } else if (lift.pivotReached()){
+                        Log.i("Pivoted", "pivoted");
+                        id += 1;
+                    }
+                    break;
+                case 2:
+                    lift.raise(preset_raise);
+                    if (lift.liftReached()) id += 1;
+                case 3:
+                    id = -1;
                     break;
             }
-            left_trigger_was_pressed = true;
-        }
-        else { left_trigger_was_pressed = false; }
-
-        switch (id) {
-            case 0:
-                if (btn_dpad_down.get()){
-                    height = 0;
-                } else if (btn_a.get()){
-                    height = 2;
-                } else if (btn_y.get()){
-                    height = 3;
-                } else if (btn_x.get()) {
-                    height = 4;
-                } else if (btn_dpad_up.get()) {
-                    height = 5;
-                } else if (ax_right_trigger.get() > 0.8){
-                    height = 6;
-                }
-
-                if (height != -1){
-                    intake.deposit(Status.DEPOSITS.get("carry"));
-                } else {
-                    timer.reset();
-                }
-
-                if (timer.seconds() > Status.BUCKET_WAIT_TIME){
-                    log.i("Carrying Deposit");
-                    id += 1;
-                }
-                break;
-            case 1:
-                lift.extend(Status.STAGES.get("pitstop"), true);
-                if (lift.ifReached(Status.STAGES.get("pitstop"))){
-                    log.i("Reached Pitstop");
-                    id += 1;
-                }
-
-                timer.reset();
-                break;
-            case 2:
-                switch (height){
-                    case 0:
-                        lift.rotate(Status.ROTATIONS.get("in"));
-                        break;
-                    case 1:
-                        lift.rotate(Status.ROTATIONS.get("low_out"));
-                        break;
-                    case 2:
-                        lift.rotate(Status.ROTATIONS.get("mid_out"));
-                        break;
-                    case 3:
-                        lift.rotate(Status.ROTATIONS.get("high_out"));
-                        break;
-                    case 4:
-                        lift.rotate(Status.ROTATIONS.get("neutral_out"));
-                        break;
-                    case 5:
-                        lift.rotate(Status.ROTATIONS.get("high_out2"));
-                        break;
-                    case 6:
-                        lift.rotate(Status.ROTATIONS.get("high_out"));
-                        lift.moveOutrigger(Status.OUTRIGGERS.get("down"));
-                        break;
-                }
-                if (height == 0) {
-                    if (timer.seconds() > Status.PITSTOP_WAIT_TIME) {
-                        id += 1;
-                        log.i("Rotated Arm");
-                    }
-                } else {
-                    if (timer.seconds() > Status.PITSTOP_WAIT_TIME_OUT) {
-                        id += 1;
-                        log.i("Rotated Arm");
-                    }
-                }
-                break;
-            case 3:
-                double target_height = lift.getLiftCurrentPos();
-                switch (height){
-                    case 0:
-                        target_height = 0;
-                        break;
-                    case 1:
-                        target_height = Status.STAGES.get("low");
-                        break;
-                    case 2:
-                        target_height = Status.STAGES.get("mid");
-                        break;
-                    case 3:
-                        target_height = Status.STAGES.get("high");
-                        break;
-                    case 4:
-                        target_height = Status.STAGES.get("neutral");
-                        break;
-                    case 5:
-                        target_height = Status.STAGES.get("high2");
-                        break;
-                    case 6:
-                        target_height = Status.STAGES.get("really high");
-                        break;
-                }
-                lift.extend(target_height, true);
-                if (lift.ifReached(target_height)){
-                    log.i("Reached Height");
-                    id += 1;
-                }
-                break;
-            case 4:
-                height = -1;
-                id = 0;
-                break;
         }
 
-        if (btn_right_bumper.edge() == -1) { //when the bucket flips in, wait for a delay and then retract
-            deposit_timer.reset();
-            timer_counting = true;
+        if (a.get()){
+            preset_raise = LOW_RAISE;
+            preset_rotate = LOW_ROTATE * preset_side;
+            id = 0;
+        } else if (x.get()){
+            preset_raise = MID_RAISE;
+            preset_rotate = MID_ROTATE * preset_side;
+            id = 0;
+        } else if (y.get()){
+            preset_raise = HIGH_RAISE;
+            preset_rotate = HIGH_ROTATE * preset_side;
+            id = 0;
+        } else if (dpad_down.get()){
+            preset_rotate = 0;
+            preset_raise = 25;
+            id = 0;
         }
 
-        if (timer_counting && deposit_timer.seconds() > Status.DEPOSIT_TIMER) {
-            height = 0;
-            timer_counting = false;
+        if (dpad_left.get()){
+            preset_side = -1;
+        } else if (dpad_right.get()){
+            preset_side = 1;
         }
 
-        lift.updateLift();
+        if (intake.freightDetected() && lift.getLiftPosition() < PITSTOP && can_pre_raise){
+            can_pre_raise = false;
+            preset_rotate = 0;
+            preset_raise = PITSTOP;
+            id = 0;
+            log.i("Auto Raise");
+        } else if (!intake.freightDetected()){
+            can_pre_raise = true;
+        }
 
-        telemetry.addData("Lift Real Pos: ", lift.getLiftCurrentPos());
-        telemetry.addData("Lift Target Pos: ", lift.getLiftTargetPos());
-        //telemetry.addData("Lift Id: ", id);
+        log.i("Id: %d", id);
+        log.i("Lift Target: %f", lift.getLiftTarget());
+        telemetry.addData("Lift Current: ", lift.getLiftPosition());
+        telemetry.addData("Lift Target: ", lift.getLiftTarget());
+        telemetry.addData("Pivot Current: ", lift.getPivotPosition());
+        telemetry.addData("Pivot Target: ", lift.getPivotTarget());
+        telemetry.addData("Lift Limit Pressed: ", lift.liftAtBottom());
+        telemetry.addData("Lift Integral", lift.print_lift_integral);
+        telemetry.addData("Pivot Integral", lift.print_pivot_integral);
 
-        telemetry.addData("Was Reset", was_reset);
-        telemetry.addData("Lift Limit: ", lift.limitPressed());
+        lift.update();
     }
 }

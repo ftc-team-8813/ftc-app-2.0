@@ -9,7 +9,8 @@
 # Files for the ART/Dalvik VM
 *.dex
 
-# Java class files
+# Java files
+*.hprof
 *.class
 
 # Generated files
@@ -22,6 +23,7 @@ out/
 # Gradle files
 .gradle/
 build/
+.idea/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -86,4 +88,5 @@ lint/outputs/
 lint/tmp/
 # lint/reports/
 
-*.sh
+.sh
+.stackdump
