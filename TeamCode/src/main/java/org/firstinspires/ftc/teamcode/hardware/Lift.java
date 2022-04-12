@@ -49,7 +49,7 @@ public class Lift {
         this.lift2 = lift2;
         this.pivoter = pivoter;
         this.lift_limit = lift_limit;
-        lift_target = 0.1;
+        lift_target = 10;
         pivot_target = 0.01;
 
         LIFT_KP = Storage.getJsonValue("lift_kp");
