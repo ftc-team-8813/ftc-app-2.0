@@ -11,7 +11,7 @@ public class Time
     {
         return (double) System.nanoTime() / 1_000_000_000.0;
     }
-    
+
     /**
      * Get the time elapsed since a specific point
      *
@@ -22,14 +22,14 @@ public class Time
     {
         return now() - start;
     }
-    
+
     public static String format(double time)
     {
         StringBuilder builder = new StringBuilder();
         boolean minus = (time < 0);
-        
+
         if (minus) time = -time;
-        
+
         if (time < 60) // under 1 minute
         {
             double magnitude = Math.log10(time);

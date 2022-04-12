@@ -122,7 +122,7 @@ public class Lift {
 
         //if (lift_power < 0) lift_power *= 0.4;
 
-        lift_power = Range.clip(lift_proportional + lift_integral + lift_derivative, -0.8, 1.0);
+        lift_power = Range.clip(lift_proportional + lift_integral + lift_derivative, -1.0, 1.0);
 
         lift1.setPower(lift_power);
         lift2.setPower(lift_power);
@@ -139,7 +139,7 @@ public class Lift {
 
         //pivot_power = (pivot_proportional + pivot_integral) * 0.5;
 
-        pivot_power = Range.clip(pivot_proportional + pivot_integral + pivot_derivative, -0.8, 0.8);
+        pivot_power = Range.clip(pivot_proportional + pivot_integral + pivot_derivative, -1.0, 1.0);
 
         pivoter.setPower(pivot_power);
 

@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
-import android.util.Log;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
@@ -16,7 +14,7 @@ public class LiftControl extends ControlModule {
     private Logger log = new Logger("Lift Control");
 
     ControllerMap.AxisEntry left_stick_x;
-    ControllerMap.AxisEntry right_stick_y;
+    ControllerMap.AxisEntry left_stick_y;
     ControllerMap.ButtonEntry a;
     ControllerMap.ButtonEntry x;
     ControllerMap.ButtonEntry y;
@@ -49,7 +47,7 @@ public class LiftControl extends ControlModule {
         this.intake = robot.intake;
 
         left_stick_x = controllerMap.getAxisMap("lift:rotate", "gamepad2", "left_stick_x");
-        right_stick_y = controllerMap.getAxisMap("lift:raise", "gamepad2", "right_stick_y");
+        left_stick_y = controllerMap.getAxisMap("lift:raise", "gamepad2", "left_stick_y");
         a = controllerMap.getButtonMap("lift:low", "gamepad2", "a");
         x = controllerMap.getButtonMap("lift:mid", "gamepad2", "x");
         y = controllerMap.getButtonMap("lift:high", "gamepad2", "y");
@@ -76,7 +74,7 @@ public class LiftControl extends ControlModule {
     @Override
     public void update(Telemetry telemetry) {
         if (id == -1) {
-            lift.raise(lift.getLiftTarget() + (-right_stick_y.get() * 1000));
+            lift.raise(lift.getLiftTarget() + (-left_stick_y.get() * 1000));
             if (lift.getLiftPosition() >= PITSTOP) {
                 lift.rotate(lift.getPivotTarget() + (left_stick_x.get() * 1.5));
             }
@@ -84,14 +82,19 @@ public class LiftControl extends ControlModule {
             switch (id) {
                 case 0:
                     lift.raise(PITSTOP);
-                    if (lift.liftReached()) id += 1;
+                    if (lift.liftReached()) {
+                        id += 1;
+                    } else if (preset_raise < PITSTOP) {
+                        id += 1;
+                    }
                     break;
                 case 1:
                     lift.rotate(preset_rotate);
-                    if (lift.getPivotPosition() > PIVOT_LIFT_TRIGGER && preset_raise > PITSTOP){
-                        id += 1;
-                    } else if (lift.pivotReached()){
-                        Log.i("Pivoted", "pivoted");
+                    if (preset_raise < PITSTOP) {
+                        if (lift.pivotReached()) {
+                            id += 1;
+                        }
+                    } else {
                         id += 1;
                     }
                     break;
