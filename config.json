@@ -1,6 +1,8 @@
 {
-  "forward_kp": 0.002,
-  "turn_kp": 0.0005,
+  "forward_kp": 0.0013,
+  "strafe_kp": 0.005,
+  "turn_kp": 0.03,
+  "turn_ki": 0.1,
   "heading_correction_kp": 0.014,
   "heading_correction_kd": 0,
   "sensitivity": 10,
@@ -13,9 +15,9 @@
 
   "max_height": 100000,
   "pitstop": 45000,
-  "lift_kp": 0.00025,
-  "lift_ki": 0.000028,
-  "lift_kd": 0.000001,
+  "lift_kp": 0.0004,
+  "lift_ki": 0.00005,
+  "lift_kd": 0.0000014,
   "lift_threshold": 2500,
   "low_raise": 82000,
   "low_rotate": 59,

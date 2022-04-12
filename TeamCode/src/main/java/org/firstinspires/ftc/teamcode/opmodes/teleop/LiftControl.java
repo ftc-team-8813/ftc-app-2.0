@@ -118,7 +118,7 @@ public class LiftControl extends ControlModule {
             id = 0;
         } else if (dpad_down.get()){
             preset_rotate = 0;
-            preset_raise = 250;
+            preset_raise = 25;
             id = 0;
         }
 
