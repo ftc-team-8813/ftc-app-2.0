@@ -23,7 +23,7 @@ public class Auto extends LoggingOpMode{
 
     private ElapsedTime timer;
 
-    private boolean updated;
+    private boolean spinning;
 
     private double PITSTOP;
     private double HIGH_RAISE;
@@ -61,48 +61,20 @@ public class Auto extends LoggingOpMode{
         switch (main_id) {
             case 0:
                 drivetrain.autoMove(-475,-200,0);
-                if (drivetrain.ifReached()) {
-                    main_id += 1;
-                }
                 break;
             case 1:
                 drivetrain.autoMove(0,0,58);
-                if (drivetrain.ifReached()) {
-                    timer.reset();
-                    updated = false;
-                    main_id += 1;
-                }
                 break;
             case 2:
-                //lift stuff
-                if (updated) {
-                    main_id += 1;
-                }
+                drivetrain.autoMove(0, 0, -30);
                 break;
             case 3:
-                drivetrain.autoMove(0, 0, -30);
-                if (drivetrain.ifReached()) {
-                    updated = false;
-                    main_id += 1;
-                }
+                drivetrain.autoMove(-350, 1125,0);
                 break;
             case 4:
-                if (updated) {
-                    main_id += 1;
-                }
-                break;
+                timer.reset();
+                main_id += 1;
             case 5:
-                drivetrain.autoMove(-75, 1000,0);
-                if (drivetrain.ifReached()) {
-                    updated = false;
-                    main_id += 1;
-                }
-                break;
-            case 6:
-                if (updated) {
-                    main_id += 1;
-                }
-            case 7:
                 duck_spin();
                 break;
         }
@@ -115,8 +87,6 @@ public class Auto extends LoggingOpMode{
             case 1:
                 lift.rotate(HIGH_ROTATE);
                 if (lift.getPivotPosition() > PIVOT_LIFT_TRIGGER && HIGH_RAISE > PITSTOP){
-                    lift_id += 1;
-                } else if (lift.pivotReached()){
                     lift_id += 1;
                 }
                 break;
@@ -150,12 +120,12 @@ public class Auto extends LoggingOpMode{
                 break;
         }
 
-//        if (drivetrain.ifReached()){
-//            main_id += 1;
-//        }
-
-        //lift.update();
+//        lift.update();
         drivetrain.update(telemetry);
+
+        if (drivetrain.ifReached() || if_spinned()) {
+            main_id += 1;
+        }
 
         telemetry.addData("Main ID: ", main_id);
         telemetry.addData("Lift ID: ", lift_id);
@@ -165,17 +135,17 @@ public class Auto extends LoggingOpMode{
         telemetry.addData("Duck Speed: ", spinner_speed);
         telemetry.addData("Duck Timer: ", timer.seconds());
         telemetry.update();
-
-        updated = true;
     }
     public void duck_spin() {
-        duck.spin(spinner_speed);
-        stop_duck_spin = timer.seconds() >= 2.8;
-        if (stop_duck_spin == true) {
-            spinner_speed = 0.0;
-           // main_id += 1;
-        } else {
-            spinner_speed = -(timer.seconds() / 8);
+        duck.spin(-(timer.seconds() / 8));
+        spinning = true;
+    }
+
+    public boolean if_spinned(){
+        if (timer.seconds() > 2.8 && spinning){
+            spinning = false;
+            return true;
         }
+        return false;
     }
 }
