@@ -67,7 +67,7 @@ public class Robot
 
         // Servos
         Servo claw = hardwareMap.get(Servo.class, "claw");
-        Servo kickstand = hardwareMap.get(Servo.class, "kickstand");
+        //Servo kickstand = hardwareMap.get(Servo.class, "kickstand");
         CRServo left_intake = hardwareMap.get(CRServo.class, "intake left");
         CRServo right_intake = hardwareMap.get(CRServo.class, "intake right");
         CRServoImplEx duck_front = hardwareMap.get(CRServoImplEx.class, "duck front");
