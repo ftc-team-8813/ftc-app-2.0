@@ -69,7 +69,7 @@ public class Lift {
         PIVOT_THRESHOLD = Storage.getJsonValue("pivot_threshold");
     }
 
-    public void resetLift() {
+    public boolean resetLift() {
         if (liftAtBottom()) {
             lift1.setPower(0);
             lift2.setPower(0);
@@ -81,10 +81,12 @@ public class Lift {
 
             can_reset = false;
             pivot_reset = true;
+            return true;
         } else {
             lift1.setPower(-0.6);
             lift2.setPower(-0.6);
         }
+        return false;
     }
 
     public void resetPivot(){

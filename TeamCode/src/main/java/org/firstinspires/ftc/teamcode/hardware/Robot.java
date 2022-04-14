@@ -10,12 +10,9 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-
-import dalvik.system.DelegateLastClassLoader;
 
 public class Robot
 {
@@ -26,7 +23,7 @@ public class Robot
     public Intake intake;
     public Duck duck;
     public Capper capper;
-    public SensorCapstoneDetector capDetector;
+    public CapstoneDetector cap_detector;
 
     public int direction;
 
@@ -85,7 +82,7 @@ public class Robot
         DistanceSensor cap_right = hardwareMap.get(DistanceSensor.class, "cap right");
 
         // Sub-Assemblies
-        this.capDetector = new SensorCapstoneDetector(cap_left, cap_right);
+        this.cap_detector = new CapstoneDetector(cap_left, cap_right);
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
         this.lift = new Lift(lift1, lift2, pivot, lift_limit, pivot_limit);
         this.intake = new Intake(intake, freight_checker, claw, left_intake, right_intake, sweeper);

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.hardware.CapstoneDetector;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Duck;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
@@ -19,14 +20,19 @@ public class Auto extends LoggingOpMode{
     private Lift lift;
     private Intake intake;
     private Duck duck;
+    private CapstoneDetector cap_detector;
 
     private int main_id = 0;
     private int lift_id = 0;
+
+    private int cap_location;
 
     private ElapsedTime intake_timer;
     private ElapsedTime lift_timer;
     private ElapsedTime duck_timer;
 
+    private boolean lift_reset;
+    private boolean cap_sampled;
     private boolean spinning = false;
 
     private double PITSTOP;
@@ -51,6 +57,7 @@ public class Auto extends LoggingOpMode{
         lift = robot.lift;
         intake = robot.intake;
         duck = robot.duck;
+        cap_detector = robot.cap_detector;
 
         PITSTOP = Storage.getJsonValue("pitstop");
         AUTO_RAISE = Storage.getJsonValue("auto_mid_raise");
@@ -72,7 +79,22 @@ public class Auto extends LoggingOpMode{
     @Override
     public void init_loop() {
         super.init_loop();
-        lift.resetLift();
+        if (lift.resetLift()){
+            lift_reset = true;
+        }
+        if (cap_detector.detect_capstone()){
+            cap_sampled = true;
+        }
+        if (lift_reset && cap_sampled){
+            telemetry.addData("Finished Initialization", "");
+            telemetry.update();
+        }
+    }
+
+    @Override
+    public void start() {
+        super.start();
+        cap_location = cap_detector.final_location();
     }
 
     @Override
