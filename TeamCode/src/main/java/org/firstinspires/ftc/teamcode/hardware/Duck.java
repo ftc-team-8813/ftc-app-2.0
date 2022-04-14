@@ -2,10 +2,12 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.PwmControl;
+import com.qualcomm.robotcore.hardware.Servo;
 
 public class Duck {
     private final CRServoImplEx duck_front;
     private final CRServoImplEx duck_back;
+    private Servo sweeper;
 
     public Duck(CRServoImplEx duck_front, CRServoImplEx duck_back){
         this.duck_front = duck_front;
@@ -18,4 +20,9 @@ public class Duck {
         duck_front.setPower(power);
         duck_back.setPower(-power);
     }
+
+    public void sweep(double position){
+        sweeper.setPosition(position);
+    }
+
 }
