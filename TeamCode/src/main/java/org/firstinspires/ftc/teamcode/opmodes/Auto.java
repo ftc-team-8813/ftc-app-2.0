@@ -8,30 +8,37 @@ import org.firstinspires.ftc.teamcode.hardware.Duck;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Storage;
 
 @Autonomous(name = "Red Auto")
 public class Auto extends LoggingOpMode{
-
+    private Logger log = new Logger("Auto");
     private Drivetrain drivetrain;
     private Lift lift;
     private Intake intake;
     private Duck duck;
 
     private int main_id = 0;
-    private int lift_id = -1;
+    private int lift_id = 0;
 
-    private ElapsedTime timer;
+    private ElapsedTime intake_timer;
+    private ElapsedTime lift_timer;
+    private ElapsedTime duck_timer;
 
-    private boolean spinning;
+    private boolean spinning = false;
 
     private double PITSTOP;
-    private double HIGH_RAISE;
-    private double HIGH_ROTATE;
+    private double AUTO_RAISE;
+    private double AUTO_ROTATE;
     private double PIVOT_LIFT_TRIGGER;
     private double HOLD_TIME;
     private double CLOSE_CLAW_FREIGHT;
     private double OPEN_CLAW;
+    private double SWEEPER_UP;
+    private double SWEEPER_DOWN;
+
     private double spinner_speed = 0.0;
     private boolean stop_duck_spin = false;
 
@@ -46,81 +53,92 @@ public class Auto extends LoggingOpMode{
         duck = robot.duck;
 
         PITSTOP = Storage.getJsonValue("pitstop");
-        HIGH_RAISE = Storage.getJsonValue("high_raise");
-        HIGH_ROTATE = Storage.getJsonValue("high_rotate");
+        AUTO_RAISE = Storage.getJsonValue("auto_mid_raise");
+        AUTO_ROTATE = Storage.getJsonValue("auto_mid_rotate");
         PIVOT_LIFT_TRIGGER = Storage.getJsonValue("pivot_lift_trigger");
         HOLD_TIME = Storage.getJsonValue("hold_time");
         CLOSE_CLAW_FREIGHT = Storage.getJsonValue("close_claw_freight");
         OPEN_CLAW = Storage.getJsonValue("open_claw");
-        timer = new ElapsedTime();
+        SWEEPER_UP = Storage.getJsonValue("sweeper_up");
+        SWEEPER_DOWN = Storage.getJsonValue("sweeper_down");
+
+        intake_timer = new ElapsedTime();
+        lift_timer = new ElapsedTime();
+        duck_timer = new ElapsedTime();
+
         intake.deposit(CLOSE_CLAW_FREIGHT);
+    }
+
+    @Override
+    public void init_loop() {
+        super.init_loop();
+        lift.resetLift();
     }
 
     @Override
     public void loop() {
         switch (main_id) {
             case 0:
-                drivetrain.autoMove(-475,-200,0);
+                drivetrain.autoMove(-405,-100,0);
                 break;
             case 1:
                 drivetrain.autoMove(0,0,58);
                 break;
             case 2:
-                drivetrain.autoMove(0, 0, -30);
+                switch (lift_id){
+                    case 0:
+                        lift.raise(PITSTOP);
+                        if (lift.liftReached()) lift_id += 1;
+                        break;
+                    case 1:
+                        lift.rotate(-AUTO_ROTATE);
+                        if (lift.pivotReached()) lift_id += 1;
+                        break;
+                    case 2:
+                        lift.raise(AUTO_RAISE);
+                        if (lift.liftReached()) {
+                            lift_timer.reset();
+                            intake.deposit(OPEN_CLAW);
+                            lift_id += 1;
+                        }
+                        break;
+                    case 3:
+                        if (lift_timer.seconds() > HOLD_TIME) drivetrain.autoMove(0,0,10); lift_id += 1;
+                        break;
+                    case 4:
+                        lift.raise(PITSTOP);
+                        if (lift.liftReached()) lift_id += 1;
+                        break;
+                    case 5:
+                        lift.rotate(0);
+                        if (lift.pivotReached()) lift_id += 1;
+                        break;
+                    case 6:
+                        lift.raise(0);
+                        if (lift.liftReached()) lift_id += 1;
+                        break;
+                    case 7:
+                        lift_id = 0;
+                        main_id += 1;
+                        break;
+                }
                 break;
             case 3:
-                drivetrain.autoMove(-350, 1125,0);
+                drivetrain.autoMove(0, 0, -40);
                 break;
             case 4:
-                timer.reset();
-                main_id += 1;
+                drivetrain.autoMove(-375, 1000,0);
+                break;
             case 5:
+                duck_timer.reset();
+                main_id += 1;
+            case 6:
                 duck_spin();
                 break;
         }
 
-        switch (lift_id){
-            case 0:
-                lift.raise(PITSTOP);
-                if (lift.liftReached()) lift_id += 1;
-                break;
-            case 1:
-                lift.rotate(HIGH_ROTATE);
-                if (lift.getPivotPosition() > PIVOT_LIFT_TRIGGER && HIGH_RAISE > PITSTOP){
-                    lift_id += 1;
-                }
-                break;
-            case 2:
-                lift.raise(HIGH_RAISE);
-                if (lift.liftReached()) {
-                    timer.reset();
-                    intake.deposit(OPEN_CLAW);
-                    lift_id += 1;
-                }
-                break;
-            case 3:
-                if (timer.seconds() > HOLD_TIME) {
-                    lift_id += 1;
-                }
-                break;
-            case 4:
-                lift.raise(PITSTOP);
-                if (lift.liftReached()) lift_id += 1;
-                break;
-            case 5:
-                lift.rotate(0);
-                if (lift.pivotReached()) lift_id += 1;
-                break;
-            case 6:
-                lift.raise(0);
-                if (lift.liftReached()) lift_id += 1;
-            case 7:
-                lift_id = -1;
-                main_id += 1;
-                break;
-        }
-
-//        lift.update();
+        lift.updateLift();
+        lift.updatePivot();
         drivetrain.update(telemetry);
 
         if (drivetrain.ifReached() || if_spinned()) {
@@ -133,16 +151,21 @@ public class Auto extends LoggingOpMode{
         telemetry.addData("Forward: ", drivetrain.getForwardPosition());
         telemetry.addData("Strafe: ", drivetrain.getStrafePosition());
         telemetry.addData("Duck Speed: ", spinner_speed);
-        telemetry.addData("Duck Timer: ", timer.seconds());
+        telemetry.addData("Duck Timer: ", duck_timer.seconds());
+        telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();
+
+        LoopTimer.resetTimer();
     }
+
     public void duck_spin() {
-        duck.spin(-(timer.seconds() / 8));
+        duck.spin(-(duck_timer.seconds() / 10));
         spinning = true;
     }
 
     public boolean if_spinned(){
-        if (timer.seconds() > 2.8 && spinning){
+        if (duck_timer.seconds() > 3 && spinning){
+            duck.spin(0);
             spinning = false;
             return true;
         }

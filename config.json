@@ -1,10 +1,8 @@
 {
   "forward_kp": 0.0013,
   "strafe_kp": 0.005,
-  "turn_kp": 0.01,
-  "turn_ki": 0.075,
-  "heading_correction_kp": 0.014,
-  "heading_correction_kd": 0,
+  "turn_kp": 0.0096,
+  "turn_ki": 0.084,
   "sensitivity": 10,
 
   "freight_detection_threshold": 2,
@@ -12,6 +10,8 @@
   "close_claw_freight": 0.164,
   "close_claw_duck": 0.03,
   "open_claw": 0.549,
+  "sweeper_down": 0.42,
+  "sweeper_up": 0.53,
 
   "max_height": 68000,
   "pitstop": 32000,
@@ -25,6 +25,12 @@
   "mid_rotate": 65,
   "high_raise": 68000,
   "high_rotate": 52,
+  "auto_low_raise": 52000,
+  "auto_low_rotate": 75,
+  "auto_mid_raise": 53000,
+  "auto_mid_rotate": 74,
+  "auto_high_raise": 61000,
+  "auto_high_rotate": 59,
 
   "turn_limit": 75,
   "degrees_per_tick": 0.0279,

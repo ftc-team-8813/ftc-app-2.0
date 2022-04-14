@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.util.Logger;
@@ -14,18 +13,21 @@ public class Lift {
     private DcMotor lift2;
     private DcMotor pivoter;
     public DigitalChannel lift_limit;
+    public DigitalChannel pivot_limit;
     private Logger log = new Logger("Lift");
 
     private double lift_power;
     private double pivot_power;
-
     private double lift_target;
     private double lift_summed_error;
     private double lift_last_error = 0;
     private double pivot_target;
     private double pivot_summed_error;
     private double pivot_last_error = 0;
+
+    private int reset_id = 0;
     private boolean can_reset;
+    private boolean pivot_reset = false;
 
     private double LIFT_KP;
     private double LIFT_KI;
@@ -44,11 +46,12 @@ public class Lift {
     public double print_pivot_integral = 0;
 
     // Raising makes encoder values more negative
-    public Lift(DcMotor lift1, DcMotor lift2, DcMotor pivoter, DigitalChannel lift_limit) {
+    public Lift(DcMotor lift1, DcMotor lift2, DcMotor pivoter, DigitalChannel lift_limit, DigitalChannel pivot_limit) {
         this.lift1 = lift1;
         this.lift2 = lift2;
         this.pivoter = pivoter;
         this.lift_limit = lift_limit;
+        this.pivot_limit = pivot_limit;
         lift_target = 10;
         pivot_target = 0.01;
 
@@ -76,13 +79,43 @@ public class Lift {
             lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             lift2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            pivoter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            pivoter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
             can_reset = false;
+            pivot_reset = true;
         } else {
-            lift1.setPower(-0.7);
-            lift2.setPower(-0.7);
+            lift1.setPower(-0.6);
+            lift2.setPower(-0.6);
+        }
+    }
+
+    public void resetPivot(){
+        switch (reset_id){
+            case 0:
+                lift_target = PITSTOP;
+                if (liftReached()) reset_id += 1;
+                updateLift();
+                break;
+            case 1:
+                if (pivotAtSide()) {
+                    pivoter.setPower(0);
+                    pivoter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    pivoter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    reset_id += 1;
+                } else {
+                    pivoter.setPower(-0.3);
+                }
+                break;
+            case 2:
+                pivot_target = 80;
+                if (pivotReached()){
+                    pivoter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    pivoter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    reset_id += 1;
+                }
+                updatePivot();
+                break;
+            case 3:
+                resetLift();
+                break;
         }
     }
 
@@ -96,12 +129,12 @@ public class Lift {
      * @param target_theta 0 degrees is vertical, left is negative, right is positive
      */
     public void rotate(double target_theta) {
-        if (-TURN_LIMIT <= target_theta && target_theta <= TURN_LIMIT && getLiftPosition() > PITSTOP - 5000) {
+        if (-TURN_LIMIT <= target_theta && target_theta <= TURN_LIMIT) {
             pivot_target = target_theta;
         }
     }
 
-    public void update() {
+    public void updateLift() {
         if (liftAtBottom() && can_reset) {
             lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -110,9 +143,8 @@ public class Lift {
             can_reset = true;
         }
 
-        // Lift
         double lift_error = lift_target - getLiftPosition();
-        lift_summed_error += lift_error * LoopTimer.getLoopTime();
+        lift_summed_error += lift_error;
 
         if (Math.abs(lift_error) > LIFT_THRESHOLD * 3) lift_summed_error = 0;
 
@@ -120,14 +152,15 @@ public class Lift {
         double lift_integral = lift_summed_error * LIFT_KI;
         double lift_derivative = (lift_error - lift_last_error) / LoopTimer.getLoopTime() * LIFT_KD;
 
-        //if (lift_power < 0) lift_power *= 0.4;
-
         lift_power = Range.clip(lift_proportional + lift_integral + lift_derivative, -1.0, 1.0);
-
         lift1.setPower(lift_power);
         lift2.setPower(lift_power);
 
-        // Pivot
+        lift_last_error = lift_error;
+        print_lift_integral = lift_summed_error;
+    }
+
+    public void updatePivot(){
         double pivot_error = pivot_target - getPivotPosition();
         pivot_summed_error += pivot_error * LoopTimer.getLoopTime();
 
@@ -137,16 +170,10 @@ public class Lift {
         double pivot_integral = pivot_summed_error * PIVOT_KI;
         double pivot_derivative = (pivot_error - pivot_last_error) / LoopTimer.getLoopTime() * PIVOT_KD;
 
-        //pivot_power = (pivot_proportional + pivot_integral) * 0.5;
-
         pivot_power = Range.clip(pivot_proportional + pivot_integral + pivot_derivative, -1.0, 1.0);
-
         pivoter.setPower(pivot_power);
 
-        lift_last_error = lift_error;
         pivot_last_error = pivot_error;
-
-        print_lift_integral = lift_summed_error;
         print_pivot_integral = pivot_summed_error;
     }
 
@@ -189,5 +216,13 @@ public class Lift {
 
     public boolean liftAtBottom() {
         return !lift_limit.getState();
+    }
+
+    public boolean pivotAtSide(){
+        return !pivot_limit.getState();
+    }
+
+    public boolean getPivotReset(){
+        return pivot_reset;
     }
 }

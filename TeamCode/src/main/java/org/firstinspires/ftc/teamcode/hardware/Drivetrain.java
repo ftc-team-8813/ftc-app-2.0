@@ -26,10 +26,10 @@ public class Drivetrain {
     private double strafe_error;
     private double turn_error;
 
-    private boolean moving;
+    private boolean moving = false;
 
     private double deadband = 35.0;
-    private double deadband_turn = 1;
+    private double deadband_turn = 3;
 
     private double speed = 0.3;
     private double speed_turn = 0.3;

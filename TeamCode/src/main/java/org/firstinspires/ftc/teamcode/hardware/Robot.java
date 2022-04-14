@@ -69,6 +69,7 @@ public class Robot
         Servo claw = hardwareMap.get(Servo.class, "claw");
         CRServo left_intake = hardwareMap.get(CRServo.class, "intake left");
         CRServo right_intake = hardwareMap.get(CRServo.class, "intake right");
+        Servo sweeper = hardwareMap.get(Servo.class, "duck sweeper");
         CRServoImplEx duck_front = hardwareMap.get(CRServoImplEx.class, "duck front");
         CRServoImplEx duck_back = hardwareMap.get(CRServoImplEx.class, "duck back");
         CRServoImplEx tape = hardwareMap.get(CRServoImplEx.class, "tape");
@@ -78,6 +79,7 @@ public class Robot
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
         DigitalChannel lift_limit = hardwareMap.get(DigitalChannel.class, "lift limit");
+        DigitalChannel pivot_limit = hardwareMap.get(DigitalChannel.class, "pivot limit");
         DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");
         DistanceSensor cap_left = hardwareMap.get(DistanceSensor.class, "cap left");
         DistanceSensor cap_right = hardwareMap.get(DistanceSensor.class, "cap right");
@@ -85,8 +87,8 @@ public class Robot
         // Sub-Assemblies
         this.capDetector = new SensorCapstoneDetector(cap_left, cap_right);
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
-        this.lift = new Lift(lift1, lift2, pivot, lift_limit);
-        this.intake = new Intake(intake, freight_checker, claw, left_intake, right_intake);
+        this.lift = new Lift(lift1, lift2, pivot, lift_limit, pivot_limit);
+        this.intake = new Intake(intake, freight_checker, claw, left_intake, right_intake, sweeper);
         this.duck = new Duck(duck_front, duck_back);
         this.capper = new Capper(tape, tape_tilt, tape_swivel);
     }
