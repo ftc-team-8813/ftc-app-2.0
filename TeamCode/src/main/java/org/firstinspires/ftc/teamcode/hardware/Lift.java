@@ -69,7 +69,7 @@ public class Lift {
         PIVOT_THRESHOLD = Storage.getJsonValue("pivot_threshold");
     }
 
-    public boolean resetLift() {
+    public void resetLift() {
         if (liftAtBottom()) {
             lift1.setPower(0);
             lift2.setPower(0);
@@ -84,20 +84,19 @@ public class Lift {
 
             can_reset = false;
             pivot_reset = true;
-            return true;
         } else {
             lift1.setPower(-0.6);
             lift2.setPower(-0.6);
         }
-        return false;
     }
 
     public void resetPivot(){
         switch (reset_id){
             case 0:
                 lift_target = 40000;
+                pivot_target = getPivotPosition(); // Ensures pivot doesn't correct
                 if (liftReached()) reset_id += 1;
-                update(); // TODO Separate into only lift update
+                update();
                 break;
             case 1:
                 if (pivotAtSide()) {
@@ -110,6 +109,7 @@ public class Lift {
                 }
                 break;
             case 2:
+                lift_target = getLiftTarget(); // Ensure lift doesn't correct
                 pivot_target = 80;
                 if (pivotReached()){
                     pivoter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
