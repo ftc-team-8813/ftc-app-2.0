@@ -122,8 +122,11 @@ public class Lift {
 
         //if (lift_power < 0) lift_power *= 0.4;
 
-        lift_power = Range.clip(lift_proportional + lift_integral + lift_derivative, -1.0, 1.0);
-
+        if (lift_target == 0 && !liftAtBottom()) {
+            lift_power = -1;
+        } else {
+            lift_power = Range.clip(lift_proportional + lift_integral + lift_derivative, -1.0, 1.0);
+        }
         lift1.setPower(lift_power);
         lift2.setPower(lift_power);
 

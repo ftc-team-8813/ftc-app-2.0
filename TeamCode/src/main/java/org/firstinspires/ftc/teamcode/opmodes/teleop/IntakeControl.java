@@ -62,10 +62,10 @@ public class IntakeControl extends ControlModule{
     @Override
     public void update(Telemetry telemetry) {
         if (intake.freightDetected()){
-            intake.setPower(-left_trigger.get() * 0.3);
+            intake.setPower((-left_trigger.get() * 0.3) - 0.2);
             if (!rumbled) {
-                gamepad1.rumble(100);
-                gamepad2.rumble(100);
+                gamepad1.rumble(200);
+                gamepad2.rumble(200);
                 rumbled = true;
             }
         } else {
@@ -74,10 +74,18 @@ public class IntakeControl extends ControlModule{
         }
 
         // Starts timer for moving claw
-        if ((right_bumper.get() && lift.getLiftPosition() > PITSTOP) || (!intake.freightDetected() && lift.getLiftPosition() < PITSTOP/3)){
+        if ((right_bumper.get() && lift.getLiftPosition() > PITSTOP)){
+            intake.deposit(OPEN_CLAW);
+        } else if ((!intake.freightDetected() && lift.getLiftTarget() < 30)) {
             intake.deposit(OPEN_CLAW);
         } else {
             intake.deposit(CLOSE_CLAW_FREIGHT);
+        }
+
+        if (right_bumper.edge() == -1) {
+            if (Math.abs(lift.getPivotTarget()) < 60 && lift.getPivotTarget() != 0) {
+                lift.rotate(Math.signum(lift.getPivotTarget()) * (Math.abs(lift.getPivotTarget()) - 5));
+            }
         }
 
         telemetry.addData("Freight Distance: ", intake.freight_checker.getDistance(DistanceUnit.CM));

@@ -3,7 +3,7 @@
   "strafe_kp": 0.005,
   "turn_kp": 0.03,
   "turn_ki": 0.1,
-  "heading_correction_kp": 0.014,
+  "heading_correction_kp": 0.005,
   "heading_correction_kd": 0,
   "sensitivity": 10,
 
@@ -19,12 +19,20 @@
   "lift_ki": 0.000028,
   "lift_kd": 0.000001,
   "lift_threshold": 2500,
+
   "low_raise": 33000,
   "low_rotate": 78.8,
   "mid_raise": 68000,
   "mid_rotate": 65,
   "high_raise": 68000,
-  "high_rotate": 52,
+  "high_rotate": 55,
+
+  "low_raise_near": 33000,
+  "low_rotate_near": 78.8,
+  "mid_raise_near": 33000,
+  "mid_rotate_near": 35,
+  "high_raise_near": 45000,
+  "high_rotate_near": 35,
 
   "turn_limit": 75,
   "degrees_per_tick": 0.0279,
