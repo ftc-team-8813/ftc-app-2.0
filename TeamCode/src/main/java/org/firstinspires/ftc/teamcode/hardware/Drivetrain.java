@@ -31,8 +31,8 @@ public class Drivetrain {
     private double deadband = 35.0;
     private double deadband_turn = 3;
 
-    private double speed = 0.3;
-    private double speed_turn = 0.3;
+    private double speed = 0.45;
+    private double speed_turn = 0.45;
 
     private double turn_integral_sum;
     private ElapsedTime auto_loop_timer;

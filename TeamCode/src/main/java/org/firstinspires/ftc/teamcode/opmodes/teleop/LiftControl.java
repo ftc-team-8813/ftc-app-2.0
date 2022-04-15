@@ -69,11 +69,12 @@ public class LiftControl extends ControlModule {
     @Override
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry);
-        if (lift.getPivotReset()){
-            lift.resetPivot();
-        } else {
-            lift.resetLift();
-        }
+        lift.resetLift();
+//        if (lift.getPivotReset()){
+//            lift.resetPivot();
+//        } else {
+//            lift.resetLift();
+//        }
     }
 
     @Override
@@ -158,7 +159,6 @@ public class LiftControl extends ControlModule {
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.addData("Pivot Limit: ", lift.pivotAtSide());
 
-        lift.updateLift();
-        lift.updatePivot();
+        lift.update();
     }
 }

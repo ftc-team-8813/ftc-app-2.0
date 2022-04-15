@@ -86,7 +86,7 @@ public class Robot
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
         this.lift = new Lift(lift1, lift2, pivot, lift_limit, pivot_limit);
         this.intake = new Intake(intake, freight_checker, claw, left_intake, right_intake, sweeper);
-        this.duck = new Duck(duck_front, duck_back);
+        this.duck = new Duck(duck_front, duck_back, sweeper);
         this.capper = new Capper(tape, tape_tilt, tape_swivel);
     }
 }

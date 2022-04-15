@@ -79,6 +79,9 @@ public class Lift {
             lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             lift2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+            pivoter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            pivoter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
             can_reset = false;
             pivot_reset = true;
             return true;
@@ -92,9 +95,9 @@ public class Lift {
     public void resetPivot(){
         switch (reset_id){
             case 0:
-                lift_target = PITSTOP;
+                lift_target = 40000;
                 if (liftReached()) reset_id += 1;
-                updateLift();
+                update(); // TODO Separate into only lift update
                 break;
             case 1:
                 if (pivotAtSide()) {
@@ -113,7 +116,7 @@ public class Lift {
                     pivoter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     reset_id += 1;
                 }
-                updatePivot();
+                update(); // TODO Separate into only pivot update
                 break;
             case 3:
                 resetLift();
@@ -136,7 +139,7 @@ public class Lift {
         }
     }
 
-    public void updateLift() {
+    public void update() {
         if (liftAtBottom() && can_reset) {
             lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -145,8 +148,9 @@ public class Lift {
             can_reset = true;
         }
 
+        // Lift
         double lift_error = lift_target - getLiftPosition();
-        lift_summed_error += lift_error;
+        lift_summed_error += lift_error * LoopTimer.getLoopTime();
 
         if (Math.abs(lift_error) > LIFT_THRESHOLD * 3) lift_summed_error = 0;
 
@@ -154,15 +158,14 @@ public class Lift {
         double lift_integral = lift_summed_error * LIFT_KI;
         double lift_derivative = (lift_error - lift_last_error) / LoopTimer.getLoopTime() * LIFT_KD;
 
+        //if (lift_power < 0) lift_power *= 0.4;
+
         lift_power = Range.clip(lift_proportional + lift_integral + lift_derivative, -1.0, 1.0);
+
         lift1.setPower(lift_power);
         lift2.setPower(lift_power);
 
-        lift_last_error = lift_error;
-        print_lift_integral = lift_summed_error;
-    }
-
-    public void updatePivot(){
+        // Pivot
         double pivot_error = pivot_target - getPivotPosition();
         pivot_summed_error += pivot_error * LoopTimer.getLoopTime();
 
@@ -172,10 +175,16 @@ public class Lift {
         double pivot_integral = pivot_summed_error * PIVOT_KI;
         double pivot_derivative = (pivot_error - pivot_last_error) / LoopTimer.getLoopTime() * PIVOT_KD;
 
+        //pivot_power = (pivot_proportional + pivot_integral) * 0.5;
+
         pivot_power = Range.clip(pivot_proportional + pivot_integral + pivot_derivative, -1.0, 1.0);
+
         pivoter.setPower(pivot_power);
 
+        lift_last_error = lift_error;
         pivot_last_error = pivot_error;
+
+        print_lift_integral = lift_summed_error;
         print_pivot_integral = pivot_summed_error;
     }
 
