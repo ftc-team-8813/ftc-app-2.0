@@ -3,6 +3,7 @@
   "strafe_kp": 0.005,
   "turn_kp": 0.0093,
   "turn_ki": 0.08,
+  "heading_correction_kp": 0.005,
   "sensitivity": 10,
 
   "freight_detection_threshold": 2,

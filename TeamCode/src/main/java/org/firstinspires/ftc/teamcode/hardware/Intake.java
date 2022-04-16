@@ -36,8 +36,8 @@ public class Intake {
 
     public void setPower(double power){
         intake.setPower(power);
-        left_intake.setPower(power);
-        right_intake.setPower(-power);
+        left_intake.setPower(scalePower(power));
+        right_intake.setPower(scalePower(-power));
     }
 
     public void stop(){
@@ -50,6 +50,10 @@ public class Intake {
 
     public double getPower(){
         return intake.getPower();
+    }
+
+    private double scalePower(double power) { //math makes an s curve from 0 to 1, used for the servos
+        return Math.signum(power) * (Math.pow((Math.abs(2 * power) - 1), 1/5) + 1) / 2;
     }
 
     public void sweep(double position){

@@ -22,20 +22,31 @@ public class LiftControl extends ControlModule {
     ControllerMap.ButtonEntry dpad_down;
     ControllerMap.ButtonEntry dpad_left;
     ControllerMap.ButtonEntry dpad_right;
+    ControllerMap.ButtonEntry left_bumper;
 
     private int id = -1;
     private double preset_rotate;
     private double preset_raise;
     private int preset_side = 1;
+    private boolean far = false;
     private boolean can_pre_raise = false;
 
     private double PITSTOP;
+
     private double LOW_RAISE;
     private double LOW_ROTATE;
     private double MID_RAISE;
     private double MID_ROTATE;
     private double HIGH_RAISE;
     private double HIGH_ROTATE;
+
+    private double LOW_RAISE_NEAR;
+    private double LOW_ROTATE_NEAR;
+    private double MID_RAISE_NEAR;
+    private double MID_ROTATE_NEAR;
+    private double HIGH_RAISE_NEAR;
+    private double HIGH_ROTATE_NEAR;
+
     private double PIVOT_LIFT_TRIGGER;
 
     public LiftControl(String name) {
@@ -55,14 +66,24 @@ public class LiftControl extends ControlModule {
         dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");
         dpad_left = controllerMap.getButtonMap("lift:left_mode", "gamepad2", "dpad_left");
         dpad_right = controllerMap.getButtonMap("lift:right_mode", "gamepad2", "dpad_right");
+        left_bumper = controllerMap.getButtonMap("lift:far_mode", "gamepad1", "left_bumper");
 
         PITSTOP = Storage.getJsonValue("pitstop");
+
         LOW_RAISE = Storage.getJsonValue("low_raise");
         LOW_ROTATE = Storage.getJsonValue("low_rotate");
         MID_RAISE = Storage.getJsonValue("mid_raise");
         MID_ROTATE = Storage.getJsonValue("mid_rotate");
         HIGH_RAISE = Storage.getJsonValue("high_raise");
         HIGH_ROTATE = Storage.getJsonValue("high_rotate");
+
+        LOW_RAISE_NEAR = Storage.getJsonValue("low_raise_near");
+        LOW_ROTATE_NEAR = Storage.getJsonValue("low_rotate_near");
+        MID_RAISE_NEAR = Storage.getJsonValue("mid_raise_near");
+        MID_ROTATE_NEAR = Storage.getJsonValue("mid_rotate_near");
+        HIGH_RAISE_NEAR = Storage.getJsonValue("high_raise_near");
+        HIGH_ROTATE_NEAR = Storage.getJsonValue("high_rotate_near");
+
         PIVOT_LIFT_TRIGGER = Storage.getJsonValue("pivot_lift_trigger");
     }
 
@@ -113,20 +134,35 @@ public class LiftControl extends ControlModule {
         }
 
         if (a.get()){
-            preset_raise = LOW_RAISE;
-            preset_rotate = LOW_ROTATE * preset_side;
+            if (far) {
+                preset_raise = LOW_RAISE;
+                preset_rotate = LOW_ROTATE * preset_side;
+            } else {
+                preset_raise = LOW_RAISE_NEAR;
+                preset_rotate = LOW_ROTATE_NEAR * preset_side;
+            }
             id = 0;
         } else if (x.get()){
-            preset_raise = MID_RAISE;
-            preset_rotate = MID_ROTATE * preset_side;
+            if (far) {
+                preset_raise = MID_RAISE;
+                preset_rotate = MID_ROTATE * preset_side;
+            } else {
+                preset_raise = MID_RAISE_NEAR;
+                preset_rotate = MID_ROTATE_NEAR * preset_side;
+            }
             id = 0;
         } else if (y.get()){
-            preset_raise = HIGH_RAISE;
-            preset_rotate = HIGH_ROTATE * preset_side;
+            if (far) {
+                preset_raise = HIGH_RAISE;
+                preset_rotate = HIGH_ROTATE * preset_side;
+            } else {
+                preset_raise = HIGH_RAISE_NEAR;
+                preset_rotate = HIGH_ROTATE_NEAR * preset_side;
+            }
             id = 0;
         } else if (dpad_down.get()){
             preset_rotate = 0;
-            preset_raise = 25;
+            preset_raise = 0;
             id = 0;
         }
 
@@ -134,6 +170,10 @@ public class LiftControl extends ControlModule {
             preset_side = -1;
         } else if (dpad_right.get()){
             preset_side = 1;
+        }
+
+        if (left_bumper.edge() == -1) { //falling edge keeps it from changing every loop cycle while the button is down
+            far = !far;
         }
 
         if (intake.freightDetected() && lift.getLiftPosition() < PITSTOP && can_pre_raise){
