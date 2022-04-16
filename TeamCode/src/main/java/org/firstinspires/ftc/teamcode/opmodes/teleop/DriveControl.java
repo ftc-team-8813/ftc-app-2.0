@@ -16,10 +16,9 @@ public class DriveControl extends ControlModule{
     private ControllerMap.AxisEntry ax_drive_right_x;
     private ControllerMap.ButtonEntry right_bumper;
 
-    private double HEADING_CORRECTION_kP;
-    private double HEADING_CORRECTION_kD;
     private double SENSITIVITY;
     private double PITSTOP;
+    private double HEADING_CORRECTION_kP;
 
     private boolean endgame = false;
 
@@ -43,10 +42,9 @@ public class DriveControl extends ControlModule{
 
         right_bumper = controllerMap.getButtonMap("endgame", "gamepad1", "right_bumper");
 
-        HEADING_CORRECTION_kP = Storage.getJsonValue("heading_correction_kp");
-        HEADING_CORRECTION_kD = Storage.getJsonValue("heading_correction_kd");
         SENSITIVITY = Storage.getJsonValue("sensitivity");
         PITSTOP = Storage.getJsonValue("pitstop");
+        HEADING_CORRECTION_kP = Storage.getJsonValue("heading_correction_kp");
     }
 
 
@@ -59,28 +57,27 @@ public class DriveControl extends ControlModule{
 
         heading_delta = drivetrain.getHeading() - heading_was;
 
-        double forward = -ax_drive_left_y.get();
-        double strafe = ax_drive_left_x.get();
-        double turn = ax_drive_right_x.get() * 0.5;
-
+        double scalar;
         if (lift.getLiftPosition() > PITSTOP) {
-            forward *= 0.6;
-            strafe *= 0.6;
-            turn *= 0.6;
+            scalar = 0.6;
+        } else {
+            scalar = 1;
         }
 
         if (!endgame) {
-            drivetrain.move(forward, strafe, turn,heading_delta * HEADING_CORRECTION_kP);
+            drivetrain.move(-ax_drive_left_y.get() * scalar,
+                    ax_drive_left_x.get() * scalar,
+                    ax_drive_right_x.get() * 0.5 * scalar,
+                    heading_delta * HEADING_CORRECTION_kP);
         }
 
-        if (turn != 0) {
+        if (ax_drive_right_x.get() != 0) {
             heading_delta = 0;
         }
 
         telemetry.addData("Heading: ", drivetrain.getHeading());
         telemetry.addData("Target Heading: ", target_heading);
         telemetry.addData("Angular Velocity: ", drivetrain.getAngularVelocity());
-
         heading_was = drivetrain.getHeading();
     }
 

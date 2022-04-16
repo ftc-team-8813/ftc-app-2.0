@@ -26,15 +26,13 @@ public class Drivetrain {
     private double strafe_error;
     private double turn_error;
 
-    private boolean auto_moving;
-
-    private boolean reached;
+    private boolean moving = false;
 
     private double deadband = 35.0;
-    private double deadband_turn = 1;
+    private double deadband_turn = 3;
 
-    private double speed = 0.3;
-    private double speed_turn = 0.3;
+    private double speed = 0.45;
+    private double speed_turn = 0.45;
 
     private double turn_integral_sum;
     private ElapsedTime auto_loop_timer;
@@ -84,12 +82,12 @@ public class Drivetrain {
     }
 
     public void autoMove(double forward, double strafe, double turn) {
-        if (!auto_moving) {
+        if (!moving) {
             target_forward += forward;
             target_strafe += strafe;
             target_turn += turn;
         }
-        auto_moving = true;
+        moving = true;
     }
 
     public void autoSpeed(double speed, double speed_turn) {
@@ -98,20 +96,21 @@ public class Drivetrain {
     }
 
     public boolean ifReached() {
-        if (reached) auto_moving = false;
-        return reached;
+        double forward_error = target_forward - getForwardPosition();
+        double strafe_error = target_strafe - getStrafePosition();
+        double turn_error = target_turn - getHeading();
+
+        if ((Math.abs(forward_error) < deadband) && (Math.abs(strafe_error) < deadband) && (Math.abs(turn_error) < deadband_turn) && moving) {
+            moving = false;
+            return true;
+        }
+        return false;
     }
 
     public void update(Telemetry telemetry) {
         forward_error = target_forward - getForwardPosition();
         strafe_error = target_strafe - getStrafePosition();
         turn_error = target_turn - getHeading();
-
-        if ((Math.abs(forward_error) < deadband) && (Math.abs(strafe_error) < deadband) && (Math.abs(turn_error) < deadband_turn)) {
-            reached = true;
-        } else {
-            reached = false;
-        }
 
         turn_integral_sum += turn_error * auto_loop_timer.seconds();
 
@@ -122,6 +121,7 @@ public class Drivetrain {
         double turn_power = Range.clip((-turn_error * TURN_KP) + (-turn_integral_sum * TURN_KI), -speed_turn, speed_turn);
 
         move(forward_power, strafe_power, turn_power, 0);
+
         telemetry.addData("Turn Power: ", turn_power);
         telemetry.addData("Strafe Power: ", strafe_power);
         telemetry.addData("Forward Power: ", forward_power);

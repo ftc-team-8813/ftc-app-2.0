@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Storage;
 
 public class LiftControl extends ControlModule {
@@ -89,7 +90,11 @@ public class LiftControl extends ControlModule {
     @Override
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry);
-        lift.resetLift();
+        if (lift.getPivotReset()){
+            lift.resetPivot();
+        } else {
+            lift.resetLift();
+        }
     }
 
     @Override
@@ -190,6 +195,8 @@ public class LiftControl extends ControlModule {
         telemetry.addData("Lift Limit Pressed: ", lift.liftAtBottom());
         telemetry.addData("Lift Integral", lift.print_lift_integral);
         telemetry.addData("Pivot Integral", lift.print_pivot_integral);
+        telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
+        telemetry.addData("Pivot Limit: ", lift.pivotAtSide());
 
         lift.update();
     }

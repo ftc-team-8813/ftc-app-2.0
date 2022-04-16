@@ -10,12 +10,9 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-
-import dalvik.system.DelegateLastClassLoader;
 
 public class Robot
 {
@@ -26,7 +23,7 @@ public class Robot
     public Intake intake;
     public Duck duck;
     public Capper capper;
-    public SensorCapstoneDetector capDetector;
+    public CapstoneDetector cap_detector;
 
     public int direction;
 
@@ -67,9 +64,9 @@ public class Robot
 
         // Servos
         Servo claw = hardwareMap.get(Servo.class, "claw");
-        //Servo kickstand = hardwareMap.get(Servo.class, "kickstand");
         CRServo left_intake = hardwareMap.get(CRServo.class, "intake left");
         CRServo right_intake = hardwareMap.get(CRServo.class, "intake right");
+        Servo sweeper = hardwareMap.get(Servo.class, "duck sweeper");
         CRServoImplEx duck_front = hardwareMap.get(CRServoImplEx.class, "duck front");
         CRServoImplEx duck_back = hardwareMap.get(CRServoImplEx.class, "duck back");
         CRServoImplEx tape = hardwareMap.get(CRServoImplEx.class, "tape");
@@ -79,16 +76,17 @@ public class Robot
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
         DigitalChannel lift_limit = hardwareMap.get(DigitalChannel.class, "lift limit");
+        DigitalChannel pivot_limit = hardwareMap.get(DigitalChannel.class, "pivot limit");
         DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");
         DistanceSensor cap_left = hardwareMap.get(DistanceSensor.class, "cap left");
         DistanceSensor cap_right = hardwareMap.get(DistanceSensor.class, "cap right");
 
         // Sub-Assemblies
-        this.capDetector = new SensorCapstoneDetector(cap_left, cap_right);
+        this.cap_detector = new CapstoneDetector(cap_left, cap_right);
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
-        this.lift = new Lift(lift1, lift2, pivot, lift_limit);
-        this.intake = new Intake(intake, freight_checker, claw, left_intake, right_intake);
-        this.duck = new Duck(duck_front, duck_back);
+        this.lift = new Lift(lift1, lift2, pivot, lift_limit, pivot_limit);
+        this.intake = new Intake(intake, freight_checker, claw, left_intake, right_intake, sweeper);
+        this.duck = new Duck(duck_front, duck_back, sweeper);
         this.capper = new Capper(tape, tape_tilt, tape_swivel);
     }
 }

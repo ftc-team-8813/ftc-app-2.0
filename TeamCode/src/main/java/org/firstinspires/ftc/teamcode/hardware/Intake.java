@@ -15,15 +15,17 @@ public class Intake {
     private final Servo claw;
     private final CRServo left_intake;
     private final CRServo right_intake;
+    private final Servo sweeper;
 
     private double FREIGHT_DETECTION_THRESHOLD;
 
-    public Intake(DcMotor intake, DistanceSensor freight_checker, Servo claw, CRServo left_intake, CRServo right_intake){
+    public Intake(DcMotor intake, DistanceSensor freight_checker, Servo claw, CRServo left_intake, CRServo right_intake, Servo sweeper){
         this.intake = intake;
         this.freight_checker = freight_checker;
         this.claw = claw;
         this.left_intake = left_intake;
         this.right_intake = right_intake;
+        this.sweeper = sweeper;
 
         this.FREIGHT_DETECTION_THRESHOLD = Storage.getJsonValue("freight_detection_threshold");
     }
@@ -52,5 +54,9 @@ public class Intake {
 
     private double scalePower(double power) { //math makes an s curve from 0 to 1, used for the servos
         return Math.signum(power) * (Math.pow((Math.abs(2 * power) - 1), 1/5) + 1) / 2;
+    }
+
+    public void sweep(double position){
+        sweeper.setPosition(position);
     }
 }
