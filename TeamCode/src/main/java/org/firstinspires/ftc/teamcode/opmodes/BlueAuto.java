@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.hardware.Capper;
 import org.firstinspires.ftc.teamcode.hardware.CapstoneDetector;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Duck;
@@ -22,6 +23,7 @@ public class BlueAuto extends LoggingOpMode{
     private Intake intake;
     private Duck duck;
     private CapstoneDetector cap_detector;
+    private Capper capper;
 
     private int main_id = 0;
     private int lift_id = 0;
@@ -56,6 +58,7 @@ public class BlueAuto extends LoggingOpMode{
     public void init() {
         super.init();
         Robot robot = Robot.initialize(hardwareMap);
+        capper = robot.capper;
         drivetrain = robot.drivetrain;
         lift = robot.lift;
         intake = robot.intake;
@@ -79,32 +82,43 @@ public class BlueAuto extends LoggingOpMode{
         duck_timer = new ElapsedTime();
 
         intake.deposit(CLOSE_CLAW_FREIGHT);
+        capper.init();
     }
 
     @Override
     public void init_loop() {
         super.init_loop();
-        if (lift.getPivotReset()){
-            if (lift.resetPivot(name)){
-                lift_reset = true;
-            }
-        } else {
-            lift.resetLift();
+        lift.setPowers(-gamepad2.right_stick_y * 0.9,
+            -gamepad2.right_stick_y * 0.9,
+            gamepad2.left_stick_x * 0.5);
+        if (lift.liftAtBottom()){
+            lift.resetLiftEncoder();
+        }
+        if (gamepad2.a){
+            lift.resetPivotEncoder();
         }
 
         if (cap_detector.detect_capstone()){
             cap_sampled = true;
         }
 
-        if (lift_reset && cap_sampled){
+        if (cap_sampled){
             telemetry.addData("Finished Initialization", "");
         }
+
+        telemetry.addData("Lift Current: ", lift.getLiftPosition());
+        telemetry.addData("Pivot Current: ", lift.getPivotPosition());
         telemetry.update();
     }
 
     @Override
     public void start() {
         super.start();
+        drivetrain.resetEncoders();
+
+        lift.raise(lift.getLiftPosition());
+        lift.rotate(lift.getPivotPosition());
+
         cap_detector.setOpMode(name);
         cap_location = cap_detector.final_location();
         if (cap_sampled = false){
@@ -264,7 +278,7 @@ public class BlueAuto extends LoggingOpMode{
     }
 
     public void duck_spin() {
-        duck.spin((duck_timer.seconds() / 10));
+        duck.spin((duck_timer.seconds() / 9));
         spinning = true;
     }
 

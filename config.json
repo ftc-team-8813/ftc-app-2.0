@@ -3,8 +3,9 @@
   "strafe_kp": 0.005,
   "turn_kp": 0.009,
   "turn_ki": 0.035,
-  "heading_correction_kp": 0.003,
+  "heading_correction_kp": 0.001,
   "sensitivity": 10,
+
 
   "freight_detection_threshold": 2,
   "hold_time": 0.5,
@@ -14,6 +15,7 @@
   "sweeper_down": 0.42,
   "sweeper_up": 0.53,
 
+
   "max_height": 68000,
   "pitstop": 40000,
   "lift_kp": 0.0002,
@@ -21,23 +23,25 @@
   "lift_kd": 0.000001,
   "lift_threshold": 2500,
   "low_raise": 33000,
-  "low_rotate": 78.8,
+  "low_rotate": 79,
   "mid_raise": 68000,
   "mid_rotate": 65,
   "high_raise": 68000,
   "high_rotate": 52,
-  "auto_low_raise": 40000,
+
+  "auto_low_raise": 38000,
   "auto_low_rotate": 63.5,
-  "auto_mid_raise": 44500,
+  "auto_mid_raise": 43700,
   "auto_mid_rotate": 57,
-  "auto_high_raise": 63000,
-  "auto_high_rotate": 43,
+  "auto_high_raise": 56000,
+  "auto_high_rotate": 41,
+
   "low_raise_near": 36000,
   "low_rotate_near": 70,
-  "mid_raise_near": 40000,
+  "mid_raise_near": 38000,
   "mid_rotate_near": 40,
-  "high_raise_near": 57000,
-  "high_rotate_near": 37,
+  "high_raise_near": 50000,
+  "high_rotate_near": 38,
 
 
   "turn_limit": 80,
@@ -45,6 +49,6 @@
   "pivot_kp": 0.05,
   "pivot_ki": 0.06,
   "pivot_kd": 0.002,
-  "pivot_threshold": 1.0,
+  "pivot_threshold": 2.0,
   "pivot_lift_trigger": -1
 }

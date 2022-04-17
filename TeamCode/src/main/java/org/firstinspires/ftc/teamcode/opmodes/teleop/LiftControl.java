@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
@@ -25,15 +27,16 @@ public class LiftControl extends ControlModule {
     ControllerMap.ButtonEntry dpad_right;
     ControllerMap.ButtonEntry left_bumper;
 
-    private int id = -1;
+    private int id = 0;
     private double preset_rotate;
     private double preset_raise;
     private int preset_side = 1;
     private boolean far = true;
     private boolean can_pre_raise = false;
 
-    private double PITSTOP;
+    private ElapsedTime auto_raise_timer = new ElapsedTime();
 
+    private double PITSTOP;
     private double LOW_RAISE;
     private double LOW_ROTATE;
     private double MID_RAISE;
@@ -94,7 +97,6 @@ public class LiftControl extends ControlModule {
     @Override
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry);
-        lift.resetLift();
 
         telemetry.addData("Lift Current: ", lift.getLiftPosition());
         telemetry.addData("Lift Target: ", lift.getLiftTarget());
@@ -112,6 +114,11 @@ public class LiftControl extends ControlModule {
             }
         } else {
             switch (id) {
+                case -2:
+                    if (auto_raise_timer.seconds() > 0.1){
+                        id = 0;
+                    }
+                    break;
                 case 0:
                     lift.raise(PITSTOP);
                     if (lift.liftReached()) {
@@ -183,14 +190,15 @@ public class LiftControl extends ControlModule {
         }
 
         if (left_bumper.edge() == -1) { //falling edge keeps it from changing every loop cycle while the button is down
-//            far = !far;
+            far = !far;
         }
 
         if (intake.freightDetected() && lift.getLiftPosition() < PITSTOP && can_pre_raise){
             can_pre_raise = false;
             preset_rotate = 0;
             preset_raise = PITSTOP;
-            id = 0;
+            id = -2;
+            auto_raise_timer.reset();
             log.i("Auto Raise");
         } else if (!intake.freightDetected()){
             can_pre_raise = true;

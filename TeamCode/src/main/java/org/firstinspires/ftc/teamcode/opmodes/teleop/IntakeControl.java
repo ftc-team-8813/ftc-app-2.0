@@ -20,6 +20,7 @@ public class IntakeControl extends ControlModule{
     private ControllerMap.AxisEntry right_trigger;
     private ControllerMap.ButtonEntry right_bumper;
 
+    private ElapsedTime auto_grab_timer = new ElapsedTime();
     private Gamepad gamepad1;
     private Gamepad gamepad2;
 
@@ -29,7 +30,7 @@ public class IntakeControl extends ControlModule{
     private double CLOSE_CLAW_FREIGHT;
     private double OPEN_CLAW;
     private double PITSTOP;
-    private boolean holding_freight;
+    private boolean waiting_for_freight = false;
 
     public IntakeControl(String name) {
         super(name);
@@ -62,8 +63,8 @@ public class IntakeControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        if (intake.freightDetected()){
-            intake.setPower((-left_trigger.get() * 0.3) - 0.1);
+        if (lift.getLiftPosition() > PITSTOP - 5000){
+            intake.setPower(-left_trigger.get() * 0.3);
             if (!rumbled) {
                 gamepad1.rumble(500);
                 gamepad2.rumble(500);
@@ -74,13 +75,18 @@ public class IntakeControl extends ControlModule{
             rumbled = false;
         }
 
-        // Starts timer for moving claw
-        if ((right_bumper.get())){
-            intake.deposit(OPEN_CLAW);
-        } else if ((!intake.freightDetected() && lift.getLiftTarget() < 30)) {
-            intake.deposit(OPEN_CLAW);
-        } else {
+        if (intake.freightDetected() && !waiting_for_freight){
+            waiting_for_freight = true;
+            auto_grab_timer.reset();
+        }
+        if (auto_grab_timer.seconds() > 0.1 && waiting_for_freight){
             intake.deposit(CLOSE_CLAW_FREIGHT);
+            if (right_bumper.get()){
+                intake.deposit(OPEN_CLAW);
+                waiting_for_freight = false;
+            }
+        } else {
+            intake.deposit(OPEN_CLAW);
         }
 
         if (right_bumper.edge() == -1) {

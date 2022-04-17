@@ -38,7 +38,7 @@ public class CapstoneDetector {
 
 
         if (op_mode.contains("Red")) {
-            if (Math.abs((leftAverage - rightAverage)) > 200)
+            if (Math.abs((leftAverage - rightAverage)) > 250)
                 if (leftAverage > rightAverage) {
                     location = 2;
                 } else {
@@ -48,7 +48,7 @@ public class CapstoneDetector {
                 location = 3;
             }
         } else if (op_mode.contains("Blue")) {
-            if (Math.abs((leftAverage - rightAverage)) > 200)
+            if (Math.abs((leftAverage - rightAverage)) > 250)
                 if (leftAverage > rightAverage) {
                     location = 3;
                 } else {

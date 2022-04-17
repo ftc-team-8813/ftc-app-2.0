@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.hardware.Capper;
 import org.firstinspires.ftc.teamcode.hardware.CapstoneDetector;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Duck;
@@ -22,6 +23,7 @@ public class RedAuto extends LoggingOpMode{
     private Intake intake;
     private Duck duck;
     private CapstoneDetector cap_detector;
+    private Capper capper;
 
     private int main_id = 0;
     private int lift_id = 0;
@@ -32,7 +34,6 @@ public class RedAuto extends LoggingOpMode{
     private ElapsedTime lift_timer;
     private ElapsedTime duck_timer;
 
-    private boolean lift_reset;
     private boolean cap_sampled = false;
     private boolean spinning = false;
 
@@ -56,6 +57,7 @@ public class RedAuto extends LoggingOpMode{
     public void init() {
         super.init();
         Robot robot = Robot.initialize(hardwareMap);
+        capper = robot.capper;
         drivetrain = robot.drivetrain;
         lift = robot.lift;
         intake = robot.intake;
@@ -79,37 +81,43 @@ public class RedAuto extends LoggingOpMode{
         duck_timer = new ElapsedTime();
 
         intake.deposit(CLOSE_CLAW_FREIGHT);
+        capper.init();
     }
 
     @Override
     public void init_loop() {
         super.init_loop();
-        if (lift.getPivotReset()){
-            if (lift.resetPivot(name)){
-                lift_reset = true;
-            }
-        } else {
-            lift.resetLift();
+        lift.setPowers(-gamepad2.right_stick_y * 0.9,
+                       -gamepad2.right_stick_y * 0.9,
+                     gamepad2.left_stick_x * 0.5);
+        if (lift.liftAtBottom()){
+            lift.resetLiftEncoder();
+        }
+        if (gamepad2.a){
+            lift.resetPivotEncoder();
         }
 
         if (cap_detector.detect_capstone()){
             cap_sampled = true;
         }
 
-        if (lift_reset && cap_sampled){
+        if (cap_sampled){
             telemetry.addData("Finished Initialization", "");
         }
 
         telemetry.addData("Lift Current: ", lift.getLiftPosition());
-        telemetry.addData("Lift Target: ", lift.getLiftTarget());
         telemetry.addData("Pivot Current: ", lift.getPivotPosition());
-        telemetry.addData("Pivot Target: ", lift.getPivotTarget());
         telemetry.update();
     }
 
     @Override
     public void start() {
         super.start();
+        drivetrain.resetEncoders();
+
+        lift.raise(lift.getLiftPosition());
+        lift.rotate(lift.getPivotPosition());
+
         cap_detector.setOpMode(name);
         cap_location = cap_detector.final_location();
         if (cap_sampled = false){
@@ -139,7 +147,7 @@ public class RedAuto extends LoggingOpMode{
                 main_id += 1;
                 break;
             case 1:
-                drivetrain.autoMove(-1500,-100,0);
+                drivetrain.autoMove(-1500,100,0);
                 break;
             case 2:
                 switch (lift_id){
@@ -179,39 +187,43 @@ public class RedAuto extends LoggingOpMode{
                 }
                 break;
             case 3:
-                drivetrain.autoMove(1350, 900, 0);
+                drivetrain.autoMove(1000, 1050, 15);
                 break;
             case 4:
                 duck_timer.reset();
                 main_id += 1;
+                break;
             case 5:
                 duck_spin();
                 break;
             case 6:
-                drivetrain.autoMove(-200, -100,24);
-                intake.setPower(.7);
+                drivetrain.autoMove(150, 50,3);
+                intake.setPower(.6);
                 break;
             case 7:
+                drivetrain.autoMove(-200, 0,24);
+                break;
+            case 8:
                 drivetrain.autoMove(425, -125,0);
                 drivetrain.autoSpeed(.45,.3);
                 break;
-            case 8:
-                drivetrain.autoMove(0,0,60);
-                break;
             case 9:
+                drivetrain.autoMove(0,0,45);
+                break;
+            case 10:
                 drivetrain.autoSpeed(.6,.45);
                 drivetrain.autoMove(400, 405,0);
                 break;
-            case 10:
-                drivetrain.autoMove(-120,-800,-27);
+            case 11:
+                drivetrain.autoMove(-120,-800,-35);
                 intake.deposit(CLOSE_CLAW_DUCK);
                 intake.setPower(0);
                 lift_id = 0;
                 break;
-            case 11:
+            case 12:
                 switch (lift_id){
                     case 0:
-                        lift.raise(60000);
+                        lift.raise(63000);
                         if (lift.liftReached()) lift_id += 1;
                         break;
                     case 1:
@@ -243,15 +255,16 @@ public class RedAuto extends LoggingOpMode{
                         break;
                 }
                 break;
-            case 12:
-                drivetrain.autoMove(-1150, 0, 13);
+            case 13:
+                drivetrain.autoSpeed(.4, .45);
+                drivetrain.autoMove(-1150, 200, 13);
                 break;
         }
 
         lift.update();
         drivetrain.update(telemetry);
 
-        if (drivetrain.ifReached() && main_id != 2 && main_id != 11 || if_spinned()) {
+        if (drivetrain.ifReached() && main_id != 2 && main_id != 12 || if_spinned()) {
             main_id += 1;
         }
 
@@ -269,7 +282,7 @@ public class RedAuto extends LoggingOpMode{
     }
 
     public void duck_spin() {
-        duck.spin((duck_timer.seconds() / 10));
+        duck.spin(-(duck_timer.seconds() / 9));
         spinning = true;
     }
 
