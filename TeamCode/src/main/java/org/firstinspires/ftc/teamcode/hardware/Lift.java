@@ -90,13 +90,16 @@ public class Lift {
         }
     }
 
-    public void resetPivot(){
+    public boolean resetPivot(String op_mode){
         switch (reset_id){
             case 0:
-                lift_target = 40000;
+                lift_target = PITSTOP;
                 pivot_target = getPivotPosition(); // Ensures pivot doesn't correct
-                if (liftReached()) reset_id += 1;
                 update();
+                if (liftReached()) {
+                    reset_id += 1;
+                    stop();
+                }
                 break;
             case 1:
                 if (pivotAtSide()) {
@@ -105,23 +108,53 @@ public class Lift {
                     pivoter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     reset_id += 1;
                 } else {
+                    lift1.setPower(0.1);
+                    lift2.setPower(0.1);
                     pivoter.setPower(-0.3);
                 }
                 break;
             case 2:
                 lift_target = getLiftTarget(); // Ensure lift doesn't correct
-                pivot_target = 80;
+                pivot_target = 78;
+                update();
                 if (pivotReached()){
                     pivoter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     pivoter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     reset_id += 1;
+                    stop();
                 }
-                update();
                 break;
             case 3:
-                resetLift();
+                lift_target = getLiftTarget();
+                if (op_mode.contains("Red")) {
+                    pivot_target = -40;
+                } else if (op_mode.contains("Blue")){
+                    pivot_target = 40;
+                }
+                update();
+                if (pivotReached()){
+                    reset_id += 1;
+                }
                 break;
+            case 4:
+                lift_target = MAX_HEIGHT;
+                pivot_target = getPivotTarget();
+                update();
+                if (liftReached()){
+                    reset_id += 1;
+                }
+                break;
+            case 5:
+                lift_target = PITSTOP;
+                pivot_target = getPivotTarget();
+                update();
+                if (liftReached()){
+                    reset_id += 1;
+                }
+            case 6:
+                return true;
         }
+        return false;
     }
 
     public void raise(double target_ticks) {
@@ -160,7 +193,7 @@ public class Lift {
 
         //if (lift_power < 0) lift_power *= 0.4;
 
-        lift_power = Range.clip(lift_proportional + lift_integral + lift_derivative, -0.8, 1.0);
+        lift_power = Range.clip(lift_proportional + lift_integral + lift_derivative, -1.0, 1.0);
 
         lift1.setPower(lift_power);
         lift2.setPower(lift_power);
@@ -233,5 +266,11 @@ public class Lift {
 
     public boolean getPivotReset(){
         return pivot_reset;
+    }
+
+    public void stop(){
+        lift1.setPower(0);
+        lift2.setPower(0);
+        pivoter.setPower(0);
     }
 }

@@ -94,7 +94,17 @@ public class LiftControl extends ControlModule {
     @Override
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry);
-        lift.resetLift();
+        if (lift.getPivotReset()){
+            lift.resetPivot("Blue");
+        } else {
+            lift.resetLift();
+        }
+
+        telemetry.addData("Lift Current: ", lift.getLiftPosition());
+        telemetry.addData("Lift Target: ", lift.getLiftTarget());
+        telemetry.addData("Pivot Current: ", lift.getPivotPosition());
+        telemetry.addData("Pivot Target: ", lift.getPivotTarget());
+        telemetry.update();
     }
 
     @Override

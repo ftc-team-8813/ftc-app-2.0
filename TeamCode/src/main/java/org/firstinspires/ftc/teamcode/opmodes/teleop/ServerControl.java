@@ -29,6 +29,8 @@ public class ServerControl extends ControlModule{
             ByteBuffer buf = ByteBuffer.allocate(500);
 
             buf.putDouble(robot.lift.getLiftPosition());
+            buf.putDouble(robot.lift.getLiftTarget());
+
 
             buf.flip();
             resp.respond(buf);

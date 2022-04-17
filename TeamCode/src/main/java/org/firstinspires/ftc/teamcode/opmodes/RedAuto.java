@@ -15,7 +15,8 @@ import org.firstinspires.ftc.teamcode.util.Storage;
 
 @Autonomous(name = "Red Auto")
 public class RedAuto extends LoggingOpMode{
-    private Logger log = new Logger("Red Auto");
+    private String name = "Red Auto";
+    private Logger log = new Logger(name);
     private Drivetrain drivetrain;
     private Lift lift;
     private Intake intake;
@@ -85,13 +86,17 @@ public class RedAuto extends LoggingOpMode{
     @Override
     public void init_loop() {
         super.init_loop();
-        lift.resetLift();
+        if (lift.getPivotReset()){
+            lift_reset = lift.resetPivot(name);
+        } else {
+            lift.resetLift();
+        }
 
         if (cap_detector.detect_capstone()){
             cap_sampled = true;
         }
 
-        if (lift.getPivotReset() && cap_sampled){
+        if (lift_reset && cap_sampled){
             telemetry.addData("Finished Initialization", "");
             telemetry.update();
         }
@@ -100,7 +105,7 @@ public class RedAuto extends LoggingOpMode{
     @Override
     public void start() {
         super.start();
-        cap_detector.setOpMode("Red");
+        cap_detector.setOpMode(name);
         cap_location = cap_detector.final_location();
         if (cap_sampled = false){
             cap_location = 3;
