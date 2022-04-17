@@ -19,6 +19,7 @@ public class LiftControl extends ControlModule {
     ControllerMap.ButtonEntry a;
     ControllerMap.ButtonEntry x;
     ControllerMap.ButtonEntry y;
+    ControllerMap.ButtonEntry dpad_up;
     ControllerMap.ButtonEntry dpad_down;
     ControllerMap.ButtonEntry dpad_left;
     ControllerMap.ButtonEntry dpad_right;
@@ -28,7 +29,7 @@ public class LiftControl extends ControlModule {
     private double preset_rotate;
     private double preset_raise;
     private int preset_side = 1;
-    private boolean far = false;
+    private boolean far = true;
     private boolean can_pre_raise = false;
 
     private double PITSTOP;
@@ -39,6 +40,7 @@ public class LiftControl extends ControlModule {
     private double MID_ROTATE;
     private double HIGH_RAISE;
     private double HIGH_ROTATE;
+    private double MAX_HEIGHT;
 
     private double LOW_RAISE_NEAR;
     private double LOW_ROTATE_NEAR;
@@ -63,10 +65,11 @@ public class LiftControl extends ControlModule {
         a = controllerMap.getButtonMap("lift:low", "gamepad2", "a");
         x = controllerMap.getButtonMap("lift:mid", "gamepad2", "x");
         y = controllerMap.getButtonMap("lift:high", "gamepad2", "y");
+        dpad_up = controllerMap.getButtonMap("lift:max", "gamepad2", "dpad_up");
         dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");
         dpad_left = controllerMap.getButtonMap("lift:left_mode", "gamepad2", "dpad_left");
         dpad_right = controllerMap.getButtonMap("lift:right_mode", "gamepad2", "dpad_right");
-        left_bumper = controllerMap.getButtonMap("lift:far_mode", "gamepad1", "left_bumper");
+        left_bumper = controllerMap.getButtonMap("lift:far_mode", "gamepad2", "left_bumper");
 
         PITSTOP = Storage.getJsonValue("pitstop");
 
@@ -76,6 +79,7 @@ public class LiftControl extends ControlModule {
         MID_ROTATE = Storage.getJsonValue("mid_rotate");
         HIGH_RAISE = Storage.getJsonValue("high_raise");
         HIGH_ROTATE = Storage.getJsonValue("high_rotate");
+        MAX_HEIGHT = Storage.getJsonValue("max_height");
 
         LOW_RAISE_NEAR = Storage.getJsonValue("low_raise_near");
         LOW_ROTATE_NEAR = Storage.getJsonValue("low_rotate_near");
@@ -90,11 +94,7 @@ public class LiftControl extends ControlModule {
     @Override
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry);
-        if (lift.getPivotReset()){
-            lift.resetPivot();
-        } else {
-            lift.resetLift();
-        }
+        lift.resetLift();
     }
 
     @Override
@@ -162,7 +162,11 @@ public class LiftControl extends ControlModule {
             id = 0;
         } else if (dpad_down.get()){
             preset_rotate = 0;
-            preset_raise = 0;
+            preset_raise = 25;
+            id = 0;
+        } else if (dpad_up.get()){
+            preset_raise = MAX_HEIGHT - 5000;
+            preset_rotate = 0;
             id = 0;
         }
 
@@ -173,7 +177,7 @@ public class LiftControl extends ControlModule {
         }
 
         if (left_bumper.edge() == -1) { //falling edge keeps it from changing every loop cycle while the button is down
-            far = !far;
+//            far = !far;
         }
 
         if (intake.freightDetected() && lift.getLiftPosition() < PITSTOP && can_pre_raise){
@@ -197,6 +201,7 @@ public class LiftControl extends ControlModule {
         telemetry.addData("Pivot Integral", lift.print_pivot_integral);
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.addData("Pivot Limit: ", lift.pivotAtSide());
+        telemetry.addData("Far: ", far);
 
         lift.update();
     }

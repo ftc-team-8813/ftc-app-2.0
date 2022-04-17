@@ -52,6 +52,7 @@ public class IntakeControl extends ControlModule{
         CLOSE_CLAW_FREIGHT = Storage.getJsonValue("close_claw_freight");
         OPEN_CLAW = Storage.getJsonValue("open_claw");
         PITSTOP = Storage.getJsonValue("pitstop");
+        intake.deposit(OPEN_CLAW);
     }
 
     @Override
@@ -62,10 +63,10 @@ public class IntakeControl extends ControlModule{
     @Override
     public void update(Telemetry telemetry) {
         if (intake.freightDetected()){
-            intake.setPower((-left_trigger.get() * 0.3) - 0.2);
+            intake.setPower((-left_trigger.get() * 0.3) - 0.1);
             if (!rumbled) {
-                gamepad1.rumble(200);
-                gamepad2.rumble(200);
+                gamepad1.rumble(500);
+                gamepad2.rumble(500);
                 rumbled = true;
             }
         } else {
@@ -74,7 +75,7 @@ public class IntakeControl extends ControlModule{
         }
 
         // Starts timer for moving claw
-        if ((right_bumper.get() && lift.getLiftPosition() > PITSTOP)){
+        if ((right_bumper.get())){
             intake.deposit(OPEN_CLAW);
         } else if ((!intake.freightDetected() && lift.getLiftTarget() < 30)) {
             intake.deposit(OPEN_CLAW);

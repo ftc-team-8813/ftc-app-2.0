@@ -13,8 +13,8 @@ public class DuckControl extends ControlModule{
     private ElapsedTime spinner_speed_timer;
     private ElapsedTime sweeper_timer;
     private double spinner_speed = 0.0;
-    private double time_till_max_speed = 1.2;
-    private double max_speed = 0.8;
+    private double time_till_max_speed = 1.7;
+    private double max_speed = 0.65;
     private boolean stop_duck_spin = false;
     private boolean redTrigOn = false;
     private boolean leftTrigOn = false;

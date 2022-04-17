@@ -116,7 +116,7 @@ public class Lift {
                     pivoter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     reset_id += 1;
                 }
-                update(); // TODO Separate into only pivot update
+                update();
                 break;
             case 3:
                 resetLift();
@@ -160,7 +160,7 @@ public class Lift {
 
         //if (lift_power < 0) lift_power *= 0.4;
 
-        lift_power = Range.clip(lift_proportional + lift_integral + lift_derivative, -1.0, 1.0);
+        lift_power = Range.clip(lift_proportional + lift_integral + lift_derivative, -0.8, 1.0);
 
         lift1.setPower(lift_power);
         lift2.setPower(lift_power);
@@ -175,9 +175,7 @@ public class Lift {
         double pivot_integral = pivot_summed_error * PIVOT_KI;
         double pivot_derivative = (pivot_error - pivot_last_error) / LoopTimer.getLoopTime() * PIVOT_KD;
 
-        //pivot_power = (pivot_proportional + pivot_integral) * 0.5;
-
-        pivot_power = Range.clip(pivot_proportional + pivot_integral + pivot_derivative, -1.0, 1.0);
+        pivot_power = Range.clip(pivot_proportional + pivot_integral + pivot_derivative, -1, 1.0);
 
         pivoter.setPower(pivot_power);
 
