@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
+import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Storage;
 
 @Autonomous(name = "Red Auto")
@@ -36,6 +37,7 @@ public class RedAuto extends LoggingOpMode{
 
     private boolean cap_sampled = false;
     private boolean spinning = false;
+    private final double spin_time = 4;
 
     private double PITSTOP;
     private double MAX_HEIGHT;
@@ -187,7 +189,7 @@ public class RedAuto extends LoggingOpMode{
                 }
                 break;
             case 3:
-                drivetrain.autoMove(1000, 1050, 15);
+                drivetrain.autoMove(950, 1050, 15);
                 break;
             case 4:
                 duck_timer.reset();
@@ -197,18 +199,24 @@ public class RedAuto extends LoggingOpMode{
                 duck_spin();
                 break;
             case 6:
-                drivetrain.autoMove(150, 50,3);
+                drivetrain.autoMove(150, -50,3);
                 intake.setPower(.6);
                 break;
             case 7:
                 drivetrain.autoMove(-200, 0,24);
+                if (intake_timer.seconds() > 3){
+                    main_id += 1;
+                }
                 break;
             case 8:
                 drivetrain.autoMove(425, -125,0);
-                drivetrain.autoSpeed(.45,.3);
+                drivetrain.autoSpeed(.45,.45);
                 break;
             case 9:
                 drivetrain.autoMove(0,0,45);
+                if (intake_timer.seconds() > 3){
+                    main_id += 1;
+                }
                 break;
             case 10:
                 drivetrain.autoSpeed(.6,.45);
@@ -257,7 +265,7 @@ public class RedAuto extends LoggingOpMode{
                 break;
             case 13:
                 drivetrain.autoSpeed(.4, .45);
-                drivetrain.autoMove(-1150, 200, 13);
+                drivetrain.autoMove(-1150, 150, 13);
                 break;
         }
 
@@ -266,6 +274,13 @@ public class RedAuto extends LoggingOpMode{
 
         if (drivetrain.ifReached() && main_id != 2 && main_id != 12 || if_spinned()) {
             main_id += 1;
+            intake_timer.reset();
+        }
+
+        if (intake.getPower() > 0){
+            if (intake.freightDetected()){
+                intake.deposit(CLOSE_CLAW_DUCK);
+            }
         }
 
         telemetry.addData("Main ID: ", main_id);
@@ -281,13 +296,21 @@ public class RedAuto extends LoggingOpMode{
         LoopTimer.resetTimer();
     }
 
+    @Override
+    public void stop() {
+        super.stop();
+        Persistent.put("Color", name);
+    }
+
     public void duck_spin() {
-        duck.spin(-(duck_timer.seconds() / 9));
+        double power = duck_timer.seconds() / 12;
+//        double power = Math.pow(6.5, duck_timer.seconds() - spin_time);
+        duck.spin(-power);
         spinning = true;
     }
 
     public boolean if_spinned(){
-        if (duck_timer.seconds() > 3 && spinning){
+        if (duck_timer.seconds() > spin_time && spinning){
             duck.spin(0);
             spinning = false;
             return true;

@@ -26,4 +26,7 @@ public class Duck {
         sweeper.setPosition(position);
     }
 
+    public double getPower(){
+        return duck_front.getPower();
+    }
 }

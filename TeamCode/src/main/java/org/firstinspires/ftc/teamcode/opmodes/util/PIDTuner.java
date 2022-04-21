@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.util;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -25,6 +26,7 @@ import org.opencv.android.OpenCVLoader;
 import java.io.File;
 
 @TeleOp(name = "PIDTuner")
+@Disabled
 public class PIDTuner extends LoggingOpMode
 {
     // Robot and Controller Vars

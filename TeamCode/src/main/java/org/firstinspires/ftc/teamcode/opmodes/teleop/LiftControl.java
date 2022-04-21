@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
+import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Storage;
 
 public class LiftControl extends ControlModule {
@@ -115,7 +116,7 @@ public class LiftControl extends ControlModule {
         } else {
             switch (id) {
                 case -2:
-                    if (auto_raise_timer.seconds() > 0.1){
+                    if (auto_raise_timer.seconds() > 0.08){
                         id = 0;
                     }
                     break;
@@ -204,8 +205,6 @@ public class LiftControl extends ControlModule {
             can_pre_raise = true;
         }
 
-        log.i("Id: %d", id);
-        log.i("Lift Target: %f", lift.getLiftTarget());
         telemetry.addData("Lift Current: ", lift.getLiftPosition());
         telemetry.addData("Lift Target: ", lift.getLiftTarget());
         telemetry.addData("Pivot Current: ", lift.getPivotPosition());

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.hardware.Capper;
 import org.firstinspires.ftc.teamcode.hardware.CapstoneDetector;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
+import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Storage;
 
 @Autonomous(name = "Blue Auto")
@@ -37,6 +39,7 @@ public class BlueAuto extends LoggingOpMode{
     private boolean lift_reset;
     private boolean cap_sampled = false;
     private boolean spinning = false;
+    private final double spin_time = 4;
 
     private double PITSTOP;
     private double MAX_HEIGHT;
@@ -197,23 +200,22 @@ public class BlueAuto extends LoggingOpMode{
                 duck_spin();
                 break;
             case 6:
-                drivetrain.autoMove(-200, 100,-24);
+                drivetrain.autoMove(-200, 100,-23);
                 intake.setPower(.7);
                 break;
             case 7:
                 drivetrain.autoMove(425, 125,0);
-                drivetrain.autoSpeed(.45,.3);
+                drivetrain.autoSpeed(.45,.45);
                 break;
             case 8:
                 drivetrain.autoMove(0,0,-60);
                 break;
             case 9:
-                drivetrain.autoSpeed(.6,.45);
-                drivetrain.autoMove(400, -405,0);
+                drivetrain.autoSpeed(.6,.5);
+                drivetrain.autoMove(350, -405,0);
                 break;
             case 10:
                 drivetrain.autoMove(-120,800,27);
-                intake.deposit(CLOSE_CLAW_DUCK);
                 intake.setPower(0);
                 lift_id = 0;
                 break;
@@ -264,6 +266,12 @@ public class BlueAuto extends LoggingOpMode{
             main_id += 1;
         }
 
+        if (intake.getPower() > 0){
+            if (intake.freightDetected()){
+                intake.deposit(CLOSE_CLAW_DUCK);
+            }
+        }
+
         telemetry.addData("Main ID: ", main_id);
         telemetry.addData("Lift ID: ", lift_id);
         telemetry.addData("Heading: ", drivetrain.getHeading());
@@ -277,13 +285,21 @@ public class BlueAuto extends LoggingOpMode{
         LoopTimer.resetTimer();
     }
 
+    @Override
+    public void stop() {
+        super.stop();
+        Persistent.put("Color", name);
+    }
+
     public void duck_spin() {
-        duck.spin((duck_timer.seconds() / 9));
+        double power = duck_timer.seconds() / 12;
+//        double power = Math.pow(6.5, duck_timer.seconds() - spin_time);
+        duck.spin(power);
         spinning = true;
     }
 
     public boolean if_spinned(){
-        if (duck_timer.seconds() > 3 && spinning){
+        if (duck_timer.seconds() > spin_time && spinning){
             duck.spin(0);
             spinning = false;
             return true;

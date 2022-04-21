@@ -30,6 +30,7 @@ public class ServerControl extends ControlModule{
 
             buf.putDouble(robot.lift.getLiftPosition());
             buf.putDouble(robot.lift.getLiftTarget());
+            buf.putDouble(robot.duck.getPower());
 
 
             buf.flip();

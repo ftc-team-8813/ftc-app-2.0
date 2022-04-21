@@ -19,6 +19,7 @@ public class IntakeControl extends ControlModule{
     private ControllerMap.AxisEntry left_trigger;
     private ControllerMap.AxisEntry right_trigger;
     private ControllerMap.ButtonEntry right_bumper;
+    ControllerMap.ButtonEntry dpad_down;
 
     private ElapsedTime auto_grab_timer = new ElapsedTime();
     private Gamepad gamepad1;
@@ -45,6 +46,7 @@ public class IntakeControl extends ControlModule{
         left_trigger = controllerMap.getAxisMap("intake:outtake", "gamepad1", "left_trigger");
         right_trigger = controllerMap.getAxisMap("intake:intake", "gamepad1", "right_trigger");
         right_bumper = controllerMap.getButtonMap("intake:deposit", "gamepad2", "right_bumper");
+        dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");
 
         gamepad1 = controllerMap.gamepad1;
         gamepad2 = controllerMap.gamepad2;
@@ -53,6 +55,7 @@ public class IntakeControl extends ControlModule{
         CLOSE_CLAW_FREIGHT = Storage.getJsonValue("close_claw_freight");
         OPEN_CLAW = Storage.getJsonValue("open_claw");
         PITSTOP = Storage.getJsonValue("pitstop");
+
         intake.deposit(OPEN_CLAW);
     }
 
@@ -79,9 +82,9 @@ public class IntakeControl extends ControlModule{
             waiting_for_freight = true;
             auto_grab_timer.reset();
         }
-        if (auto_grab_timer.seconds() > 0.1 && waiting_for_freight){
+        if (auto_grab_timer.seconds() > 0 && waiting_for_freight){
             intake.deposit(CLOSE_CLAW_FREIGHT);
-            if (right_bumper.get()){
+            if (right_bumper.get() || dpad_down.get()){
                 intake.deposit(OPEN_CLAW);
                 waiting_for_freight = false;
             }
