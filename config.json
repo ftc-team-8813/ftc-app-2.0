@@ -29,8 +29,8 @@
   "high_raise": 68000,
   "high_rotate": 52,
 
-  "auto_low_raise": 37900,
-  "auto_low_rotate": 63,
+  "auto_low_raise": 40000,
+  "auto_low_rotate": 75,
   "auto_mid_raise": 43700,
   "auto_mid_rotate": 57,
   "auto_high_raise": 56000,

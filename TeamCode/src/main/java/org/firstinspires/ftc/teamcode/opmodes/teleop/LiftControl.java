@@ -116,7 +116,7 @@ public class LiftControl extends ControlModule {
         } else {
             switch (id) {
                 case -2:
-                    if (auto_raise_timer.seconds() > 0.08){
+                    if (auto_raise_timer.seconds() > 0){
                         id = 0;
                     }
                     break;

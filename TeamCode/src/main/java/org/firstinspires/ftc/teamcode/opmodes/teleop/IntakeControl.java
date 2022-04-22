@@ -33,6 +33,8 @@ public class IntakeControl extends ControlModule{
     private double PITSTOP;
     private boolean waiting_for_freight = false;
 
+    private double claw_offset = 0.2;
+
     public IntakeControl(String name) {
         super(name);
     }
@@ -56,7 +58,7 @@ public class IntakeControl extends ControlModule{
         OPEN_CLAW = Storage.getJsonValue("open_claw");
         PITSTOP = Storage.getJsonValue("pitstop");
 
-        intake.deposit(OPEN_CLAW);
+        intake.deposit(OPEN_CLAW - claw_offset);
     }
 
     @Override
@@ -67,7 +69,7 @@ public class IntakeControl extends ControlModule{
     @Override
     public void update(Telemetry telemetry) {
         if (lift.getLiftPosition() > PITSTOP - 5000){
-            intake.setPower(-left_trigger.get() * 0.3);
+            intake.setPower(-right_trigger.get() * 0.3 - left_trigger.get());
             if (!rumbled) {
                 gamepad1.rumble(500);
                 gamepad2.rumble(500);
@@ -82,14 +84,17 @@ public class IntakeControl extends ControlModule{
             waiting_for_freight = true;
             auto_grab_timer.reset();
         }
-        if (auto_grab_timer.seconds() > 0 && waiting_for_freight){
+        if (auto_grab_timer.seconds() > 0.1 && waiting_for_freight){
             intake.deposit(CLOSE_CLAW_FREIGHT);
-            if (right_bumper.get() || dpad_down.get()){
+            if (right_bumper.get()){
                 intake.deposit(OPEN_CLAW);
+                waiting_for_freight = false;
+            } else if (dpad_down.get()) {
+                intake.deposit(OPEN_CLAW - claw_offset);
                 waiting_for_freight = false;
             }
         } else {
-            intake.deposit(OPEN_CLAW);
+            intake.deposit(OPEN_CLAW - claw_offset);
         }
 
         if (right_bumper.edge() == -1) {

@@ -14,7 +14,7 @@ public class DuckControl extends ControlModule{
     ControllerMap.AxisEntry right_trigger;
     private ElapsedTime spinner_speed_timer;
     private double spinner_speed = 0.0;
-    private final double spin_time = 10;
+    private final double spin_time = 8;
 
     public DuckControl(String name){
         super(name);
@@ -30,10 +30,18 @@ public class DuckControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        if (right_trigger.get() > 0.05) {
-            spinner_speed = spinner_speed_timer.seconds() / spin_time;
-        } else if (left_trigger.get() > 0.05) {
-            spinner_speed = -spinner_speed_timer.seconds() / spin_time;
+        if (spinner_speed_timer.seconds() > 3) {
+            if (right_trigger.get() > 0.05) {
+                spinner_speed = 1.0;
+            } else if (left_trigger.get() > 0.05) {
+                spinner_speed = -1.0;
+            }
+        } else if (spinner_speed_timer.seconds() > 0.1){
+            if (right_trigger.get() > 0.05) {
+                spinner_speed = spinner_speed_timer.seconds() / spin_time;
+            } else if (left_trigger.get() > 0.05) {
+                spinner_speed = -spinner_speed_timer.seconds() / spin_time;
+            }
         }
 
         if (left_trigger.get() <= 0.05 && right_trigger.get() <= 0.05) {

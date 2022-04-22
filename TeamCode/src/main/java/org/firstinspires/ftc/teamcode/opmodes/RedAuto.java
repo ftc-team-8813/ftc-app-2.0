@@ -149,7 +149,7 @@ public class RedAuto extends LoggingOpMode{
                 main_id += 1;
                 break;
             case 1:
-                drivetrain.autoMove(-1500,100,0);
+                drivetrain.autoMove(-1700,100,0);
                 break;
             case 2:
                 switch (lift_id){
@@ -159,16 +159,40 @@ public class RedAuto extends LoggingOpMode{
                         break;
                     case 1:
                         lift.rotate(AUTO_ROTATE);
-                        if (lift.pivotReached()) lift_id += 1;
+                        if (lift.pivotReached()){
+                            lift_id += 1;
+                            main_id += 1;
+                        }
                         break;
+                }
+                break;
+            case 3:
+                drivetrain.autoMove(200, 0, 0);
+                break;
+            case 4:
+                switch (lift_id){
                     case 2:
                         lift_timer.reset();
                         intake.deposit(OPEN_CLAW);
                         lift_id += 1;
                         break;
                     case 3:
-                        if (lift_timer.seconds() > HOLD_TIME + 0.5) lift_id += 1;
+                        if (lift_timer.seconds() > HOLD_TIME + 0.5) {
+                            if (AUTO_RAISE > 50000){
+                                main_id = 6;
+                            } else {
+                                main_id += 1;
+                            }
+                            lift_id += 1;
+                        }
                         break;
+                }
+                break;
+            case 5:
+                drivetrain.autoMove(-200, 0, 0);
+                break;
+            case 6:
+                switch (lift_id){
                     case 4:
                         lift.raise(PITSTOP);
                         if (lift.liftReached()) lift_id += 1;
@@ -188,47 +212,51 @@ public class RedAuto extends LoggingOpMode{
                         break;
                 }
                 break;
-            case 3:
-                drivetrain.autoMove(950, 1050, 15);
+            case 7:
+                if (AUTO_RAISE > 50000){
+                    drivetrain.autoMove(950, 1050, 0);
+                } else {
+                    drivetrain.autoMove(1150, 1050, 0);
+                }
                 break;
-            case 4:
+            case 8:
                 duck_timer.reset();
                 main_id += 1;
                 break;
-            case 5:
+            case 9:
                 duck_spin();
                 break;
-            case 6:
+            case 10:
                 drivetrain.autoMove(150, -50,3);
                 intake.setPower(.6);
                 break;
-            case 7:
+            case 11:
                 drivetrain.autoMove(-200, 0,24);
                 if (intake_timer.seconds() > 3){
                     main_id += 1;
                 }
                 break;
-            case 8:
+            case 12:
                 drivetrain.autoMove(425, -125,0);
                 drivetrain.autoSpeed(.45,.45);
                 break;
-            case 9:
+            case 13:
                 drivetrain.autoMove(0,0,45);
                 if (intake_timer.seconds() > 3){
                     main_id += 1;
                 }
                 break;
-            case 10:
+            case 14:
                 drivetrain.autoSpeed(.6,.45);
                 drivetrain.autoMove(400, 405,0);
                 break;
-            case 11:
+            case 15:
                 drivetrain.autoMove(-120,-800,-35);
                 intake.deposit(CLOSE_CLAW_DUCK);
                 intake.setPower(0);
                 lift_id = 0;
                 break;
-            case 12:
+            case 16:
                 switch (lift_id){
                     case 0:
                         lift.raise(63000);
@@ -263,7 +291,7 @@ public class RedAuto extends LoggingOpMode{
                         break;
                 }
                 break;
-            case 13:
+            case 17:
                 drivetrain.autoSpeed(.4, .45);
                 drivetrain.autoMove(-1150, 150, 13);
                 break;
@@ -272,7 +300,7 @@ public class RedAuto extends LoggingOpMode{
         lift.update();
         drivetrain.update(telemetry);
 
-        if (drivetrain.ifReached() && main_id != 2 && main_id != 12 || if_spinned()) {
+        if (drivetrain.ifReached() && main_id != 16 || if_spinned()) {
             main_id += 1;
             intake_timer.reset();
         }
