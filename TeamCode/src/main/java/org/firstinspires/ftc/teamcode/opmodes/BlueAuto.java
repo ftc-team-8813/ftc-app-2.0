@@ -215,10 +215,11 @@ public class BlueAuto extends LoggingOpMode{
                 }
                 break;
             case 7:
+                drivetrain.autoSpeed(0.25,0.45);
                 if (AUTO_RAISE > 50000){
-                    drivetrain.autoMove(1400, -750, 0);
+                    drivetrain.autoMove(1400, -865, 0);
                 } else {
-                    drivetrain.autoMove(1600, -750, 0);
+                    drivetrain.autoMove(1600, -865, 0);
                 }
                 break;
             case 8:
@@ -227,21 +228,22 @@ public class BlueAuto extends LoggingOpMode{
                 break;
             case 9:
                 duck_spin();
+                drivetrain.autoSpeed(0.3,0.45);
                 break;
             case 10:
                 drivetrain.autoMove(-200, 100,-23);
                 intake.setPower(.7);
                 break;
             case 11:
-                drivetrain.autoMove(375, 125,0);
-                drivetrain.autoSpeed(.45,.45);
+                drivetrain.autoMove(425, 125,0);
+                drivetrain.autoSpeed(.6,.45);
                 break;
             case 12:
                 drivetrain.autoMove(0,0,-60);
                 break;
             case 13:
                 drivetrain.autoSpeed(.6,.5);
-                drivetrain.autoMove(300, -405,0);
+                drivetrain.autoMove(350, -405,0);
                 break;
             case 14:
                 drivetrain.autoMove(-120,800,27);

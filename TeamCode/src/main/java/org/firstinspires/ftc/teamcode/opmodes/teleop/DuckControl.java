@@ -30,11 +30,11 @@ public class DuckControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        if (spinner_speed_timer.seconds() > 3) {
+        if (spinner_speed_timer.seconds() > 1.75) {
             if (right_trigger.get() > 0.05) {
-                spinner_speed = 1.0;
+                spinner_speed = 0.9;
             } else if (left_trigger.get() > 0.05) {
-                spinner_speed = -1.0;
+                spinner_speed = -0.9;
             }
         } else if (spinner_speed_timer.seconds() > 0.1){
             if (right_trigger.get() > 0.05) {

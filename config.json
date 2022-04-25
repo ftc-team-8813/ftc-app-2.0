@@ -31,10 +31,17 @@
 
   "auto_low_raise": 40000,
   "auto_low_rotate": 75,
-  "auto_mid_raise": 43700,
-  "auto_mid_rotate": 57,
+  "auto_mid_raise": 42000,
+  "auto_mid_rotate": 60,
   "auto_high_raise": 56000,
   "auto_high_rotate": 42.5,
+
+  "auto_low_red_raise": 38000,
+  "auto_low_red_rotate": 79,
+  "auto_mid_red_raise": 43000,
+  "auto_mid_red_rotate": 61,
+  "auto_high_red_raise": 56000,
+  "auto_high_red_rotate": 42.5,
 
   "low_raise_near": 36000,
   "low_rotate_near": 70,
@@ -49,6 +56,6 @@
   "pivot_kp": 0.05,
   "pivot_ki": 0.06,
   "pivot_kd": 0.002,
-  "pivot_threshold": 2.0,
+  "pivot_threshold": 3.0,
   "pivot_lift_trigger": -1
 }
