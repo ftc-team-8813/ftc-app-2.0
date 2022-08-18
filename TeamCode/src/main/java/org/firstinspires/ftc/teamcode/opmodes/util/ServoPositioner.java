@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.util;
 
 import com.qualcomm.hardware.lynx.LynxServoController;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -20,6 +21,7 @@ import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.H
 
 // TODO: Add save-load system (from DiffyServoPositioner)
 @TeleOp(group = "util", name = "Servo Positioner")
+@Disabled
 public class ServoPositioner extends LoggingOpMode
 {
     

@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.qualcomm.hardware.lynx.LynxServoController;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -28,6 +29,7 @@ import java.util.Map;
 import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.HTML;
 
 @TeleOp(group = "util", name = "Differential Servo Positioner")
+@Disabled
 // much of this code is copied from ServoPositioner.java (from commit ab4c65f)
 public class DiffyServoPositioner extends LoggingOpMode
 {

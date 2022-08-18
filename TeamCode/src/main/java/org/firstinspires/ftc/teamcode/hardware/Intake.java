@@ -28,6 +28,7 @@ public class Intake {
         this.sweeper = sweeper;
 
         this.FREIGHT_DETECTION_THRESHOLD = Storage.getJsonValue("freight_detection_threshold");
+        setPower(0);
     }
 
     public void deposit(double target_pos){

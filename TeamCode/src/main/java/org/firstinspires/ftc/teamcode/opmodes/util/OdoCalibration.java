@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.util;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
 @TeleOp(name = "Odo Calibration")
+@Disabled
 public class OdoCalibration extends LoggingOpMode {
     private Robot robot;
     BNO055IMU imu;
