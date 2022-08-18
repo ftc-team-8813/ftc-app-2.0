@@ -158,8 +158,6 @@ public class Lift {
         double lift_integral = lift_summed_error * LIFT_KI;
         double lift_derivative = (lift_error - lift_last_error) / LoopTimer.getLoopTime() * LIFT_KD;
 
-        //if (lift_power < 0) lift_power *= 0.4;
-
         lift_power = Range.clip(lift_proportional + lift_integral + lift_derivative, -1.0, 1.0);
 
         lift1.setPower(lift_power);
@@ -174,8 +172,6 @@ public class Lift {
         double pivot_proportional = pivot_error * PIVOT_KP;
         double pivot_integral = pivot_summed_error * PIVOT_KI;
         double pivot_derivative = (pivot_error - pivot_last_error) / LoopTimer.getLoopTime() * PIVOT_KD;
-
-        //pivot_power = (pivot_proportional + pivot_integral) * 0.5;
 
         pivot_power = Range.clip(pivot_proportional + pivot_integral + pivot_derivative, -1.0, 1.0);
 

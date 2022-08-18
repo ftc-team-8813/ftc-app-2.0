@@ -17,6 +17,12 @@ apply from: '../build.dependencies.gradle'
 
 android {
 
+
+    packagingOptions {
+        jniLibs {
+            pickFirsts += ['**/*.so']
+        }
+    }
     externalNativeBuild {
         cmake {
             path "CMakeLists.txt"

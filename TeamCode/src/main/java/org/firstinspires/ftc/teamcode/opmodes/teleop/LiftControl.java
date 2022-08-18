@@ -28,7 +28,7 @@ public class LiftControl extends ControlModule {
     private double preset_rotate;
     private double preset_raise;
     private int preset_side = 1;
-    private boolean far = false;
+    private boolean far = true;
     private boolean can_pre_raise = false;
 
     private double PITSTOP;
@@ -66,7 +66,7 @@ public class LiftControl extends ControlModule {
         dpad_down = controllerMap.getButtonMap("lift:home", "gamepad2", "dpad_down");
         dpad_left = controllerMap.getButtonMap("lift:left_mode", "gamepad2", "dpad_left");
         dpad_right = controllerMap.getButtonMap("lift:right_mode", "gamepad2", "dpad_right");
-        left_bumper = controllerMap.getButtonMap("lift:far_mode", "gamepad1", "left_bumper");
+        left_bumper = controllerMap.getButtonMap("lift:far_mode", "gamepad2", "left_bumper");
 
         PITSTOP = Storage.getJsonValue("pitstop");
 
@@ -90,11 +90,11 @@ public class LiftControl extends ControlModule {
     @Override
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry);
-        if (lift.getPivotReset()){
-            lift.resetPivot();
-        } else {
+//        if (lift.getPivotReset()){
+//            lift.resetPivot();
+//        } else {
             lift.resetLift();
-        }
+        //}
     }
 
     @Override
@@ -197,6 +197,7 @@ public class LiftControl extends ControlModule {
         telemetry.addData("Pivot Integral", lift.print_pivot_integral);
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.addData("Pivot Limit: ", lift.pivotAtSide());
+        telemetry.addData("Far: ", far);
 
         lift.update();
     }
