@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.util.Util;
 import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
 import org.firstinspires.ftc.teamcode.vision.CapstoneDetector;
+import org.firstinspires.ftc.teamcode.vision.ConeInfoDetector;
 import org.firstinspires.ftc.teamcode.vision.ImageDraw;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 import org.opencv.android.OpenCVLoader;
@@ -79,10 +80,13 @@ public class VisionTest extends LoggingOpMode
         server.registerProcessor(0x01, (cmd, payload, resp) -> { // Get frame
             if (serverFrameCopy == null || serverFrameUsed) return;
 
-            CapstoneDetector detector = new CapstoneDetector(cvFrame, log);
-            detector.setName("Red");
-            int[] capstone_data = detector.detect();
-            log.i("Shipping Height: %d / X Coord: %d", capstone_data[0], capstone_data[1]);
+//            CapstoneDetector detector = new CapstoneDetector(cvFrame, log);
+//            detector.setName("Red");
+//            int[] capstone_data = detector.detect();
+//            log.i("Shipping Height: %d / X Coord: %d", capstone_data[0], capstone_data[1]);
+            ConeInfoDetector detector = new ConeInfoDetector(cvFrame, log);
+            String detect_result = detector.detect(cvFrame);
+            log.i("Result: %d", detect_result);
 
             Bitmap bmp = Bitmap.createBitmap(detector.getStoredFrame().cols(), detector.getStoredFrame().rows(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(detector.getStoredFrame(), bmp);

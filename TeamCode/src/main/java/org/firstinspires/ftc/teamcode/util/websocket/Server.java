@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.util.websocket;
 
+import com.google.zxing.NotFoundException;
+
 import org.firstinspires.ftc.teamcode.util.Logger;
 
 import java.io.IOException;
@@ -89,7 +91,7 @@ public class Server
 
     public interface CommandProcessor
     {
-        public void onRecv(int command, ByteBuffer payload, Responder resp);
+        public void onRecv(int command, ByteBuffer payload, Responder resp) throws NotFoundException;
     }
 
     private static class CmdEcho implements CommandProcessor
