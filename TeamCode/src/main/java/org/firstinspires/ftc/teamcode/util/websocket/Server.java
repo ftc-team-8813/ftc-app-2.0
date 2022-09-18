@@ -303,6 +303,8 @@ public class Server
                         }
                         log.e(e);
                         log.e("Connection failed -- listening for new connections");
+                    } catch (NotFoundException e) {
+                        e.printStackTrace();
                     }
                 }
             }
