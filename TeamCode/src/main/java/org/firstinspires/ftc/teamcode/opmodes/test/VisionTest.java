@@ -9,17 +9,14 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.util.Util;
 import org.firstinspires.ftc.teamcode.util.websocket.InetSocketServer;
 import org.firstinspires.ftc.teamcode.util.websocket.Server;
-import org.firstinspires.ftc.teamcode.vision.CapstoneDetector;
 import org.firstinspires.ftc.teamcode.vision.ConeInfoDetector;
 import org.firstinspires.ftc.teamcode.vision.ImageDraw;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
