@@ -28,9 +28,9 @@ public class ServerControl extends ControlModule{
         server.registerProcessor(0x1, (cmd, payload, resp) -> {
             ByteBuffer buf = ByteBuffer.allocate(500);
 
-            buf.putDouble(robot.lift.getLiftPosition());
-            buf.putDouble(robot.lift.getLiftTarget());
-            buf.putDouble(robot.duck.getPower());
+//            buf.putDouble(robot.lift.getLiftPosition());
+//            buf.putDouble(robot.lift.getLiftTarget());
+//            buf.putDouble(robot.duck.getPower());
 
 
             buf.flip();
