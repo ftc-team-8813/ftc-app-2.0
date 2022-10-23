@@ -2,9 +2,17 @@ package org.firstinspires.ftc.teamcode.opmodes.test;
 
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
+import android.util.Log;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.vuforia.Vuforia;
 
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.function.Consumer;
+import org.firstinspires.ftc.robotcore.external.function.Continuation;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
@@ -84,7 +92,6 @@ public class VisionTest extends LoggingOpMode
             ConeInfoDetector detector = new ConeInfoDetector(cvFrame, log);
             String detect_result = detector.detect(cvFrame);
             log.i("Result: %d", detect_result);
-
             Bitmap bmp = Bitmap.createBitmap(detector.getStoredFrame().cols(), detector.getStoredFrame().rows(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(detector.getStoredFrame(), bmp);
 //            Bitmap bmp = Bitmap.createBitmap(cvFrame.cols(), cvFrame.rows(), Bitmap.Config.ARGB_8888);
@@ -113,6 +120,9 @@ public class VisionTest extends LoggingOpMode
         cvFrame = new Mat(800, 448, CV_8UC4);
 
         server.startServer();
+
+
+
     }
 
     @Override
@@ -149,7 +159,7 @@ public class VisionTest extends LoggingOpMode
 
         telemetry.addData("Camera status", cam.getStatus());
         telemetry.addData("Server status", server.getStatus());
-        // telemetry.addData("Contour area", "%.3f", exTelemetry[0]);
+
     }
 
     @Override

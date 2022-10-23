@@ -12,6 +12,12 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
+import org.opencv.objdetect.QRCodeDetector;
+import org.opencv.core.*;
+//import org.opencv.highgui.HighGui;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.QRCodeDetector;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -48,6 +54,7 @@ import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 
+
 public class ConeInfoDetector {
     private final Logger logger;
     private final Mat detector_frame;
@@ -72,8 +79,7 @@ public class ConeInfoDetector {
     }
 
 
-    public static String detect(Mat df)
-            throws NotFoundException
+    public String detect(Mat df) throws NotFoundException
     {
         Bitmap bMap = Bitmap.createBitmap(df.width(), df.height(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(df, bMap);
@@ -85,11 +91,16 @@ public class ConeInfoDetector {
 
         BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(source));
 
-        Result result
-                = new MultiFormatReader().decode(binaryBitmap);
+        Result result = new MultiFormatReader().decode(binaryBitmap);
 
         return result.getText();
     }
+
+
+//    public static String detect(Mat img) {
+//        QRCodeDetector decoder = new QRCodeDetector();
+//        return decoder.detectAndDecode(img);
+//    }
 
 
 

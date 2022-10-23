@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
@@ -40,11 +42,18 @@ public class Robot {
         DcMotorEx back_left = hardwareMap.get(DcMotorEx.class, "back left");
         DcMotorEx back_right = hardwareMap.get(DcMotorEx.class, "back right");
 
+        DcMotor arm_lower = hardwareMap.get(DcMotor.class, "arm lower");
+        DcMotor arm_upper = hardwareMap.get(DcMotor.class, "arm upper");
+        DcMotor wrist = hardwareMap.get(DcMotor.class, "wrist");
+
+        // Servos
+        Servo claw = hardwareMap.get(Servo.class, "claw");
+
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
 
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
-        this.lift = new Lift();
+        this.lift = new Lift(arm_lower, arm_upper, wrist, claw);
     }
 }
