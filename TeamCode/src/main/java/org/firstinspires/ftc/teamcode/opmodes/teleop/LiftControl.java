@@ -158,7 +158,7 @@ public class LiftControl extends ControlModule {
         double au_f = Math.cos(Math.toRadians(cur_angles[0]) + Math.toRadians(cur_angles[1]));
 
         if (Math.sqrt(Math.pow(x,2) + Math.pow(y,2)) >= (488.89580+424.15230-5)) {
-
+            angles[1] = angles[0];
         }
 
 
