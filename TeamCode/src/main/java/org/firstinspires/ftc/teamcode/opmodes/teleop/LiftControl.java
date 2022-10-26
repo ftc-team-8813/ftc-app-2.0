@@ -11,6 +11,11 @@ public class LiftControl extends ControlModule {
     private Lift lift;
     private Logger log = new Logger("Lift Control");
 
+    double x = 0;
+    double y = 0;
+    //Arm1 = 488.89580 mm
+    //Arm2 = 424.15230 mm
+
 
     public LiftControl(String name) {
         super(name);
@@ -19,6 +24,9 @@ public class LiftControl extends ControlModule {
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.lift = robot.lift;
+        x = 0;
+        y = 0;
+
     }
 
     @Override
