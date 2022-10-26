@@ -93,6 +93,6 @@ public class DriveControl extends ControlModule {
     @Override
     public void stop() {
         super.stop();
-        drivetrain.closeIMU();
+        // drivetrain.closeIMU();
     }
 }

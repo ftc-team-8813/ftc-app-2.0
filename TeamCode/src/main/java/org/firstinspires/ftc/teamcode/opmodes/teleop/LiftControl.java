@@ -24,6 +24,9 @@ public class LiftControl extends ControlModule {
     private double set_x = 0;
     private double set_y = 115;
 
+    private double prev_x = 0;
+    private double prev_y = 115;
+
     private final double AL_DEGREES_PER_TICK = (360.0/(28.0*108.8*32.0/15.0));
     private final double AU_DEGREES_PER_TICK = (360.0/8192.0);
     private final double WRIST_DEGREES_PER_TICK = (360.0/128.0);
@@ -111,7 +114,7 @@ public class LiftControl extends ControlModule {
         }
 
         if (dpad_left.edge() == -1) { // ground
-            set_x = 900;
+            set_x = (488.89580+424.15230);
             set_y = 0;
             arm_upper.startMotionProfile();
         }
@@ -130,8 +133,8 @@ public class LiftControl extends ControlModule {
             lift.setClaw(0.204);
         }
 
-        x += (ax_lift_left_x.get() * 1);
-        y += (-ax_lift_left_y.get() * 1);
+        x += (ax_lift_left_x.get() * 3);
+        y += (-ax_lift_left_y.get() * 3);
 
         if (y < -100)
         {
@@ -149,11 +152,11 @@ public class LiftControl extends ControlModule {
         cur_angles[0] *= AL_DEGREES_PER_TICK;
         cur_angles[1] *= AU_DEGREES_PER_TICK;
         cur_angles[2] *= WRIST_DEGREES_PER_TICK;
-        cur_angles[0] += -5.871684611344538;
-        cur_angles[1] += 6.6796875;
-        cur_angles[2] += 22.5;
+//        cur_angles[0] += -5.871684611344538;
+//        cur_angles[1] += 6.6796875;
+//        cur_angles[2] += 25.5; // or 22.5
 
-        double al_f = Math.cos(Math.toRadians(cur_angles[0])) * 0.2;
+        double al_f = Math.cos(Math.toRadians(cur_angles[0])) * 0.2; // make work for negative
         double au_f = Math.cos(Math.toRadians(cur_angles[0]) + Math.toRadians(cur_angles[1]));
 
         double al_pow = arm_lower.getOutPut(angles[0], cur_angles[0], al_f);
@@ -164,9 +167,17 @@ public class LiftControl extends ControlModule {
             move_arm = !move_arm;
         }
 
+        if (Math.sqrt(Math.pow(x,2) + Math.pow(y,2)) >= (488.89580+424.15230-5)) {
+            x = prev_x;
+            y = prev_y;
+        }
+
         if (move_arm) {
             lift.setLiftPower(al_pow, au_pow, wrist_pow);
         }
+
+        prev_x = x;
+        prev_y = y;
 
         telemetry.addData("AL Target Angle",angles[0]);
         telemetry.addData("AU Target Angle",(-1*(angles[0] - angles[1])));

@@ -90,7 +90,7 @@ public class VisionTest extends LoggingOpMode
 //            int[] capstone_data = detector.detect();
 //            log.i("Shipping Height: %d / X Coord: %d", capstone_data[0], capstone_data[1]);
             ConeInfoDetector detector = new ConeInfoDetector(cvFrame, log);
-            String detect_result = detector.detect(cvFrame);
+            String detect_result = detector.detect();
             log.i("Result: %d", detect_result);
             Bitmap bmp = Bitmap.createBitmap(detector.getStoredFrame().cols(), detector.getStoredFrame().rows(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(detector.getStoredFrame(), bmp);

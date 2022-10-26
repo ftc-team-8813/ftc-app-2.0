@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
+
 public class Drivetrain {
 
     private final DcMotorEx front_left;
@@ -14,15 +16,20 @@ public class Drivetrain {
     private final DcMotorEx back_left;
     private final DcMotorEx back_right;
     private final BNO055IMU imu;
+    private final Odometry odometry; //temp
 
+    private double target_x; //temp
+    private double target_y; //temp
+    private double target_heading; //temp
+    private double target_speed; //temp
 
-    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu) {
+    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu, Odometry odometry/*temp*/) {
         this.front_left = front_left;
         this.front_right = front_right;
         this.back_left = back_left;
         this.back_right = back_right;
         this.imu = imu;
-
+        this.odometry = odometry;//temp
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES; // radian maybe?
@@ -97,5 +104,28 @@ public class Drivetrain {
         imu.close();
     }
 
-//    public boolean
+    public void goToPosition(double y, double x, double heading, double speed){ //temp
+        target_y = y;
+        target_x = x;
+        target_heading = heading;
+        target_speed = speed;
+    }
+
+    public void goToHeading(double heading){ //temp
+        target_heading = heading;
+    } //temp
+
+    public boolean updatePosition(){ //temp
+        double[] odoData = odometry.getOdoData();
+        double delta_y = target_y + odoData[0];
+        double delta_x = target_x - odoData[1];
+        double delta_heading = target_heading + odoData[2];
+
+        double forward_power = delta_x * 0.17 * target_speed;
+        double strafe_power = delta_y * 0.25 * target_speed;
+        double turn_power = delta_heading * 0.01 * target_speed;
+
+        move(forward_power, strafe_power, turn_power,0);
+        return delta_y < 1.5 && delta_x < 1.5 && delta_heading < 2;
+    }
 }

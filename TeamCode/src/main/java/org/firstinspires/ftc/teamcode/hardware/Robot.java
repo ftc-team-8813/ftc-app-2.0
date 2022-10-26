@@ -6,11 +6,13 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 public class Robot {
 
+    public Odometry odometry; //temp
     public Drivetrain drivetrain;
     public Lift lift;
     public IMU imu;
@@ -53,7 +55,8 @@ public class Robot {
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
 
         // Sub-Assemblies
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
+        this.odometry = new Odometry(front_left,front_right,back_left, imu_sensor); //temp
+        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor, this.odometry/*temp*/);
         this.lift = new Lift(arm_lower, arm_upper, wrist, claw);
     }
 }
