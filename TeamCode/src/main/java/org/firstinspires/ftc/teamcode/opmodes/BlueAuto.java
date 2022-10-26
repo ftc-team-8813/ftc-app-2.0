@@ -41,7 +41,6 @@ public class BlueAuto extends LoggingOpMode{
 
     @Override
     public void loop() {
-        drivetrain.goToPosition(10,10,0,1);
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();
 

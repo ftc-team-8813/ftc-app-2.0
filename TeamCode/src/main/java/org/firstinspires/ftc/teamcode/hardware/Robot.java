@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -12,7 +13,6 @@ import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 public class Robot {
 
-    public Odometry odometry; //temp
     public Drivetrain drivetrain;
     public Lift lift;
     public IMU imu;
@@ -39,10 +39,10 @@ public class Robot {
     public Robot(HardwareMap hardwareMap)
     {
         // Motors
-        DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "front left");
-        DcMotorEx front_right = hardwareMap.get(DcMotorEx.class, "front right");
-        DcMotorEx back_left = hardwareMap.get(DcMotorEx.class, "back left");
-        DcMotorEx back_right = hardwareMap.get(DcMotorEx.class, "back right");
+        MotorEx front_left = new MotorEx(hardwareMap, "front left");
+        MotorEx front_right = new MotorEx(hardwareMap, "front right");
+        MotorEx back_left = new MotorEx(hardwareMap, "back left");
+        MotorEx back_right = new MotorEx(hardwareMap, "back right");
 
         DcMotor arm_lower = hardwareMap.get(DcMotor.class, "arm lower");
         DcMotor arm_upper = hardwareMap.get(DcMotor.class, "arm upper");
@@ -55,8 +55,7 @@ public class Robot {
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
 
         // Sub-Assemblies
-        this.odometry = new Odometry(front_left,front_right,back_left, imu_sensor); //temp
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor, this.odometry/*temp*/);
+        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
         this.lift = new Lift(arm_lower, arm_upper, wrist, claw);
     }
 }

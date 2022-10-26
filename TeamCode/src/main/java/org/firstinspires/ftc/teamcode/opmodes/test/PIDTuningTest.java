@@ -3,6 +3,7 @@
 //import com.acmerobotics.dashboard.FtcDashboard;
 //import com.acmerobotics.dashboard.config.Config;
 //import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+//import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 //import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 //import com.qualcomm.robotcore.hardware.DcMotor;
 //import com.qualcomm.robotcore.hardware.Gamepad;
@@ -18,7 +19,6 @@
 //import java.lang.reflect.Field;
 //import java.lang.reflect.Modifier;
 //import java.util.ArrayList;
-//
 //
 //@TeleOp(name="PIDTuningTest")
 //public class PIDTuningTest extends LoggingOpMode {
@@ -90,7 +90,7 @@
 //
 //        arm_lower = hardwareMap.get(DcMotor.class, "arm lower");
 ////        arm_upper = hardwareMap.get(DcMotor.class, "arm upper");
-//        arm_upper = new PIDTuneArm(hardwareMap,"arm upper");
+////        arm_upper = new PIDTuneArm(hardwareMap,"arm upper");
 //        wrist = hardwareMap.get(DcMotor.class, "wrist");
 //
 ////        arm_upper.setDirection(DcMotorSimple.Direction.REVERSE);
