@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
+import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.teamcode.util.Storage;
 public class BlueAuto extends LoggingOpMode{
 
     private Drivetrain drivetrain;
+    private Lift lift;
 
     @Override
     public void init() {
@@ -24,7 +26,8 @@ public class BlueAuto extends LoggingOpMode{
     public void init_loop() {
         super.init_loop();
         Robot robot = Robot.initialize(hardwareMap);
-
+        drivetrain = robot.drivetrain;
+        lift = robot.lift;
 
         telemetry.update();
     }
@@ -38,7 +41,6 @@ public class BlueAuto extends LoggingOpMode{
 
     @Override
     public void loop() {
-
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();
 
