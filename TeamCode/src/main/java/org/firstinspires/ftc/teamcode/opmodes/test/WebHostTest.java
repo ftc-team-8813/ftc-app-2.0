@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.util.webserver.WebHost;
 
+@Disabled
 @TeleOp(name = "WebHost Test")
 public class WebHostTest extends LoggingOpMode{
     private WebHost webhost;

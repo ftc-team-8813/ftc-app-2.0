@@ -14,7 +14,6 @@ public class Lift {
     private final DcMotor arm_lower;
     private final DcMotor arm_upper;
     private final DcMotor wrist;
-    private final Servo claw;
 
     private final double ARM_LOWER_LENGTH = 488.89580;
     private final double ARM_UPPER_LENGTH = 424.15230;
@@ -25,15 +24,10 @@ public class Lift {
     private double y = 115;
 
 
-    public Lift(DcMotor arm_lower, DcMotor arm_upper, DcMotor wrist, Servo claw) {
+    public Lift(DcMotor arm_lower, DcMotor arm_upper, DcMotor wrist) {
         this.arm_lower = arm_lower;
         this.arm_upper = arm_upper;
         this.wrist = wrist;
-        this.claw = claw;
-    }
-
-    public void setClaw(double pos) {
-        claw.setPosition(pos);
     }
 
     public void setCoordinates(double set_x, double set_y) {

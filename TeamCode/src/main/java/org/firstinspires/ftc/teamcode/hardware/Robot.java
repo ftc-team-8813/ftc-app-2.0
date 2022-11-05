@@ -2,19 +2,23 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
+import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 public class Robot {
 
     public Drivetrain drivetrain;
+    public Intake intake;
     public Lift lift;
+    public OdometryNav odometryNav;
     public IMU imu;
 
     public EventBus eventBus = new EventBus();
@@ -53,9 +57,12 @@ public class Robot {
 
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
+        DistanceSensor claw_sensor = hardwareMap.get(DistanceSensor.class, "claw sensor");
 
         // Sub-Assemblies
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
-        this.lift = new Lift(arm_lower, arm_upper, wrist, claw);
+        this.drivetrain = new Drivetrain(front_left.motorEx, front_right.motorEx, back_left.motorEx, back_right.motorEx, imu_sensor);
+        this.intake = new Intake(claw,claw_sensor);
+        this.lift = new Lift(arm_lower, arm_upper, wrist);
+        this.odometryNav = new OdometryNav(front_left, front_right, back_left, back_right);
     }
 }

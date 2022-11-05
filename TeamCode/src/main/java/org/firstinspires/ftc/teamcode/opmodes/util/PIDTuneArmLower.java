@@ -1,14 +1,11 @@
-package org.firstinspires.ftc.teamcode.hardware;
+package org.firstinspires.ftc.teamcode.opmodes.util;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
-import java.util.ArrayList;
+@Deprecated
 @Config
-public class PIDTuneArm {
+public class PIDTuneArmLower {
 
 //    private double position;
 //    private double target_position;
@@ -32,10 +29,10 @@ public class PIDTuneArm {
     private ElapsedTime timer = new ElapsedTime();
     private ElapsedTime trapezoid = new ElapsedTime();
 
-    public static double Kp = 0.011;
-    public static double Ki = 0.0005;
+    public static double Kp = 0.025;
+    public static double Ki = 0.0;
     public static double Kd = 0.001;
-    public static double Kf = 0.14;
+    public static double Kf = 0.2;
 
     public static double a_max = 1;
 
@@ -64,7 +61,8 @@ public class PIDTuneArm {
             integralSum = 0;
         }
 
-        double out_target = Range.clip((Kp * error) + (Ki * integralSum) + (Kd * derivative), -clip,clip) + (feedforward * Kf);
+//        double out_target = Range.clip((Kp * error) + (Ki * integralSum) + (Kd * derivative), -clip,clip) + (feedforward * Kf);
+        double out = (Kp * error) + (Ki * integralSum) + (Kd * derivative) + (Kf * feedforward);
 
         lastError = error;
 
@@ -78,7 +76,8 @@ public class PIDTuneArm {
 //        if ((Math.abs(error) > 10) && ((trapezoid.seconds() * a_max) > 1)) {
 //            trapezoid.reset();
 //        }
-        double out = out_target * Math.min(trapezoid.seconds() * a_max, 1);
+//        double out = out_target * Math.min(trapezoid.seconds() * a_max, 1);
+
 
         return out;
     }

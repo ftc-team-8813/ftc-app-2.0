@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.hardware;
+package org.firstinspires.ftc.teamcode.hardware.navigation;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -28,18 +28,20 @@ public class PID {
     private double Kp;
     private double Ki;
     private double Kd;
+    private double Kf;
 
 
-    public PID (double kp, double ki, double kd, double mxis, double aVal) {
+    public PID (double kp, double ki, double kd, double kf, double mxis, double aVal) {
         Kp = kp;
         Ki = ki;
         Kd = kd;
+        Kf = kf;
         maxIntegralSum = mxis;
         a = aVal;
     }
 
 
-    public double getOutPut(double reference, double cur, double f) {
+    public double getOutPut(double reference, double cur, double feedforward) {
 
         double error = reference - cur;
 
@@ -65,7 +67,7 @@ public class PID {
             integralSum = 0;
         }
 
-        double out = (Kp * error) + (Ki * integralSum) + (Kd * derivative) + f;
+        double out = (Kp * error) + (Ki * integralSum) + (Kd * derivative) + (Kf * feedforward);
 
         lastError = error;
 

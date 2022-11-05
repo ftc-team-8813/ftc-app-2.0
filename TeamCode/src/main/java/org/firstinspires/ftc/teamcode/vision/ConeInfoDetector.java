@@ -7,6 +7,8 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -32,9 +34,15 @@ public class ConeInfoDetector {
     private ArrayList<Double> zoned_areas;
     private ArrayList<int[]> zoned_areas_data;
 
-    public ConeInfoDetector(Mat detector_frame, Logger logger){
+    private final double alpha;
+    private final double beta;
+
+
+    public ConeInfoDetector(Mat detector_frame, Logger logger, double alpha, double beta){
         this.logger = logger;
         this.detector_frame = detector_frame;
+        this.alpha = alpha;
+        this.beta = beta;
         this.stored_frame = new Mat();
         this.lower_hls = new Scalar(30,20,20);
         this.upper_hls = new Scalar(90,255,190);
@@ -47,9 +55,19 @@ public class ConeInfoDetector {
 
     public String detect()
     {
+        Mat crop = new Mat();
+        Mat normalized = new Mat();
+        Mat masked = new Mat();
 
-        Bitmap bMap = Bitmap.createBitmap(detector_frame.width(), detector_frame.height(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(detector_frame, bMap);
+        Rect rectCrop = new Rect(800,500,320, 300);
+        crop = new Mat(detector_frame,rectCrop);
+
+        Core.normalize(crop,normalized,alpha,beta,Core.NORM_MINMAX);
+
+        masked = crop;
+
+        Bitmap bMap = Bitmap.createBitmap(masked.width(), masked.height(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(masked, bMap);
         int[] intArray = new int[bMap.getWidth()*bMap.getHeight()];
 
         bMap.getPixels(intArray, 0, bMap.getWidth(), 0, 0, bMap.getWidth(), bMap.getHeight());
@@ -63,7 +81,7 @@ public class ConeInfoDetector {
             return result.getText();
         }
         catch (NotFoundException e) {
-            return "Null";
+            return "Nothing Detected";
         }
     }
 

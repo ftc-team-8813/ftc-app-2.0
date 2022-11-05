@@ -23,8 +23,8 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
-@Autonomous(name = "Red Auto")
-public class RedAuto extends LoggingOpMode{
+@Autonomous(name = "Blue Auto")
+public class ParkingAuto extends LoggingOpMode{
 
     private Drivetrain drivetrain;
     private Lift lift;
@@ -38,7 +38,7 @@ public class RedAuto extends LoggingOpMode{
 
     private int main_id = 0;
 
-    private final Logger log = new Logger("Red Auto");
+    private final Logger log = new Logger("Parking Auto");
 
     static
     {
@@ -99,29 +99,37 @@ public class RedAuto extends LoggingOpMode{
     @Override
     public void loop() {
 
+        odometry.updatePose();
+
         switch (main_id) {
             case 0:
-                drivetrain.autoMove(24, 0, 0, 0, 2, 6, 10, odometry.getPose(), telemetry);
+                drivetrain.autoMove(24,0,0,0,2,6,10, odometry.getPose(),telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
             case 1:
-                drivetrain.autoMove(26, -26, 45, 0, 1, 1, 10, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
+                switch (result) {
+                    case "FTC8813: 1":
+                        drivetrain.autoMove(26,-26,0,0,1,1,10, odometry.getPose(),telemetry);
+                        if (drivetrain.hasReached()) {
+                            main_id += 1;
+                        }
+                        break;
+                    case "FTC8813: 3":
+                        drivetrain.autoMove(26,26,0,0,1,1,10, odometry.getPose(),telemetry);
+                        if (drivetrain.hasReached()) {
+                            main_id += 1;
+                        }
+                        break;
                 }
                 break;
             case 2:
                 drivetrain.stop();
-                break;
         }
-
 
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();
-
-
 
         LoopTimer.resetTimer();
 

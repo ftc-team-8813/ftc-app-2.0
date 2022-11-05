@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ServerControl;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
@@ -32,6 +35,7 @@ public class CurrentTele extends LoggingOpMode
     @Override
     public void init()
     {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         super.init();
         robot = Robot.initialize(hardwareMap);
         evBus = robot.eventBus;
@@ -44,6 +48,7 @@ public class CurrentTele extends LoggingOpMode
         // Controller Modules
         controlMgr.addModule(new ServerControl("Server Control"));
         controlMgr.addModule(new DriveControl("Drive Control"));
+        controlMgr.addModule(new IntakeControl("Intake Control"));
         controlMgr.addModule(new LiftControl("Lift Control"));
 
         controlMgr.initModules();

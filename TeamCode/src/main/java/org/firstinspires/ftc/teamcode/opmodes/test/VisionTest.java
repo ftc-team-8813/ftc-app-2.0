@@ -5,6 +5,7 @@ import android.graphics.ImageFormat;
 import android.util.Log;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.vuforia.Vuforia;
 
@@ -32,6 +33,7 @@ import java.nio.ByteBuffer;
 
 import static org.opencv.core.CvType.CV_8UC4;
 
+@Disabled
 @TeleOp(name = "Vision Test")
 public class VisionTest extends LoggingOpMode
 {
@@ -89,7 +91,7 @@ public class VisionTest extends LoggingOpMode
 //            detector.setName("Red");
 //            int[] capstone_data = detector.detect();
 //            log.i("Shipping Height: %d / X Coord: %d", capstone_data[0], capstone_data[1]);
-            ConeInfoDetector detector = new ConeInfoDetector(cvFrame, log);
+            ConeInfoDetector detector = new ConeInfoDetector(cvFrame, log,0,0);
             String detect_result = detector.detect();
             log.i("Result: %d", detect_result);
             Bitmap bmp = Bitmap.createBitmap(detector.getStoredFrame().cols(), detector.getStoredFrame().rows(), Bitmap.Config.ARGB_8888);
