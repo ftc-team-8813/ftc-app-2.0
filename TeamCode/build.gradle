@@ -35,5 +35,7 @@ dependencies {
         exclude group: 'org.slf4j'
         exclude group: 'org.checkerframework'
     }
-    implementation 'org.ftclib.ftclib:core:2.0.1'
+    implementation ('org.ftclib.ftclib:core:2.0.1')  {
+        exclude group: 'com.google.code.findbugs'
+    }
 }

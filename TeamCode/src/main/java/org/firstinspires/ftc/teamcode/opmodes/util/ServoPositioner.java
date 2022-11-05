@@ -21,7 +21,7 @@ import static org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat.H
 
 // TODO: Add save-load system (from DiffyServoPositioner)
 @TeleOp(group = "util", name = "Servo Positioner")
-@Disabled
+//@Disabled
 public class ServoPositioner extends LoggingOpMode
 {
     

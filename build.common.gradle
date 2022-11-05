@@ -20,7 +20,6 @@ import java.util.regex.Pattern
 apply plugin: 'com.android.application'
 
 android {
-
     compileSdkVersion 30
 
     signingConfigs {
