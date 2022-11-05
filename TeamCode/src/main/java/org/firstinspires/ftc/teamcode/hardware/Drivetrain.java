@@ -1,154 +1,188 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
-import com.arcrobotics.ftclib.command.OdometrySubsystem;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
-import com.arcrobotics.ftclib.hardware.motors.Motor;
-import com.arcrobotics.ftclib.hardware.motors.MotorEx;
-import com.arcrobotics.ftclib.kinematics.HolonomicOdometry;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
+import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 
 public class Drivetrain {
 
-    public MotorEx front_left;
-    public MotorEx front_right;
-    public MotorEx back_left;
-    public MotorEx back_right;
+    private final DcMotorEx front_left;
+    private final DcMotorEx front_right;
+    private final DcMotorEx back_left;
+    private final DcMotorEx back_right;
+    private final BNO055IMU imu;
+    private boolean has_reached;
 
-    public DcMotorEx front_left_dc;
-    public DcMotorEx front_right_dc;
-    public DcMotorEx back_left_dc;
-    public DcMotorEx back_right_dc;
-
-
-    public MotorEx.Encoder leftOdometer;
-    public MotorEx.Encoder rightOdometer;
-    public MotorEx.Encoder centerOdometer;
-
-    public static final double TRACKWIDTH = 10.07570866;
-    public static final double CENTER_WHEEL_OFFSET = 5.027;
-    public static final double WHEEL_DIAMETER = 1.37795;
-    public static final double TICKS_PER_REV = 8192;
-    public static final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;
-
-    private HolonomicOdometry odometry;
-//    private final BNO055IMU imu;
-
-    public Drivetrain(MotorEx front_left, MotorEx front_right, MotorEx back_left, MotorEx back_right) {
+    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu) {
         this.front_left = front_left;
         this.front_right = front_right;
         this.back_left = back_left;
         this.back_right = back_right;
+        this.imu = imu;
 
-        front_left.motorEx.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        back_left.motorEx.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        back_right.motorEx.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        front_right.motorEx.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        parameters.gyroRange = BNO055IMU.GyroRange.DPS2000;
+        imu.initialize(parameters);
 
-        front_left.motorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        back_left.motorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        back_right.motorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        front_right.motorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        resetEncoders();
+
+        front_left.setDirection(DcMotorSimple.Direction.REVERSE);
+        back_left.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-//    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right){
-//        this.front_left_dc = front_left;
-//        this.front_right_dc = front_right;
-//        this.back_left_dc = back_left;
-//        this.back_right_dc = back_right;
-//
-//    }
+    public void resetEncoders(){
+        front_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        back_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        front_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        back_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-    public void DrivetrainInit(){
-        front_left_dc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        back_left_dc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        back_right_dc.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        front_left_dc.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        back_left_dc.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        back_right_dc.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        //front left - left
-        //front right - right
-        //back left - center
+        front_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        back_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        front_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        back_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void makeOdometry(Telemetry telemetry){
-        leftOdometer = front_left.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
-        rightOdometer = back_right.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
-        centerOdometer = back_left.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
-
-        odometry = new HolonomicOdometry(
-            leftOdometer::getDistance,
-            rightOdometer::getDistance,
-            centerOdometer::getDistance,
-            TRACKWIDTH, CENTER_WHEEL_OFFSET
-        );
+    public void move(double forward, double strafe, double turn, double turn_correct) {
+        front_left.setPower((forward + strafe + (turn+turn_correct)));
+        front_right.setPower((forward - strafe - (turn+turn_correct)));
+        back_left.setPower((forward - strafe + (turn+turn_correct)));
+        back_right.setPower((forward + strafe - (turn+turn_correct)));
     }
 
-    public void getMotorEncoderPositions(Telemetry telemetry){
-        telemetry.addData("Left Odometer: Front Left", front_left_dc.getCurrentPosition());
-        telemetry.addData("Right Odometer: Back Right", back_right_dc.getCurrentPosition());
-        telemetry.addData("Center Odometer: Back Left", back_left_dc.getCurrentPosition());
+    public void move(double forward, double strafe, double turn, double turn_correct, double denominator) {
+
+
+        front_left.setPower(((forward + strafe + (turn+turn_correct)) / denominator));
+        front_right.setPower(((forward - strafe - (turn+turn_correct)) / denominator));
+        back_left.setPower(((forward - strafe + (turn+turn_correct)) / denominator));
+        back_right.setPower(((forward + strafe - (turn+turn_correct)) / denominator));
     }
 
-    public void updateOdometry(Telemetry telemetry){
-        odometry.update(leftOdometer.getPosition(), rightOdometer.getPosition(), centerOdometer.getPosition());
+    public void stop() {
+        front_left.setPower(0);
+        front_right.setPower(0);
+        back_left.setPower(0);
+        back_right.setPower(0);
     }
 
-    public Pose2d getOdometry(){
-        return odometry.getPose();
+    public void autoMove(double forward, double strafe, double turn, double turn_correct, double forward_error_band, double strafe_error_band, double turn_error_band, Pose2d odo, Telemetry telemetry) {
+
+        has_reached = false;
+        turn += 45;
+
+        PID forward_pid = new PID(0.2,0,0,0,0,0);
+        PID strafe_pid = new PID(0.2,0,0,0,0,0);
+        PID turn_pid = new PID(0.01,0,0,0,0,0);
+
+        double y = odo.getY();
+        double x = odo.getX();
+        double rot = 0.0;
+        if(Math.signum(odo.getRotation().getDegrees()) == -1) {
+            rot = (odo.getRotation().getDegrees() + 360);
+        }
+        else {
+            rot = odo.getRotation().getDegrees();
+        }
+
+        double forward_error = Math.abs(forward - y);
+        double strafe_error = Math.abs(strafe - x);
+        double turn_error = Math.abs(turn - rot);
+
+        double forward_power = forward_pid.getOutPut(forward,y,0);
+        double strafe_power = strafe_pid.getOutPut(strafe,x,0);
+        double turn_power = -turn_pid.getOutPut(turn,rot,0);
+
+        double botHeading = -1* Math.toRadians(getHeading());
+
+        double rotX = strafe_power * Math.cos(botHeading) - forward_power * Math.sin(botHeading);
+        double rotY = strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading);
+
+        double denominator = Math.max(Math.abs(forward_power) + Math.abs(strafe_power) + Math.abs(turn_power), 1);
+
+        move(rotY,rotX,turn_power,turn_correct, denominator);
+
+        if((forward_error <= forward_error_band) && (strafe_error <= strafe_error_band) && (turn_error <= turn_error_band)){
+            has_reached = true;
+        }
+
+
+        telemetry.addData("F Power",forward_power);
+        telemetry.addData("S Power",strafe_power);
+        telemetry.addData("T Power",turn_power);
+        telemetry.addData("F Error",forward_error);
+        telemetry.addData("S Error",strafe_error);
+        telemetry.addData("T Error",turn_error);
+        telemetry.addData("F Current",y);
+        telemetry.addData("S Current",x);
+        telemetry.addData("T Current",rot);
+        telemetry.addData("RotY",rotY);
+        telemetry.addData("RotX",rotX);
+        telemetry.addData("Has Reached",has_reached);
+
     }
 
-    public void setOriginalPoseForOdometry(){
-        odometry.updatePose(new Pose2d(0, 0, new Rotation2d(0)));
+    public boolean hasReached() {
+        return has_reached;
     }
 
+    public double getForwardPosition(){
+        return (front_left.getCurrentPosition() + front_right.getCurrentPosition() + back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
+    }
 
-//    public void move() {
-////        front_left.setPower();
-////        front_right.setPower();
-////        back_left.setPower();
-////        back_right.setPower();
-//    }
+    public double getStrafePosition(){
+        return (front_left.getCurrentPosition() - front_right.getCurrentPosition() - back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
+    }
 
-//    public void update() {
-//
-//    }
+    public double getHeading(){
+        return imu.getAngularOrientation().firstAngle;
+    }
 
-//    public void stop() {
-//        front_left.setPower(0);
-//        front_right.setPower(0);
-//        back_left.setPower(0);
-//        back_right.setPower(0);
-//    }
+    public double getAngularVelocity(){
+        return imu.getAngularVelocity().xRotationRate;
+    }
 
-//    public double getForwardPosition(){
-//        return (front_left.getCurrentPosition() + front_right.getCurrentPosition() + back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
-//    }
+    public double getYAcceleration() {
+        return imu.getAcceleration().yAccel;
+    }
 
-//    public double getHeading(){
-//        return imu.getAngularOrientation().firstAngle;
-//    }
+    public double getZAcceleration() {
+        return imu.getAcceleration().zAccel;
+    }
 
-//    public double getAngularVelocity(){
-//        return imu.getAngularVelocity().xRotationRate;
-//    }
+    public double getYVelocity() {
+        return (imu.getVelocity().yVeloc);
+    }
 
-//    public void closeIMU() {
-//        imu.close();
-//    }
-//    public void move(double forward, double strafe, double turn, double turn_correct) {
-//        front_left.setPower((forward + strafe + (turn+turn_correct)));
-//        front_right.setPower((forward - strafe - (turn+turn_correct)));
-//        back_left.setPower((forward - strafe + (turn+turn_correct)));
-//        back_right.setPower((forward + strafe - (turn+turn_correct)));
-//    }
+    public double getZVelocity() {
+        return (imu.getVelocity().zVeloc);
+    }
 
+    public void closeIMU() {
+        imu.close();
+    }
+
+    public void imuAccelStart(){
+        imu.startAccelerationIntegration(null,null,10);
+    }
+
+    public void imuAccelStop(){
+        imu.stopAccelerationIntegration();
+    }
 
 }

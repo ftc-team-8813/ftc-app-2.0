@@ -2,21 +2,24 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.util.Encoder;
+import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
-import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 
 public class Robot {
 
     public Drivetrain drivetrain;
+    public Intake intake;
     public Lift lift;
+    public OdometryNav odometryNav;
     public IMU imu;
-    public Claw claw;
 
     public EventBus eventBus = new EventBus();
     public Scheduler scheduler = new Scheduler(eventBus);
@@ -40,29 +43,26 @@ public class Robot {
     public Robot(HardwareMap hardwareMap)
     {
         // Motors
-//        DcMotorEx front_left_dc = hardwareMap.get(DcMotorEx.class, "front left");
-//        DcMotorEx front_right_dc = hardwareMap.get(DcMotorEx.class, "front right");
-//        DcMotorEx back_left_dc = hardwareMap.get(DcMotorEx.class, "back left");
-//        DcMotorEx back_right_dc = hardwareMap.get(DcMotorEx.class, "back right");
-
-        DcMotorEx arm_lower = hardwareMap.get(DcMotorEx.class, "arm lower");
-        DcMotorEx arm_upper = hardwareMap.get(DcMotorEx.class, "arm upper");
-        DcMotorEx wrist = hardwareMap.get(DcMotorEx.class, "wrist");
-
         MotorEx front_left = new MotorEx(hardwareMap, "front left");
         MotorEx front_right = new MotorEx(hardwareMap, "front right");
         MotorEx back_left = new MotorEx(hardwareMap, "back left");
         MotorEx back_right = new MotorEx(hardwareMap, "back right");
 
-        //Servos
+        DcMotor arm_lower = hardwareMap.get(DcMotor.class, "arm lower");
+        DcMotor arm_upper = hardwareMap.get(DcMotor.class, "arm upper");
+        DcMotor wrist = hardwareMap.get(DcMotor.class, "wrist");
+
+        // Servos
         Servo claw = hardwareMap.get(Servo.class, "claw");
 
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
+        DistanceSensor claw_sensor = hardwareMap.get(DistanceSensor.class, "claw sensor");
 
         // Sub-Assemblies
-//        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
-        this.claw = new Claw(claw);
+        this.drivetrain = new Drivetrain(front_left.motorEx, front_right.motorEx, back_left.motorEx, back_right.motorEx, imu_sensor);
+        this.intake = new Intake(claw,claw_sensor);
+        this.lift = new Lift(arm_lower, arm_upper, wrist);
+        this.odometryNav = new OdometryNav(front_left, front_right, back_left, back_right);
     }
 }

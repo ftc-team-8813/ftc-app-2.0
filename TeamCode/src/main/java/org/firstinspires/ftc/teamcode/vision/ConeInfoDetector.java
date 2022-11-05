@@ -8,45 +8,20 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.imgproc.Moments;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-//import com.google.zxing.BarcodeFormat;
-//import com.google.zxing.BinaryBitmap;
-//import com.google.zxing.EncodeHintType;
-//import com.google.zxing.MultiFormatReader;
-//import com.google.zxing.MultiFormatWriter;
-//import com.google.zxing.NotFoundException;
-//import com.google.zxing.Result;
-//import com.google.zxing.WriterException;
-//import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
-//import com.google.zxing.client.j2se.MatrixToImageWriter;
-//import com.google.zxing.common.BitMatrix;
-//import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.BinaryBitmap;
-import com.google.zxing.LuminanceSource;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.NotFoundException;
-import com.google.zxing.RGBLuminanceSource;
-import com.google.zxing.Reader;
 import com.google.zxing.Result;
-import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.LuminanceSource;
+import com.google.zxing.RGBLuminanceSource;
+
 
 public class ConeInfoDetector {
     private final Logger logger;
@@ -59,9 +34,15 @@ public class ConeInfoDetector {
     private ArrayList<Double> zoned_areas;
     private ArrayList<int[]> zoned_areas_data;
 
-    public ConeInfoDetector(Mat detector_frame, Logger logger){
+    private final double alpha;
+    private final double beta;
+
+
+    public ConeInfoDetector(Mat detector_frame, Logger logger, double alpha, double beta){
         this.logger = logger;
         this.detector_frame = detector_frame;
+        this.alpha = alpha;
+        this.beta = beta;
         this.stored_frame = new Mat();
         this.lower_hls = new Scalar(30,20,20);
         this.upper_hls = new Scalar(90,255,190);
@@ -72,24 +53,43 @@ public class ConeInfoDetector {
     }
 
 
-    public static String detect(Mat df)
-            throws NotFoundException
+    public String detect()
     {
-        Bitmap bMap = Bitmap.createBitmap(df.width(), df.height(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(df, bMap);
+        Mat crop = new Mat();
+        Mat normalized = new Mat();
+        Mat masked = new Mat();
+
+        Rect rectCrop = new Rect(800,500,320, 300);
+        crop = new Mat(detector_frame,rectCrop);
+
+        Core.normalize(crop,normalized,alpha,beta,Core.NORM_MINMAX);
+
+        masked = crop;
+
+        Bitmap bMap = Bitmap.createBitmap(masked.width(), masked.height(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(masked, bMap);
         int[] intArray = new int[bMap.getWidth()*bMap.getHeight()];
-//copy pixel data from the Bitmap into the 'intArray' array
+
         bMap.getPixels(intArray, 0, bMap.getWidth(), 0, 0, bMap.getWidth(), bMap.getHeight());
 
         LuminanceSource source = new RGBLuminanceSource(bMap.getWidth(), bMap.getHeight(),intArray);
 
         BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(source));
 
-        Result result
-                = new MultiFormatReader().decode(binaryBitmap);
-
-        return result.getText();
+        try {
+            Result result = new MultiFormatReader().decode(binaryBitmap);
+            return result.getText();
+        }
+        catch (NotFoundException e) {
+            return "Nothing Detected";
+        }
     }
+
+
+//    public static String detect(Mat img) {
+//        QRCodeDetector decoder = new QRCodeDetector();
+//        return decoder.detectAndDecode(img);
+//    }
 
 
 
