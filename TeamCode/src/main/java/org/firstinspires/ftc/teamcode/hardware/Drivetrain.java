@@ -7,6 +7,7 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
@@ -88,7 +89,7 @@ public class Drivetrain {
 
         PID forward_pid = new PID(0.2,0,0,0,0,0);
         PID strafe_pid = new PID(0.2,0,0,0,0,0);
-        PID turn_pid = new PID(0.01,0,0,0,0,0);
+        PID turn_pid = new PID(0.0313,0.0004,0,0,20,0);
 
         double y = odo.getY();
         double x = odo.getX();
@@ -106,12 +107,12 @@ public class Drivetrain {
 
         double forward_power = forward_pid.getOutPut(forward,y,0);
         double strafe_power = strafe_pid.getOutPut(strafe,x,0);
-        double turn_power = -turn_pid.getOutPut(turn,rot,0);
+        double turn_power = Range.clip((-turn_pid.getOutPut(turn, rot, 0)),-0.4,0.4);
 
         double botHeading = -1* Math.toRadians(getHeading());
 
-        double rotX = strafe_power * Math.cos(botHeading) - forward_power * Math.sin(botHeading);
-        double rotY = strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading);
+        double rotX = 0.6 * (strafe_power * Math.cos(botHeading) - forward_power * Math.sin(botHeading));
+        double rotY = 0.6 * (strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading));
 
         double denominator = Math.max(Math.abs(forward_power) + Math.abs(strafe_power) + Math.abs(turn_power), 1);
 
@@ -165,12 +166,8 @@ public class Drivetrain {
         return imu.getAcceleration().zAccel;
     }
 
-    public double getYVelocity() {
-        return (imu.getVelocity().yVeloc);
-    }
-
-    public double getZVelocity() {
-        return (imu.getVelocity().zVeloc);
+    public double getXAcceleration() {
+        return (imu.getAcceleration().xAccel);
     }
 
     public void closeIMU() {

@@ -26,7 +26,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
-@Disabled
+//@Disabled
 @Autonomous(name="Odometry Test")
 public class OdometryTest extends LoggingOpMode {
 

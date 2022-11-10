@@ -5,6 +5,7 @@ import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.util.FTCDashboardValues;
+import org.firstinspires.ftc.teamcode.util.LoopTimer;
 
 public class DriveControl extends ControlModule {
 
@@ -20,6 +21,10 @@ public class DriveControl extends ControlModule {
 
     private double heading_delta = 0;
     private double heading_was = 0;
+
+    private double z_velocity = 0;
+    private double y_velocity = 0;
+    private double x_velocity = 0;
 
     public DriveControl(String name) {
         super(name);
@@ -96,10 +101,17 @@ public class DriveControl extends ControlModule {
 
         telemetry.addData("Z Acceleration", drivetrain.getZAcceleration());
         telemetry.addData("Y Acceleration", drivetrain.getYAcceleration());
+        telemetry.addData("X Acceleration", drivetrain.getXAcceleration());
 
-        telemetry.addData("Z Velocity", drivetrain.getZVelocity());
-        telemetry.addData("Y Velocity", drivetrain.getYVelocity());
+        z_velocity += LoopTimer.getLoopTime() * drivetrain.getZAcceleration();
+        y_velocity += LoopTimer.getLoopTime() * drivetrain.getYAcceleration();
+        x_velocity += LoopTimer.getLoopTime() * drivetrain.getXAcceleration();
 
+        telemetry.addData("Z Velocity", z_velocity);
+        telemetry.addData("Y Velocity", y_velocity);
+        telemetry.addData("X Velocity", x_velocity);
+
+        LoopTimer.resetTimer();
     }
 
     @Override

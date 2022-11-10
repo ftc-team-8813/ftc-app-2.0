@@ -25,18 +25,25 @@ public class LiftControl extends ControlModule { // TODO make lift fast
     private double x = 70;
     private double y = 370;
 
+    private double wr_constant = 0;
+
     private final double AL_DEGREES_PER_TICK = (360.0/(28.0*108.8*32.0/15.0));
     private final double AU_DEGREES_PER_TICK = (360.0/8192.0);
     private final double WRIST_DEGREES_PER_TICK = (360.0/128.0);
 
-    private final PID arm_lower = new PID(0.022,0.0001,0.0009, 0.2,100,0.8);
-    private final PID arm_upper = new PID(0.026,0.00234,0.001,0.14,100,0.8); // 0.029, 0.0022, 0.001 then 0.027, 0.00228
+    private final PID arm_lower = new PID(0.023,0.0001,0.00091, 0.2,100,0.8);
+    private final PID arm_upper = new PID(0.027,0.00228,0.001,0.14,100,0.8); // 0.029, 0.0022, 0.001 then 0.027, 0.00228
     private final PID wrist = new PID(0.02,0,0,0,0,0);
 
     private boolean intaken = false;
 
     private ControllerMap.AxisEntry ax_lift_left_x;
     private ControllerMap.AxisEntry ax_lift_left_y;
+
+    private ControllerMap.AxisEntry ax_lift_right_y;
+
+    private ControllerMap.ButtonEntry dpad_up;
+    private ControllerMap.ButtonEntry dpad_right;
 
     private ControllerMap.ButtonEntry y_button;
     private ControllerMap.ButtonEntry b_button;
@@ -57,7 +64,8 @@ public class LiftControl extends ControlModule { // TODO make lift fast
         this.lift = robot.lift;
         this.intake = robot.intake;
         ax_lift_left_x = controllerMap.getAxisMap("lift:left_x", "gamepad2", "left_stick_x");
-        ax_lift_left_y = controllerMap.getAxisMap("lift:right_y", "gamepad2", "left_stick_y");
+        ax_lift_left_y = controllerMap.getAxisMap("lift:left_y", "gamepad2", "left_stick_y");
+        ax_lift_right_y = controllerMap.getAxisMap("lift:right_y", "gamepad2", "right_stick_y");
 
         y_button = controllerMap.getButtonMap("lift:high","gamepad1","y");
         b_button = controllerMap.getButtonMap("lift:mid","gamepad1","b");
@@ -69,7 +77,9 @@ public class LiftControl extends ControlModule { // TODO make lift fast
         rec_left_bumper = controllerMap.getButtonMap("lift:reset_encoder_lb","gamepad2","left_bumper");
         rec_left_trigger = controllerMap.getAxisMap("lift:reset_encoder_lt","gamepad2","left_trigger");
 
-        lift.resetLiftEncoder();
+        dpad_up = controllerMap.getButtonMap("lift:pass_through_up","gamepad2","dpad_up");
+        dpad_right = controllerMap.getButtonMap("lift:pass_through_down","gamepad2","dpad_right");
+//        lift.resetLiftEncoder();
     }
 
     @Override
@@ -79,8 +89,10 @@ public class LiftControl extends ControlModule { // TODO make lift fast
             lift.resetLiftEncoder();
         }
 
+        wr_constant -= ax_lift_right_y.get() * 2;
 
-        if ((intake.getClawPosition() == 0.63 && intake.getDistance() < 20) && !intaken) {
+
+        if (((intake.getClawPosition() == 0.63) && (intake.getDistance() < 20) && (y < 10)) && !intaken) {
 
             if (timer.seconds() > 0.5) {
                 x = 70;
@@ -94,6 +106,16 @@ public class LiftControl extends ControlModule { // TODO make lift fast
 
         if(intake.getClawPosition() == 0.11) {
             intaken = false;
+        }
+
+        if (dpad_up.edge() == -1) {
+            x = -403;
+            y = 798;
+        }
+
+        if (dpad_right.edge() == -1) {
+            x = 465;
+            y = -40;
         }
 
         if (y_button.edge() == -1) { // high
@@ -119,14 +141,9 @@ public class LiftControl extends ControlModule { // TODO make lift fast
         x += (ax_lift_left_x.get() * 6);
         y += (-ax_lift_left_y.get() * 6);
 
-        if (y < -100)
+        if ((x > -315.0) && (x < 55) && (y < 200))
         {
-            y = -100;
-        }
-
-        if ((x > -315.0) && (x < 55) && (y < 100))
-        {
-            y = 100;
+            y = 200;
         }
 
         double[] angles = new double[2];
@@ -151,15 +168,13 @@ public class LiftControl extends ControlModule { // TODO make lift fast
         double au_f = Math.cos(Math.toRadians(cur_angles[0]) + Math.toRadians(cur_angles[1]));
 
 
-
-
         double al_pow = arm_lower.getOutPut(angles[0], cur_angles[0], al_f);
         double au_pow = -1 * arm_upper.getOutPut((-angles[0] + angles[1]), cur_angles[1], au_f);
-        double wrist_pow = wrist.getOutPut(-angles[1], cur_angles[2], 0);
+        double wrist_pow = wrist.getOutPut((-angles[1] + wr_constant), cur_angles[2], 0);
 
 
 
-        lift.setLiftPower(Range.clip(al_pow,-0.5,1), au_pow, wrist_pow);
+        lift.setLiftPower(Range.clip(al_pow,-0.5,0.9), Range.clip(au_pow,-0.7,0.7), wrist_pow);
 
 
         telemetry.addData("AL Target Angle",angles[0]);

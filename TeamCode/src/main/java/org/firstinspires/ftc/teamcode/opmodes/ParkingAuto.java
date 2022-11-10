@@ -23,7 +23,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
-@Autonomous(name = "Blue Auto")
+@Autonomous(name = "Parking Auto")
 public class ParkingAuto extends LoggingOpMode{
 
     private Drivetrain drivetrain;
@@ -111,17 +111,19 @@ public class ParkingAuto extends LoggingOpMode{
             case 1:
                 switch (result) {
                     case "FTC8813: 1":
-                        drivetrain.autoMove(26,-26,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(26,-24,0,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
                         break;
                     case "FTC8813: 3":
-                        drivetrain.autoMove(26,26,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(26,24,0,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
                         break;
+                    default:
+                        main_id += 1;
                 }
                 break;
             case 2:
