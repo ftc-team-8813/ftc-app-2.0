@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
+import org.firstinspires.ftc.teamcode.opmodes.util.FTCDashboardValues;
 
 public class Drivetrain {
 
@@ -20,6 +21,7 @@ public class Drivetrain {
     private final DcMotorEx back_left;
     private final DcMotorEx back_right;
     private final BNO055IMU imu;
+    private final FTCDashboardValues ftcdbvals = new FTCDashboardValues();
     private boolean has_reached;
 
     public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu) {
@@ -89,7 +91,8 @@ public class Drivetrain {
 
         PID forward_pid = new PID(0.2,0,0,0,0,0);
         PID strafe_pid = new PID(0.2,0,0,0,0,0);
-        PID turn_pid = new PID(0.0313,0.0004,0,0,20,0);
+        PID turn_pid = new PID(ftcdbvals.getKp(),ftcdbvals.getKi(),0,0,ftcdbvals.getMxis(),0);
+
 
         double y = odo.getY();
         double x = odo.getX();
@@ -107,7 +110,7 @@ public class Drivetrain {
 
         double forward_power = forward_pid.getOutPut(forward,y,0);
         double strafe_power = strafe_pid.getOutPut(strafe,x,0);
-        double turn_power = Range.clip((-turn_pid.getOutPut(turn, rot, 0)),-0.4,0.4);
+        double turn_power = Range.clip((-turn_pid.getOutPut(turn, rot, 0)),-0.2,0.2);
 
         double botHeading = -1* Math.toRadians(getHeading());
 
@@ -134,6 +137,8 @@ public class Drivetrain {
         telemetry.addData("T Current",rot);
         telemetry.addData("RotY",rotY);
         telemetry.addData("RotX",rotX);
+        telemetry.addData("FTCDB",ftcdbvals.getKp());
+        telemetry.addData("FTCDB Test", FTCDashboardValues.getKp());
         telemetry.addData("Has Reached",has_reached);
 
     }

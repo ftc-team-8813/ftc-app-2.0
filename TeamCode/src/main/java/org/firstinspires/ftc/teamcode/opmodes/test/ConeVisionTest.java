@@ -59,11 +59,11 @@ public class ConeVisionTest extends LoggingOpMode {
                 serverFrameUsed = false;
             }
 
-            ConeInfoDetector detector = new ConeInfoDetector(cvFrame,log,ftcdbvals.getAlpha(),ftcdbvals.getBeta());
-            if (!detector.detect().equals("Nothing Detected"))
-            {
-                result = detector.detect();
-            }
+//            ConeInfoDetector detector = new ConeInfoDetector(cvFrame,log,ftcdbvals.getAlpha(),ftcdbvals.getBeta());
+//            if (!detector.detect().equals("Nothing Detected"))
+//            {
+//                result = detector.detect();
+//            }
 
             camera.requestNewFrame();
         }

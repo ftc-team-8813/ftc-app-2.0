@@ -99,6 +99,43 @@ public class Lift {
         }
     }
 
+    public double[] get_POI_new(double l1, double l2, double a, double b) {
+        double[] cords = new double[4];
+
+        double dist = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+        if ((dist > l1 + l2) || (dist < Math.abs(l1 - l2))) {
+            cords[0] = 0;
+            cords[1] = 0;
+            cords[2] = 0;
+            cords[3] = 0;
+            return cords;
+        }
+        if (b == 0) {
+            double x = (Math.pow(a, 2) + Math.pow(l1, 2) - Math.pow(l2, 2)) / (2 * a);
+            double y = Math.sqrt(Math.pow(l1, 2) - Math.pow(x, 2));
+            cords[0] = x;
+            cords[1] = y;
+            cords[2] = x;
+            cords[3] = -y;
+            return cords;
+        } else {
+            double L = (Math.pow(a, 2) + Math.pow(b, 2) + Math.pow(l1, 2) - Math.pow(l2, 2)) / (2 * b);
+            double A = (1 + (Math.pow(a, 2) / Math.pow(b, 2)));
+            double B = (-2 * a * L) / b;
+            double C = Math.pow(L, 2) - Math.pow(l1, 2);
+            double D = Math.sqrt(Math.pow(B, 2) - (4 * A * C));
+            double x1 = (-B + D) / (2 * A);
+            double x2 = (-B - D) / (2 * A);
+            double y1 = (-a / b) * x1 + L;
+            double y2 = (-a / b) * x2 + L;
+            cords[0] = x1;
+            cords[1] = y1;
+            cords[2] = x2;
+            cords[3] = y2;
+            return cords;
+        }
+    }
+
     public double get_qangle(double x, double y) {
         double deg = Math.toDegrees(Math.atan(Math.abs(y) / Math.abs(x)));
         if (x < 0) {
@@ -118,11 +155,11 @@ public class Lift {
 
 
     public double[] get_ang(double l1, double l2, double a, double b, double cural, double curbe) {
-        double[] cords = new double[2];
+        double[] all_angles = new double[2];
         if (a == 0 && b == 0) {
-            cords[0] = cural;
-            cords[1] = -(180 - cural);
-            return cords;
+            all_angles[0] = cural;
+            all_angles[1] = -(180 - cural);
+            return all_angles;
         }
         double[] points = get_POI(l1, l2, a, b);
 
@@ -150,13 +187,13 @@ public class Lift {
 
 
         if ((diff1 < diff2)) {
-            cords[0] = a1;
-            cords[1] = b1;
-            return cords;
+            all_angles[0] = a1;
+            all_angles[1] = b1;
+            return all_angles;
         } else {
-            cords[0] = a2;
-            cords[1] = b2;
-            return cords;
+            all_angles[0] = a2;
+            all_angles[1] = b2;
+            return all_angles;
         }
     }
 
@@ -170,6 +207,47 @@ public class Lift {
     }
 
 
+    public double[] get_length_ang(double l1_max, double l2, double a, double b, double cural, double curbe) {
+        double[] all_angles = new double[2];
+        if (a == 0 && b == 0) {
+            all_angles[0] = cural;
+            all_angles[1] = -(180 - cural);
+            return all_angles;
+        }
+        double[] points = get_POI(l1_max, l2, a, b);
 
+        double x1 = points[0];
+        double y1 = points[1];
+        double x2 = points[2];
+        double y2 = points[3];
+
+        double a1 = get_qangle(x1, y1);
+        double b1 = get_qangle(a - x1, b - y1);
+
+        if ((Math.abs(a1 - b1) > 180)) { // for arms not intersecting
+            b1 = b1 + 360;
+        }
+
+        double a2 = get_qangle(x2, y2);
+        double b2 = get_qangle(a - x2, b - y2);
+
+        if ((Math.abs(-a2 + b2) > 180)) { // for arms not intersecting
+            b2 = b2 - 360;
+        }
+
+        double diff1 = get_min_diff(cural, a1) + get_min_diff(curbe, b1);
+        double diff2 = get_min_diff(cural, a2) + get_min_diff(curbe, b2);
+
+
+        if ((diff1 < diff2)) {
+            all_angles[0] = a1;
+            all_angles[1] = b1;
+            return all_angles;
+        } else {
+            all_angles[0] = a2;
+            all_angles[1] = b2;
+            return all_angles;
+        }
+    }
 
 }

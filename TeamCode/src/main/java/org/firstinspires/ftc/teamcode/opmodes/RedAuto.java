@@ -54,8 +54,8 @@ public class RedAuto extends LoggingOpMode{
     private final double AU_DEGREES_PER_TICK = (360.0/8192.0);
     private final double WRIST_DEGREES_PER_TICK = (360.0/128.0);
 
-    private final PID arm_lower = new PID(0.0285,0.0001,0.00091, 0.18,100,0.8);
-    private final PID arm_upper = new PID(0.0313,0.00234,0.001,0.12,100,0.8); // 0.029, 0.0022, 0.001 then 0.027, 0.00228
+    private final PID arm_lower = new PID(0.0263,0.0003,0.00091, 0.167,100,0.8);
+    private final PID arm_upper = new PID(0.042,0.00248,0.0018,0.11,100,0.8); // 0.029, 0.0022, 0.001 then 0.027, 0.00228
     private final PID wrist = new PID(0.02,0,0,0,0,0);
 
     private final Logger log = new Logger("Cone Auto");
@@ -156,8 +156,8 @@ public class RedAuto extends LoggingOpMode{
 
         switch (main_id) {
             case 0:
-                x = 120;
-                y = 870;
+                x = 96;
+                y = 855;
                 drivetrain.autoMove(21,0,0,0,2,6,10, odometry.getPose(),telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
@@ -172,11 +172,12 @@ public class RedAuto extends LoggingOpMode{
             case 2:
                 drivetrain.stop();
 
-                if (al_error < 3 && au_error < 3 && wr_error < 10) {
+                if (al_error < 3 && au_error < 3.6 && wr_error < 10) {
                     main_id += 1;
                 }
                 break;
             case 3:
+            case 11:
                 intake.setClaw(0.11);
                 if ((intake.getClawPosition() == 0.11) && (intake.getDistance() > 20)) {
                     main_id += 1;
@@ -189,19 +190,19 @@ public class RedAuto extends LoggingOpMode{
                 }
                 break;
             case 5:
-                drivetrain.autoMove(44,0,0,0,1,1,3, odometry.getPose(),telemetry);
+                drivetrain.autoMove(44.1,0,0,0,1,1,3, odometry.getPose(),telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
             case 6:
-                drivetrain.autoMove(44,13,0,0,1,1,3, odometry.getPose(),telemetry);
+                drivetrain.autoMove(44.1,11.2,0,0,1,1,3, odometry.getPose(),telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
             case 7:
-                drivetrain.autoMove(44,13,85,0,0.5,0.5,0.1, odometry.getPose(),telemetry);
+                drivetrain.autoMove(44.1,11.2,83,0,0.5,0.5,0.1, odometry.getPose(),telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
@@ -209,13 +210,33 @@ public class RedAuto extends LoggingOpMode{
             case 8:
                 x = 1000;
                 y = -5;
-                drivetrain.autoMove(44,13,85,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
-                if (drivetrain.hasReached()) {
+                drivetrain.autoMove(44.1,11.2,83,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
+                if (al_error < 3 && au_error < 3 && wr_error < 10) {
                     main_id += 1;
                 }
                 break;
             case 9:
+                drivetrain.autoMove(44.1,11.2,83,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
+                if (intake.getDistance() < 20) {
+                    intake.setClaw(0.63);
+                }
+                if ((intake.getClawPosition() == 0.63) && (intake.getDistance() < 20)){
+                    main_id += 1;
+                }
+                break;
+            case 10:
+                x = -380;
+                y = 870;
+                drivetrain.autoMove(44.1,35,0,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
+                if (drivetrain.hasReached()) {
+                    main_id += 1;
+                }
+                break;
+            case 12:
                 drivetrain.stop();
+                break;
+
+//                drivetrain.stop();
 
 
 //                drivetrain.stop();
