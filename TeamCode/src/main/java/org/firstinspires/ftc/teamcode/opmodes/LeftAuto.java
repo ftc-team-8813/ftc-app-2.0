@@ -8,14 +8,15 @@ import android.graphics.ImageFormat;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
-import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
+import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.vision.ConeInfoDetector;
@@ -24,8 +25,8 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
-@Autonomous(name = "Blue Auto")
-public class BlueAuto extends LoggingOpMode{
+@Autonomous(name = "Left Auto")
+public class LeftAuto extends LoggingOpMode{
 
     private Drivetrain drivetrain;
     private Lift lift;
@@ -53,11 +54,11 @@ public class BlueAuto extends LoggingOpMode{
     private final double AU_DEGREES_PER_TICK = (360.0/8192.0);
     private final double WRIST_DEGREES_PER_TICK = (360.0/128.0);
 
-    private final PID arm_lower = new PID(0.0303,0.0003,0.00091, 0.167,100,0.8);
+    private final PID arm_lower = new PID(0.0323,0.0003,0.00091, 0.167,100,0.8);
     private final PID arm_upper = new PID(0.042,0.00200,0.0018,0.11,100,0.8); // 0.029, 0.0022, 0.001 then 0.027, 0.00228
     private final PID wrist = new PID(0.02,0,0,0,0,0);
 
-    private final Logger log = new Logger("Blue Auto");
+    private final Logger log = new Logger("Left Auto");
 
     static
     {
@@ -163,7 +164,7 @@ public class BlueAuto extends LoggingOpMode{
                 }
                 break;
             case 1:
-                drivetrain.autoMove(23,-33.8,0,0,1,1,2, odometry.getPose(),telemetry);
+                drivetrain.autoMove(23,33.8,0,0,1,1,2, odometry.getPose(),telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
@@ -201,7 +202,7 @@ public class BlueAuto extends LoggingOpMode{
                         }
                         break;
                     default:
-                        drivetrain.autoMove(26,-1,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(26,1,0,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
