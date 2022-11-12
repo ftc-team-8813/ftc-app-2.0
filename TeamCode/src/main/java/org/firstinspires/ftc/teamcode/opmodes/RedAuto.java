@@ -32,12 +32,12 @@ public class RedAuto extends LoggingOpMode{
     private Lift lift;
     private Intake intake;
     private OdometryNav odometry;
-//    private Webcam camera;
-//    private Webcam.SimpleFrameHandler frameHandler;
-//    private Mat cvFrame;
-//    private volatile boolean serverFrameUsed = true;
-//    private Bitmap serverFrameCopy;
-//    private String result = "Nothing";
+    private Webcam camera;
+    private Webcam.SimpleFrameHandler frameHandler;
+    private Mat cvFrame;
+    private volatile boolean serverFrameUsed = true;
+    private Bitmap serverFrameCopy;
+    private String result = "Nothing";
 
     private int main_id = 0;
 
@@ -50,7 +50,7 @@ public class RedAuto extends LoggingOpMode{
     double al_error = 0;
     double au_error = 0;
 
-    private final double AL_DEGREES_PER_TICK = (360.0/(28.0*108.8*32.0/15.0));
+    private final double AL_DEGREES_PER_TICK = -(360.0/8192.0);
     private final double AU_DEGREES_PER_TICK = (360.0/8192.0);
     private final double WRIST_DEGREES_PER_TICK = (360.0/128.0);
 
@@ -73,12 +73,12 @@ public class RedAuto extends LoggingOpMode{
         lift = robot.lift;
         intake = robot.intake;
         odometry = robot.odometryNav;
-//        camera = Webcam.forSerial("3522DE6F");
-//        if (camera == null)
-//            throw new IllegalArgumentException("Could not find a webcam with serial number 3522DE6F");
-//        frameHandler = new Webcam.SimpleFrameHandler();
-//        camera.open(ImageFormat.YUY2, 1920, 1080, 30, frameHandler);
-//        cvFrame = new Mat(1920, 1080, CV_8UC4);
+        camera = Webcam.forSerial("3522DE6F");
+        if (camera == null)
+            throw new IllegalArgumentException("Could not find a webcam with serial number 3522DE6F");
+        frameHandler = new Webcam.SimpleFrameHandler();
+        camera.open(ImageFormat.YUY2, 1920, 1080, 30, frameHandler);
+        cvFrame = new Mat(1920, 1080, CV_8UC4);
         Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(45.0)));
         odometry.updatePose(start_pose);
     }
@@ -87,26 +87,26 @@ public class RedAuto extends LoggingOpMode{
     public void init_loop() {
         super.init_loop();
 
-//        if (frameHandler.newFrameAvailable) {
-//            frameHandler.newFrameAvailable = false;
-//            Utils.bitmapToMat(frameHandler.currFramebuffer, cvFrame);
-//            if (serverFrameUsed) {
-//                if (serverFrameCopy != null) serverFrameCopy.recycle();
-//                serverFrameCopy = frameHandler.currFramebuffer.copy(Bitmap.Config.ARGB_8888, false);
-//                serverFrameUsed = false;
-//            }
-//
-//            ConeInfoDetector detector = new ConeInfoDetector(cvFrame,log,-1006,255);
-//
-//            if (!detector.detect().equals("Nothing Detected"))
-//            {
-//                result = detector.detect();
-//            }
-//
-//            camera.requestNewFrame();
-//        }
-//
-//        telemetry.addData("Detected", result);
+        if (frameHandler.newFrameAvailable) {
+            frameHandler.newFrameAvailable = false;
+            Utils.bitmapToMat(frameHandler.currFramebuffer, cvFrame);
+            if (serverFrameUsed) {
+                if (serverFrameCopy != null) serverFrameCopy.recycle();
+                serverFrameCopy = frameHandler.currFramebuffer.copy(Bitmap.Config.ARGB_8888, false);
+                serverFrameUsed = false;
+            }
+
+            ConeInfoDetector detector = new ConeInfoDetector(cvFrame,log,-1006,255);
+
+            if (!detector.detect().equals("Nothing Detected"))
+            {
+                result = detector.detect();
+            }
+
+            camera.requestNewFrame();
+        }
+
+        telemetry.addData("Detected", result);
 
         telemetry.update();
     }
@@ -170,6 +170,8 @@ public class RedAuto extends LoggingOpMode{
                 }
                 break;
             case 2:
+            case 12:
+//            case 17:
                 drivetrain.stop();
 
                 if (al_error < 3 && au_error < 3.6 && wr_error < 10) {
@@ -177,83 +179,118 @@ public class RedAuto extends LoggingOpMode{
                 }
                 break;
             case 3:
-            case 11:
+//            case 18:
                 intake.setClaw(0.11);
                 if ((intake.getClawPosition() == 0.11) && (intake.getDistance() > 20)) {
                     main_id += 1;
                 }
                 break;
             case 4:
-                drivetrain.autoMove(23,0,0,0,1,1,3, odometry.getPose(),telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
+                x = 0;
+                y = 200;
+                switch (result) {
+                    case "FTC8813: 1":
+                        drivetrain.autoMove(26,-24,0,0,1,1,10, odometry.getPose(),telemetry);
+                        if (drivetrain.hasReached()) {
+                            main_id += 1;
+                        }
+                        break;
+                    case "FTC8813: 3":
+                        drivetrain.autoMove(26,24,0,0,1,1,10, odometry.getPose(),telemetry);
+                        if (drivetrain.hasReached()) {
+                            main_id += 1;
+                        }
+                        break;
+                    default:
+                        drivetrain.autoMove(26,1,0,0,1,1,10, odometry.getPose(),telemetry);
+                        if (drivetrain.hasReached()) {
+                            main_id += 1;
+                        }
                 }
-                break;
             case 5:
-                drivetrain.autoMove(44.1,0,0,0,1,1,3, odometry.getPose(),telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
-                break;
-            case 6:
-                drivetrain.autoMove(44.1,11.2,0,0,1,1,3, odometry.getPose(),telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
-                break;
-            case 7:
-                drivetrain.autoMove(44.1,11.2,83,0,0.5,0.5,0.1, odometry.getPose(),telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
-                break;
-            case 8:
-                x = 1000;
-                y = -5;
-                drivetrain.autoMove(44.1,11.2,83,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
-                if (al_error < 3 && au_error < 3 && wr_error < 10) {
-                    main_id += 1;
-                }
-                break;
-            case 9:
-                drivetrain.autoMove(44.1,11.2,83,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
-                if (intake.getDistance() < 20) {
-                    intake.setClaw(0.63);
-                }
-                if ((intake.getClawPosition() == 0.63) && (intake.getDistance() < 20)){
-                    main_id += 1;
-                }
-                break;
-            case 10:
-                x = -380;
-                y = 870;
-                drivetrain.autoMove(44.1,35,0,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
-                break;
-            case 12:
                 drivetrain.stop();
-                break;
 
-//                drivetrain.stop();
-
-
-//                drivetrain.stop();
-
-//            case 6:
-
-
-//                telemetry.addData("Works", true);
-
-//            case 0:
-//                intake.setClaw(0.11);
-//                if ((intake.getClawPosition() == 0.11) && (intake.getDistance() > 20)) {
+//            case 4:
+//                drivetrain.autoMove(23,0,0,0,1,1,3, odometry.getPose(),telemetry);
+//                if (drivetrain.hasReached()) {
 //                    main_id += 1;
-//                    intake.setClaw(0.63);
 //                }
 //                break;
-//            case 4:
+//            case 5:
+//                drivetrain.autoMove(44.1,0,0,0,1,1,3, odometry.getPose(),telemetry);
+//                if (drivetrain.hasReached()) {
+//                    main_id += 1;
+//                }
+//                break;
+//            case 6:
+//                drivetrain.autoMove(44.1,10,0,0,1,1,3, odometry.getPose(),telemetry);
+//                if (drivetrain.hasReached()) {
+//                    main_id += 1;
+//                }
+//                break;
+//            case 7:
+//                drivetrain.autoMove(44.1,10,82,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
+//                if (drivetrain.hasReached()) {
+//                    main_id += 1;
+//                }
+//                break;
+//            case 8:
+//                x = 1000;
+//                y = -40;
+//                drivetrain.autoMove(44.1,10,82,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
+//                if (al_error < 3 && au_error < 3 && wr_error < 10) {
+//                    main_id += 1;
+//                }
+//                break;
+//            case 9:
+////            case 15:
+//                drivetrain.autoMove(44.1,10,82,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
+//                if (intake.getDistance() < 20) {
+//                    intake.setClaw(0.63);
+//                }
+//                if ((intake.getClawPosition() == 0.63) && (intake.getDistance() < 20)){
+//                    main_id += 1;
+//                }
+//                break;
+//            case 10:
+////            case 16:
+//                x = -380;
+//                y = 870;
+//                drivetrain.autoMove(44.1,35,82,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
+//                if (drivetrain.hasReached()) {
+//                    main_id += 1;
+//                }
+//                break;
+//            case 11:
+//                drivetrain.autoMove(44.1,35,3,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
+//                if (drivetrain.hasReached()) {
+//                    main_id += 1;
+//                }
+//                break;
+//            case 14:
+//                x = 0;
+//                y = 250;
+//                drivetrain.autoMove(44.1,10,3,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
+//                if (drivetrain.hasReached()) {
+//                    main_id += 1;
+//                }
+//                break;
+//            case 15:
+//                x = 1000;
+//                y = -25;
+//                drivetrain.autoMove(44.1,10,82,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
+//                if (drivetrain.hasReached()) {
+//                    main_id += 1;
+//                }
+//                break;
+
+//            case 14:
+//                x = 1000;
+//                y = -25;
+//                drivetrain.autoMove(44.1,10,82,0,0.5,0.5,0.03, odometry.getPose(),telemetry);
+//                if (al_error < 3 && au_error < 3 && wr_error < 10) {
+//                    main_id += 1;
+//                }
 
         }
         telemetry.addData("AL Target Angle",angles[0]);

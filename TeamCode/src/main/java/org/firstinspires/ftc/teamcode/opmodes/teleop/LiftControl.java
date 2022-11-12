@@ -27,7 +27,7 @@ public class LiftControl extends ControlModule { // TODO make lift fast
 
     private double wr_constant = 0;
 
-    private final double AL_DEGREES_PER_TICK = (360.0/(28.0*108.8*32.0/15.0));
+    private final double AL_DEGREES_PER_TICK = -(360.0/8192.0);
     private final double AU_DEGREES_PER_TICK = (360.0/8192.0);
     private final double WRIST_DEGREES_PER_TICK = (360.0/128.0);
 
@@ -36,6 +36,7 @@ public class LiftControl extends ControlModule { // TODO make lift fast
     private final PID wrist = new PID(0.02,0,0,0,0,0);
 
     private boolean intaken = false;
+    private boolean passthrough = true;
 
     private ControllerMap.AxisEntry ax_lift_left_x;
     private ControllerMap.AxisEntry ax_lift_left_y;

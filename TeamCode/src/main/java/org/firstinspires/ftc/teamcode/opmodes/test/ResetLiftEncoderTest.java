@@ -38,5 +38,9 @@ public class ResetLiftEncoderTest extends LoggingOpMode {
     @Override
     public void loop() {
 
+        telemetry.addData("AL", arm_lower.getCurrentPosition());
+        telemetry.addData("AU", arm_upper.getCurrentPosition());
+        telemetry.addData("WR", wrist.getCurrentPosition());
+
     }
 }
