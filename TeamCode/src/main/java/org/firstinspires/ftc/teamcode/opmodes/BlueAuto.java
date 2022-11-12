@@ -8,15 +8,14 @@ import android.graphics.ImageFormat;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
+import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
-import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.vision.ConeInfoDetector;
@@ -25,8 +24,8 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
-@Autonomous(name = "Red Auto")
-public class RedAuto extends LoggingOpMode{
+@Autonomous(name = "Blue Auto")
+public class BlueAuto extends LoggingOpMode{
 
     private Drivetrain drivetrain;
     private Lift lift;
@@ -58,7 +57,7 @@ public class RedAuto extends LoggingOpMode{
     private final PID arm_upper = new PID(0.042,0.00200,0.0018,0.11,100,0.8); // 0.029, 0.0022, 0.001 then 0.027, 0.00228
     private final PID wrist = new PID(0.02,0,0,0,0,0);
 
-    private final Logger log = new Logger("Cone Auto");
+    private final Logger log = new Logger("Blue Auto");
 
     static
     {
@@ -164,7 +163,7 @@ public class RedAuto extends LoggingOpMode{
                 }
                 break;
             case 1:
-                drivetrain.autoMove(23,33.8,0,0,1,1,2, odometry.getPose(),telemetry);
+                drivetrain.autoMove(23,-33.8,0,0,1,1,2, odometry.getPose(),telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
@@ -190,19 +189,19 @@ public class RedAuto extends LoggingOpMode{
             case 4:
                 switch (result) {
                     case "FTC8813: 1":
-                        drivetrain.autoMove(26,-24,0,0,1,1,10, odometry.getPose(),telemetry);
-                        if (drivetrain.hasReached()) {
-                            main_id += 1;
-                        }
-                        break;
-                    case "FTC8813: 3":
                         drivetrain.autoMove(26,24,0,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
                         break;
+                    case "FTC8813: 3":
+                        drivetrain.autoMove(26,-24,0,0,1,1,10, odometry.getPose(),telemetry);
+                        if (drivetrain.hasReached()) {
+                            main_id += 1;
+                        }
+                        break;
                     default:
-                        drivetrain.autoMove(26,1,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(26,-1,0,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }

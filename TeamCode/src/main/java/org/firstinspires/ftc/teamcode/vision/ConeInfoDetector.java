@@ -59,10 +59,10 @@ public class ConeInfoDetector {
         Mat normalized = new Mat();
         Mat masked = new Mat();
 
-        Rect rectCrop = new Rect(800,500,320, 300);
+        Rect rectCrop = new Rect(800,300,320, 300);
         crop = new Mat(detector_frame,rectCrop);
 
-        Core.normalize(crop,normalized,alpha,beta,Core.NORM_MINMAX);
+        Core.normalize(crop,normalized,(-1006),(255),Core.NORM_MINMAX);
 
         masked = crop;
 
