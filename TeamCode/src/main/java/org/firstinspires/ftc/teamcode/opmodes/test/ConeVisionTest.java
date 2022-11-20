@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -18,10 +19,10 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
-@Disabled
+//@Disabled
 @TeleOp(name="ConeVisionTest")
 public class ConeVisionTest extends LoggingOpMode {
-    private FTCDashboardValues ftcdbvals = new FTCDashboardValues();
+    private FTCDashboardValues ftcdbvals;
     private Webcam camera;
     private Webcam.SimpleFrameHandler frameHandler;
     private Mat cvFrame;
@@ -39,12 +40,14 @@ public class ConeVisionTest extends LoggingOpMode {
     @Override
     public void init() {
         super.init();
+        ftcdbvals = new FTCDashboardValues();
         camera = Webcam.forSerial("3522DE6F");
         if (camera == null)
             throw new IllegalArgumentException("Could not find a webcam with serial number 3522DE6F");
         frameHandler = new Webcam.SimpleFrameHandler();
-        camera.open(ImageFormat.YUY2, 800, 448, 30, frameHandler);
-        cvFrame = new Mat(800, 448, CV_8UC4);
+        camera.open(ImageFormat.YUY2, 1920, 1080, 30, frameHandler);
+        cvFrame = new Mat(1920, 1080, CV_8UC4);
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
     }
 
@@ -59,16 +62,18 @@ public class ConeVisionTest extends LoggingOpMode {
                 serverFrameUsed = false;
             }
 
-//            ConeInfoDetector detector = new ConeInfoDetector(cvFrame,log,ftcdbvals.getAlpha(),ftcdbvals.getBeta());
-//            if (!detector.detect().equals("Nothing Detected"))
-//            {
-//                result = detector.detect();
-//            }
+            ConeInfoDetector detector = new ConeInfoDetector(cvFrame,log,-1006,255);
+
+            if (!detector.detect().equals("Nothing Detected"))
+            {
+                result = detector.detect();
+            }
 
             camera.requestNewFrame();
         }
 
         telemetry.addData("Detected", result);
+
         telemetry.update();
     }
 }

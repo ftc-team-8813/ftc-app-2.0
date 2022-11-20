@@ -51,7 +51,7 @@ public class OdometryNav {
         right_odometer.reset();
         center_odometer.reset();
 
-        Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(45.0)));
+        Pose2d start_pose = new Pose2d(0,3.5,new Rotation2d(Math.toRadians(45.0)));
         odometry.updatePose(start_pose);
 
     }

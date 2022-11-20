@@ -45,6 +45,7 @@ public class IntakeControl extends ControlModule {
 //            claw_open = false;
 //            first_close = true;
 //        }
+
         double[] cur_angles = lift.getEncoderValue();
         cur_angles[2] *= -WRIST_DEGREES_PER_TICK;
 
@@ -54,12 +55,12 @@ public class IntakeControl extends ControlModule {
         else {
             claw_open_pos = 0.11;
         }
-
-
+//
+//
         if (right_bumper.edge() == -1) {
             claw_open = !claw_open;
         }
-
+//
         if (claw_open) {
             intake.setClaw(claw_open_pos);
             if (wait_till_close) {

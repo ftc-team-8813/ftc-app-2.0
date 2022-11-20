@@ -36,7 +36,7 @@ public class LiftControl extends ControlModule { // TODO make lift fast
     private final PID wrist = new PID(0.02,0,0,0,0,0);
 
     private boolean intaken = false;
-    private boolean passthrough = true;
+    private boolean passthrough = false;
 
     private ControllerMap.AxisEntry ax_lift_left_x;
     private ControllerMap.AxisEntry ax_lift_left_y;
@@ -78,8 +78,7 @@ public class LiftControl extends ControlModule { // TODO make lift fast
         rec_left_bumper = controllerMap.getButtonMap("lift:reset_encoder_lb","gamepad2","left_bumper");
         rec_left_trigger = controllerMap.getAxisMap("lift:reset_encoder_lt","gamepad2","left_trigger");
 
-        dpad_up = controllerMap.getButtonMap("lift:pass_through_up","gamepad2","dpad_up");
-        dpad_right = controllerMap.getButtonMap("lift:pass_through_down","gamepad2","dpad_right");
+        dpad_up = controllerMap.getButtonMap("lift:pass_through","gamepad2","dpad_up");
 //        lift.resetLiftEncoder();
     }
 
@@ -90,58 +89,73 @@ public class LiftControl extends ControlModule { // TODO make lift fast
             lift.resetLiftEncoder();
         }
 
-        wr_constant -= ax_lift_right_y.get() * 2;
+        wr_constant -= ax_lift_right_y.get() * 5;
 
+        if (!passthrough) {
+            if (((intake.getClawPosition() == 0.63) && (intake.getDistance() < 20) && (y < 10)) && !intaken) {
 
-        if (((intake.getClawPosition() == 0.63) && (intake.getDistance() < 20) && (y < 10)) && !intaken) {
+                if (timer.seconds() > 0.5) {
+                    x = 70;
+                    y = 370;
+                    intaken = true;
+                }
+            }
+            else {
+                timer.reset();
+            }
 
-            if (timer.seconds() > 0.5) {
+            if (intake.getClawPosition() == 0.11) {
+                intaken = false;
+            }
+
+            if (y_button.edge() == -1) { // high
+                x = 100;
+                y = 870;
+            }
+
+            if (b_button.edge() == -1) { // mid
+                x = 70;
+                y = 580;
+            }
+
+            if (a_button.edge() == -1) { // low
                 x = 70;
                 y = 370;
-                intaken = true;
+            }
+
+            if (x_button.edge() == -1) { // ground
+                x = 320;
+                y = -40;
             }
         }
         else {
-            timer.reset();
-        }
+            if (b_button.edge() == -1) {
+                timer.reset();
+            }
 
-        if(intake.getClawPosition() == 0.11) {
-            intaken = false;
+            if (timer.seconds() < 1) {
+                x = 50;
+                y = 10;
+            }
+            else if (timer.seconds() < 1.6){
+                x = 465;
+                y = -40;
+            }
+
+            if(y_button.edge() == -1){
+                x = -380;
+                y = 823;
+            }
+
         }
 
         if (dpad_up.edge() == -1) {
-            x = -403;
-            y = 798;
+            passthrough = !passthrough;
         }
-
-        if (dpad_right.edge() == -1) {
-            x = 465;
-            y = -40;
-        }
-
-        if (y_button.edge() == -1) { // high
-            x = 100;
-            y = 870;
-        }
-
-        if (b_button.edge() == -1) { // mid
-            x = 70;
-            y = 580;
-        }
-
-        if (a_button.edge() == -1) { // low
-            x = 70;
-            y = 370;
-        }
-
-        if (x_button.edge() == -1) { // ground
-            x = 320;
-            y = -40;
-        }
-
-        x += (ax_lift_left_x.get() * 6);
-        y += (-ax_lift_left_y.get() * 6);
-
+//
+        x += (ax_lift_left_x.get() * 10);
+        y += (-ax_lift_left_y.get() * 10);
+//
         if ((x > -315.0) && (x < 55) && (y < 200))
         {
             y = 200;
@@ -149,7 +163,7 @@ public class LiftControl extends ControlModule { // TODO make lift fast
 
         double[] angles = new double[2];
 
-        if (Math.sqrt(Math.pow(x,2) + Math.pow(y,2)) >= (488.89580+424.15230-5)) {
+        if (Math.sqrt(Math.pow(x,2) + Math.pow(y,2)) >= (488.89580+424.15230-6)) {
             angles[0] = Math.toDegrees(Math.atan2(y,x));
             angles[1] = angles[0];
         }

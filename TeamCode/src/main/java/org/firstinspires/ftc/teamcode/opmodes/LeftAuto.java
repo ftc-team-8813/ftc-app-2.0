@@ -8,6 +8,7 @@ import android.graphics.ImageFormat;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -25,6 +26,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
+@Disabled
 @Autonomous(name = "Left Auto")
 public class LeftAuto extends LoggingOpMode{
 
@@ -79,7 +81,7 @@ public class LeftAuto extends LoggingOpMode{
         frameHandler = new Webcam.SimpleFrameHandler();
         camera.open(ImageFormat.YUY2, 1920, 1080, 30, frameHandler);
         cvFrame = new Mat(1920, 1080, CV_8UC4);
-        Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(45.0)));
+        Pose2d start_pose = new Pose2d(0,3.5,new Rotation2d(Math.toRadians(45.0)));
         odometry.updatePose(start_pose);
     }
 
@@ -115,6 +117,7 @@ public class LeftAuto extends LoggingOpMode{
     public void start() {
         super.start();
         drivetrain.resetEncoders();
+        intake.setClaw(0.63);
     }
 
     @Override
@@ -157,21 +160,19 @@ public class LeftAuto extends LoggingOpMode{
         switch (main_id) {
             case 0:
                 x = 96;
-                y = 855;
+                y = 850;
                 drivetrain.autoMove(21,0,0,0,2,6,10, odometry.getPose(),telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
             case 1:
-                drivetrain.autoMove(23,33.8,0,0,1,1,2, odometry.getPose(),telemetry);
+                drivetrain.autoMove(27,35,0,0,1,1,2, odometry.getPose(),telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
             case 2:
-            case 12:
-//            case 17:
                 drivetrain.stop();
 
                 if (al_error < 3 && au_error < 3.6 && wr_error < 10) {
@@ -179,7 +180,6 @@ public class LeftAuto extends LoggingOpMode{
                 }
                 break;
             case 3:
-//            case 18:
                 intake.setClaw(0.11);
                 if ((intake.getClawPosition() == 0.11) && (intake.getDistance() > 20)) {
                     main_id += 1;
@@ -190,19 +190,19 @@ public class LeftAuto extends LoggingOpMode{
             case 4:
                 switch (result) {
                     case "FTC8813: 1":
-                        drivetrain.autoMove(26,24,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(24,-24,0,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
                         break;
                     case "FTC8813: 3":
-                        drivetrain.autoMove(26,-24,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(24,24,0,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
                         break;
                     default:
-                        drivetrain.autoMove(26,1,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(24,1,0,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
@@ -210,8 +210,75 @@ public class LeftAuto extends LoggingOpMode{
                 }
                 break;
             case 5:
-                drivetrain.stop();
+                drivetrain.autoMove(59.26,4,0,0,1,1,3, odometry.getPose(),telemetry);
+                if (drivetrain.hasReached()) {
+                    main_id += 1;
+                }
                 break;
+            case 6:
+                drivetrain.autoMove(59.26,4,96.85,0,1,1,0.07, odometry.getPose(),telemetry);
+                if (drivetrain.hasReached()) {
+                    main_id += 1;
+                }
+                break;
+            case 7:
+                intake.setClaw(0.11);
+                drivetrain.autoMove(59.26,4,96.85,0,1,1,0.07, odometry.getPose(),telemetry);
+                x = 650;
+                y = 45.5;
+                if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
+                    main_id += 1;
+                }
+                break;
+            case 8:
+                intake.setClaw(0.11);
+                drivetrain.autoMove(59.26,4,96.85,0,1,1,0.07, odometry.getPose(),telemetry);
+                x = 757.8;
+                y = 45.5;
+                if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
+                    main_id += 1;
+                }
+                break;
+            case 9:
+                drivetrain.autoMove(59.26,4,96.85,0,1,1,0.07, odometry.getPose(),telemetry);
+                intake.setClaw(0.63);
+                if (intake.getClawPosition() == 0.63) {
+                    main_id += 1;
+                }
+                break;
+            case 10:
+                drivetrain.autoMove(59.26,4,96.85,0,1,1,0.07, odometry.getPose(),telemetry);
+                x = 300;
+                y = 60;
+                if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
+                    main_id += 1;
+                }
+                break;
+            case 11:
+                drivetrain.autoMove(59.26,4,96.85,0,1,1,0.07, odometry.getPose(),telemetry);
+                x = 757.8;
+                y = 60;
+                if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
+                    main_id += 1;
+                }
+                break;
+            case 12:
+                drivetrain.autoMove(59.26,4,96.85,0,1,1,0.07, odometry.getPose(),telemetry);
+                x = -375.5;
+                y = 823.3;
+                if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
+                    main_id += 1;
+                }
+                break;
+            case 13:
+                drivetrain.autoMove(59.26,4,96.85,0,1,1,0.07, odometry.getPose(),telemetry);
+                intake.setClaw(0.11);
+                if ((intake.getClawPosition() == 0.11) && (intake.getDistance() > 20)) {
+                    main_id += 1;
+                }
+                break;
+
+
 //            case 4:
 //                drivetrain.autoMove(23,0,0,0,1,1,3, odometry.getPose(),telemetry);
 //                if (drivetrain.hasReached()) {

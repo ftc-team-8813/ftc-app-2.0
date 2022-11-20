@@ -8,6 +8,7 @@ import android.graphics.ImageFormat;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
@@ -24,6 +25,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
+@Disabled
 @Autonomous(name = "Right Auto")
 public class RightAuto extends LoggingOpMode{
 
@@ -78,7 +80,7 @@ public class RightAuto extends LoggingOpMode{
         frameHandler = new Webcam.SimpleFrameHandler();
         camera.open(ImageFormat.YUY2, 1920, 1080, 30, frameHandler);
         cvFrame = new Mat(1920, 1080, CV_8UC4);
-        Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(45.0)));
+        Pose2d start_pose = new Pose2d(0,3.5,new Rotation2d(Math.toRadians(45.0)));
         odometry.updatePose(start_pose);
     }
 
@@ -151,7 +153,7 @@ public class RightAuto extends LoggingOpMode{
         au_error = Math.abs((-angles[0] + angles[1]) - cur_angles[1]);
         double wr_error = Math.abs((-angles[1]) - cur_angles[2]);
 
-        lift.setLiftPower(Range.clip(al_pow,-0.5,0.8), Range.clip(au_pow,-0.6,0.6), wrist_pow);
+        lift.setLiftPower(Range.clip(al_pow, -0.5, 0.8), Range.clip(au_pow, -0.6, 0.6), wrist_pow);
 
         switch (main_id) {
             case 0:
@@ -163,7 +165,7 @@ public class RightAuto extends LoggingOpMode{
                 }
                 break;
             case 1:
-                drivetrain.autoMove(23,-33.8,0,0,1,1,2, odometry.getPose(),telemetry);
+                drivetrain.autoMove(24,-33.8,0,0,1,1,2, odometry.getPose(),telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
@@ -189,19 +191,19 @@ public class RightAuto extends LoggingOpMode{
             case 4:
                 switch (result) {
                     case "FTC8813: 1":
-                        drivetrain.autoMove(26,24,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(24,-24,0,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
                         break;
                     case "FTC8813: 3":
-                        drivetrain.autoMove(26,-24,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(24,24,0,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
                         break;
                     default:
-                        drivetrain.autoMove(26,-1,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(24,-1,0,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
