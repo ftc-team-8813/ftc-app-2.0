@@ -89,7 +89,7 @@ public class LiftControl extends ControlModule { // TODO make lift fast
             lift.resetLiftEncoder();
         }
 
-        wr_constant -= ax_lift_right_y.get() * 5;
+        wr_constant -= ax_lift_right_y.get() * 7;
 
         if (!passthrough) {
             if (((intake.getClawPosition() == 0.63) && (intake.getDistance() < 20) && (y < 10)) && !intaken) {
@@ -153,8 +153,8 @@ public class LiftControl extends ControlModule { // TODO make lift fast
             passthrough = !passthrough;
         }
 //
-        x += (ax_lift_left_x.get() * 10);
-        y += (-ax_lift_left_y.get() * 10);
+        x += (ax_lift_left_x.get() * 14);
+        y += (-ax_lift_left_y.get() * 14);
 //
         if ((x > -315.0) && (x < 55) && (y < 200))
         {

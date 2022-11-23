@@ -89,7 +89,7 @@ public class Drivetrain {
         has_reached = false;
         turn += 45;
 
-        PID forward_pid = new PID(0.2,0,0,0,0,0);
+        PID forward_pid = new PID(0.4,0,0,0,0,0);
         PID strafe_pid = new PID(0.2,0,0,0,0,0);
         PID turn_pid = new PID(0.053,0.007,0,0,32,0);
 
