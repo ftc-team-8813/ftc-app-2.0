@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.arcrobotics.ftclib.geometry.Pose2d;
-import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,9 +9,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
-import org.firstinspires.ftc.teamcode.opmodes.util.FTCDashboardValues;
+import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
 
 public class Drivetrain {
 
@@ -21,7 +19,7 @@ public class Drivetrain {
     private final DcMotorEx back_left;
     private final DcMotorEx back_right;
     private final BNO055IMU imu;
-    private final FTCDashboardValues ftcdbvals = new FTCDashboardValues();
+    private final FTCDVS ftcdbvals = new FTCDVS();
     private boolean has_reached;
 
     public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu) {
@@ -89,7 +87,7 @@ public class Drivetrain {
         has_reached = false;
         turn += 45;
 
-        PID forward_pid = new PID(0.4,0,0,0,0,0);
+        PID forward_pid = new PID(0.5,0,0,0,0,0);
         PID strafe_pid = new PID(0.2,0,0,0,0,0);
         PID turn_pid = new PID(0.053,0.007,0,0,32,0);
 

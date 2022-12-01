@@ -19,11 +19,8 @@ import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
-import org.firstinspires.ftc.teamcode.input.ControllerMap;
-import org.firstinspires.ftc.teamcode.opmodes.util.FTCDashboardValues;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
-import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.firstinspires.ftc.teamcode.vision.ConeInfoDetector;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 import org.opencv.android.OpenCVLoader;
@@ -68,8 +65,8 @@ public class LeftConeAuto extends LoggingOpMode{
     private final double AU_DEGREES_PER_TICK = (360.0/8192.0);
     private final double WRIST_DEGREES_PER_TICK = (360.0/128.0);
 
-    private final PID arm_lower = new PID(0.0346,0.0003,0.00091, 0.167,100,0.8);
-    private final PID arm_upper = new PID(0.057,0.00200,0.0026,0.11,100,0.8); // 0.029, 0.0022, 0.001 then 0.027, 0.00228
+    private final PID arm_lower = new PID(0.0346,0.000307,0.00091, 0.167,110,0.8);
+    private final PID arm_upper = new PID(0.0571,0.00200,0.0026,0.11,100,0.8); // 0.029, 0.0022, 0.001 then 0.027, 0.00228
     private final PID wrist = new PID(0.02,0,0,0,0,0);
 
     private final Logger log = new Logger("Left Auto");
@@ -174,15 +171,15 @@ public class LeftConeAuto extends LoggingOpMode{
         double wr_error = Math.abs((-angles[1]) - cur_angles[2]);
 
 
-        lift.setLiftPower(Range.clip(al_pow, -0.32, 0.32), Range.clip(au_pow, -0.31, 0.31), wrist_pow);
+        lift.setLiftPower(Range.clip(al_pow, -0.321, 0.321), Range.clip(au_pow, -0.303, 0.303), wrist_pow);
 
 
-        if (game_timer.seconds() < -1) {
+        if (game_timer.seconds() > 26) {
             switch (emergency_park_id) {
                 case 0:
                     x = -200;
                     y = 800;
-                    drivetrain.autoMove(25, 1, 0, 0, 1, 1, 0.5, odometry.getPose(), telemetry);
+                    drivetrain.autoMove(25, 0, 0, 0, 1, 1, 0.5, odometry.getPose(), telemetry);
                     if (drivetrain.hasReached()) {
                         emergency_park_id += 1;
                     }
@@ -202,7 +199,7 @@ public class LeftConeAuto extends LoggingOpMode{
                             }
                             break;
                         default:
-                            drivetrain.autoMove(25,1,0,0,1,1,10, odometry.getPose(),telemetry);
+                            drivetrain.autoMove(25,0,0,0,1,1,10, odometry.getPose(),telemetry);
                             if (drivetrain.hasReached()) {
                                 emergency_park_id += 1;
                             }
@@ -244,7 +241,7 @@ public class LeftConeAuto extends LoggingOpMode{
                 case 4:
                     x = 0;
                     y = 860;
-                    drivetrain.autoMove(25, 1, 0, 0, 1, 1, 0.5, odometry.getPose(), telemetry);
+                    drivetrain.autoMove(25, 0, 0, 0, 1, 1, 0.5, odometry.getPose(), telemetry);
                     if (drivetrain.hasReached()) {
                         main_id += 1;
                     }
@@ -264,7 +261,7 @@ public class LeftConeAuto extends LoggingOpMode{
                             }
                             break;
                         default:
-                            drivetrain.autoMove(25,1,0,0,1,1,10, odometry.getPose(),telemetry);
+                            drivetrain.autoMove(25,0,0,0,1,1,10, odometry.getPose(),telemetry);
                             if (drivetrain.hasReached()) {
                                 main_id += 1;
                             }
@@ -420,7 +417,7 @@ public class LeftConeAuto extends LoggingOpMode{
 
             switch (lift_id) {
                 case 0:
-                    x = -388;
+                    x = -382;
                     y = 860;
                     if(timer.seconds() > 0.3) {
                         if (al_error < 2.6 && au_error < 2.8 && wr_error < 5) {
@@ -437,14 +434,14 @@ public class LeftConeAuto extends LoggingOpMode{
                     break;
                 case 2:
                     x = 650;
-                    y = 45.5;
+                    y = 46;
                     if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                         lift_id += 1;
                     }
                     break;
                 case 3:
-                    x = 765;
-                    y = 45.5;
+                    x = 770;
+                    y = 46;
                     if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                         lift_id += 1;
                         timer.reset();
@@ -453,7 +450,7 @@ public class LeftConeAuto extends LoggingOpMode{
                 case 4:
                     if (timer.seconds() > 0.1) {
                         intake.setClaw(0.63);
-                        if ((intake.getClawPosition() == 0.63) && (timer.seconds() > 0.3)) {
+                        if ((intake.getClawPosition() == 0.63) && (timer.seconds() > 0.4)) {
                             x = 757.9;
                             y = 250;
                             lift_id += 1;
@@ -462,8 +459,8 @@ public class LeftConeAuto extends LoggingOpMode{
                     }
                     break;
                 case 5:
-                    if (timer.seconds() > 0.6) {
-                        x = -380;
+                    if (timer.seconds() > 0.35) {
+                        x = -382;
                         y = 860;
                         if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                             lift_id += 1;
@@ -472,7 +469,7 @@ public class LeftConeAuto extends LoggingOpMode{
                     }
                     break;
                 case 6:
-                    if (timer.seconds() > 0.5 && (al_error < 2.6 && au_error < 2.6 && wr_error < 5)) {
+                    if (timer.seconds() > 0.1 && (al_error < 2.6 && au_error < 2.6 && wr_error < 5)) {
                         intake.setClaw(0.11);
                         if ((intake.getClawPosition() == 0.11) && (intake.getDistance() > 20)) {
                             lift_id += 1;
@@ -488,7 +485,7 @@ public class LeftConeAuto extends LoggingOpMode{
                     }
                     break;
                 case 8:
-                    x = 765;
+                    x = 770;
                     y = 28;
                     if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                         lift_id += 1;
@@ -498,7 +495,7 @@ public class LeftConeAuto extends LoggingOpMode{
                 case 9:
                     if (timer.seconds() > 0.1) {
                         intake.setClaw(0.63);
-                        if ((intake.getClawPosition() == 0.63) && (timer.seconds() > 0.3)) {
+                        if ((intake.getClawPosition() == 0.63) && (timer.seconds() > 0.4)) {
                             x = 757.9;
                             y = 250;
                             lift_id += 1;
@@ -507,8 +504,8 @@ public class LeftConeAuto extends LoggingOpMode{
                     }
                     break;
                 case 10:
-                    if (timer.seconds() > 0.6) {
-                        x = -380;
+                    if (timer.seconds() > 0.35) {
+                        x = -382;
                         y = 860;
                         if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                             lift_id += 1;
@@ -517,7 +514,7 @@ public class LeftConeAuto extends LoggingOpMode{
                     }
                     break;
                 case 11:
-                    if (timer.seconds() > 0.5 && (al_error < 2.6 && au_error < 2.6 && wr_error < 5)) {
+                    if (timer.seconds() > 0.1 && (al_error < 2.6 && au_error < 2.6 && wr_error < 5)) {
                         intake.setClaw(0.11);
                         if ((intake.getClawPosition() == 0.11) && (intake.getDistance() > 20)) {
                             lift_id += 1;
@@ -526,14 +523,14 @@ public class LeftConeAuto extends LoggingOpMode{
                     break;
                 case 12:
                     intake.setClaw(0.11);
-                    x = 600;
+                    x = 650;
                     y = 0;
                     if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                         lift_id += 1;
                     }
                     break;
                 case 13:
-                    x = 765;
+                    x = 770;
                     y = 0;
                     if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                         lift_id += 1;
@@ -543,7 +540,7 @@ public class LeftConeAuto extends LoggingOpMode{
                 case 14:
                     if (timer.seconds() > 0.1) {
                         intake.setClaw(0.63);
-                        if ((intake.getClawPosition() == 0.63) && (timer.seconds() > 0.3)) {
+                        if ((intake.getClawPosition() == 0.63) && (timer.seconds() > 0.4)) {
                             x = 757.9;
                             y = 250;
                             lift_id += 1;
@@ -552,8 +549,8 @@ public class LeftConeAuto extends LoggingOpMode{
                     }
                     break;
                 case 15:
-                    if (timer.seconds() > 0.6) {
-                        x = -380;
+                    if (timer.seconds() > 0.35) {
+                        x = -382;
                         y = 860;
                         if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                             lift_id += 1;
@@ -562,7 +559,7 @@ public class LeftConeAuto extends LoggingOpMode{
                     }
                     break;
                 case 16:
-                    if (timer.seconds() > 0.5 && (al_error < 2.6 && au_error < 2.6 && wr_error < 5)) {
+                    if (timer.seconds() > 0.1 && (al_error < 2.6 && au_error < 2.6 && wr_error < 5)) {
                         intake.setClaw(0.11);
                         if ((intake.getClawPosition() == 0.11) && (intake.getDistance() > 20)) {
                             lift_id += 1;
@@ -572,14 +569,14 @@ public class LeftConeAuto extends LoggingOpMode{
                 case 17:
                     intake.setClaw(0.11);
                     x = 650;
-                    y = -9;
+                    y = -17;
                     if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                         lift_id += 1;
                     }
                     break;
                 case 18:
-                    x = 765;
-                    y = -9;
+                    x = 770;
+                    y = -17;
                     if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                         lift_id += 1;
                         timer.reset();
@@ -588,7 +585,7 @@ public class LeftConeAuto extends LoggingOpMode{
                 case 19:
                     if (timer.seconds() > 0.1) {
                         intake.setClaw(0.63);
-                        if ((intake.getClawPosition() == 0.63) && (timer.seconds() > 0.3)) {
+                        if ((intake.getClawPosition() == 0.63) && (timer.seconds() > 0.4)) {
                             x = 757.9;
                             y = 250;
                             lift_id += 1;
@@ -597,8 +594,8 @@ public class LeftConeAuto extends LoggingOpMode{
                     }
                     break;
                 case 20:
-                    if (timer.seconds() > 0.6) {
-                        x = -380;
+                    if (timer.seconds() > 0.35) {
+                        x = -382;
                         y = 860;
                         if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                             lift_id += 1;
@@ -607,7 +604,7 @@ public class LeftConeAuto extends LoggingOpMode{
                     }
                     break;
                 case 21:
-                    if (timer.seconds() > 0.5 && (al_error < 2.6 && au_error < 2.6 && wr_error < 5)) {
+                    if (timer.seconds() > 0.1 && (al_error < 2.6 && au_error < 2.6 && wr_error < 5)) {
                         intake.setClaw(0.11);
                         if ((intake.getClawPosition() == 0.11) && (intake.getDistance() > 20)) {
                             lift_id += 1;
@@ -617,14 +614,14 @@ public class LeftConeAuto extends LoggingOpMode{
                 case 22:
                     intake.setClaw(0.11);
                     x = 650;
-                    y = -60;
+                    y = -57;
                     if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                         lift_id += 1;
                     }
                     break;
                 case 23:
-                    x = 765;
-                    y = -60;
+                    x = 770;
+                    y = -57;
                     if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                         lift_id += 1;
                         timer.reset();
@@ -633,7 +630,7 @@ public class LeftConeAuto extends LoggingOpMode{
                 case 24:
                     if (timer.seconds() > 0.1) {
                         intake.setClaw(0.63);
-                        if ((intake.getClawPosition() == 0.63) && (timer.seconds() > 0.3)) {
+                        if ((intake.getClawPosition() == 0.63) && (timer.seconds() > 0.4)) {
                             x = 757.9;
                             y = 250;
                             lift_id += 1;
@@ -642,8 +639,8 @@ public class LeftConeAuto extends LoggingOpMode{
                     }
                     break;
                 case 25:
-                    if (timer.seconds() > 0.6) {
-                        x = -380;
+                    if (timer.seconds() > 0.35) {
+                        x = -382;
                         y = 860;
                         if (al_error < 2.6 && au_error < 2.6 && wr_error < 5) {
                             lift_id += 1;
@@ -652,7 +649,7 @@ public class LeftConeAuto extends LoggingOpMode{
                     }
                     break;
                 case 26:
-                    if (timer.seconds() > 0.5 && (al_error < 2.6 && au_error < 2.6 && wr_error < 5)) {
+                    if (timer.seconds() > 0.1 && (al_error < 2.6 && au_error < 2.6 && wr_error < 5)) {
                         intake.setClaw(0.11);
                         if ((intake.getClawPosition() == 0.11) && (intake.getDistance() > 20)) {
                             lift_id += 1;
@@ -666,6 +663,7 @@ public class LeftConeAuto extends LoggingOpMode{
         }
 
 
+        telemetry.addData("Time",game_timer.seconds());
         telemetry.addData("AL Target Angle",angles[0]);
         telemetry.addData("AU Target Angle",(-1*(angles[0] - angles[1])));
         telemetry.addData("WR Target Angle",-angles[1]);

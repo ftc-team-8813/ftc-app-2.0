@@ -7,11 +7,10 @@ import android.graphics.ImageFormat;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
-import org.firstinspires.ftc.teamcode.opmodes.util.FTCDashboardValues;
+import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.vision.ConeInfoDetector;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
@@ -22,7 +21,7 @@ import org.opencv.core.Mat;
 //@Disabled
 @TeleOp(name="ConeVisionTest")
 public class ConeVisionTest extends LoggingOpMode {
-    private FTCDashboardValues ftcdbvals;
+    private FTCDVS ftcdbvals;
     private Webcam camera;
     private Webcam.SimpleFrameHandler frameHandler;
     private Mat cvFrame;
@@ -40,7 +39,7 @@ public class ConeVisionTest extends LoggingOpMode {
     @Override
     public void init() {
         super.init();
-        ftcdbvals = new FTCDashboardValues();
+        ftcdbvals = new FTCDVS();
         camera = Webcam.forSerial("3522DE6F");
         if (camera == null)
             throw new IllegalArgumentException("Could not find a webcam with serial number 3522DE6F");

@@ -4,13 +4,13 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
-import org.firstinspires.ftc.teamcode.opmodes.util.FTCDashboardValues;
+import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 
 public class DriveControl extends ControlModule {
 
     private Drivetrain drivetrain;
-    private FTCDashboardValues ftcdbvals;
+    private FTCDVS ftcdbvals;
 
     private ControllerMap.AxisEntry ax_drive_left_x;
     private ControllerMap.AxisEntry ax_drive_left_y;
@@ -33,7 +33,7 @@ public class DriveControl extends ControlModule {
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.drivetrain = robot.drivetrain;
-        ftcdbvals = new FTCDashboardValues();
+        ftcdbvals = new FTCDVS();
 
         ax_drive_left_x = controllerMap.getAxisMap("drive:left_x", "gamepad1", "left_stick_x");
         ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");

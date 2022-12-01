@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.test;
 
 import static org.opencv.core.CvType.CV_8UC4;
 
@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.vision.ConeInfoDetector;
@@ -28,7 +29,7 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
 @Autonomous(name = "Drop Tuning Auto")
-public class DropTuning extends LoggingOpMode{
+public class DropTuning extends LoggingOpMode {
 
     private Robot robot;
 

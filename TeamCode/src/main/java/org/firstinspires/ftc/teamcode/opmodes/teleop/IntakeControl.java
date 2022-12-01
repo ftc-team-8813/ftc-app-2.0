@@ -49,7 +49,7 @@ public class IntakeControl extends ControlModule {
         double[] cur_angles = lift.getEncoderValue();
         cur_angles[2] *= -WRIST_DEGREES_PER_TICK;
 
-        if ((cur_angles[2] > 175) || (cur_angles[2] < -175)) {
+        if (((cur_angles[2]%360) > 175) || ((cur_angles[2]%360) < -175)) {
             claw_open_pos = 0.3;
         }
         else {
@@ -76,7 +76,7 @@ public class IntakeControl extends ControlModule {
 
         }
 
-        if(intake.getDistance() < 20.0 && !cone_detected) {
+        if (intake.getDistance() < 20.0 && !cone_detected) {
             claw_open = false;
             cone_detected = true;
             wait_till_close = true;

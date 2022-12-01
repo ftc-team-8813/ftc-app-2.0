@@ -10,6 +10,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -19,7 +20,7 @@ import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
-import org.firstinspires.ftc.teamcode.opmodes.util.FTCDashboardValues;
+import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.vision.ConeInfoDetector;
@@ -28,10 +29,11 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
+@Disabled
 @Autonomous(name = "Right Cone Auto")
 public class RightConeAuto extends LoggingOpMode{
 
-    private FTCDashboardValues ftcDash;
+    private FTCDVS ftcDash;
     private Robot robot;
 
     private Drivetrain drivetrain;
@@ -80,7 +82,7 @@ public class RightConeAuto extends LoggingOpMode{
     @Override
     public void init() {
         super.init();
-        ftcDash = new FTCDashboardValues();
+        ftcDash = new FTCDVS();
         robot = Robot.initialize(hardwareMap);
         drivetrain = robot.drivetrain;
         lift = robot.lift;
