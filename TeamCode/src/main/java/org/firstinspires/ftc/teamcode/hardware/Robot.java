@@ -2,9 +2,8 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -48,12 +47,22 @@ public class Robot {
         MotorEx back_left = new MotorEx(hardwareMap, "back left");
         MotorEx back_right = new MotorEx(hardwareMap, "back right");
 
-        DcMotor arm_lower = hardwareMap.get(DcMotor.class, "arm lower");
-        DcMotor arm_upper = hardwareMap.get(DcMotor.class, "arm upper");
-        DcMotor wrist = hardwareMap.get(DcMotor.class, "wrist");
+        DcMotorEx horiz = hardwareMap.get(DcMotorEx.class, "horiz");
+        DcMotorEx lift1 = hardwareMap.get(DcMotorEx.class, "lift1");  //lift1 and lift2 have to be inversed
+        DcMotorEx lift2 = hardwareMap.get(DcMotorEx.class, "lift2");
+        DcMotorEx arm = hardwareMap.get(DcMotorEx.class, "arm");
 
         // Servos
+        Servo odo1 = hardwareMap.get(Servo.class, "odo1");
+        Servo odo2 = hardwareMap.get(Servo.class, "odo2");
+        Servo odo3 = hardwareMap.get(Servo.class, "odo3");
         Servo claw = hardwareMap.get(Servo.class, "claw");
+        Servo dumper = hardwareMap.get(Servo.class, "dumper");
+
+        //Sensors
+        DigitalChannel lift_limit = hardwareMap.get(DigitalChannel.class, "lift limit");
+        DigitalChannel arm_limit = hardwareMap.get(DigitalChannel.class, "arm limit");
+        DigitalChannel horiz_limit = hardwareMap.get(DigitalChannel.class, "horiz limit");
 
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
@@ -61,8 +70,8 @@ public class Robot {
 
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left.motorEx, front_right.motorEx, back_left.motorEx, back_right.motorEx, imu_sensor);
-        this.intake = new Intake(claw,claw_sensor);
-        this.lift = new Lift(arm_lower, arm_upper, wrist);
-        this.odometryNav = new OdometryNav(front_left, front_right, back_left, back_right);
+        this.intake = new Intake(horiz, arm, horiz_limit, arm_limit, claw_sensor, claw);
+        this.lift = new Lift(lift_limit, lift1, lift2, dumper);
+//        this.odometryNav = new OdometryNav(front_left, front_right, back_left, back_right, odo1, odo2, odo3);
     }
 }

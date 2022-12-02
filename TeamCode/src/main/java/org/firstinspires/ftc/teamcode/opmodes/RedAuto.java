@@ -38,7 +38,7 @@ public class RedAuto extends LoggingOpMode{
 
     private int main_id = 0;
 
-    private final Logger log = new Logger("Red Auto");
+    private final Logger log = new Logger("Parking Auto");
 
     static
     {
@@ -117,14 +117,11 @@ public class RedAuto extends LoggingOpMode{
                 break;
         }
 
-
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();
 
 
-
         LoopTimer.resetTimer();
-
     }
 
     @Override

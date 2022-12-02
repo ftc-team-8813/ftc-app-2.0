@@ -32,17 +32,12 @@ public class IntakeControl extends ControlModule {
     @Override
     public void update(Telemetry telemetry) {
 
-//        if((right_bumper.edge() == -1) && (!first_close)) {
-//            claw_open = false;
-//            first_close = true;
-//        }
-
         if (right_bumper.edge() == -1) {
             claw_open = !claw_open;
         }
 
         if (claw_open) {
-            intake.setClaw(0.11);
+            intake.setClaw(0.11); //figure out claw positions
             if (wait_till_close) {
                 timer.reset();
                 wait_till_close = false;
@@ -52,8 +47,7 @@ public class IntakeControl extends ControlModule {
             }
         }
         if (!claw_open) {
-            intake.setClaw(0.63);
-
+            intake.setClaw(0.63); // figure out claw positions
         }
 
         if(intake.getDistance() < 20.0 && !cone_detected) {
@@ -61,9 +55,8 @@ public class IntakeControl extends ControlModule {
             cone_detected = true;
             wait_till_close = true;
         }
-
-
-
+'
+    '
         telemetry.addData("claw sensor dist", intake.getDistance());
     }
 }
