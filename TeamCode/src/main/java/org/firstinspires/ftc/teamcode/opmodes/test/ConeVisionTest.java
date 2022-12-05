@@ -3,12 +3,15 @@ package org.firstinspires.ftc.teamcode.opmodes.test;
 import static org.opencv.core.CvType.CV_8UC4;
 
 import android.graphics.Bitmap;
+import android.graphics.Camera;
 import android.graphics.ImageFormat;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
 import org.firstinspires.ftc.teamcode.util.Logger;
@@ -21,7 +24,6 @@ import org.opencv.core.Mat;
 //@Disabled
 @TeleOp(name="ConeVisionTest")
 public class ConeVisionTest extends LoggingOpMode {
-    private FTCDVS ftcdbvals;
     private Webcam camera;
     private Webcam.SimpleFrameHandler frameHandler;
     private Mat cvFrame;
@@ -39,7 +41,6 @@ public class ConeVisionTest extends LoggingOpMode {
     @Override
     public void init() {
         super.init();
-        ftcdbvals = new FTCDVS();
         camera = Webcam.forSerial("3522DE6F");
         if (camera == null)
             throw new IllegalArgumentException("Could not find a webcam with serial number 3522DE6F");
@@ -61,12 +62,7 @@ public class ConeVisionTest extends LoggingOpMode {
                 serverFrameUsed = false;
             }
 
-            ConeInfoDetector detector = new ConeInfoDetector(cvFrame,log,-1006,255);
 
-            if (!detector.detect().equals("Nothing Detected"))
-            {
-                result = detector.detect();
-            }
 
             camera.requestNewFrame();
         }
