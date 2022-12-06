@@ -10,7 +10,6 @@ import org.firstinspires.ftc.teamcode.util.LoopTimer;
 public class DriveControl extends ControlModule {
 
     private Drivetrain drivetrain;
-    private FTCDVS ftcdbvals;
 
     private ControllerMap.AxisEntry ax_drive_left_x;
     private ControllerMap.AxisEntry ax_drive_left_y;
@@ -22,10 +21,6 @@ public class DriveControl extends ControlModule {
     private double heading_delta = 0;
     private double heading_was = 0;
 
-    private double z_velocity = 0;
-    private double y_velocity = 0;
-    private double x_velocity = 0;
-
     public DriveControl(String name) {
         super(name);
     }
@@ -33,14 +28,12 @@ public class DriveControl extends ControlModule {
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.drivetrain = robot.drivetrain;
-        ftcdbvals = new FTCDVS();
 
         ax_drive_left_x = controllerMap.getAxisMap("drive:left_x", "gamepad1", "left_stick_x");
         ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");
         ax_drive_right_x = controllerMap.getAxisMap("drive:right_x", "gamepad1", "right_stick_x");
         dpad_up = controllerMap.getButtonMap("drive:dpad_up", "gamepad1","dpad_up");
 
-        drivetrain.imuAccelStart();
     }
 
     @Override
@@ -99,18 +92,6 @@ public class DriveControl extends ControlModule {
 
         telemetry.addData("Field Centric",field_centric);
 
-        telemetry.addData("Z Acceleration", drivetrain.getZAcceleration());
-        telemetry.addData("Y Acceleration", drivetrain.getYAcceleration());
-        telemetry.addData("X Acceleration", drivetrain.getXAcceleration());
-
-        z_velocity += LoopTimer.getLoopTime() * drivetrain.getZAcceleration();
-        y_velocity += LoopTimer.getLoopTime() * drivetrain.getYAcceleration();
-        x_velocity += LoopTimer.getLoopTime() * drivetrain.getXAcceleration();
-
-        telemetry.addData("Z Velocity", z_velocity);
-        telemetry.addData("Y Velocity", y_velocity);
-        telemetry.addData("X Velocity", x_velocity);
-
         LoopTimer.resetTimer();
     }
 
@@ -118,6 +99,5 @@ public class DriveControl extends ControlModule {
     public void stop() {
         super.stop();
         // drivetrain.closeIMU();
-        drivetrain.imuAccelStop();
     }
 }

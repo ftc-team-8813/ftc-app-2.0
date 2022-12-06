@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.test;/*
+package org.firstinspires.ftc.teamcode.vision;/*
  * Copyright (c) 2021 OpenFTC Team
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,7 +37,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.ArrayList;
 
-class AprilTagDetectionPipeline extends OpenCvPipeline
+public class AprilTagDetectionPipeline extends OpenCvPipeline
 {
     private long nativeApriltagPtr;
     private Mat grey = new Mat();

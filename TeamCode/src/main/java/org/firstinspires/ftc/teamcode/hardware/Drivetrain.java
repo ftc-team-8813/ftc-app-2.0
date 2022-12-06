@@ -102,6 +102,10 @@ public class Drivetrain {
             rot = odo.getRotation().getDegrees();
         }
 
+        if ((turn - rot) > Math.abs(turn - (rot+360))) {
+            rot += 360;
+        }
+
         double forward_error = Math.abs(forward - y);
         double strafe_error = Math.abs(strafe - x);
         double turn_error = Math.abs(turn - rot);
@@ -161,28 +165,10 @@ public class Drivetrain {
         return imu.getAngularVelocity().xRotationRate;
     }
 
-    public double getYAcceleration() {
-        return imu.getAcceleration().yAccel;
-    }
-
-    public double getZAcceleration() {
-        return imu.getAcceleration().zAccel;
-    }
-
-    public double getXAcceleration() {
-        return (imu.getAcceleration().xAccel);
-    }
 
     public void closeIMU() {
         imu.close();
     }
 
-    public void imuAccelStart(){
-        imu.startAccelerationIntegration(null,null,10);
-    }
-
-    public void imuAccelStop(){
-        imu.stopAccelerationIntegration();
-    }
 
 }
