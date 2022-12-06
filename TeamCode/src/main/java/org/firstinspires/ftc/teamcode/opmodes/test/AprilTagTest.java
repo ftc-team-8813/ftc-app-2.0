@@ -25,6 +25,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.apriltag.AprilTagDetection;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 
@@ -48,7 +51,7 @@ public class AprilTagTest extends LinearOpMode
     // UNITS ARE METERS
     double tagsize = 0.166;
 
-    int ID_TAG_OF_INTEREST = 18; // Tag ID 18 from the 36h11 family
+    int ID_TAG_OF_INTEREST = 350; // Tag ID 18 from the 36h11 family
 
     AprilTagDetection tagOfInterest = null;
 
