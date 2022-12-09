@@ -72,11 +72,11 @@ public class Intake {
     }
     
     public double getArmCurrent(){
-        return arm.getCurrentPosition()*(360//TODO Add ticks)); Do for all encoders;
+        return arm.getCurrentPosition()*(360); //TODO Add ticks)); Do for all encoders;
     }
     
     public double getHorizCurrent(){
-        return horiz.getCurrentPosition()*(360//TODO Add ticks)); Do for all encoders;
+        return horiz.getCurrentPosition()*(360); //TODO Add ticks)); Do for all encoders;
     }
 
     public double getDistance() {

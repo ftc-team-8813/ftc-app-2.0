@@ -49,7 +49,7 @@ public class Lift {
     }
 
     public double getEncoderVal(){
-        return (lift1.getCurrentPosition()*(360//TODO Add ticks)); Do for all encoders
+        return (lift1.getCurrentPosition()*(360));//TODO Add ticks)); Do for all encoders
     }
 
 
