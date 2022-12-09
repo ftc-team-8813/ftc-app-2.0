@@ -52,8 +52,6 @@ public class ConeVisionTest extends LoggingOpMode {
 
     private double tagsize = 0.166;
 
-    private final Logger log = new Logger("Parking Auto");
-
     @Override
     public void init() {
         super.init();
