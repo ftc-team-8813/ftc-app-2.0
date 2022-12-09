@@ -2,37 +2,32 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.StateMachine;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.navigation.IntakeStates;
+import org.firstinspires.ftc.teamcode.hardware.navigation.LiftStates;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
-import org.firstinspires.ftc.teamcode.util.Logger;
+
+import java.util.concurrent.TimeUnit;
 
 public class RobotControl extends ControlModule{
 
     //Game objects
     private Lift lift;
     private Intake intake;
-//    private Logger log = new Logger("Robot Control");
+//  private Logger log = new Logger("Robot Control");
 
     //Timer
-    private ElapsedTime timer = new ElapsedTime();
+    private ElapsedTime timer;
 
     //PIDs
-    private final PID arm_PID = new PID();
-    private final PID horiz_PID = new PID();
-    private final PID lift_PID = new PID();
-
-    //States
-    private boolean ARM_RAISED;
-    private boolean CLAW_CLOSED;
-    private boolean CONE_SENSED; //maybe we don't need this one
-    private boolean ARM_MID_POS;
-    private boolean HORIZ_EXT;
-    private boolean LIFT_RAISED;
-    private boolean DUMP_FLIPPED;
+    private final PID arm_PID = new PID(0, 0, 0, 0, 0, 0);
+    private final PID horiz_PID = new PID(0, 0, 0, 0, 0, 0);
+    private final PID lift_PID = new PID(0, 0, 0, 0, 0, 0);
 
     //Controller Maps
     private ControllerMap.ButtonEntry y_button;
@@ -40,16 +35,32 @@ public class RobotControl extends ControlModule{
     private ControllerMap.ButtonEntry a_button;
     private ControllerMap.ButtonEntry x_button;
 
+    private ControllerMap.ButtonEntry sense;
+    private ControllerMap.ButtonEntry dump;
+
     private ControllerMap.ButtonEntry rec_right_bumper;
     private ControllerMap.AxisEntry rec_right_trigger;
     private ControllerMap.ButtonEntry rec_left_bumper;
     private ControllerMap.AxisEntry rec_left_trigger;
 
-//    private ControllerMap.AxisEntry ax_lift_left_x; //Ask John about finetuning
-//    private ControllerMap.AxisEntry ax_lift_left_y;
+    private ControllerMap.ButtonEntry switchMode;
+
+    private ControllerMap.AxisEntry ax_lift_left_x;
+    private ControllerMap.AxisEntry ax_lift_left_y;
+    private ControllerMap.AxisEntry ax_lift_right_y;
+
+
+    //Positions
+    private final double clawOpenPos = 0.5;
+    private final double clawClosePos = 0.5;
 
     //Switch Vars
+    private LiftStates stateForLift;
+    private IntakeStates stateForIntake;
     private int num;
+    
+    //Modes
+    private boolean circuitMode;
 
     public RobotControl(String name) {
         super(name);
@@ -57,16 +68,16 @@ public class RobotControl extends ControlModule{
 
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
+
+        circuitMode = true;
+
+        timer = new ElapsedTime();
+
         this.lift = robot.lift;
         this.intake = robot.intake;
 
-        ARM_RAISED = false;
-        CLAW_CLOSED = false; //I think, double check with John
-        CONE_SENSED = false;
-        ARM_MID_POS = false;
-        HORIZ_EXT = true;
-        LIFT_RAISED = false;
-        DUMP_FLIPPED = false;
+        sense = controllerMap.getButtonMap("senseCone", "gamepad1", "right_bumper");
+        dump = controllerMap.getButtonMap("dump", "gamepad1", "left_bumper");
 
         y_button = controllerMap.getButtonMap("lift:high","gamepad1","y");
         b_button = controllerMap.getButtonMap("lift:mid","gamepad1","b");
@@ -78,26 +89,152 @@ public class RobotControl extends ControlModule{
         rec_left_bumper = controllerMap.getButtonMap("lift:reset_encoder_lb","gamepad2","left_bumper");
         rec_left_trigger = controllerMap.getAxisMap("lift:reset_encoder_lt","gamepad2","left_trigger");
 
-//        ax_lift_left_x = controllerMap.getAxisMap("lift:left_x", "gamepad2", "left_stick_x"); //finetuning
-//        ax_lift_left_y = controllerMap.getAxisMap("lift:right_y", "gamepad2", "left_stick_y");
+        switchMode = controllerMap.getButtonMap("switchMode", "gamepad2", "dpad_up");
 
-        lift.resetLiftEncoder();
-        intake.resetIntakeEncoders();
+        ax_lift_left_x = controllerMap.getAxisMap("lift:left_x", "gamepad2", "left_stick_x"); //finetuning
+        ax_lift_left_y = controllerMap.getAxisMap("lift:left_y", "gamepad2", "left_stick_y");
+        ax_lift_right_y = controllerMap.getAxisMap("lift:right_y", "gamepad2", "right_stick_y");
 
-        num = 0;
+
+        stateForLift = LiftStates.LiftDown;
+        stateForIntake = IntakeStates.LookingForCone;
+
+        num = 1;
+        timer.reset();
+    }
+
+    @Override
+    public void init_loop(Telemetry telemetry) {
+        super.init_loop(telemetry); // Do in AUTO End MAYBE
+
+        intake.setArmPow(0.3);
+        lift.setLiftPower(0.3);
+        intake.setHorizPow(0.3);
+
+        if(intake.getArmLimit() && intake.getHorizLimit() && lift.getLift_limit()){
+            lift.resetLiftEncoder();
+            intake.resetIntakeEncoders();
+        }
+
     }
 
     @Override
     public void update(Telemetry telemetry) {
-        switch (num){
-            case 1:
-                intake.setArmPow(arm_PID.getOutPut(intake.setArmTarget(), intake.getEncoderVals()[0],0)); //ask john what to put for feed forward, and ask if my code is right
-                if(intake.getArmTarget() == intake.getEncoderVals()[0]){  //add error band
-                    ARM_RAISED = false; //double check
+
+        //lift
+        switch (stateForLift) {
+            case LiftDown:
+                lift.setLiftTarget(0); //lift down
+                break;
+
+            case LiftUp:
+                if (circuitMode) {
+                    if (a_button.edge() == -1) {
+                        lift.setLiftTarget(150); //low pos
+                    }
+
+                    if (b_button.edge() == -1) { //change keybinds
+                        lift.setLiftTarget(410); //mid pos
+                    }
+
+                    if (y_button.edge() == -1) {
+                        lift.setLiftTarget(660); //high pos
+                    }
+                } else {
+                    lift.setLiftTarget(660); //high pos
+                    stateForLift = LiftStates.Dump;
                 }
-            case 2:
+                break;
+
+            case Dump:
+                lift.setDumper(0); //dump pos
+                timer.reset();
+                if (timer.time(TimeUnit.MILLISECONDS) == 1000) {
+                    lift.setDumper(0); //go back to normal pos, flip dump
+                }
+                break;
+        }
+        //intake
+        switch (stateForIntake) {
+            case LookingForCone:
+                stateForLift = LiftStates.LiftDown;
+                intake.setArmTarget(160); //armCompleteDown pos
+                intake.setClaw(clawOpenPos);
+                if (!circuitMode) {
+                    intake.setHorizTarget(0); //max extended horiz, 264mm
+                }
+                if(intake.getDistance() <= 20 || sense.edge() == -1){
+                    stateForIntake = IntakeStates.PickingConeUp;
+                }
+                break;
+
+            case PickingConeUp:
+                switch (num) {
+                    case 1:
+                        intake.setClaw(clawClosePos);
+                        if (timer.seconds() == 1) {
+                            intake.setArmTarget(0); // arm High pos
+                            intake.setHorizTarget(0); //Horiz retracted pos
+                        }
+                        break;
+                    case 2:
+                        if (timer.seconds() == 1) {
+                            if (lift.getEncoderVal() <= 20) { //threshold
+                                num = 1;
+                                timer.reset();
+                            }
+                        }
+                        break;
+                }
+                break;
+
+            case Transfer:
+                intake.setClaw(clawOpenPos);
+                if (timer.seconds() == 1) { // ask john about time
+                    if (circuitMode) {
+                        intake.setArmTarget(5); //mid pos
+                    } else {
+                        stateForIntake = IntakeStates.LookingForCone;
+                    }
+                }
+                if (timer.seconds() == 2.2) {
+                    stateForLift = LiftStates.LiftUp;
+                }
+                break;
+        }
+
+        if(switchMode.edge() == -1) {
+            circuitMode = !circuitMode;
+            if(circuitMode){
+                num = 2;
+                timer.reset();
+            }else{
+                num = 1;
+                timer.reset();
+            }
         }
 
 
+        if(lift.getLift_limit() && intake.getHorizLimit() && intake.getArmLimit()){
+            stateForIntake = IntakeStates.Transfer;
+            timer.reset();
+        }
+
+        if(dump.edge() == -1){
+            stateForLift = LiftStates.Dump;
+        }
+
+        if (rec_right_bumper.get() && rec_left_bumper.get() && (rec_right_trigger.get() >= 0.3) && (rec_left_trigger.get() >= 0.3)) { // reset encoders
+            lift.resetLiftEncoder();
+        }
+
+        intake.setHorizTarget(intake.getHorizTarget() + (ax_lift_left_x.get() * 16));
+        lift.setLiftTarget(lift.getLiftTarget() + (ax_lift_left_y.get() * 16));
+        intake.setArmTarget(intake.getArmTarget() + (ax_lift_right_y.get() * 16));
+
+        intake.setArmPow(arm_PID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), Math.cos(Math.toRadians(intake.getArmCurrent() + 0))));
+        lift.setLiftPower(lift_PID.getOutPut(lift.getLiftTarget(), lift.getEncoderVal(), 1));
+        intake.setHorizPow(horiz_PID.getOutPut(intake.getHorizTarget(), intake.getHorizCurrent(), 0));
+        }
     }
-}
+

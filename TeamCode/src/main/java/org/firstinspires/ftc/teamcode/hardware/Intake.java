@@ -1,26 +1,22 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
-import com.qualcomm.hardware.broadcom.BroadcomColorSensor;
-import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Intake {
 
-    DcMotorEx horiz;
-    DcMotorEx arm;
-    DigitalChannel horiz_limit;
-    DigitalChannel arm_limit;
-    DistanceSensor claw_sens;
-    Servo claw;
-    double[] encoderVals = new double[2];
-    boolean[] limitValues = new boolean[2];
+    private DcMotorEx horiz;
+    private DcMotorEx arm;
+    private DigitalChannel horiz_limit;
+    private DigitalChannel arm_limit;
+    private DistanceSensor claw_sens;
+    private Servo claw;
+    private double armTarget;
+    private double horizTarget;
 
     public Intake(DcMotorEx horiz, DcMotorEx arm, DigitalChannel horiz_limit, DigitalChannel arm_limit, DistanceSensor claw_sens, Servo claw){
         this.horiz = horiz;
@@ -38,21 +34,18 @@ public class Intake {
         arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void setArmTarget(int position){
-        arm.setTargetPosition(position);
+    public void setArmTarget(double position){
+        armTarget = position;
     }
 
     public double getArmTarget(){
-        return arm.getTargetPosition();
+        return armTarget;
     }
 
     public void setClaw(double position){
         claw.setPosition(position);
     }
 
-    public double getClaw(double pos){
-        return claw.getPosition();
-    }
 
     public void setArmPow(double pow){
         arm.setPower(pow);
@@ -62,36 +55,50 @@ public class Intake {
         horiz.setPower(pow);
     }
 
-    public void setHorizTarget (int position){
-        horiz.setTargetPosition(position);
+    public void setHorizTarget (double position){
+        horizTarget = position;
     }
 
     public double getHorizTarget(){
-        return horiz.getTargetPosition();
+        return horizTarget;
     }
 
-    public void setHoriz_limit(boolean state){
-        horiz_limit.setState(state);
+    public boolean getArmLimit(){
+        return arm_limit.getState();
     }
-
-    public void setArm_limit(boolean state){
-        arm_limit.setState(state);
+    
+    public boolean getHorizLimit(){
+        return horiz_limit.getState();
     }
-
-    public boolean[] limitValues(){
-        limitValues[0] = arm_limit.getState();
-        limitValues[1] = horiz_limit.getState();
-
-        return limitValues;
+    
+    public double getArmCurrent(){
+        return arm.getCurrentPosition()*(360//TODO Add ticks)); Do for all encoders;
     }
-
-    public double[] getEncoderVals(){
-        encoderVals[0] = arm.getCurrentPosition();
-        encoderVals[1] = horiz.getCurrentPosition();
-        return encoderVals;
+    
+    public double getHorizCurrent(){
+        return horiz.getCurrentPosition()*(360//TODO Add ticks)); Do for all encoders;
     }
 
     public double getDistance() {
         return claw_sens.getDistance(DistanceUnit.MM);
     }
+
+//
+//    public Boolean armDeadband(int deadband){
+//        if(Math.abs(getEncoderVals()[0] - getArmTarget()) <= deadband){
+//            return true;
+//        }
+//        else{
+//            return false;
+//        }
+//    }
+//
+//    public Boolean horizDeadband(int deadband){
+//        if(Math.abs(getEncoderVals()[1] - getArmTarget()) <= deadband){
+//            return true;
+//        }
+//        else{
+//            return false;
+//        }
+//    }
 }

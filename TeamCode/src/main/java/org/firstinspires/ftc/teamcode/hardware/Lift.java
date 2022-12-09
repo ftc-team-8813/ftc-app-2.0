@@ -3,16 +3,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 
 public class Lift {
-    DigitalChannel lift_limit;
-    DcMotorEx lift1;
-    DcMotorEx lift2;
-    Servo dumper;
-    public int[] liftTargetPos = new int[2];
+    private DigitalChannel lift_limit;
+    private DcMotorEx lift1;
+    private DcMotorEx lift2;
+    private Servo dumper;
+    private double lift1Target;
 
     public Lift(DigitalChannel lift_limit, DcMotorEx lift1, DcMotorEx lift2, Servo dumper){
         this.lift_limit = lift_limit;
@@ -30,13 +27,6 @@ public class Lift {
         dumper.setPosition(pos);
     }
 
-    public double getDumper(){
-        return dumper.getPosition();
-    }
-
-    public void setLift_limit(boolean state){
-        lift_limit.setState(state);
-    }
 
     public boolean getLift_limit(){
         return lift_limit.getState();
@@ -48,17 +38,28 @@ public class Lift {
         lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void setLiftTarget(int pos){
+    public void setLiftTarget(double pos){
         //ask john if the lift motors target position are inversed as well
-        lift1.setTargetPosition(pos);
-        lift2.setTargetPosition(-pos);
+        lift1Target = pos;
     }
 
-    public int[] getLiftTarget(){
-        liftTargetPos[0] = lift1.getTargetPosition();
-        liftTargetPos[1] = lift2.getTargetPosition();
 
-        return liftTargetPos;
+    public double getLiftTarget(){
+        return lift1Target;
     }
+
+    public double getEncoderVal(){
+        return (lift1.getCurrentPosition()*(360//TODO Add ticks)); Do for all encoders
+    }
+
+
+//    public Boolean liftDeadband(int deadband){
+//        if(Math.abs(getEncoderVal() - getLiftTarget()[0]) <= deadband){
+//            return true;
+//        }
+//        else{
+//            return false;
+//        }
+//    }
 
 }

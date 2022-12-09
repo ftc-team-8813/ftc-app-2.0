@@ -18,7 +18,7 @@ public abstract class ControlModule
 
     public void init_loop(Telemetry telemetry) {}
 
-    public abstract void update(Telemetry telemetry);
+    public abstract void update(Telemetry telemetry) throws InterruptedException;
 
     public void alwaysUpdate(Telemetry telemetry) {}
 
