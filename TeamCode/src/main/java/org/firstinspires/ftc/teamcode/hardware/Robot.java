@@ -47,7 +47,7 @@ public class Robot {
         MotorEx back_left = new MotorEx(hardwareMap, "back left");
         MotorEx back_right = new MotorEx(hardwareMap, "back right");
 
-        DcMotorEx horiz = hardwareMap.get(DcMotorEx.class, "horiz");
+        DcMotorEx horiz = hardwareMap.get(DcMotorEx.class, "horizontal");
         DcMotorEx lift1 = hardwareMap.get(DcMotorEx.class, "lift1");  //lift1 and lift2 have to be inversed
         DcMotorEx lift2 = hardwareMap.get(DcMotorEx.class, "lift2");
         DcMotorEx arm = hardwareMap.get(DcMotorEx.class, "arm");

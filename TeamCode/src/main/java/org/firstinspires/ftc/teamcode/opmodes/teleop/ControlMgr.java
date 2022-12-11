@@ -68,8 +68,7 @@ public class ControlMgr
         }
     }
     
-    public void loop(Telemetry telemetry)
-    {
+    public void loop(Telemetry telemetry) throws InterruptedException {
         for (ControlModule module : modules)
         {
             if (!module.disabled) module.update(telemetry);

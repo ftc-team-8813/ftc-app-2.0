@@ -72,7 +72,11 @@ public class CurrentTele extends LoggingOpMode
     {
         // Loop Updaters
         controllerMap.update();
-        controlMgr.loop(telemetry);
+        try {
+            controlMgr.loop(telemetry);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         scheduler.loop();
         evBus.update();
         telemetry.update();

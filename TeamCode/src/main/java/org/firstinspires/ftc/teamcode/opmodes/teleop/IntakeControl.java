@@ -55,8 +55,8 @@ public class IntakeControl extends ControlModule {
             cone_detected = true;
             wait_till_close = true;
         }
-'
-    '
+
+
         telemetry.addData("claw sensor dist", intake.getDistance());
     }
 }
