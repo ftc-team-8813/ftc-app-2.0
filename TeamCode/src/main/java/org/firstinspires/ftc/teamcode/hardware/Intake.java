@@ -15,16 +15,18 @@ public class Intake {
     private DigitalChannel arm_limit;
     private DistanceSensor claw_sens;
     private Servo claw;
+    private Servo rotater;
     private double armTarget;
     private double horizTarget;
 
-    public Intake(DcMotorEx horiz, DcMotorEx arm, DigitalChannel horiz_limit, DigitalChannel arm_limit, DistanceSensor claw_sens, Servo claw){
+    public Intake(DcMotorEx horiz, DcMotorEx arm, DigitalChannel horiz_limit, DigitalChannel arm_limit, DistanceSensor claw_sens, Servo claw, Servo rotater){
         this.horiz = horiz;
         this.arm = arm;
         this.horiz_limit = horiz_limit;
         this.arm_limit = arm_limit;
         this.claw_sens = claw_sens;
         this.claw = claw;
+        this.rotater = rotater;
     }
 
     public void resetIntakeEncoders(){
@@ -46,6 +48,9 @@ public class Intake {
         claw.setPosition(position);
     }
 
+    public void setRotater(double position){
+        rotater.setPosition(position);
+    }
 
     public void setArmPow(double pow){
         arm.setPower(pow);

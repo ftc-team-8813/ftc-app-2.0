@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 
 public class RobotControl extends ControlModule{
 
+    //add deadbands
+
     //Game objects
     private Lift lift;
     private Intake intake;
@@ -62,13 +64,29 @@ public class RobotControl extends ControlModule{
     //Modes
     private boolean circuitMode;
 
+    //Final Vars
+    private final double INITLOOPPOWER = 0.3;
+    private final double LIFTDOWNPOS = 0;
+    private final double LIFTLOWPOS = 150;
+    private final double LIFTMIDPOS = 410;
+    private final double LIFTHIGHPOS = 660;
+    private final double DUMPPOS = 0;
+    private final double ORIGINDUMPPOS = 0;
+    private final double ARMCOMPLETEDOWNPOS = 160;
+    private final double ROTATLOOKINGFORCONE = 0.1;
+    private final double MAXEXTENDEDHORIZ = 0;
+    private final double ARMHIGHPOS = 0;
+    private final double HORIZRETRACTED = 0;
+    private final double LIFTTHRESHOLD = 20;
+    private final double ROTATTRANSFER = 0.75;
+    private final double ARMMIDPOS = 5;
+
     public RobotControl(String name) {
         super(name);
     }
 
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
-
         circuitMode = true;
 
         timer = new ElapsedTime();
@@ -107,9 +125,9 @@ public class RobotControl extends ControlModule{
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry); // Do in AUTO End MAYBE
 
-        intake.setArmPow(0.3);
-        lift.setLiftPower(0.3);
-        intake.setHorizPow(0.3);
+        intake.setArmPow(INITLOOPPOWER);
+        lift.setLiftPower(INITLOOPPOWER);
+        intake.setHorizPow(INITLOOPPOWER);
 
         if(intake.getArmLimit() && intake.getHorizLimit() && lift.getLift_limit()){
             lift.resetLiftEncoder();
@@ -124,33 +142,33 @@ public class RobotControl extends ControlModule{
         //lift
         switch (stateForLift) {
             case LiftDown:
-                lift.setLiftTarget(0); //lift down
+                lift.setLiftTarget(LIFTDOWNPOS); //lift down
                 break;
 
             case LiftUp:
                 if (circuitMode) {
                     if (a_button.edge() == -1) {
-                        lift.setLiftTarget(150); //low pos
+                        lift.setLiftTarget(LIFTLOWPOS); //low pos
                     }
 
                     if (b_button.edge() == -1) { //change keybinds
-                        lift.setLiftTarget(410); //mid pos
+                        lift.setLiftTarget(LIFTMIDPOS); //mid pos
                     }
 
                     if (y_button.edge() == -1) {
-                        lift.setLiftTarget(660); //high pos
+                        lift.setLiftTarget(LIFTHIGHPOS); //high pos
                     }
                 } else {
-                    lift.setLiftTarget(660); //high pos
+                    lift.setLiftTarget(LIFTHIGHPOS); //high pos
                     stateForLift = LiftStates.Dump;
                 }
                 break;
 
             case Dump:
-                lift.setDumper(0); //dump pos
+                lift.setDumper(DUMPPOS); //dump pos
                 timer.reset();
                 if (timer.time(TimeUnit.MILLISECONDS) == 1000) {
-                    lift.setDumper(0); //go back to normal pos, flip dump
+                    lift.setDumper(ORIGINDUMPPOS); //go back to normal pos, flip dump
                 }
                 break;
         }
@@ -158,10 +176,11 @@ public class RobotControl extends ControlModule{
         switch (stateForIntake) {
             case LookingForCone:
                 stateForLift = LiftStates.LiftDown;
-                intake.setArmTarget(160); //armCompleteDown pos
+                intake.setArmTarget(ARMCOMPLETEDOWNPOS); //armCompleteDown pos
+                intake.setRotater(ROTATLOOKINGFORCONE);
                 intake.setClaw(clawOpenPos);
                 if (!circuitMode) {
-                    intake.setHorizTarget(0); //max extended horiz, 264mm
+                    intake.setHorizTarget(MAXEXTENDEDHORIZ); //max extended horiz, 264mm
                 }
                 if(intake.getDistance() <= 20 || sense.edge() == -1){
                     stateForIntake = IntakeStates.PickingConeUp;
@@ -173,13 +192,13 @@ public class RobotControl extends ControlModule{
                     case 1:
                         intake.setClaw(clawClosePos);
                         if (timer.seconds() == 1) {
-                            intake.setArmTarget(0); // arm High pos
-                            intake.setHorizTarget(0); //Horiz retracted pos
+                            intake.setArmTarget(ARMHIGHPOS); // arm High pos
+                            intake.setHorizTarget(HORIZRETRACTED); //Horiz retracted pos
                         }
                         break;
                     case 2:
                         if (timer.seconds() == 1) {
-                            if (lift.getEncoderVal() <= 20) { //threshold
+                            if (lift.getEncoderVal() <= LIFTTHRESHOLD) { //threshold
                                 num = 1;
                                 timer.reset();
                             }
@@ -190,9 +209,10 @@ public class RobotControl extends ControlModule{
 
             case Transfer:
                 intake.setClaw(clawOpenPos);
+                intake.setRotater(ROTATTRANSFER);
                 if (timer.seconds() == 1) { // ask john about time
                     if (circuitMode) {
-                        intake.setArmTarget(5); //mid pos
+                        intake.setArmTarget(ARMMIDPOS); //mid pos
                     } else {
                         stateForIntake = IntakeStates.LookingForCone;
                     }

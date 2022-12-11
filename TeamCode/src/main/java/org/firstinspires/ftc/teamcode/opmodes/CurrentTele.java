@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftTest;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.RobotControl;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Persistent;
@@ -45,11 +45,9 @@ public class CurrentTele extends LoggingOpMode
         controlMgr = new ControlMgr(robot, controllerMap);
 
         // Controller Modules
-//        controlMgr.addModule(new ServerControl("Server Control")); Don't know why you need this
-        controlMgr.addModule(new DriveControl("Drive Control"));
-//        controlMgr.addModule(new IntakeControl("Intake Control"));
-//        controlMgr.addModule(new LiftControl("Lift Control"));
-        controlMgr.addModule(new RobotControl("Robot Control"));
+//        controlMgr.addModule(new DriveControl("Drive Control"));
+        controlMgr.addModule(new LiftTest("Lift Test"));
+//        controlMgr.addModule(new RobotControl("Robot Control"));
 
         controlMgr.initModules();
     }
@@ -72,7 +70,11 @@ public class CurrentTele extends LoggingOpMode
     {
         // Loop Updaters
         controllerMap.update();
-        controlMgr.loop(telemetry);
+        try {
+            controlMgr.loop(telemetry);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         scheduler.loop();
         evBus.update();
         telemetry.update();
