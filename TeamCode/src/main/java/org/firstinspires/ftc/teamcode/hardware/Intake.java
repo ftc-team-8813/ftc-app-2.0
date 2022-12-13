@@ -48,7 +48,7 @@ public class Intake {
         claw.setPosition(position);
     }
 
-    public void setRotater(double position){
+    public void setWrist(double position){
         rotater.setPosition(position);
     }
 
@@ -77,33 +77,16 @@ public class Intake {
     }
     
     public double getArmCurrent(){
-        return arm.getCurrentPosition()*(360); //TODO Add ticks)); Do for all encoders;
+        return arm.getCurrentPosition();
     }
     
     public double getHorizCurrent(){
-        return horiz.getCurrentPosition()*(360); //TODO Add ticks)); Do for all encoders;
+        return horiz.getCurrentPosition();
     }
 
     public double getDistance() {
         return claw_sens.getDistance(DistanceUnit.MM);
     }
 
-//
-//    public Boolean armDeadband(int deadband){
-//        if(Math.abs(getEncoderVals()[0] - getArmTarget()) <= deadband){
-//            return true;
-//        }
-//        else{
-//            return false;
-//        }
-//    }
-//
-//    public Boolean horizDeadband(int deadband){
-//        if(Math.abs(getEncoderVals()[1] - getArmTarget()) <= deadband){
-//            return true;
-//        }
-//        else{
-//            return false;
-//        }
-//    }
+
 }

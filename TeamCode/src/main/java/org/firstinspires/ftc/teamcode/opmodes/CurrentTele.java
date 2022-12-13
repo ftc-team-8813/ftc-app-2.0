@@ -45,9 +45,8 @@ public class CurrentTele extends LoggingOpMode
         controlMgr = new ControlMgr(robot, controllerMap);
 
         // Controller Modules
-//        controlMgr.addModule(new DriveControl("Drive Control"));
-        controlMgr.addModule(new LiftTest("Lift Test"));
-//        controlMgr.addModule(new RobotControl("Robot Control"));
+        controlMgr.addModule(new DriveControl("Drive Control"));
+        controlMgr.addModule(new RobotControl("Robot Control"));
 
         controlMgr.initModules();
     }
