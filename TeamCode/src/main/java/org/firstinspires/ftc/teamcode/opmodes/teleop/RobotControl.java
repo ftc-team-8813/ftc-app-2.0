@@ -57,7 +57,6 @@ public class RobotControl extends ControlModule{
     private boolean circuitMode;
 
     //Final Vars
-    private final double INITLOOPPOWER = 0.3; //check
 
     private final double LIFTDOWNPOS = 0;
     private final double LIFTLOWPOS = 150;
