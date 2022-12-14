@@ -19,6 +19,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
@@ -26,7 +27,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
-@Disabled
+
 @Autonomous(name="Odometry Test")
 public class OdometryTest extends LoggingOpMode {
 
@@ -36,12 +37,10 @@ public class OdometryTest extends LoggingOpMode {
     public static final double TICKS_PER_REV = 8192;
     public static final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;
 
-    private MotorEx frontLeft, frontRight, backLeft, backRight;
-    private DcMotorEx front_left, front_right, back_left, back_right;
+    private MotorEx frontLeft, frontRight, backLeft, backRight, lift2;
+    private DcMotorEx front_left, front_right, back_left, back_right, lift_2;
     private Encoder leftOdometer, rightOdometer, centerOdometer;
     private HolonomicOdometry odometry;
-
-    private int main_id = 0;
 
     @Override
     public void init() {
@@ -51,15 +50,19 @@ public class OdometryTest extends LoggingOpMode {
         frontRight = new MotorEx(hardwareMap, "front right");
         backLeft = new MotorEx(hardwareMap, "back left");
         backRight = new MotorEx(hardwareMap, "back right");
+        lift2 = new MotorEx(hardwareMap,"lift2");
 
         front_left = frontLeft.motorEx;
         front_right = frontRight.motorEx;
         back_left = backLeft.motorEx;
         back_right = backRight.motorEx;
+        lift_2 = lift2.motorEx;
 
-        leftOdometer = frontLeft.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
-        rightOdometer = backRight.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
-        centerOdometer = backLeft.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
+        leftOdometer = backLeft.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
+        rightOdometer = lift2.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
+        centerOdometer = backRight.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
+
+        leftOdometer.setDirection(MotorEx.Direction.REVERSE);
 
         odometry = new HolonomicOdometry(
                 leftOdometer::getDistance,
@@ -72,16 +75,18 @@ public class OdometryTest extends LoggingOpMode {
         rightOdometer.reset();
         centerOdometer.reset();
 
-        Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(45.0)));
+        Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(0)));
         odometry.updatePose(start_pose);
 
-        front_left.setDirection(DcMotorSimple.Direction.REVERSE);
-        back_left.setDirection(DcMotorSimple.Direction.REVERSE);
+        front_right.setDirection(DcMotorSimple.Direction.REVERSE);
+        back_right.setDirection(DcMotorSimple.Direction.REVERSE);
 
         front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+
     }
 
     @Override
@@ -100,6 +105,9 @@ public class OdometryTest extends LoggingOpMode {
         telemetry.addData("Odometry", odometry.getPose());
         telemetry.addData("X",odometry.getPose().getX());
         telemetry.addData("Y",odometry.getPose().getY());
+        telemetry.addData("Center",centerOdometer.getPosition());
+        telemetry.addData("Left",leftOdometer.getPosition());
+        telemetry.addData("Right",rightOdometer.getPosition());
 
         telemetry.update();
     }

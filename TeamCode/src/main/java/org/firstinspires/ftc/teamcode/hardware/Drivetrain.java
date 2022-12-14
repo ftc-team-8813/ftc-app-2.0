@@ -38,8 +38,8 @@ public class Drivetrain {
 
         resetEncoders();
 
-        front_left.setDirection(DcMotorSimple.Direction.REVERSE);
-        back_left.setDirection(DcMotorSimple.Direction.REVERSE);
+        front_right.setDirection(DcMotorSimple.Direction.REVERSE);
+        back_right.setDirection(DcMotorSimple.Direction.REVERSE);
 
         front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -84,41 +84,66 @@ public class Drivetrain {
         return has_reached;
     }
 
-    public void autoMove(double forward, double strafe, double turn, double turnErrorBand, double forwardErrorBand, double strafeErrorBand, Pose2d odo, Telemetry telemetry, double lateralSpeed, double turnSpeed) {
+    public void autoMove(double forward, double strafe, double turn, double turn_correct, double forward_error_band, double strafe_error_band, double turn_error_band, Pose2d odo, Telemetry telemetry) {
+
         has_reached = false;
 
-        PID forwardPID = new PID(0, 0, 0, 0, 0, 0); //add it on ftclib
-        PID strafePID = new PID(0, 0, 0, 0, 0, 0);
-        PID turnPID = new PID(ftcdbvals.getKp(), 0,0, 0, 0, 0);
+        PID forward_pid = new PID(0.5,0,0,0,0,0);
+        PID strafe_pid = new PID(0.2,0,0,0,0,0);
+        PID turn_pid = new PID(0.053,0.007,0,0,32,0);
+
 
         double y = odo.getY();
-        double x = odo.getY();
-        double rot = odo.getRotation().getDegrees();
+        double x = odo.getX();
+        double rot = 0.0;
+        if(Math.signum(odo.getRotation().getDegrees()) == -1) {
+            rot = (odo.getRotation().getDegrees() + 360);
+        }
+        else {
+            rot = odo.getRotation().getDegrees();
+        }
+
+        if ((turn - rot) > Math.abs(turn - (rot+360))) {
+            rot += 360;
+        }
 
         double forward_error = Math.abs(forward - y);
         double strafe_error = Math.abs(strafe - x);
         double turn_error = Math.abs(turn - rot);
 
-        double forwardPower = Range.clip(forwardPID.getOutPut(forward, y, 0), -lateralSpeed, lateralSpeed);
-        double strafePower = Range.clip(strafePID.getOutPut(strafe, x, 0), -lateralSpeed, lateralSpeed);
-        double turnPower = Range.clip(turnPID.getOutPut(turn, rot, 0), -turnSpeed, turnSpeed);
+        double forward_power = forward_pid.getOutPut(forward,y,0);
+        double strafe_power = strafe_pid.getOutPut(strafe,x,0);
+        double turn_power = Range.clip((-turn_pid.getOutPut(turn, rot, 0)),-0.2,0.2);
 
-        move(forwardPower, strafePower, turnPower, 0);
+        double botHeading = -1* Math.toRadians(getHeading());
 
-        if ((forward_error <= forwardErrorBand) && (strafe_error <= strafeErrorBand) && (turn_error <= turnErrorBand)) {
+        double rotX = 0.6 * (strafe_power * Math.cos(botHeading) - forward_power * Math.sin(botHeading));
+        double rotY = 0.6 * (strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading));
+
+        double denominator = Math.max(Math.abs(forward_power) + Math.abs(strafe_power) + Math.abs(turn_power), 1);
+
+        move(rotY,rotX,turn_power,turn_correct, denominator);
+
+        if((forward_error <= forward_error_band) && (strafe_error <= strafe_error_band) && (turn_error <= turn_error_band)){
             has_reached = true;
         }
 
-        telemetry.addData("F Power",forwardPower);
-        telemetry.addData("S Power",strafePower);
-        telemetry.addData("T Power",turnPower);
+
+        telemetry.addData("F Power",forward_power);
+        telemetry.addData("S Power",strafe_power);
+        telemetry.addData("T Power",turn_power);
         telemetry.addData("F Error",forward_error);
         telemetry.addData("S Error",strafe_error);
         telemetry.addData("T Error",turn_error);
         telemetry.addData("F Current",y);
         telemetry.addData("S Current",x);
         telemetry.addData("T Current",rot);
+        telemetry.addData("RotY",rotY);
+        telemetry.addData("RotX",rotX);
+//        telemetry.addData("FTCDB",ftcdbvals.getKp());
+//        telemetry.addData("FTCDB Test", FTCDashboardValues.getKp());
         telemetry.addData("Has Reached",has_reached);
+
     }
 
     public double getForwardPosition() {
