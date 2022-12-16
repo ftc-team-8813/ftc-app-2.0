@@ -76,7 +76,7 @@ public class RobotControl extends ControlModule{
 
     private double DEPOSITHIGHFAST = 0.38;
 
-    private double DEPOSITTRANSFER = 0.19;
+    private double DEPOSITTRANSFER = 0.17;
     private final double DEPOSITLIFT = 0.3;
 
     private double ARMCOMPLETEDOWNPOS = -100;

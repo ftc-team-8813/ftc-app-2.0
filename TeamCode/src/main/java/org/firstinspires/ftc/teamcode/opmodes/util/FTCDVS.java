@@ -11,7 +11,7 @@ public class FTCDVS {
     public static double KFLift = 0.015;
     public static double KFArm = 0;
     public static double liftAccel = 0.4;
-    public static double DepositTransfer = 0.19;
+    public static double DepositTransfer = 0.17;
     public static double DepositLow = 0.37;
     public static double DepositMid = 0.31;
     public static double DepositHigh = 0.33;
