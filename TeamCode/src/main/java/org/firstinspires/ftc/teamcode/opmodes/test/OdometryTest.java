@@ -102,9 +102,26 @@ public class OdometryTest extends LoggingOpMode {
         back_left.setPower(((forward_power - strafe_power + (turn_power + 0))));
         back_right.setPower(((forward_power + strafe_power - (turn_power + 0))));
 
+        double rot;
+        double act_rot = -1;
+        double turn = 10;
+        
+        if(Math.signum(odometry.getPose().getRotation().getDegrees()) == -1) {
+            rot = (odometry.getPose().getRotation().getDegrees() + 360);
+        }
+        else {
+            rot = odometry.getPose().getRotation().getDegrees();
+        }
+
+        if (Math.abs(turn - rot) > Math.abs(turn - (rot-360))) {
+            act_rot = (rot - 360);
+        }
+
         telemetry.addData("Odometry", odometry.getPose());
         telemetry.addData("X",odometry.getPose().getX());
         telemetry.addData("Y",odometry.getPose().getY());
+        telemetry.addData("ACT ROT",act_rot);
+        telemetry.addData("ROT",rot);
         telemetry.addData("Center",centerOdometer.getPosition());
         telemetry.addData("Left",leftOdometer.getPosition());
         telemetry.addData("Right",rightOdometer.getPosition());

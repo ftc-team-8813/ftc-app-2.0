@@ -23,9 +23,9 @@ public class OdometryNav {
 
     private HolonomicOdometry odometry;
 
-    private Encoder left_odometer;
-    private Encoder right_odometer;
-    private Encoder center_odometer;
+    private final Encoder left_odometer;
+    private final Encoder right_odometer;
+    private final Encoder center_odometer;
 
     private final double TRACKWIDTH = 12.5925;
     private final double CENTER_WHEEL_OFFSET = 5.89567;
@@ -78,10 +78,10 @@ public class OdometryNav {
         return odometry.getPose();
     }
 
-    public void setOdometry(double pos1, double pos2,double pos3) {
-        center_odo.setPosition(pos1);
-        left_odo.setPosition(pos2);
-        right_odo.setPosition(pos3);
+    public void resetOdometry() {
+        left_odometer.reset();
+        right_odometer.reset();
+        center_odometer.reset();
     }
 
 }

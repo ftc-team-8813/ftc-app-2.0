@@ -93,9 +93,10 @@ public class Drivetrain {
         PID turn_pid = new PID(0.053,0.007,0,0,32,0);
 
 
-        double y = odo.getY();
-        double x = odo.getX();
+        double y = odo.getX();
+        double x = odo.getY();
         double rot = 0.0;
+
         if(Math.signum(odo.getRotation().getDegrees()) == -1) {
             rot = (odo.getRotation().getDegrees() + 360);
         }
@@ -103,8 +104,8 @@ public class Drivetrain {
             rot = odo.getRotation().getDegrees();
         }
 
-        if ((turn - rot) > Math.abs(turn - (rot+360))) {
-            rot += 360;
+        if (Math.abs(turn - rot) > Math.abs(turn - (rot-360))) {
+            rot -= 360;
         }
 
         double forward_error = Math.abs(forward - y);
@@ -113,7 +114,7 @@ public class Drivetrain {
 
         double forward_power = forward_pid.getOutPut(forward,y,0);
         double strafe_power = strafe_pid.getOutPut(strafe,x,0);
-        double turn_power = Range.clip((-turn_pid.getOutPut(turn, rot, 0)),-0.2,0.2);
+        double turn_power = Range.clip((turn_pid.getOutPut(turn, rot, 0)),-0.2,0.2);
 
         double botHeading = -1* Math.toRadians(getHeading());
 
