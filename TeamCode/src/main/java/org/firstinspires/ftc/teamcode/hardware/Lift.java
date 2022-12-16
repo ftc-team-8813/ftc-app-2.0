@@ -28,12 +28,12 @@ public class Lift {
     }
 
     public boolean getLift_limit(){
-        return lift_limit.getState();
+        return !lift_limit.getState();
     }
 
     public void resetLiftEncoder(){
         lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lift1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void setLiftTarget(double pos){
@@ -45,9 +45,7 @@ public class Lift {
     }
 
     public double getEncoderVal(){
-        return (lift1.getCurrentPosition()*(360));
+        return (lift1.getCurrentPosition());
     }
-
-
 
 }

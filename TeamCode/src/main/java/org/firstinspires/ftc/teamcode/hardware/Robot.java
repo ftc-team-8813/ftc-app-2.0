@@ -48,22 +48,22 @@ public class Robot {
         MotorEx back_right = new MotorEx(hardwareMap, "back right");
 
         DcMotorEx horiz = hardwareMap.get(DcMotorEx.class, "horizontal");
-        DcMotorEx lift1 = hardwareMap.get(DcMotorEx.class, "lift1");  //lift1 and lift2 have to be inversed
-        DcMotorEx lift2 = hardwareMap.get(DcMotorEx.class, "lift2");
+        DcMotorEx lift_1 = hardwareMap.get(DcMotorEx.class, "lift1");  //lift1 and lift2 have to be inversed
+        MotorEx lift_2 = new MotorEx(hardwareMap, "lift2");
         DcMotorEx arm = hardwareMap.get(DcMotorEx.class, "arm");
 
         // Servos
-        Servo odo1 = hardwareMap.get(Servo.class, "odo1");
-        Servo odo2 = hardwareMap.get(Servo.class, "odo2");
-        Servo odo3 = hardwareMap.get(Servo.class, "odo3");
+        Servo center_odo = hardwareMap.get(Servo.class, "back odo lift");
+        Servo left_odo = hardwareMap.get(Servo.class, "left odo lift");
+        Servo right_odo = hardwareMap.get(Servo.class, "right odo lift");
         Servo claw = hardwareMap.get(Servo.class, "claw");
-        Servo dumper = hardwareMap.get(Servo.class, "dumper");
-        Servo rotater = hardwareMap.get(Servo.class, "rotater");
+        Servo dumper = hardwareMap.get(Servo.class, "deposit");
+        Servo wrist = hardwareMap.get(Servo.class, "wrist");
 
         //Sensors
         DigitalChannel lift_limit = hardwareMap.get(DigitalChannel.class, "lift limit");
         DigitalChannel arm_limit = hardwareMap.get(DigitalChannel.class, "arm limit");
-        DigitalChannel horiz_limit = hardwareMap.get(DigitalChannel.class, "horiz limit");
+        DigitalChannel horizontal_limit = hardwareMap.get(DigitalChannel.class, "horizontal limit");
 
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
@@ -71,8 +71,8 @@ public class Robot {
 
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left.motorEx, front_right.motorEx, back_left.motorEx, back_right.motorEx, imu_sensor);
-        this.intake = new Intake(horiz, arm, horiz_limit, arm_limit, claw_sensor, claw, rotater);
-        this.lift = new Lift(lift_limit, lift1, lift2, dumper);
-//        this.odometryNav = new OdometryNav(front_left, front_right, back_left, back_right, odo1, odo2, odo3);
+        this.intake = new Intake(horiz, arm, horizontal_limit, arm_limit, claw_sensor, claw, wrist);
+        this.lift = new Lift(lift_limit, lift_1, lift_2.motorEx, dumper);
+//        this.odometryNav = new OdometryNav(front_left, front_right, back_left, back_right,lift_2, center_odo, left_odo, right_odo);
     }
 }
