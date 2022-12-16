@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
+import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
 
 public class Drivetrain {
 
@@ -47,7 +48,7 @@ public class Drivetrain {
         back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public void resetEncoders(){
+    public void resetEncoders() {
         front_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         back_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         front_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -60,19 +61,17 @@ public class Drivetrain {
     }
 
     public void move(double forward, double strafe, double turn, double turn_correct) {
-        front_left.setPower((forward + strafe + (turn+turn_correct)));
-        front_right.setPower((forward - strafe - (turn+turn_correct)));
-        back_left.setPower((forward - strafe + (turn+turn_correct)));
-        back_right.setPower((forward + strafe - (turn+turn_correct)));
+        front_left.setPower((forward + strafe + (turn + turn_correct)));
+        front_right.setPower((forward - strafe - (turn + turn_correct)));
+        back_left.setPower((forward - strafe + (turn + turn_correct)));
+        back_right.setPower((forward + strafe - (turn + turn_correct)));
     }
 
     public void move(double forward, double strafe, double turn, double turn_correct, double denominator) {
-
-
-        front_left.setPower(((forward + strafe + (turn+turn_correct)) / denominator));
-        front_right.setPower(((forward - strafe - (turn+turn_correct)) / denominator));
-        back_left.setPower(((forward - strafe + (turn+turn_correct)) / denominator));
-        back_right.setPower(((forward + strafe - (turn+turn_correct)) / denominator));
+        front_left.setPower(((forward + strafe + (turn + turn_correct)) / denominator));
+        front_right.setPower(((forward - strafe - (turn + turn_correct)) / denominator));
+        back_left.setPower(((forward - strafe + (turn + turn_correct)) / denominator));
+        back_right.setPower(((forward + strafe - (turn + turn_correct)) / denominator));
     }
 
     public void stop() {
@@ -82,10 +81,13 @@ public class Drivetrain {
         back_right.setPower(0);
     }
 
+    public boolean hasReached() {
+        return has_reached;
+    }
+
     public void autoMove(double forward, double strafe, double turn, double turn_correct, double forward_error_band, double strafe_error_band, double turn_error_band, Pose2d odo, Telemetry telemetry) {
 
         has_reached = false;
-        turn += 45;
 
         PID forward_pid = new PID(0.5,0,0,0,0,0);
         PID strafe_pid = new PID(0.2,0,0,0,0,0);
@@ -145,30 +147,15 @@ public class Drivetrain {
 
     }
 
-    public boolean hasReached() {
-        return has_reached;
-    }
-
-    public double getForwardPosition(){
+    public double getForwardPosition() {
         return (front_left.getCurrentPosition() + front_right.getCurrentPosition() + back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
     }
 
-    public double getStrafePosition(){
+    public double getStrafePosition() {
         return (front_left.getCurrentPosition() - front_right.getCurrentPosition() - back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
     }
 
-    public double getHeading(){
+    public double getHeading() {
         return imu.getAngularOrientation().firstAngle;
     }
-
-    public double getAngularVelocity(){
-        return imu.getAngularVelocity().xRotationRate;
-    }
-
-
-    public void closeIMU() {
-        imu.close();
-    }
-
-
 }

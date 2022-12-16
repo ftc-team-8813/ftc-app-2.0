@@ -62,7 +62,7 @@ public class ParkingAuto extends LoggingOpMode{
         drivetrain = robot.drivetrain;
 
 
-        Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(45.0)));
+        Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(0)));
         odometry.updatePose(start_pose);
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
