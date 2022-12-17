@@ -8,7 +8,6 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftTest;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.RobotControl;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Persistent;
@@ -34,7 +33,6 @@ public class CurrentTele extends LoggingOpMode
     @Override
     public void init()
     {
-//        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry()); ftc dashboard
         super.init();
         robot = Robot.initialize(hardwareMap);
         evBus = robot.eventBus;
@@ -45,9 +43,8 @@ public class CurrentTele extends LoggingOpMode
         controlMgr = new ControlMgr(robot, controllerMap);
 
         // Controller Modules
-//        controlMgr.addModule(new DriveControl("Drive Control"));
-//        controlMgr.addModule(new LiftTest("Lift Test"));
-//        controlMgr.addModule(new RobotControl("Robot Control"));
+        controlMgr.addModule(new DriveControl("Drive Control"));
+        controlMgr.addModule(new RobotControl("Robot Control"));
 
         controlMgr.initModules();
     }

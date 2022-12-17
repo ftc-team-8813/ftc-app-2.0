@@ -20,46 +20,32 @@ public class Lift {
 
     public void setLiftPower(double power){
         lift1.setPower(power);
-        lift2.setPower(-power); //one of them have to be inversed
+        lift2.setPower(-power);
     }
 
     public void setDumper(double pos){
         dumper.setPosition(pos);
     }
 
-
     public boolean getLift_limit(){
-        return lift_limit.getState();
+        return !lift_limit.getState();
     }
 
     public void resetLiftEncoder(){
-        //ask john which motor encoder is connected to
         lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lift1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void setLiftTarget(double pos){
-        //ask john if the lift motors target position are inversed as well
         lift1Target = pos;
     }
-
 
     public double getLiftTarget(){
         return lift1Target;
     }
 
     public double getEncoderVal(){
-        return (lift1.getCurrentPosition()*(360));//TODO Add ticks)); Do for all encoders
+        return (lift1.getCurrentPosition());
     }
-
-
-//    public Boolean liftDeadband(int deadband){
-//        if(Math.abs(getEncoderVal() - getLiftTarget()[0]) <= deadband){
-//            return true;
-//        }
-//        else{
-//            return false;
-//        }
-//    }
 
 }

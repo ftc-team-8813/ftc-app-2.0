@@ -27,12 +27,12 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
-
+@Disabled
 @Autonomous(name="Odometry Test")
 public class OdometryTest extends LoggingOpMode {
 
-    public static final double TRACKWIDTH = 12.5925;
-    public static final double CENTER_WHEEL_OFFSET = 5.89567;
+    public static final double TRACKWIDTH = 9.12;
+    public static final double CENTER_WHEEL_OFFSET = 6.089;
     public static final double WHEEL_DIAMETER = 1.37795;
     public static final double TICKS_PER_REV = 8192;
     public static final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;

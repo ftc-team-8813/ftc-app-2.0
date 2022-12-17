@@ -5,70 +5,115 @@ import static org.opencv.core.CvType.CV_8UC4;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
+import org.firstinspires.ftc.teamcode.hardware.Lift;
+import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
+import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
+import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
-import org.firstinspires.ftc.teamcode.opmodes.util.FTCDashboardValues;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.LoopTimer;
+import org.firstinspires.ftc.teamcode.vision.AprilTagDetectionPipeline;
 import org.firstinspires.ftc.teamcode.vision.ConeInfoDetector;
 import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+import org.openftc.apriltag.AprilTagDetection;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
-@Disabled
-@TeleOp(name="ConeVisionTest")
+import java.util.ArrayList;
+
+@TeleOp(name = "ConeVisionTest")
 public class ConeVisionTest extends LoggingOpMode {
-    private FTCDashboardValues ftcdbvals = new FTCDashboardValues();
-    private Webcam camera;
-    private Webcam.SimpleFrameHandler frameHandler;
-    private Mat cvFrame;
-    private volatile boolean serverFrameUsed = true;
-    private Bitmap serverFrameCopy;
+
     private String result = "Nothing";
 
-    private final Logger log = new Logger("Cone Vision Test");
+    private int main_id = 0;
 
-    static
-    {
-        OpenCVLoader.initDebug();
-    }
+    private OpenCvCamera camera;
+    private AprilTagDetectionPipeline aprilTagDetectionPipeline;
+
+    private static final double FEET_PER_METER = 3.28084;
+
+    private double fx = 578.272;
+    private double fy = 578.272;
+    private double cx = 402.145;
+    private double cy = 221.506;
+
+    private double tagsize = 0.166;
+
+    private final Logger log = new Logger("Parking Auto");
 
     @Override
     public void init() {
         super.init();
-        camera = Webcam.forSerial("3522DE6F");
-        if (camera == null)
-            throw new IllegalArgumentException("Could not find a webcam with serial number 3522DE6F");
-        frameHandler = new Webcam.SimpleFrameHandler();
-        camera.open(ImageFormat.YUY2, 800, 448, 30, frameHandler);
-        cvFrame = new Mat(800, 448, CV_8UC4);
+        Robot robot = Robot.initialize(hardwareMap);
 
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
+
+        camera.setPipeline(aprilTagDetectionPipeline);
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened()
+            {
+                camera.startStreaming(800,448, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode)
+            {
+
+            }
+        });
+
+        telemetry.setMsTransmissionInterval(50);
     }
 
     @Override
-    public void loop() {
-        if (frameHandler.newFrameAvailable) {
-            frameHandler.newFrameAvailable = false;
-            Utils.bitmapToMat(frameHandler.currFramebuffer, cvFrame);
-            if (serverFrameUsed) {
-                if (serverFrameCopy != null) serverFrameCopy.recycle();
-                serverFrameCopy = frameHandler.currFramebuffer.copy(Bitmap.Config.ARGB_8888, false);
-                serverFrameUsed = false;
-            }
+    public void init_loop() {
+        super.init_loop();
 
-            ConeInfoDetector detector = new ConeInfoDetector(cvFrame,log,ftcdbvals.getAlpha(),ftcdbvals.getBeta());
-            if (!detector.detect().equals("Nothing Detected"))
-            {
-                result = detector.detect();
-            }
+        ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
+        if(currentDetections.size() != 0) {
 
-            camera.requestNewFrame();
+            for (AprilTagDetection tag : currentDetections) {
+                result = "" + tag.id;
+            }
         }
 
         telemetry.addData("Detected", result);
         telemetry.update();
     }
+
+    @Override
+    public void start() {
+        super.start();
+    }
+
+    @Override
+    public void loop() {
+        telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
+        telemetry.update();
+
+        LoopTimer.resetTimer();
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+    }
+
 }

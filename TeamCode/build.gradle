@@ -42,6 +42,7 @@ dependencies {
     implementation ('org.ftclib.ftclib:core:2.0.1') {
         exclude group: 'com.google.code.findbugs'
     }
+    implementation 'org.openftc:apriltag:1.1.0'
     implementation 'org.openftc:easyopencv:1.5.2'
     implementation 'org.openftc:apriltag:1.1.0'
 }

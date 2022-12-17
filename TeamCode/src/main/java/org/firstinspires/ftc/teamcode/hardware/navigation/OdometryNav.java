@@ -27,8 +27,8 @@ public class OdometryNav {
     private final Encoder right_odometer;
     private final Encoder center_odometer;
 
-    private final double TRACKWIDTH = 12.5925;
-    private final double CENTER_WHEEL_OFFSET = 5.89567;
+    private final double TRACKWIDTH = 9.12;
+    private final double CENTER_WHEEL_OFFSET = 6.089;
     private final double WHEEL_DIAMETER = 1.37795;
     private final double TICKS_PER_REV = 8192;
     private final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;

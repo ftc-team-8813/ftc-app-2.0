@@ -6,11 +6,13 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
-import org.firstinspires.ftc.teamcode.opmodes.util.FTCDashboardValues;
+import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
+import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
 
 public class Drivetrain {
 
@@ -19,15 +21,21 @@ public class Drivetrain {
     private final DcMotorEx back_left;
     private final DcMotorEx back_right;
     private final BNO055IMU imu;
-    private final FTCDashboardValues ftcdbvals = new FTCDashboardValues();
+    private final FTCDVS ftcdbvals = new FTCDVS();
     private boolean has_reached;
+    private final Servo center_odo;
+    private final Servo left_odo;
+    private final Servo right_odo;
 
-    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu) {
+    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu, Servo center_odo,Servo left_odo,Servo right_odo) {
         this.front_left = front_left;
         this.front_right = front_right;
         this.back_left = back_left;
         this.back_right = back_right;
         this.imu = imu;
+        this.center_odo = center_odo;
+        this.left_odo = left_odo;
+        this.right_odo = right_odo;
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -89,7 +97,7 @@ public class Drivetrain {
         has_reached = false;
 
         PID forward_pid = new PID(0.5,0,0,0,0,0);
-        PID strafe_pid = new PID(0.2,0,0,0,0,0);
+        PID strafe_pid = new PID(0.22,0,0,0,0,0);
         PID turn_pid = new PID(0.053,0.007,0,0,32,0);
 
 
@@ -118,8 +126,8 @@ public class Drivetrain {
 
         double botHeading = -1* Math.toRadians(getHeading());
 
-        double rotX = 0.6 * (strafe_power * Math.cos(botHeading) - forward_power * Math.sin(botHeading));
-        double rotY = 0.6 * (strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading));
+        double rotX = 0.4 * (strafe_power * Math.cos(botHeading) - forward_power * Math.sin(botHeading));
+        double rotY = 0.4 * (strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading));
 
         double denominator = Math.max(Math.abs(forward_power) + Math.abs(strafe_power) + Math.abs(turn_power), 1);
 
@@ -145,6 +153,12 @@ public class Drivetrain {
 //        telemetry.addData("FTCDB Test", FTCDashboardValues.getKp());
         telemetry.addData("Has Reached",has_reached);
 
+    }
+
+    public void downOdometry() {
+        center_odo.setPosition(0.34);
+        left_odo.setPosition(0.566);
+        right_odo.setPosition(0.63);
     }
 
     public double getForwardPosition() {

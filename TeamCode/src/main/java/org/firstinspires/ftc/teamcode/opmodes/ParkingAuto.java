@@ -62,6 +62,8 @@ public class ParkingAuto extends LoggingOpMode{
         drivetrain = robot.drivetrain;
         odometry = robot.odometryNav;
 
+        drivetrain.downOdometry();
+
         Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(0)));
         odometry.updatePose(start_pose);
 
@@ -127,6 +129,7 @@ public class ParkingAuto extends LoggingOpMode{
     public void start() {
         super.start();
         drivetrain.resetEncoders();
+        camera.closeCameraDevice();
     }
 
     @Override
@@ -136,7 +139,7 @@ public class ParkingAuto extends LoggingOpMode{
 
         switch (main_id) {
             case 0:
-                drivetrain.autoMove(-24,0,0,0,1,1,10, odometry.getPose(),telemetry);
+                drivetrain.autoMove(-26,0,0,0,1,1,10, odometry.getPose(),telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
@@ -144,13 +147,13 @@ public class ParkingAuto extends LoggingOpMode{
             case 1:
                 switch (result) {
                     case "FTC8813: 1":
-                        drivetrain.autoMove(-24,24,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(-26,23.5,0,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
                         break;
                     case "FTC8813: 3":
-                        drivetrain.autoMove(-24,-24,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(-26,-23.5,0,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
