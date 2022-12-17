@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
 public class DriveControl extends ControlModule {
@@ -18,6 +19,8 @@ public class DriveControl extends ControlModule {
 
     private double heading_delta = 0;
     private double heading_was = 0;
+    private OdometryNav odo;
+
 
     public DriveControl(String name) {
         super(name);
@@ -32,6 +35,12 @@ public class DriveControl extends ControlModule {
         ax_drive_right_x = controllerMap.getAxisMap("drive:right_x", "gamepad1", "right_stick_x");
         dpad_up = controllerMap.getButtonMap("drive:dpad_up", "gamepad1","dpad_up");
 
+        this.odo = robot.odometryNav;
+    }
+
+    @Override
+    public void init_loop(Telemetry telemetry) {
+        odo.allOdoPosUp();
     }
 
     @Override
@@ -86,13 +95,12 @@ public class DriveControl extends ControlModule {
         telemetry.addData("denominator", denominator);
 
         telemetry.addData("Heading: ", drivetrain.getHeading());
-        telemetry.addData("Angular Velocity: ", drivetrain.getAngularVelocity());
+//        telemetry.addData("Angular Velocity: ", drivetrain.getAngularVelocity());
 
         telemetry.addData("Field Centric",field_centric);
 
 
     }
-
     @Override
     public void stop() {
         super.stop();

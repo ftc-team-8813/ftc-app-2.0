@@ -93,7 +93,6 @@ public class Drivetrain {
         PID strafe_pid = new PID(0.2,0,0,0,0,0);
         PID turn_pid = new PID(0.053,0.007,0,0,32,0);
 
-
         double y = odo.getY();
         double x = odo.getX();
         double rot = 0.0;
@@ -129,7 +128,6 @@ public class Drivetrain {
             has_reached = true;
         }
 
-
         telemetry.addData("F Power",forward_power);
         telemetry.addData("S Power",strafe_power);
         telemetry.addData("T Power",turn_power);
@@ -143,7 +141,7 @@ public class Drivetrain {
         telemetry.addData("RotX",rotX);
 //        telemetry.addData("FTCDB",ftcdbvals.getKp());
 //        telemetry.addData("FTCDB Test", FTCDashboardValues.getKp());
-        telemetry.addData("Has Reached",has_reached);
+        telemetry.addData("Has Reached", has_reached);
 
     }
 

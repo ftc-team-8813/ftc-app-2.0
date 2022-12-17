@@ -73,6 +73,6 @@ public class Robot {
         this.drivetrain = new Drivetrain(front_left.motorEx, front_right.motorEx, back_left.motorEx, back_right.motorEx, imu_sensor);
         this.intake = new Intake(horiz, arm, horizontal_limit, arm_limit, claw_sensor, claw, wrist);
         this.lift = new Lift(lift_limit, lift_1, lift_2.motorEx, dumper);
-//        this.odometryNav = new OdometryNav(front_left, front_right, back_left, back_right,lift_2, center_odo, left_odo, right_odo);
+        this.odometryNav = new OdometryNav(center_odo, left_odo, right_odo);
     }
 }

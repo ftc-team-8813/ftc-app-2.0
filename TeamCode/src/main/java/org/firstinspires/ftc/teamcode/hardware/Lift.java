@@ -33,7 +33,7 @@ public class Lift {
 
     public void resetLiftEncoder(){
         lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void setLiftTarget(double pos){
