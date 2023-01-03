@@ -161,6 +161,12 @@ public class Drivetrain {
         right_odo.setPosition(0.63);
     }
 
+    public void upOdometry() {
+        center_odo.setPosition(0);
+        left_odo.setPosition(0.137);
+        right_odo.setPosition(1);
+    }
+
     public double getForwardPosition() {
         return (front_left.getCurrentPosition() + front_right.getCurrentPosition() + back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
     }

@@ -16,6 +16,8 @@ import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
 
+@Config
+
 public class RobotControl extends ControlModule{
 
     private Lift lift;
@@ -25,6 +27,7 @@ public class RobotControl extends ControlModule{
     private boolean intakeTimerReset = false;
     private ElapsedTime liftTimer;
     private boolean liftTimerReset = false;
+    private ElapsedTime loop;
 
     private ElapsedTime lift_trapezoid;
     private double lift_accel = 0.4;
@@ -44,6 +47,8 @@ public class RobotControl extends ControlModule{
 
     private ControllerMap.ButtonEntry switchFast;
     private ControllerMap.ButtonEntry switchGround;
+    private ControllerMap.ButtonEntry switchCircuit;
+
 
     private ControllerMap.AxisEntry ax_lift_left_x;
     private ControllerMap.AxisEntry ax_lift_left_y;
@@ -53,10 +58,10 @@ public class RobotControl extends ControlModule{
     private IntakeStates stateForIntake;
     private Modes stateForMode;
 
-    private final double LIFTDOWNPOS = 0;
-    private final double LIFTLOWPOS = 150;
-    private final double LIFTMIDPOS = 410;
-    private final double LIFTHIGHPOS = 750;
+    private double LIFTDOWNPOS = 0;
+    private double LIFTLOWPOS = 150;
+    private double LIFTMIDPOS = 410;
+    private double LIFTHIGHPOS = 720;
 
     private double DEPOSITLOW = 0.38;
     private double DEPOSITMID = 0.31;
@@ -65,26 +70,31 @@ public class RobotControl extends ControlModule{
     private double DEPOSITHIGHFAST = 0.38;
 
     private double DEPOSITTRANSFER = 0.15;
-    private final double DEPOSITLIFT = 0.3;
+    private double DEPOSITLIFT = 0.3;
 
-    private double ARMCOMPLETEDOWNPOS = -100;
+    private double ARMCOMPLETEDOWNPOS = -120;
     private double ARMMIDPOS = -35;
-    private final double ARMHIGHPOS = 0;
+    private double ARMHIGHPOS = 0;
 
-    private final double WRISTLOOKINGFORCONE = 0.019;
-    private final double WRISTTRANSFER = 0.678;
+    private double WRISTLOOKINGFORCONE = 0.019;
+    private double WRISTTRANSFER = 0.678;
 
-    private final double MAXEXTENDEDHORIZ = -800;
-    private final double FASTMODEHORIZ = -450;
-    private final double HORIZRETRACTED = 0;
+    private double MAXEXTENDEDHORIZ = -800;
+    private double FASTMODEHORIZ = -450;
+    private double HORIZRETRACTED = 0;
 
-    private final double CLAWOPENPOS = 0.23;
-    private final double CLAWCLOSEPOS = 0.37;
+    private double CLAWOPENPOS = 0.23;
+    private double CLAWCLOSEPOS = 0.37;
+
+    private double ARMLOWGOAL = -40;
+    private double ARMGROUNDGOAL = -80;
 
     private PID arm_PID;
     private PID horiz_PID;
     private PID lift_PID;
     private boolean GroundLow;
+
+    public static double ARMCLIP = 0.6;
 
     public RobotControl(String name) {
         super(name);
@@ -95,6 +105,7 @@ public class RobotControl extends ControlModule{
 
         intakeTimer = new ElapsedTime();
         liftTimer = new ElapsedTime();
+        loop = new ElapsedTime();
 
         lift_trapezoid = new ElapsedTime();
 
@@ -116,6 +127,7 @@ public class RobotControl extends ControlModule{
 
         switchFast = controllerMap.getButtonMap("switchFast", "gamepad2", "dpad_up");
         switchGround = controllerMap.getButtonMap("switchGround", "gamepad2", "dpad_down");
+        switchCircuit = controllerMap.getButtonMap("switchCircuit", "gamepad2", "dpad_right");
 
         ax_lift_left_x = controllerMap.getAxisMap("lift:left_x", "gamepad2", "left_stick_x"); //finetuning
         ax_lift_left_y = controllerMap.getAxisMap("lift:left_y", "gamepad2", "left_stick_y");
@@ -157,17 +169,21 @@ public class RobotControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        arm_PID = new PID(FTCDVS.getKPArm(), 0, 0, FTCDVS.getKFArm(), 0, 0);
-        horiz_PID = new PID(FTCDVS.getKPHoriz(), 0, 0, 0, 0, 0);
-        lift_PID = new PID(FTCDVS.getKPLift(), 0, 0, FTCDVS.getKFLift(), 0, 0);
+        loop.reset();
 
-        DEPOSITTRANSFER = FTCDVS.getDepositTransfer();
-        DEPOSITHIGH = FTCDVS.getDepositHigh();
-        DEPOSITLOW = FTCDVS.getDepositLow();
-        DEPOSITMID = FTCDVS.getDepositMid();
-        ARMCOMPLETEDOWNPOS = FTCDVS.getArmDownPosition();
-        ARMMIDPOS = FTCDVS.getArmMidPosition();
-        DEPOSITHIGHFAST = FTCDVS.getDepositHighFast();
+        arm_PID = new PID(0.0095, 0, 0, 0, 0, 0);
+        horiz_PID = new PID(0.01, 0, 0, 0, 0, 0);
+        lift_PID = new PID(0.02, 0, 0, 0.015, 0, 0);
+
+//        DEPOSITTRANSFER = FTCDVS.getDepositTransfer();
+//        DEPOSITHIGH = FTCDVS.getDepositHigh();
+//        DEPOSITLOW = FTCDVS.getDepositLow();
+//        DEPOSITMID = FTCDVS.getDepositMid();
+//        ARMCOMPLETEDOWNPOS = FTCDVS.getArmDownPosition();
+//        ARMMIDPOS = FTCDVS.getArmMidPosition();
+//        DEPOSITHIGHFAST = FTCDVS.getDepositHighFast();
+//        ARMLOWGOAL= FTCDVS.getArmLowGoal();
+//        ARMGROUNDGOAL = FTCDVS.getArmGroundGoal();
 
         if (stateForMode == Modes.Circuit) {
             if ((a_button.edge() == -1 || b_button.edge() == -1 || y_button.edge() == -1) && stateForIntake != IntakeStates.Transfer && stateForIntake != IntakeStates.PickingConeUp) {
@@ -197,7 +213,7 @@ public class RobotControl extends ControlModule{
                         lift.setLiftTarget(LIFTHIGHPOS);
                         lift_trapezoid.reset();
                     }
-                } else {
+                } else if (stateForMode == Modes.Fast){
                     if (stateForLift == LiftStates.LiftDown) {
                         lift_trapezoid.reset();
                     }
@@ -215,13 +231,13 @@ public class RobotControl extends ControlModule{
                 if (lift.getLiftTarget() == LIFTMIDPOS) {
                     lift.setDumper(DEPOSITMID);
                 }
-                if (lift.getLiftTarget() == LIFTHIGHPOS) {
-                    if (stateForMode == Modes.Circuit) {
-                        lift.setDumper(DEPOSITHIGH);
-                    } else if (stateForMode == Modes.Fast) {
-                        lift.setDumper(DEPOSITHIGHFAST);
-                    }
+
+                if (stateForMode == Modes.Circuit) {
+                    lift.setDumper(DEPOSITHIGH);
+                } else if (stateForMode == Modes.Fast) {
+                    lift.setDumper(DEPOSITHIGHFAST);
                 }
+
                 if (!liftTimerReset) {
                     liftTimer.reset();
                     liftTimerReset = true;
@@ -237,7 +253,6 @@ public class RobotControl extends ControlModule{
         switch (stateForIntake) {
             case LookingForCone:
                 intake.setArmTarget(ARMCOMPLETEDOWNPOS);
-                intakeTimer.reset();
                 intake.setWrist(WRISTLOOKINGFORCONE);
                 intake.setClaw(CLAWOPENPOS);
                 if (stateForMode == Modes.Fast) {
@@ -249,14 +264,14 @@ public class RobotControl extends ControlModule{
                         intake.setHorizTarget(FASTMODEHORIZ);
                     }
                 }
-                if ((intake.getDistance() <= 16 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - intake.getArmCurrent()) < 60) {
+                if ((intake.getDistance() <= 16 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - intake.getArmCurrent()) < 80) {
                     stateForLift = LiftStates.LiftDown;
-                    if(stateForMode == Modes.Ground) {
-                        intake.setArmTarget(ARMMIDPOS);
+                    intakeTimerReset = false;
+                    if (stateForMode == Modes.Ground) {
                         GroundLow = true;
-                        intakeTimerReset = false;
-                        stateForIntake = IntakeStates.Ground;
-                    }else {
+                        intake.setClaw(CLAWCLOSEPOS);
+                        stateForIntake = IntakeStates.GroundDrivingAround;
+                    } else {
                         stateForIntake = IntakeStates.PickingConeUp;
                     }
                 }
@@ -274,7 +289,7 @@ public class RobotControl extends ControlModule{
                     intake.setHorizTarget(HORIZRETRACTED);
                     lift.setDumper(DEPOSITTRANSFER);
                 }
-                if (lift.getLift_limit() && (intake.getHorizCurrent() > -10) && intake.getArmCurrent() > -15) {
+                if (lift.getLift_limit() && (intake.getHorizCurrent() > -10) && intake.getArmCurrent() > -30) {
                     stateForIntake = IntakeStates.Transfer;
                     intakeTimerReset = false;
                 }
@@ -291,6 +306,7 @@ public class RobotControl extends ControlModule{
                         stateForIntake = IntakeStates.DrivingAround;
                     } else if (stateForMode == Modes.Fast) {
                         lift_trapezoid.reset();
+                        stateForLift = LiftStates.LiftUp;
                         stateForIntake = IntakeStates.LookingForCone;
                     }
                     intakeTimerReset = false;
@@ -304,16 +320,28 @@ public class RobotControl extends ControlModule{
                 }
                 break;
 
+            case GroundDrivingAround:
+                if (!intakeTimerReset) {
+                    intakeTimer.reset();
+                    intakeTimerReset = true;
+                }
+                if (intakeTimer.seconds() > 0.5) {
+                    intake.setArmTarget(ARMMIDPOS);
+                    stateForIntake = IntakeStates.Ground;
+                    intakeTimerReset = false;
+                }
+                break;
+
             case Ground:
-                if(a_button.edge() == -1 && GroundLow){
-                    intake.setArmTarget(0);
+                if (a_button.edge() == -1 && GroundLow) {
+                    intake.setArmTarget(ARMLOWGOAL);
                     GroundLow = false;
-                }else if(!GroundLow && a_button.edge() == -1){
-                    intake.setArmTarget(0);
+                } else if (!GroundLow && a_button.edge() == -1) {
+                    intake.setArmTarget(ARMGROUNDGOAL);
                     GroundLow = true;
                 }
 
-                if(dump.edge() == -1){
+                if (dump.edge() == -1) {
                     intake.setClaw(CLAWOPENPOS);
                     intakeTimer.reset();
                     intakeTimerReset = true;
@@ -329,15 +357,19 @@ public class RobotControl extends ControlModule{
                 break;
         }
 
-        if(switchFast.edge() == -1) {
-           stateForMode = Modes.Fast;
+        if (switchFast.edge() == -1) {
+            stateForMode = Modes.Fast;
         }
 
-        if(switchGround.edge() == -1){
+        if (switchGround.edge() == -1) {
             stateForMode = Modes.Ground;
         }
 
-        if(dump.edge() == -1 && stateForLift == LiftStates.LiftUp){
+        if (switchCircuit.edge() == -1) {
+            stateForMode = Modes.Circuit;
+        }
+
+        if (dump.edge() == -1 && stateForLift == LiftStates.LiftUp) {
             stateForLift = LiftStates.Dump;
         }
 
@@ -345,21 +377,30 @@ public class RobotControl extends ControlModule{
             lift.resetLiftEncoder();
         }
 
-//        if(lift.getLiftTarget() < 814 && lift.getLiftTarget() > 0){
-//            lift.setLiftTarget(lift.getLiftTarget() + (ax_lift_left_y.get() * 12));
+        if(stateForMode == Modes.Fast) {
+//            if (lift.getLiftTarget() < 814 && lift.getLiftTarget() > 0) {
+//                lift.setLiftTarget(lift.getLiftTarget() + (ax_lift_left_y.get() * 12));
+//            }
+//            if (intake.getArmTarget() < 0 && intake.getArmTarget() > -124) {
+//                intake.setArmTarget(intake.getArmTarget() + (ax_lift_right_y.get() * 12));
+//            }
+            if(intake.getHorizTarget() < 0 && intake.getHorizTarget() > MAXEXTENDEDHORIZ) {
+                MAXEXTENDEDHORIZ = intake.getHorizTarget() + (ax_lift_left_x.get() * 12);
+            }
+        }
+        double arm_power = Range.clip(arm_PID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), Math.cos(Math.toRadians(intake.getArmCurrent() + 0))), -0.6, 0.6);
+//
+//        if(arm_power >= -0.3 && arm_power < 0 && intake.getArmCurrent() < -60) {
+//            intake.setArmPow(0);
+//        } else {
+//            intake.setArmPow(arm_power);
 //        }
-//        if(intake.getArmTarget() < 0 && intake.getArmTarget() > -124){
-//            intake.setArmTarget(intake.getArmTarget() + (ax_lift_right_y.get() * 12));
-//        }
-//        if(intake.getHorizTarget() < 0 && intake.getHorizTarget() > MAXEXTENDEDHORIZ){
-//            intake.setHorizTarget(intake.getHorizTarget() + (ax_lift_left_x.get() * 12));
-//        }
-
-        intake.setArmPow(Range.clip(arm_PID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), Math.cos(Math.toRadians(intake.getArmCurrent() + 0))), -0.6, 0.6));
+        intake.setArmPow(arm_power);
         lift.setLiftPower(lift_PID.getOutPut(lift.getLiftTarget(), lift.getEncoderVal(), 1) * Math.min(lift_trapezoid.seconds() * lift_accel, 1));
         intake.setHorizPow(horiz_PID.getOutPut(intake.getHorizTarget(), intake.getHorizCurrent(), 0));
 
-        telemetry.addData("Arm Pow", Range.clip(arm_PID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), Math.cos(Math.toRadians(intake.getArmCurrent() + 0))), -0.6, 0.6));
+
+        telemetry.addData("Arm Pow", Range.clip(arm_PID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), Math.cos(Math.toRadians(intake.getArmCurrent() + 0))), -ARMCLIP, ARMCLIP));
         telemetry.addData("Lift Pow", lift_PID.getOutPut(lift.getLiftTarget(), lift.getEncoderVal(), 1)  * Math.min(lift_trapezoid.seconds() * lift_accel, 1));
         telemetry.addData("Horiz Pow", horiz_PID.getOutPut(intake.getHorizTarget(), intake.getHorizCurrent(), 0));
 
@@ -376,5 +417,8 @@ public class RobotControl extends ControlModule{
         telemetry.addData("Current Mode", stateForMode);
 
         telemetry.addData("Sensor Distance", intake.getDistance());
+        telemetry.addData("Time", loop.time());
+        telemetry.addData("Sensor Distance", intake.getDistance());
+
     }
 }

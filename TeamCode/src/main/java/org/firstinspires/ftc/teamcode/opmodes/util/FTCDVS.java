@@ -18,6 +18,8 @@ public class FTCDVS {
     public static double DepositHighFast = 0.38;
     public static double ArmCompletePosition = -110;
     public static double ArmMidPosition = -35;
+    public static double ArmLowGoal = -40;
+    public static double ArmGroundGoal = -80;
 
     public static double getKPLift() {
         return KPLift;
@@ -69,5 +71,13 @@ public class FTCDVS {
 
     public static double getDepositHighFast(){
         return DepositHighFast;
+    }
+
+    public static double getArmLowGoal(){
+        return ArmLowGoal;
+    }
+
+    public static double getArmGroundGoal(){
+        return ArmGroundGoal;
     }
 }

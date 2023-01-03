@@ -32,6 +32,7 @@ public class Intake {
     public void resetArmEncoder(){
         arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
     public void resetHorizEncoder(){
@@ -91,5 +92,8 @@ public class Intake {
         return claw_sens.getDistance(DistanceUnit.MM);
     }
 
+    public double getClaw(){
+        return claw.getPosition();
+    }
 
 }

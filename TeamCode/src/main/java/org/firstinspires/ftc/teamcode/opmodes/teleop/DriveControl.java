@@ -40,7 +40,7 @@ public class DriveControl extends ControlModule {
 
     @Override
     public void init_loop(Telemetry telemetry) {
-        odo.allOdoPosUp();
+        drivetrain.upOdometry();
     }
 
     @Override

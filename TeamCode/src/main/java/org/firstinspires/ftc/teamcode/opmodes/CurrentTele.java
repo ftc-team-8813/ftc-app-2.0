@@ -38,6 +38,8 @@ public class CurrentTele extends LoggingOpMode
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
 
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
         controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         
         controlMgr = new ControlMgr(robot, controllerMap);

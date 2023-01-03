@@ -5,5 +5,6 @@ public enum IntakeStates {
     PickingConeUp,
     Transfer,
     DrivingAround,
-    Ground
+    Ground,
+    GroundDrivingAround
 }
