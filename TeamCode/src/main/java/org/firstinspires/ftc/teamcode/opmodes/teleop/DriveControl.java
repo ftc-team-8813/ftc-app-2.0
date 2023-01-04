@@ -27,11 +27,12 @@ public class DriveControl extends ControlModule {
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.drivetrain = robot.drivetrain;
 
-        ax_drive_left_x = controllerMap.getAxisMap("drive:left_x", "gamepad1", "left_stick_x");
-        ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");
-        ax_drive_right_x = controllerMap.getAxisMap("drive:right_x", "gamepad1", "right_stick_x");
-        dpad_up = controllerMap.getButtonMap("drive:dpad_up", "gamepad1","dpad_up");
+        drivetrain.resetEncoders();
 
+        ax_drive_left_x = controllerMap.getAxisMap("drive:strafe", "gamepad1", "left_stick_x");
+        ax_drive_left_y = controllerMap.getAxisMap("drive:forward", "gamepad1", "left_stick_y");
+        ax_drive_right_x = controllerMap.getAxisMap("drive:turn", "gamepad1", "right_stick_x");
+        dpad_up = controllerMap.getButtonMap("drive:mode", "gamepad1","dpad_up");
     }
 
     @Override
@@ -50,6 +51,7 @@ public class DriveControl extends ControlModule {
         if (heading_delta > 300) {
             heading_delta -= 360;
         }
+
         if (heading_delta < -300) {
             heading_delta += 360;
         }
@@ -86,16 +88,11 @@ public class DriveControl extends ControlModule {
         telemetry.addData("denominator", denominator);
 
         telemetry.addData("Heading: ", drivetrain.getHeading());
-
-
         telemetry.addData("Field Centric",field_centric);
-
-
     }
 
     @Override
     public void stop() {
         super.stop();
-        // drivetrain.closeIMU();
     }
 }

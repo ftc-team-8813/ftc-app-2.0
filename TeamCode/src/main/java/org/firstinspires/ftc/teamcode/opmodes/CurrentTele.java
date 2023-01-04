@@ -6,9 +6,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.ArmControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.RobotControl;
+//import org.firstinspires.ftc.teamcode.opmodes.teleop.RobotControl;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.HorizontalControl;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
@@ -44,7 +46,8 @@ public class CurrentTele extends LoggingOpMode
 
         // Controller Modules
         controlMgr.addModule(new DriveControl("Drive Control"));
-        controlMgr.addModule(new RobotControl("Robot Control"));
+        controlMgr.addModule(new HorizontalControl("Horizontal Control"));
+        controlMgr.addModule(new ArmControl("Arm Control"));
 
         controlMgr.initModules();
     }

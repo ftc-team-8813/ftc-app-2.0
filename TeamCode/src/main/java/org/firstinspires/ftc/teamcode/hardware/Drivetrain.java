@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
 import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
@@ -21,21 +22,29 @@ public class Drivetrain {
     private final DcMotorEx back_left;
     private final DcMotorEx back_right;
     private final BNO055IMU imu;
-    private final FTCDVS ftcdbvals = new FTCDVS();
     private boolean has_reached;
-    private final Servo center_odo;
-    private final Servo left_odo;
-    private final Servo right_odo;
 
-    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu, Servo center_odo,Servo left_odo,Servo right_odo) {
+    private final PID forward_pid = new PID(0.25,0,0,0,0,0);
+    private final PID strafe_pid = new PID(0.25,0,0,0,0,0);
+    private final PID turn_pid = new PID(0.09,0.007,0,0,32,0);
+
+    private double forward = 0;
+    private double strafe = 0;
+    private double turn = 0;
+//    private double turn_correct = 0;
+    private double forward_error_band = 0;
+    private double strafe_error_band = 0;
+    private double turn_error_band = 0;
+
+    private boolean move = true;
+
+
+    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu) {
         this.front_left = front_left;
         this.front_right = front_right;
         this.back_left = back_left;
         this.back_right = back_right;
         this.imu = imu;
-        this.center_odo = center_odo;
-        this.left_odo = left_odo;
-        this.right_odo = right_odo;
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -43,8 +52,6 @@ public class Drivetrain {
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
         parameters.gyroRange = BNO055IMU.GyroRange.DPS2000;
         imu.initialize(parameters);
-
-        resetEncoders();
 
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -86,31 +93,36 @@ public class Drivetrain {
         front_right.setPower(0);
         back_left.setPower(0);
         back_right.setPower(0);
+        move = false;
     }
 
     public boolean hasReached() {
         return has_reached;
     }
 
-    public void autoMove(double forward, double strafe, double turn, double turn_correct, double forward_error_band, double strafe_error_band, double turn_error_band, Pose2d odo, Telemetry telemetry) {
+    public void autoMove(double forward, double strafe, double turn, double forward_error_band, double strafe_error_band, double turn_error_band, Pose2d odo, Telemetry telemetry) {
 
         has_reached = false;
 
-        PID forward_pid = new PID(0.5,0,0,0,0,0);
-        PID strafe_pid = new PID(0.22,0,0,0,0,0);
-        PID turn_pid = new PID(0.053,0.007,0,0,32,0);
-
+        this.forward = forward;
+        this.strafe = strafe;
+        this.turn = turn;
+        this.forward_error_band = forward_error_band;
+        this.strafe_error_band = strafe_error_band;
+        this.turn_error_band = turn_error_band;
 
         double y = odo.getX();
         double x = odo.getY();
         double rot = 0.0;
 
         if(Math.signum(odo.getRotation().getDegrees()) == -1) {
-            rot = (odo.getRotation().getDegrees() + 360);
+            rot = ((odo.getRotation().getDegrees()) + 360);
         }
         else {
             rot = odo.getRotation().getDegrees();
         }
+
+        rot %= 360;
 
         if (Math.abs(turn - rot) > Math.abs(turn - (rot-360))) {
             rot -= 360;
@@ -119,6 +131,35 @@ public class Drivetrain {
         double forward_error = Math.abs(forward - y);
         double strafe_error = Math.abs(strafe - x);
         double turn_error = Math.abs(turn - rot);
+
+        if((forward_error <= forward_error_band) && (strafe_error <= strafe_error_band) && (turn_error <= turn_error_band)){
+            has_reached = true;
+        }
+
+        telemetry.addData("F Error",forward_error);
+        telemetry.addData("S Error",strafe_error);
+        telemetry.addData("T Error",turn_error);
+
+    }
+
+    public void update(Pose2d odo, Telemetry telemetry) {
+
+        double y = odo.getX();
+        double x = odo.getY();
+        double rot = 0.0;
+
+        if(Math.signum(odo.getRotation().getDegrees()) == -1) {
+            rot = ((odo.getRotation().getDegrees()) + 360);
+        }
+        else {
+            rot = odo.getRotation().getDegrees();
+        }
+
+        rot %= 360;
+
+        if (Math.abs(turn - rot) > Math.abs(turn - (rot-360))) {
+            rot -= 360;
+        }
 
         double forward_power = forward_pid.getOutPut(forward,y,0);
         double strafe_power = strafe_pid.getOutPut(strafe,x,0);
@@ -131,34 +172,24 @@ public class Drivetrain {
 
         double denominator = Math.max(Math.abs(forward_power) + Math.abs(strafe_power) + Math.abs(turn_power), 1);
 
-        move(rotY,rotX,turn_power,turn_correct, denominator);
-
-        if((forward_error <= forward_error_band) && (strafe_error <= strafe_error_band) && (turn_error <= turn_error_band)){
-            has_reached = true;
+        if (move) {
+            move(rotY, rotX, turn_power, 0, denominator);
         }
 
+        move = true;
 
         telemetry.addData("F Power",forward_power);
         telemetry.addData("S Power",strafe_power);
         telemetry.addData("T Power",turn_power);
-        telemetry.addData("F Error",forward_error);
-        telemetry.addData("S Error",strafe_error);
-        telemetry.addData("T Error",turn_error);
         telemetry.addData("F Current",y);
         telemetry.addData("S Current",x);
         telemetry.addData("T Current",rot);
+        telemetry.addData("Rotation",-odo.getRotation().getDegrees());
         telemetry.addData("RotY",rotY);
         telemetry.addData("RotX",rotX);
-//        telemetry.addData("FTCDB",ftcdbvals.getKp());
-//        telemetry.addData("FTCDB Test", FTCDashboardValues.getKp());
         telemetry.addData("Has Reached",has_reached);
 
-    }
 
-    public void downOdometry() {
-        center_odo.setPosition(0.34);
-        left_odo.setPosition(0.566);
-        right_odo.setPosition(0.63);
     }
 
     public double getForwardPosition() {

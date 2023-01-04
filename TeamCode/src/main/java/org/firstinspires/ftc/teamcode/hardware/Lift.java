@@ -1,51 +1,53 @@
 package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class Lift {
-    private DigitalChannel lift_limit;
-    private DcMotorEx lift1;
-    private DcMotorEx lift2;
-    private Servo dumper;
-    private double lift1Target;
 
-    public Lift(DigitalChannel lift_limit, DcMotorEx lift1, DcMotorEx lift2, Servo dumper){
+    private final DcMotorEx lift_left;
+    private final DcMotorEx lift_right;
+    private final DigitalChannel lift_limit;
+    private final Servo holder;
+
+    public Lift(DcMotorEx lift_left, DcMotorEx lift_right, DigitalChannel lift_limit, Servo holder){
+        this.lift_left = lift_left;
+        this.lift_right = lift_right;
         this.lift_limit = lift_limit;
-        this.lift1 = lift1;
-        this.lift2 = lift2;
-        this.dumper = dumper;
+        this.holder = holder;
+
+//        lift_right.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
-    public void setLiftPower(double power){
-        lift1.setPower(power);
-        lift2.setPower(-power);
+    public void setPower(double pow){
+        lift_left.setPower(pow);
+        lift_right.setPower(-pow);
     }
 
-    public void setDumper(double pos){
-        dumper.setPosition(pos);
+    public void resetEncoders() {
+        lift_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        lift_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lift_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public boolean getLift_limit(){
+    public double getCurrentPosition() {
+        return lift_left.getCurrentPosition();
+    }
+
+    public boolean getLimit(){
         return !lift_limit.getState();
     }
 
-    public void resetLiftEncoder(){
-        lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    public void setHolderPosition (double pos) {
+        holder.setPosition(pos);
     }
 
-    public void setLiftTarget(double pos){
-        lift1Target = pos;
-    }
-
-    public double getLiftTarget(){
-        return lift1Target;
-    }
-
-    public double getEncoderVal(){
-        return (lift1.getCurrentPosition());
+    public double getHolderPosition() {
+        return holder.getPosition();
     }
 
 }
