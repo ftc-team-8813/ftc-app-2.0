@@ -62,12 +62,13 @@ public class RobotControl extends ControlModule{
     private Modes stateForMode;
 
     private double LIFTDOWNPOS = 0;
-    private double LIFTLOWPOS = 150;
+    private double LIFTLOWPOS = 135;
     private double LIFTMIDPOS = 410;
     private double LIFTHIGHPOS = 720;
 
-    private double DEPOSITLOW = 0.33;
-    private double DEPOSITLOW2 = 0.5;
+    private double DEPOSITLOW = 0.4;
+    private double DEPOSITLOW2 = 0.58;
+    private double DEPOSITLOW3 = 0;
     private double DEPOSITMID = 0.33;
     private double DEPOSITHIGH = 0.33;
 
@@ -76,7 +77,7 @@ public class RobotControl extends ControlModule{
     private double DEPOSITTRANSFER = 0.14;
     private double DEPOSITLIFT = 0.33;
 
-    private double ARMCOMPLETEDOWNPOS = -120;
+    private double ARMCOMPLETEDOWNPOS = -125;
     private double ARMMIDPOS = -35;
     private double ARMHIGHPOS = 0;
 
@@ -90,7 +91,7 @@ public class RobotControl extends ControlModule{
     private double CLAWOPENPOS = 0.3;
     private double CLAWCLOSEPOS = 0.1;
 
-    private double ARMLOWGOAL = -40;
+    private double ARMLOWGOAL = -45;
     private double ARMGROUNDGOAL = -80;
 
     private PID arm_PID;
@@ -193,11 +194,22 @@ public class RobotControl extends ControlModule{
                 if (lift.getEncoderVal() < 200 && dumped == true && (stateForIntake == IntakeStates.DrivingAround || stateForIntake == IntakeStates.LookingForCone)) {
                     if (lift_last_height == LIFTHIGHPOS || lift_last_height == LIFTMIDPOS) {
                         lift.setDumper(DEPOSITTRANSFER);
+                        dumped = false;
                     }
-                    if (lift_last_height == LIFTLOWPOS) {
-                        lift.setDumper(DEPOSITLOW2);
+                }
+                liftTimerReset = false;
+                if (lift_last_height == LIFTLOWPOS) {
+                    if (dumped == true) {
+                        if (liftTimer.seconds() > 0.6) {
+                            lift.setDumper(DEPOSITLOW3);
+                            dumped = false;
+                        } else if (liftTimer.seconds() > 0.3) {
+                            lift.setDumper(DEPOSITLOW2);
+                        }
                     }
-                    dumped = false;
+                    if (liftTimer.seconds() > 3) {
+                        lift.setDumper(DEPOSITTRANSFER);
+                    }
                 }
                 break;
 
@@ -230,9 +242,7 @@ public class RobotControl extends ControlModule{
                 break;
 
             case Dump:
-                if (lift.getLiftTarget() == LIFTLOWPOS) {
-                    lift.setDumper(DEPOSITLOW);
-                }
+
                 if (lift.getLiftTarget() == LIFTMIDPOS) {
                     lift.setDumper(DEPOSITMID);
                 }
@@ -243,17 +253,24 @@ public class RobotControl extends ControlModule{
                     lift.setDumper(DEPOSITHIGHFAST);
                 }
 
-//                if (!liftTimerReset) {
-//                    liftTimer.reset();
-//                    liftTimerReset = true;
-//                }
-//
-//                if (liftTimer.seconds() > 0.01) {
-                    lift_last_height = lift.getLiftTarget();
+                if (!liftTimerReset) {
+                    liftTimer.reset();
+                    liftTimerReset = true;
+                }
+
+                lift_last_height = lift.getLiftTarget();
+
+                if (lift.getLiftTarget() == LIFTLOWPOS) {
+                    lift.setDumper(DEPOSITLOW);
+                    if (liftTimer.seconds() > 0.2) {
+                        dumped = true;
+                        liftTimer.reset();
+                        stateForLift = LiftStates.LiftDown;
+                    }
+                } else {
                     dumped = true;
                     stateForLift = LiftStates.LiftDown;
-//                    liftTimerReset = false;
-//                }
+                }
                 break;
         }
         //intake
