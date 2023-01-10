@@ -24,8 +24,8 @@ public class clawTest extends OpMode {
 
     private ControllerMap.ButtonEntry toggle;
 
-    private final double CLAWOPENPOS = 0.2;
-    private final double CLAWCLOSEPOS = 0.37;
+    private final double CLAWOPENPOS = 0.3;
+    private final double CLAWCLOSEPOS = 0.1;
 
     @Override
     public void init() {

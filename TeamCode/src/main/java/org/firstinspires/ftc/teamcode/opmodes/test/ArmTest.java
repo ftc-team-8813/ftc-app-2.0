@@ -27,13 +27,14 @@ public class ArmTest extends OpMode {
     public static double KFArm;
     public static double KIArm;
     public static double KDArm;
-    public static double maxPower = 0.6;
+    public static double ARMCLIPDOWN = 0.4;
+    public static double ARMCLIPUP = 1;
     
     @Override
     public void init() {
         robot = Robot.initialize(hardwareMap);
         intake = robot.intake;
-        armAccel = 2;
+        armAccel = 1000;
         arm_trapezoid = new ElapsedTime();
         intake.resetArmEncoder();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -43,7 +44,7 @@ public class ArmTest extends OpMode {
     public void loop() {
         target = Range.clip(target + (gamepad1.right_stick_y * 2), -120, 0);
         armPID = new PID(KPArm,KIArm,KDArm,KFArm,0,0);
-        double arm_power = Range.clip(armPID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), 0), -maxPower, maxPower) + (Math.cos(Math.toRadians((intake.getArmCurrent() * 1.25) + 136.5)) * KFArm) * Math.min(arm_trapezoid.seconds() * armAccel, 1);
+        double arm_power = Range.clip(armPID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), 0), -ARMCLIPDOWN, ARMCLIPUP) + (Math.cos(Math.toRadians((intake.getArmCurrent() * 1.25) + 136.5)) * KFArm) * Math.min(arm_trapezoid.seconds() * armAccel, 1);
         if(gamepad1.a){
             arm_trapezoid.reset();
             intake.setArmTarget(target);

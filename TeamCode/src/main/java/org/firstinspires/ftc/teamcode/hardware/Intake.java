@@ -32,7 +32,7 @@ public class Intake {
     public void resetArmEncoder(){
         arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void resetHorizEncoder(){
@@ -81,7 +81,7 @@ public class Intake {
     }
     
     public double getArmCurrent(){
-        return arm.getCurrentPosition();
+        return -arm.getCurrentPosition() * 288 / 8192;
     }
     
     public double getHorizCurrent(){
