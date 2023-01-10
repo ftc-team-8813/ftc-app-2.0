@@ -1,235 +1,173 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.util.LoopTimer;
-import org.firstinspires.ftc.teamcode.util.Storage;
+import com.qualcomm.robotcore.hardware.Servo;
 
 public class Lift {
-    private DcMotor lift1;
-    private DcMotor lift2;
-    private DcMotor pivoter;
-    public DigitalChannel lift_limit;
-    public DigitalChannel pivot_limit;
-    private Logger log = new Logger("Lift");
 
-    private double lift_power;
-    private double pivot_power;
-    private double lift_target;
-    private double lift_summed_error;
-    private double lift_last_error = 0;
-    private double pivot_target;
-    private double pivot_summed_error;
-    private double pivot_last_error = 0;
+    // (0,115) xy cord of starting point positive is direction with the rev hubs
+    // (400,820) High Goal Position
+    //xy is millimeters
+    // Arm1 is 488.89580 mm
+    // Arm2 is 424.15230 mm
 
-    private int reset_id = 0;
-    private boolean can_reset;
-    private boolean pivot_reset = false;
+    private final DcMotor arm_lower;
+    private final DcMotor arm_upper;
+    private final DcMotor wrist;
 
-    private double LIFT_KP;
-    private double LIFT_KI;
-    private double LIFT_KD;
-    private double PIVOT_KP;
-    private double PIVOT_KI;
-    private double PIVOT_KD;
-    private double MAX_HEIGHT;
-    private double TURN_LIMIT;
-    private double DEGREES_PER_TICK;
-    private double PITSTOP;
-    private double PIVOT_THRESHOLD;
-    private double LIFT_THRESHOLD;
+    private final double ARM_LOWER_LENGTH = 488.89580;
+    private final double ARM_UPPER_LENGTH = 424.15230;
 
-    public double print_lift_integral = 0;
-    public double print_pivot_integral = 0;
+//    private final double DEGREES_PER_TICK = 0.0279;
 
-    // Raising makes encoder values more negative
-    public Lift(DcMotor lift1, DcMotor lift2, DcMotor pivoter, DigitalChannel lift_limit, DigitalChannel pivot_limit) {
-        this.lift1 = lift1;
-        this.lift2 = lift2;
-        this.pivoter = pivoter;
-        this.lift_limit = lift_limit;
-        this.pivot_limit = pivot_limit;
-        lift_target = 10;
-        pivot_target = 0.01;
+    private double x = 0;
+    private double y = 115;
 
-        LIFT_KP = Storage.getJsonValue("lift_kp");
-        LIFT_KI = Storage.getJsonValue("lift_ki");
-        LIFT_KD = Storage.getJsonValue("lift_kd");
-        PIVOT_KP = Storage.getJsonValue("pivot_kp");
-        PIVOT_KI = Storage.getJsonValue("pivot_ki");
-        PIVOT_KD = Storage.getJsonValue("pivot_kd");
-        MAX_HEIGHT = Storage.getJsonValue("max_height");
-        TURN_LIMIT = Storage.getJsonValue("turn_limit");
-        DEGREES_PER_TICK = Storage.getJsonValue("degrees_per_tick");
-        PITSTOP = Storage.getJsonValue("pitstop");
-        LIFT_THRESHOLD = Storage.getJsonValue("lift_threshold");
-        PIVOT_THRESHOLD = Storage.getJsonValue("pivot_threshold");
+
+    public Lift(DcMotor arm_lower, DcMotor arm_upper, DcMotor wrist) {
+        this.arm_lower = arm_lower;
+        this.arm_upper = arm_upper;
+        this.wrist = wrist;
     }
 
-    public void resetLift() {
-        if (liftAtBottom()) {
-            lift1.setPower(0);
-            lift2.setPower(0);
+    public void setCoordinates(double set_x, double set_y) {
+        x = set_x;
+        y = set_y;
+    }
 
-            lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            lift2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            lift2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            pivoter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            pivoter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    public void setLiftPower(double arm_low_pow, double arm_up_pow, double wrist_pow) {
+        arm_lower.setPower(arm_low_pow);
+        arm_upper.setPower(arm_up_pow);
+        wrist.setPower(wrist_pow);
+    }
 
-            can_reset = false;
-            pivot_reset = true;
+
+    public double[] getEncoderValue() {
+        double[] a = new double[3];
+
+        a[0] = arm_lower.getCurrentPosition();
+        a[1] = arm_upper.getCurrentPosition();
+        a[2] = wrist.getCurrentPosition();
+
+        return a;
+    }
+
+    public void resetLiftEncoder() {
+        arm_lower.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm_upper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        wrist.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm_lower.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        arm_upper.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        wrist.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public double[] get_POI(double l1, double l2, double a, double b) {
+        double[] cords = new double[4];
+
+        double dist = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+        if ((dist > l1 + l2) || (dist < Math.abs(l1 - l2))) {
+            cords[0] = 0;
+            cords[1] = 0;
+            cords[2] = 0;
+            cords[3] = 0;
+            return cords;
+        }
+        if (b == 0) {
+            double x = (Math.pow(a, 2) + Math.pow(l1, 2) - Math.pow(l2, 2)) / (2 * a);
+            double y = Math.sqrt(Math.pow(l1, 2) - Math.pow(x, 2));
+            cords[0] = x;
+            cords[1] = y;
+            cords[2] = x;
+            cords[3] = -y;
+            return cords;
         } else {
-            lift1.setPower(-0.6);
-            lift2.setPower(-0.6);
+            double L = (Math.pow(a, 2) + Math.pow(b, 2) + Math.pow(l1, 2) - Math.pow(l2, 2)) / (2 * b);
+            double A = (1 + (Math.pow(a, 2) / Math.pow(b, 2)));
+            double B = (-2 * a * L) / b;
+            double C = Math.pow(L, 2) - Math.pow(l1, 2);
+            double D = Math.sqrt(Math.pow(B, 2) - (4 * A * C));
+            double x1 = (-B + D) / (2 * A);
+            double x2 = (-B - D) / (2 * A);
+            double y1 = (-a / b) * x1 + L;
+            double y2 = (-a / b) * x2 + L;
+            cords[0] = x1;
+            cords[1] = y1;
+            cords[2] = x2;
+            cords[3] = y2;
+            return cords;
         }
     }
 
-    public void resetPivot(){
-        switch (reset_id){
-            case 0:
-                lift_target = 40000;
-                pivot_target = getPivotPosition(); // Ensures pivot doesn't correct
-                if (liftReached()) reset_id += 1;
-                update();
-                break;
-            case 1:
-                if (pivotAtSide()) {
-                    pivoter.setPower(0);
-                    pivoter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    pivoter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    reset_id += 1;
-                } else {
-                    pivoter.setPower(-0.3);
-                }
-                break;
-            case 2:
-                lift_target = getLiftTarget(); // Ensure lift doesn't correct
-                pivot_target = 80;
-                if (pivotReached()){
-                    pivoter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    pivoter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    reset_id += 1;
-                }
-                update(); // TODO Separate into only pivot update
-                break;
-            case 3:
-                resetLift();
-                break;
+    public double get_qangle(double x, double y) {
+        double deg = Math.toDegrees(Math.atan(Math.abs(y) / Math.abs(x)));
+        if (x < 0) {
+            deg += 2 * (90 - deg);
+        }
+        if (y < 0) {
+            deg *= -1;
+        }
+        return deg;
+    }
+
+    public double get_min_diff(double a, double b) {
+        double q = Math.abs(get_pos_angle(a) - get_pos_angle(b));
+        double w = Math.abs(a - b);
+        return Math.min(q, w);
+    }
+
+
+    public double[] get_ang(double l1, double l2, double a, double b, double cural, double curbe) {
+        double[] all_angles = new double[2];
+        if (a == 0 && b == 0) {
+            all_angles[0] = cural;
+            all_angles[1] = -(180 - cural);
+            return all_angles;
+        }
+        double[] points = get_POI(l1, l2, a, b);
+
+        double x1 = points[0];
+        double y1 = points[1];
+        double x2 = points[2];
+        double y2 = points[3];
+
+        double a1 = get_qangle(x1, y1);
+        double b1 = get_qangle(a - x1, b - y1);
+
+         if ((Math.abs(a1 - b1) > 180)) { // for arms not intersecting
+             b1 = b1 + 360;
+         }
+
+        double a2 = get_qangle(x2, y2);
+        double b2 = get_qangle(a - x2, b - y2);
+
+         if ((Math.abs(-a2 + b2) > 180)) { // for arms not intersecting
+             b2 = b2 - 360;
+         }
+
+        double diff1 = get_min_diff(cural, a1) + get_min_diff(curbe, b1);
+        double diff2 = get_min_diff(cural, a2) + get_min_diff(curbe, b2);
+
+
+        if ((diff1 < diff2)) {
+            all_angles[0] = a1;
+            all_angles[1] = b1;
+            return all_angles;
+        } else {
+            all_angles[0] = a2;
+            all_angles[1] = b2;
+            return all_angles;
         }
     }
 
-    public void raise(double target_ticks) {
-        if (0 <= target_ticks && target_ticks <= MAX_HEIGHT) {
-            lift_target = target_ticks;
+
+    public double get_pos_angle(double angle) {
+        if (angle < 0) {
+            return 360 + angle;
+        } else {
+            return angle;
         }
     }
 
-    /**
-     * @param target_theta 0 degrees is vertical, left is negative, right is positive
-     */
-    public void rotate(double target_theta) {
-        if (-TURN_LIMIT <= target_theta && target_theta <= TURN_LIMIT) {
-            pivot_target = target_theta;
-        }
-    }
 
-    public void update() {
-        if (liftAtBottom() && can_reset) {
-            lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            can_reset = false;
-        } else if (!liftAtBottom()) {
-            can_reset = true;
-        }
-
-        // Lift
-        double lift_error = lift_target - getLiftPosition();
-        lift_summed_error += lift_error * LoopTimer.getLoopTime();
-
-        if (Math.abs(lift_error) > LIFT_THRESHOLD * 3) lift_summed_error = 0;
-
-        double lift_proportional = lift_error * LIFT_KP;
-        double lift_integral = lift_summed_error * LIFT_KI;
-        double lift_derivative = (lift_error - lift_last_error) / LoopTimer.getLoopTime() * LIFT_KD;
-
-        lift_power = Range.clip(lift_proportional + lift_integral + lift_derivative, -1.0, 1.0);
-
-        lift1.setPower(lift_power);
-        lift2.setPower(lift_power);
-
-        // Pivot
-        double pivot_error = pivot_target - getPivotPosition();
-        pivot_summed_error += pivot_error * LoopTimer.getLoopTime();
-
-        if (Math.abs(pivot_error) > PIVOT_THRESHOLD * 3) pivot_summed_error = 0;
-
-        double pivot_proportional = pivot_error * PIVOT_KP;
-        double pivot_integral = pivot_summed_error * PIVOT_KI;
-        double pivot_derivative = (pivot_error - pivot_last_error) / LoopTimer.getLoopTime() * PIVOT_KD;
-
-        pivot_power = Range.clip(pivot_proportional + pivot_integral + pivot_derivative, -1.0, 1.0);
-
-        pivoter.setPower(pivot_power);
-
-        lift_last_error = lift_error;
-        pivot_last_error = pivot_error;
-
-        print_lift_integral = lift_summed_error;
-        print_pivot_integral = pivot_summed_error;
-    }
-
-    public int getLiftPosition() {
-        // Turns negative ticks into positive
-        return -lift1.getCurrentPosition();
-    }
-
-    public double getPivotPosition() {
-        return -pivoter.getCurrentPosition() * DEGREES_PER_TICK;
-    }
-
-    public double getLiftTarget(){
-        return lift_target;
-    }
-
-    public double getPivotTarget(){
-        return pivot_target;
-    }
-
-    public double getLiftPower(){
-        return lift_power;
-    }
-
-    public double getPivotPower(){
-        return pivot_power;
-    }
-
-    public boolean liftReached(){
-        double min = getLiftTarget() - LIFT_THRESHOLD;
-        double max = getLiftTarget() + LIFT_THRESHOLD;
-        return min < getLiftPosition() && getLiftPosition() < max;
-    }
-
-    public boolean pivotReached(){
-        double min = getPivotTarget() - PIVOT_THRESHOLD;
-        double max = getPivotTarget() + PIVOT_THRESHOLD;
-        return min < getPivotPosition() && getPivotPosition() < max;
-    }
-
-    public boolean liftAtBottom() {
-        return !lift_limit.getState();
-    }
-
-    public boolean pivotAtSide(){
-        return !pivot_limit.getState();
-    }
-
-    public boolean getPivotReset(){
-        return pivot_reset;
-    }
 }
