@@ -8,8 +8,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.RobotControl;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
@@ -39,14 +38,15 @@ public class CurrentTele extends LoggingOpMode
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
 
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
         controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         
         controlMgr = new ControlMgr(robot, controllerMap);
 
         // Controller Modules
         controlMgr.addModule(new DriveControl("Drive Control"));
-        controlMgr.addModule(new IntakeControl("Intake Control"));
-        controlMgr.addModule(new LiftControl("Lift Control"));
+        controlMgr.addModule(new RobotControl("Robot Control"));
 
         controlMgr.initModules();
     }
@@ -69,7 +69,11 @@ public class CurrentTele extends LoggingOpMode
     {
         // Loop Updaters
         controllerMap.update();
-        controlMgr.loop(telemetry);
+        try {
+            controlMgr.loop(telemetry);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         scheduler.loop();
         evBus.update();
         telemetry.update();

@@ -19,6 +19,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
@@ -26,37 +27,20 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
-//@Disabled
+@Disabled
 @Autonomous(name="Odometry Test")
 public class OdometryTest extends LoggingOpMode {
 
-    /*
-    * First Go To 0, 21 deg -135
-    * Second Go To -5.5, 40.2 deg 174
-    *
-     */
-
-    private PID forward_pid = new PID(0.05,0,0,0,0,0);
-    private PID strafe_pid = new PID(0.05,0,0,0,0,0);
-    private PID turn_pid = new PID(0.0,0,0,0,0,0);
-
-
-    public static final double TRACKWIDTH = 10.07570866;
-    public static final double CENTER_WHEEL_OFFSET = 5.027;
+    public static final double TRACKWIDTH = 9.12;
+    public static final double CENTER_WHEEL_OFFSET = 6.089;
     public static final double WHEEL_DIAMETER = 1.37795;
-    // if needed, one can add a gearing term here
     public static final double TICKS_PER_REV = 8192;
     public static final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;
 
-
-    private MotorEx frontLeft, frontRight, backLeft, backRight;
-    private DcMotorEx front_left, front_right, back_left, back_right;
+    private MotorEx frontLeft, frontRight, backLeft, backRight, lift2;
+    private DcMotorEx front_left, front_right, back_left, back_right, lift_2;
     private Encoder leftOdometer, rightOdometer, centerOdometer;
     private HolonomicOdometry odometry;
-//    private BNO055IMU imu_sensor;
-
-    private int main_id = 0;
-
 
     @Override
     public void init() {
@@ -66,26 +50,19 @@ public class OdometryTest extends LoggingOpMode {
         frontRight = new MotorEx(hardwareMap, "front right");
         backLeft = new MotorEx(hardwareMap, "back left");
         backRight = new MotorEx(hardwareMap, "back right");
-
-//        imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
-
-//        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-//        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-//        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-//        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
-//        parameters.gyroRange = BNO055IMU.GyroRange.DPS2000;
-//        imu_sensor.initialize(parameters);
+        lift2 = new MotorEx(hardwareMap,"lift2");
 
         front_left = frontLeft.motorEx;
         front_right = frontRight.motorEx;
         back_left = backLeft.motorEx;
         back_right = backRight.motorEx;
+        lift_2 = lift2.motorEx;
 
-        leftOdometer = frontLeft.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
-        rightOdometer = backRight.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
-        centerOdometer = backLeft.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
+        leftOdometer = backLeft.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
+        rightOdometer = lift2.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
+        centerOdometer = backRight.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
 
-//        rightOdometer.setDirection(Motor.Direction.REVERSE);
+        leftOdometer.setDirection(MotorEx.Direction.REVERSE);
 
         odometry = new HolonomicOdometry(
                 leftOdometer::getDistance,
@@ -98,22 +75,22 @@ public class OdometryTest extends LoggingOpMode {
         rightOdometer.reset();
         centerOdometer.reset();
 
-        Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(45.0)));
+        Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(0)));
         odometry.updatePose(start_pose);
 
-        front_left.setDirection(DcMotorSimple.Direction.REVERSE);
-        back_left.setDirection(DcMotorSimple.Direction.REVERSE);
+        front_right.setDirection(DcMotorSimple.Direction.REVERSE);
+        back_right.setDirection(DcMotorSimple.Direction.REVERSE);
 
         front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+
     }
 
     @Override
     public void loop() {
-
         odometry.updatePose();
 
         double forward_power = -gamepad1.left_stick_y;
@@ -125,23 +102,30 @@ public class OdometryTest extends LoggingOpMode {
         back_left.setPower(((forward_power - strafe_power + (turn_power + 0))));
         back_right.setPower(((forward_power + strafe_power - (turn_power + 0))));
 
-
-
-
-
-
-        telemetry.addData("Odometry", odometry.getPose());
-        if (Math.signum(odometry.getPose().getRotation().getDegrees()) == -1.0) {
-            telemetry.addData("Odometry Rotate", (odometry.getPose().getRotation().getDegrees() + 360));
+        double rot;
+        double act_rot = -1;
+        double turn = 10;
+        
+        if(Math.signum(odometry.getPose().getRotation().getDegrees()) == -1) {
+            rot = (odometry.getPose().getRotation().getDegrees() + 360);
         }
         else {
-            telemetry.addData("Odometry Rotate", odometry.getPose().getRotation().getDegrees());
+            rot = odometry.getPose().getRotation().getDegrees();
         }
+
+        if (Math.abs(turn - rot) > Math.abs(turn - (rot-360))) {
+            act_rot = (rot - 360);
+        }
+
+        telemetry.addData("Odometry", odometry.getPose());
         telemetry.addData("X",odometry.getPose().getX());
         telemetry.addData("Y",odometry.getPose().getY());
+        telemetry.addData("ACT ROT",act_rot);
+        telemetry.addData("ROT",rot);
+        telemetry.addData("Center",centerOdometer.getPosition());
+        telemetry.addData("Left",leftOdometer.getPosition());
+        telemetry.addData("Right",rightOdometer.getPosition());
 
         telemetry.update();
-
     }
-
 }

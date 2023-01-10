@@ -2,9 +2,8 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -48,21 +47,32 @@ public class Robot {
         MotorEx back_left = new MotorEx(hardwareMap, "back left");
         MotorEx back_right = new MotorEx(hardwareMap, "back right");
 
-        DcMotor arm_lower = hardwareMap.get(DcMotor.class, "arm lower");
-        DcMotor arm_upper = hardwareMap.get(DcMotor.class, "arm upper");
-        DcMotor wrist = hardwareMap.get(DcMotor.class, "wrist");
+        DcMotorEx horizontal = hardwareMap.get(DcMotorEx.class, "horizontal");
+        DcMotorEx lift_1 = hardwareMap.get(DcMotorEx.class, "lift1");  //lift1 and lift2 have to be inversed
+        MotorEx lift_2 = new MotorEx(hardwareMap, "lift2");
+        DcMotorEx arm = hardwareMap.get(DcMotorEx.class, "arm");
 
         // Servos
+        Servo center_odo = hardwareMap.get(Servo.class, "back odo lift");
+        Servo left_odo = hardwareMap.get(Servo.class, "left odo lift");
+        Servo right_odo = hardwareMap.get(Servo.class, "right odo lift");
         Servo claw = hardwareMap.get(Servo.class, "claw");
+        Servo dumper = hardwareMap.get(Servo.class, "deposit");
+        Servo wrist = hardwareMap.get(Servo.class, "wrist");
+
+        //Sensors
+        DigitalChannel lift_limit = hardwareMap.get(DigitalChannel.class, "lift limit");
+        DigitalChannel arm_limit = hardwareMap.get(DigitalChannel.class, "arm limit");
+        DigitalChannel horizontal_limit = hardwareMap.get(DigitalChannel.class, "horizontal limit");
 
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
         DistanceSensor claw_sensor = hardwareMap.get(DistanceSensor.class, "claw sensor");
 
         // Sub-Assemblies
-        this.drivetrain = new Drivetrain(front_left.motorEx, front_right.motorEx, back_left.motorEx, back_right.motorEx, imu_sensor);
-        this.intake = new Intake(claw,claw_sensor);
-        this.lift = new Lift(arm_lower, arm_upper, wrist);
-        this.odometryNav = new OdometryNav(front_left, front_right, back_left, back_right);
+        this.drivetrain = new Drivetrain(front_left.motorEx, front_right.motorEx, back_left.motorEx, back_right.motorEx, imu_sensor, center_odo, left_odo, right_odo);
+        this.lift = new Lift(lift_limit, lift_1, lift_2.motorEx, dumper);
+        this.intake = new Intake(horizontal,arm,horizontal_limit,arm_limit,claw_sensor,claw,wrist);
+        this.odometryNav = new OdometryNav(front_left, front_right, back_left, back_right,lift_2, center_odo, left_odo, right_odo);
     }
 }
