@@ -1,43 +1,36 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.CRServoImplEx;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
 
+import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
-public class Robot
-{
-    // Hardware Vars
-    public Drivetrain drivetrain;
-    public IMU imu;
-    public Lift lift;
-    public Intake intake;
-    public Duck duck;
-    public Capper capper;
-    public CapstoneDetector cap_detector;
+public class Robot {
 
-    public int direction;
+    public Drivetrain drivetrain;
+    public Intake intake;
+    public Lift lift;
+    public OdometryNav odometryNav;
+    public IMU imu;
 
     public EventBus eventBus = new EventBus();
     public Scheduler scheduler = new Scheduler(eventBus);
 
-    ///////////////////////////////
-    // Singleton things          //
     private static Robot instance;
     public static Robot initialize(HardwareMap hardwareMap)
     {
         instance = new Robot(hardwareMap);
         return instance;
     }
+
     public static void close()
     {
         instance = null;
@@ -46,47 +39,30 @@ public class Robot
     {
         return instance;
     }
-    //                           //
-    ///////////////////////////////
-
 
     public Robot(HardwareMap hardwareMap)
     {
         // Motors
-        DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "front left");
-        DcMotorEx front_right = hardwareMap.get(DcMotorEx.class, "front right");
-        DcMotorEx back_left = hardwareMap.get(DcMotorEx.class, "back left");
-        DcMotorEx back_right = hardwareMap.get(DcMotorEx.class, "back right");
-        DcMotor lift1 = hardwareMap.get(DcMotor.class, "lift1");
-        DcMotor lift2 = hardwareMap.get(DcMotor.class, "lift2");
-        DcMotor pivot = hardwareMap.get(DcMotor.class, "pivot");
-        DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
+        MotorEx front_left = new MotorEx(hardwareMap, "front left");
+        MotorEx front_right = new MotorEx(hardwareMap, "front right");
+        MotorEx back_left = new MotorEx(hardwareMap, "back left");
+        MotorEx back_right = new MotorEx(hardwareMap, "back right");
+
+        DcMotor arm_lower = hardwareMap.get(DcMotor.class, "arm lower");
+        DcMotor arm_upper = hardwareMap.get(DcMotor.class, "arm upper");
+        DcMotor wrist = hardwareMap.get(DcMotor.class, "wrist");
 
         // Servos
         Servo claw = hardwareMap.get(Servo.class, "claw");
-        CRServo left_intake = hardwareMap.get(CRServo.class, "intake left");
-        CRServo right_intake = hardwareMap.get(CRServo.class, "intake right");
-        Servo sweeper = hardwareMap.get(Servo.class, "duck sweeper");
-        CRServoImplEx duck_front = hardwareMap.get(CRServoImplEx.class, "duck front");
-        CRServoImplEx duck_back = hardwareMap.get(CRServoImplEx.class, "duck back");
-        CRServoImplEx tape = hardwareMap.get(CRServoImplEx.class, "tape");
-        ServoImplEx tape_tilt = hardwareMap.get(ServoImplEx.class, "tape tilt");
-        ServoImplEx tape_swivel = hardwareMap.get(ServoImplEx.class, "tape swivel");
 
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
-        DigitalChannel lift_limit = hardwareMap.get(DigitalChannel.class, "lift limit");
-        DigitalChannel pivot_limit = hardwareMap.get(DigitalChannel.class, "pivot limit");
-        DistanceSensor freight_checker = hardwareMap.get(DistanceSensor.class, "freight checker");
-        DistanceSensor cap_left = hardwareMap.get(DistanceSensor.class, "cap left");
-        DistanceSensor cap_right = hardwareMap.get(DistanceSensor.class, "cap right");
+        DistanceSensor claw_sensor = hardwareMap.get(DistanceSensor.class, "claw sensor");
 
         // Sub-Assemblies
-        this.cap_detector = new CapstoneDetector(cap_left, cap_right);
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
-        this.lift = new Lift(lift1, lift2, pivot, lift_limit, pivot_limit);
-        this.intake = new Intake(intake, freight_checker, claw, left_intake, right_intake, sweeper);
-        this.duck = new Duck(duck_front, duck_back, sweeper);
-        this.capper = new Capper(tape, tape_tilt, tape_swivel);
+        this.drivetrain = new Drivetrain(front_left.motorEx, front_right.motorEx, back_left.motorEx, back_right.motorEx, imu_sensor);
+        this.intake = new Intake(claw,claw_sensor);
+        this.lift = new Lift(arm_lower, arm_upper, wrist);
+        this.odometryNav = new OdometryNav(front_left, front_right, back_left, back_right);
     }
 }

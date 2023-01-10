@@ -37,6 +37,7 @@ public class VelocityTemplateEngine extends TemplateEngine {
     private final VelocityEngine velocityEngine;
     private String encoding;
 
+
     /**
      * Constructor
      */
