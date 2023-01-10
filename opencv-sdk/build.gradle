@@ -102,8 +102,6 @@ android {
         minSdkVersion 21
         targetSdkVersion 26
 
-        versionCode openCVersionCode
-        versionName openCVersionName
 
         externalNativeBuild {
             cmake {
