@@ -45,6 +45,7 @@ public class DriveControl extends ControlModule {
 
     @Override
     public void update(Telemetry telemetry) {
+        drivetrain.update();
 
         if (dpad_up.edge() == -1) {
             field_centric = !field_centric;
