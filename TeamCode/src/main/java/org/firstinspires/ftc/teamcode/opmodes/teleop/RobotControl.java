@@ -80,6 +80,8 @@ public class RobotControl extends ControlModule{
     private double ARMCOMPLETEDOWNPOS = -124;
     private double ARMMIDPOS = -35;
     private double ARMHIGHPOS = 0;
+    private double ARMLOWGOAL = -40;
+    private double ARMGROUNDGOAL = -80;
 
     private double WRISTLOOKINGFORCONE = 0.019;
     private double WRISTTRANSFER = 0.678;
@@ -90,9 +92,6 @@ public class RobotControl extends ControlModule{
 
     private double CLAWOPENPOS = 0.3;
     private double CLAWCLOSEPOS = 0.1;
-
-    private double ARMLOWGOAL = -40;
-    private double ARMGROUNDGOAL = -80;
 
     private PID arm_PID;
     private PID horiz_PID;
@@ -177,7 +176,7 @@ public class RobotControl extends ControlModule{
     public void update(Telemetry telemetry) {
         loop.reset();
 
-        arm_PID = new PID(0.0095, 0, 0, 0, 0, 0);
+        arm_PID = new PID(0.000342, 0, 0, 0, 0, 0);
         horiz_PID = new PID(0.01, 0, 0, 0, 0, 0);
         lift_PID = new PID(0.02, 0, 0, 0.015, 0, 0);
 
@@ -401,17 +400,17 @@ public class RobotControl extends ControlModule{
             lift.resetLiftEncoder();
         }
 
-        if(stateForMode == Modes.Fast) {
 //            if (lift.getLiftTarget() < 814 && lift.getLiftTarget() > 0) {
 //                lift.setLiftTarget(lift.getLiftTarget() + (ax_lift_left_y.get() * 12));
 //            }
 //            if (intake.getArmTarget() < 0 && intake.getArmTarget() > -124) {
 //                intake.setArmTarget(intake.getArmTarget() + (ax_lift_right_y.get() * 12));
 //            }
-            if(intake.getHorizTarget() < 0 && intake.getHorizTarget() > MAXEXTENDEDHORIZ) {
-                MAXEXTENDEDHORIZ = intake.getHorizTarget() + (ax_lift_left_x.get() * 12);
-            }
+        if(intake.getHorizTarget() < 0 && intake.getHorizTarget() > MAXEXTENDEDHORIZ) {
+            FASTMODEHORIZ = intake.getHorizTarget() + (ax_lift_left_x.get() * 16);
         }
+
+
         double arm_power = Range.clip(arm_PID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), Math.cos(Math.toRadians(intake.getArmCurrent() + 0))), -ARMCLIPDOWN, ARMCLIPUP);
 //
 //        if(arm_power >= -0.3 && arm_power < 0 && intake.getArmCurrent() < -60) {
