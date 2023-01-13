@@ -10,12 +10,17 @@ public class Lift {
     private DcMotorEx lift2;
     private Servo dumper;
     private double lift1Target;
+    private double liftCurrent;
 
     public Lift(DigitalChannel lift_limit, DcMotorEx lift1, DcMotorEx lift2, Servo dumper){
         this.lift_limit = lift_limit;
         this.lift1 = lift1;
         this.lift2 = lift2;
         this.dumper = dumper;
+    }
+
+    public void update() {
+        liftCurrent = lift1.getCurrentPosition();
     }
 
     public void setLiftPower(double power){
@@ -44,8 +49,8 @@ public class Lift {
         return lift1Target;
     }
 
-    public double getEncoderVal(){
-        return (lift1.getCurrentPosition());
+    public double getLiftCurrent(){
+        return liftCurrent;
     }
 
 }

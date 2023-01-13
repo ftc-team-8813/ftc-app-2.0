@@ -19,6 +19,9 @@ public class Intake {
     private double armTarget;
     private double horizTarget;
 
+    private double armCurrent;
+    private double horizCurrent;
+
     public Intake(DcMotorEx horiz, DcMotorEx arm, DigitalChannel horiz_limit, DigitalChannel arm_limit, DistanceSensor claw_sens, Servo claw, Servo wrist){
         this.horiz = horiz;
         this.arm = arm;
@@ -29,15 +32,21 @@ public class Intake {
         this.wrist = wrist;
     }
 
+    public void update() {
+        armCurrent = -arm.getCurrentPosition() * 288 / 8192;
+    }
+
     public void resetArmEncoder(){
         arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void resetHorizEncoder(){
         horiz.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         horiz.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //horiz.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //horiz.setMotorEnable(); //used for run to position
     }
 
     public void setArmTarget(double position){
@@ -66,6 +75,7 @@ public class Intake {
 
     public void setHorizTarget (double position){
         horizTarget = position;
+        //horiz.setTargetPosition((int) position); //used for run to position
     }
 
     public double getHorizTarget(){
@@ -80,9 +90,7 @@ public class Intake {
         return !horiz_limit.getState();
     }
     
-    public double getArmCurrent(){
-        return arm.getCurrentPosition();
-    }
+    public double getArmCurrent(){return armCurrent;}
     
     public double getHorizCurrent(){
         return horiz.getCurrentPosition();
