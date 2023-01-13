@@ -1,3 +1,6 @@
+# macOS directory metadata
+.DS_Store
+
 # Built application files
 *.apk
 *.aar

@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+
+//import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
@@ -33,6 +35,7 @@ public class CurrentTele extends LoggingOpMode
     @Override
     public void init()
     {
+        //PhotonCore.enable();
         super.init();
         robot = Robot.initialize(hardwareMap);
         evBus = robot.eventBus;
@@ -49,6 +52,7 @@ public class CurrentTele extends LoggingOpMode
         controlMgr.addModule(new RobotControl("Robot Control"));
 
         controlMgr.initModules();
+
     }
     
     @Override

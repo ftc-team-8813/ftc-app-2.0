@@ -12,7 +12,6 @@ import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.navigation.LiftStates;
 import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
@@ -187,7 +186,7 @@ public class ConeAuto extends LoggingOpMode{
                 }
                 break;
             case 2:
-                if (Math.abs(lift.getEncoderVal() - lift.getLiftTarget()) <= 30){
+                if (Math.abs(lift.getLiftCurrent() - lift.getLiftTarget()) <= 30){
                     main_id += 1;
                 }
                 break;
@@ -240,7 +239,7 @@ public class ConeAuto extends LoggingOpMode{
         }
 
 
-        double lift_power = lift_PID.getOutPut(lift.getLiftTarget(), lift.getEncoderVal(), 1) * Math.min(lift_trapezoid.seconds() * lift_accel, 1); //change
+        double lift_power = lift_PID.getOutPut(lift.getLiftTarget(), lift.getLiftCurrent(), 1) * Math.min(lift_trapezoid.seconds() * lift_accel, 1); //change
         double horizontal_power = horizontal_PID.getOutPut(horizontal_target,intake.getHorizCurrent(),0); //change
         double arm_power = Range.clip(arm_PID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), Math.cos(Math.toRadians(intake.getArmCurrent() + 0))), -0.6, 0); //change
 

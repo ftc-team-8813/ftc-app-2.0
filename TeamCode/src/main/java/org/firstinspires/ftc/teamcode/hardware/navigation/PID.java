@@ -31,12 +31,12 @@ public class PID {
     private double Kf;
 
 
-    public PID (double kp, double ki, double kd, double kf, double mxis, double aVal) {
+    public PID (double kp, double ki, double kd, double kf, double maxIntegralSum, double aVal) {
         Kp = kp;
         Ki = ki;
         Kd = kd;
         Kf = kf;
-        maxIntegralSum = mxis;
+        this.maxIntegralSum = maxIntegralSum;
         a = aVal;
     }
 

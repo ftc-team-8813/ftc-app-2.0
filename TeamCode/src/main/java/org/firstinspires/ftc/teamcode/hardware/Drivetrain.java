@@ -27,6 +27,8 @@ public class Drivetrain {
     private final Servo left_odo;
     private final Servo right_odo;
 
+    private double heading;
+
     public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu, Servo center_odo,Servo left_odo,Servo right_odo) {
         this.front_left = front_left;
         this.front_right = front_right;
@@ -53,6 +55,10 @@ public class Drivetrain {
         front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
+    public void update() {
+        heading = imu.getAngularOrientation().firstAngle;
     }
 
     public void resetEncoders() {
@@ -176,6 +182,6 @@ public class Drivetrain {
     }
 
     public double getHeading() {
-        return imu.getAngularOrientation().firstAngle;
+        return heading;
     }
 }
