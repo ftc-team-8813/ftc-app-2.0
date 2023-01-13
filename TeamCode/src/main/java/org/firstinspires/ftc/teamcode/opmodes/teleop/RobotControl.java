@@ -62,7 +62,7 @@ public class RobotControl extends ControlModule{
 
     private double LIFTDOWNPOS = 0;
     private double LIFTDOWNPOSFAST = 35;
-    private double LIFTLOWPOS = 130;
+    private double LIFTLOWPOS = 125;
     private double LIFTMIDPOS = 405;
     private double LIFTHIGHPOS = 715;
 
@@ -87,18 +87,18 @@ public class RobotControl extends ControlModule{
     private double ARMMIDPOS2 = -28; //used while the horiz slide is retracting
     private double ARMHIGHPOS = 30; //positive to make it dig into the end stop
 
+    public static double ARMLOWGOAL = -55;
+    public static double ARMGROUNDGOAL = -105;
+
     private double WRISTLOOKINGFORCONE = 0.019;
     private double WRISTTRANSFER = 0.678;
 
     private double MAXEXTENDEDHORIZ = -800;
-    private double FASTMODEHORIZ = -450;
+    private double FASTMODEHORIZ = -410;
     private double HORIZRETRACTED = 0;
 
     private double CLAWOPENPOS = 0.3;
     private double CLAWCLOSEPOS = 0.1;
-
-    private double ARMLOWGOAL = -40;
-    private double ARMGROUNDGOAL = -80;
 
     private PID arm_PID;
     private PID horiz_PID;
@@ -224,7 +224,7 @@ public class RobotControl extends ControlModule{
                             lift.setDumper(DEPOSITLOW2);
                         }
                     }
-                    if (liftTimer.seconds() > 3) {
+                    if (liftTimer.seconds() > 3 && liftTimer.seconds() < 3.1) {
                         lift.setDumper(DEPOSITTRANSFER);
                     }
                 }
@@ -308,7 +308,7 @@ public class RobotControl extends ControlModule{
                         intake.setHorizTarget(FASTMODEHORIZ);
                     }
                 }
-                if ((intake.getDistance() <= 16 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - intake.getArmCurrent()) < 60) {
+                if ((intake.getDistance() <= 17 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - intake.getArmCurrent()) < 60) {
                     stateForLift = LiftStates.LiftDown;
                     intakeTimerReset = false;
                     if (mode == Modes.Ground) {
