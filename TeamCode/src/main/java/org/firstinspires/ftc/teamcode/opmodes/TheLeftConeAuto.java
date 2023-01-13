@@ -66,6 +66,17 @@ public class TheConeAuto extends LoggingOpMode{
 
     private final Logger log = new Logger("Cone Auto");
 
+    private double timer_point_1;
+    private double timer_point_2;
+    private double timer_point_3;
+    private double timer_point_4;
+    private double timer_point_5;
+    private double timer_point_6;
+
+    private double lift_power;
+    private double horizontal_power;
+    private double arm_power;
+
     @Override
     public void init() {
         super.init();
@@ -98,7 +109,7 @@ public class TheConeAuto extends LoggingOpMode{
             }
         });
 
-        telemetry.setMsTransmissionInterval(50);
+//        telemetry.setMsTransmissionInterval(50);
 
         odometry.resetEncoders();
     }
@@ -139,7 +150,7 @@ public class TheConeAuto extends LoggingOpMode{
     @Override
     public void start() {
         super.start();
-        lift_target = 740;
+        lift_target = 745;
         lift_trapezoid.reset();
     }
 
@@ -148,71 +159,83 @@ public class TheConeAuto extends LoggingOpMode{
 
         odometry.updatePose();
 
+        timer_point_1 = LoopTimer.getLoopTime();
+
         switch (main_id) {
             case 0:
-                drivetrain.autoMove(-24,0,0,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-6,-19,0,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
+                    lift.setHolderPosition(0.39);
                 }
                 break;
             case 1:
-                drivetrain.autoMove(-24,0,90,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-28.7,-20.4,46.34,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
             case 2:
-                drivetrain.autoMove(-24,-25,90,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-32.7,-24.4,46.34,0.5,0.5,1.5, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
+                    arm_target = -35;
+                    lift_target = 0;
                 }
                 break;
             case 3:
-                drivetrain.autoMove(-38,-25,90,0.7,0.7,1, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
+                if (lift.getCurrentPosition() < 200) {
+                    lift.setHolderPosition(0.14);
                     main_id += 1;
-                    lift_target = 0;
                 }
                 break;
             case 4:
                 if (lift.getCurrentPosition() < 10) {
                     main_id += 1;
+                    arm_target = -10;
                 }
                 break;
             case 5:
-                drivetrain.autoMove(-48,-25,90,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-46,-17.36,85,1,1,1, odometry.getPose(), telemetry);
+                if (drivetrain.hasReached()) {
+                    main_id += 1;
+                    horizontal_target = -800;
+                    arm_target = -71;
+                    intake.setWristPosition(0.019);
+                    intake.setClawPosition(0.3);
+                }
+                break;
+            case 6:
+                drivetrain.autoMove(-46,9.5,85,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
-            case 6:
-                drivetrain.autoMove(-48,15,90,1,1,1, odometry.getPose(), telemetry);
-                if(drivetrain.hasReached()) {
+            case 7:
+                if (intake.getDistance() < 17) {
+                    intake.setClawPosition(0.1);
                     main_id += 1;
                     timer.reset();
-                }
-                break;
-            case 7:
-                if (timer.seconds() > 3) {
-                    main_id += 1;
                 }
                 break;
             case 8:
-                drivetrain.autoMove(-48,-25,90,1,1,1, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()){
-                    main_id += 1;
-                }
-                break;
-            case 9:
-                drivetrain.autoMove(-38,-25,90,1,1,1, odometry.getPose(), telemetry);
-                if(drivetrain.hasReached()) {
+                if (timer.seconds() > 0.7) {
+                    arm_target = -35;
                     main_id += 1;
                     timer.reset();
                 }
                 break;
-            case 10:
-                if (timer.seconds() > 3) {
+            case 9:
+                if (timer.seconds() > 0.7) {
+                    intake.setWristPosition(0.678);
+                    horizontal_target = 0;
                     main_id += 1;
+                }
+                break;
+            case 10:
+                drivetrain.autoMove(-46,-17.36,85,1,1,1, odometry.getPose(), telemetry);
+                if (drivetrain.hasReached()) {
+                    arm_target = 0;
                 }
                 break;
             case 11:
@@ -220,27 +243,40 @@ public class TheConeAuto extends LoggingOpMode{
                 break;
         }
 
-        double lift_power = lift_PID.getOutPut(lift_target, lift.getCurrentPosition(), 1) * Math.min(lift_trapezoid.seconds() * lift_accel, 1); //change
-        double horizontal_power = horizontal_PID.getOutPut(horizontal_target,horizontal.getCurrentPosition(),0); //change
-        double arm_power = Range.clip(arm_PID.getOutPut(arm_target, arm.getCurrentPosition(), Math.cos(Math.toRadians(arm.getCurrentPosition() + 0))), -0.6, 0.6); //change
+        timer_point_2 = LoopTimer.getLoopTime();
 
+        lift_power = lift_PID.getOutPut(lift_target, lift.getCurrentPosition(), 1) * Math.min(lift_trapezoid.seconds() * lift_accel, 1); //change
+        horizontal_power = horizontal_PID.getOutPut(horizontal_target,horizontal.getCurrentPosition(),0); //change
+        arm_power = Range.clip(arm_PID.getOutPut(arm_target, arm.getCurrentPosition(), Math.cos(Math.toRadians(arm.getCurrentPosition() + 0))), -0.6, 0.6); //change
 
-//        lift.setPower(lift_power);
-//        horizontal.setPower(horizontal_power);
-//        arm.setPower(arm_power);
+        timer_point_3 = LoopTimer.getLoopTime();
+
+        lift.setPower(lift_power);
+        horizontal.setPower(horizontal_power);
+        arm.setPower(arm_power);
+
+        timer_point_4 = LoopTimer.getLoopTime();
 
         drivetrain.update(odometry.getPose(), telemetry);
 
+        timer_point_5 = LoopTimer.getLoopTime();
+
         telemetry.addData("Main ID", main_id);
-        telemetry.addData("Lift Power", lift_power);
-        telemetry.addData("Horizontal Power", horizontal_power);
-        telemetry.addData("Arm Power", arm_power);
-        telemetry.addData("Lift Target",lift_target);
-        telemetry.addData("Horizontal Target",horizontal_target);
-        telemetry.addData("Arm Target",arm_target);
-        telemetry.addData("Lift Position",lift.getCurrentPosition());
-        telemetry.addData("Horizontal Position",horizontal.getCurrentPosition());
-        telemetry.addData("Arm Position",arm.getCurrentPosition());
+//        telemetry.addData("Distance", intake.getDistance());
+//        telemetry.addData("Lift Power", lift_power);
+//        telemetry.addData("Horizontal Power", horizontal_power);
+//        telemetry.addData("Arm Power", arm_power);
+//        telemetry.addData("Lift Target",lift_target);
+//        telemetry.addData("Horizontal Target",horizontal_target);
+//        telemetry.addData("Arm Target",arm_target);
+//        telemetry.addData("Lift Position",lift.getCurrentPosition());
+//        telemetry.addData("Horizontal Position",horizontal.getCurrentPosition());
+//        telemetry.addData("Arm Position",arm.getCurrentPosition());
+        telemetry.addData("Timer Point 1", timer_point_1);
+        telemetry.addData("Timer Point 2", timer_point_2);
+        telemetry.addData("Timer Point 3", timer_point_3);
+        telemetry.addData("Timer Point 4", timer_point_4);
+        telemetry.addData("Timer Point 5", timer_point_5);
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();
 
