@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -21,8 +22,9 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
-@Autonomous(name = "!!Cone Auto!!")
-public class TheConeAuto extends LoggingOpMode{
+@Disabled
+@Autonomous(name = "!!Right Cone Auto!!")
+public class TheRightConeAuto extends LoggingOpMode{
 
     private Lift lift;
     private Horizontal horizontal;
@@ -163,20 +165,20 @@ public class TheConeAuto extends LoggingOpMode{
 
         switch (main_id) {
             case 0:
-                drivetrain.autoMove(-6,-19,0,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-6,19,0,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                     lift.setHolderPosition(0.39);
                 }
                 break;
             case 1:
-                drivetrain.autoMove(-28.7,-20.4,46.34,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-28.7,20.4,313.66,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
             case 2:
-                drivetrain.autoMove(-32.7,-24.4,46.34,0.5,0.5,1.5, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-32.7,24.4,313.66,0.5,0.5,1.5, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                     arm_target = -35;
@@ -196,7 +198,7 @@ public class TheConeAuto extends LoggingOpMode{
                 }
                 break;
             case 5:
-                drivetrain.autoMove(-46,-17.36,85,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-46,17.36,275,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                     horizontal_target = -800;
@@ -206,7 +208,7 @@ public class TheConeAuto extends LoggingOpMode{
                 }
                 break;
             case 6:
-                drivetrain.autoMove(-46,9.5,85,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-46,-9.5,275,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
@@ -233,7 +235,7 @@ public class TheConeAuto extends LoggingOpMode{
                 }
                 break;
             case 10:
-                drivetrain.autoMove(-46,-17.36,85,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-46,17.36,275,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     arm_target = 0;
                 }

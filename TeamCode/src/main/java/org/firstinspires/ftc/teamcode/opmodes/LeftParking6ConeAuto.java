@@ -18,13 +18,16 @@ import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.vision.AprilTagDetectionPipeline;
+import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
+import java.util.ArrayList;
+
 @Disabled
-@Autonomous(name = "Left Cone Auto Next")
-public class TheLeftConeAutoNext extends LoggingOpMode{
+@Autonomous(name = "!Left 6 Cone Auto!")
+public class LeftParking6ConeAuto extends LoggingOpMode{
 
     private Lift lift;
     private Horizontal horizontal;
@@ -50,7 +53,7 @@ public class TheLeftConeAutoNext extends LoggingOpMode{
 
     private double tagsize = 0.166;
 
-    private final PID arm_PID = new PID(FTCDVS.getKPArm(), 0, 0, FTCDVS.getKFArm(), 0, 0);
+    private final PID arm_PID = new PID(0.009, 0, 0, 0.1, 0, 0);
     private final PID horizontal_PID = new PID(FTCDVS.getKPHoriz(), 0, 0, 0, 0, 0);
     private final PID lift_PID = new PID(FTCDVS.getKPLift(), 0, 0, FTCDVS.getKFLift(), 0, 0);
 
@@ -120,6 +123,35 @@ public class TheLeftConeAutoNext extends LoggingOpMode{
     public void init_loop() {
         super.init_loop();
 
+        ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
+
+        if(currentDetections.size() != 0) {
+
+            for (AprilTagDetection tag : currentDetections) {
+                if (tag.id == 107) {
+                    result = "FTC8813: 1";
+                    break;
+                }
+                else if (tag.id == 350) {
+                    result = "FTC8813: 2";
+                    break;
+                }
+                else if (tag.id == 25) {
+                    result = "FTC8813: 3";
+                    break;
+                }
+                else {
+                    result = "Nothing";
+                }
+
+            }
+        }
+
+
+        telemetry.addData("Detected", result);
+
+        telemetry.update();
+
         if(!arm.getLimit()){
             arm.setPower(0.5);
         }
@@ -161,7 +193,7 @@ public class TheLeftConeAutoNext extends LoggingOpMode{
 
         odometry.updatePose();
 
-        timer_point_1 = LoopTimer.getLoopTime();
+//        timer_point_1 = LoopTimer.getLoopTime();
 
         switch (main_id) {
             case 0:
@@ -172,16 +204,16 @@ public class TheLeftConeAutoNext extends LoggingOpMode{
                 }
                 break;
             case 1:
-                drivetrain.autoMove(-28.7,-20.4,46.34,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-30.7,-20,46.34,1,1,1.6, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
             case 2:
-                drivetrain.autoMove(-32.7,-24.4,46.34,0.5,0.5,1.5, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-33.7,-24,46.34,0.65,0.65,3, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
-                    arm_target = -35;
+                    arm_target = -28;
                     lift_target = 0;
                 }
                 break;
@@ -194,35 +226,34 @@ public class TheLeftConeAutoNext extends LoggingOpMode{
             case 4:
                 if (lift.getCurrentPosition() < 10) {
                     main_id += 1;
-                    arm_target = -10;
                 }
                 break;
             case 5:
-                drivetrain.autoMove(-46,-17.36,85,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-46,-17,89,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                     horizontal_target = -800;
-                    arm_target = -71;
+                    arm_target = -74.5;
                     intake.setWristPosition(0.019);
                     intake.setClawPosition(0.3);
                 }
                 break;
             case 6:
-                drivetrain.autoMove(-46,9.5,85,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-46,9.274,89,1,1,2.1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
-                break;
-            case 7:
-                if (intake.getDistance() < 17) {
-                    intake.setClawPosition(0.1);
                     main_id += 1;
                     timer.reset();
                 }
                 break;
+            case 7:
+                if (timer.seconds() > 1.4) {
+                    intake.setClawPosition(0.1);
+                    main_id += 1;
+                    timer.reset();
+                }
             case 8:
-                if (timer.seconds() > 0.7) {
-                    arm_target = -35;
+                if (timer.seconds() > 1.4) {
+                    arm_target = -28;
                     main_id += 1;
                     timer.reset();
                 }
@@ -231,75 +262,59 @@ public class TheLeftConeAutoNext extends LoggingOpMode{
                 if (timer.seconds() > 0.7) {
                     intake.setWristPosition(0.678);
                     horizontal_target = 0;
+                    lift.setHolderPosition(0.39);
+                    arm_target = -28;
                     main_id += 1;
                 }
                 break;
             case 10:
-                drivetrain.autoMove(-46,0,85,1,3,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-46,-16.75,89,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
-                    arm_target = 0;
+                    main_id += 1;
+                    lift_trapezoid.reset();
+                    lift_target = 745;
                 }
                 break;
             case 11:
-                drivetrain.autoMove(-46,-7,85,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-43,-22,(89+46.34),0.65,0.65,3, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
-                    intake.setClawPosition(0.3);
-                }
-                break;
-            case 12:
-                drivetrain.autoMove(-46,-14,85,1,3,1, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    arm_target = -35;
-                    lift.setHolderPosition(0.39);
-                }
-                break;
-            case 13:
-                drivetrain.autoMove(-46,-17.36,85,1,1,1, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    lift_target = 745;
-                    lift_trapezoid.reset();
-                }
-                break;
-            case 14:
-                drivetrain.autoMove(-44,-24.4,135,0.5,0.5,1.5, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
+                    main_id += 1;
                     lift_target = 0;
                 }
                 break;
-            case 15:
+            case 12:
                 if (lift.getCurrentPosition() < 200) {
                     lift.setHolderPosition(0.14);
                     main_id += 1;
                 }
                 break;
-            case 16:
+            case 13:
                 if (lift.getCurrentPosition() < 10) {
                     main_id += 1;
-                    arm_target = -10;
                 }
                 break;
-            case 17:
+            case 14:
                 drivetrain.stop();
                 break;
         }
 
-        timer_point_2 = LoopTimer.getLoopTime();
+//        timer_point_2 = LoopTimer.getLoopTime();
 
         lift_power = lift_PID.getOutPut(lift_target, lift.getCurrentPosition(), 1) * Math.min(lift_trapezoid.seconds() * lift_accel, 1); //change
         horizontal_power = horizontal_PID.getOutPut(horizontal_target,horizontal.getCurrentPosition(),0); //change
-        arm_power = Range.clip(arm_PID.getOutPut(arm_target, arm.getCurrentPosition(), Math.cos(Math.toRadians(arm.getCurrentPosition() + 0))), -0.6, 0.6); //change
+        arm_power = Range.clip(arm_PID.getOutPut(arm_target, arm.getCurrentPosition(), Math.cos(Math.toRadians(arm.getCurrentPosition() + 0))), -0.6, 1); //change
 
-        timer_point_3 = LoopTimer.getLoopTime();
+//        timer_point_3 = LoopTimer.getLoopTime();
 
         lift.setPower(lift_power);
         horizontal.setPower(horizontal_power);
         arm.setPower(arm_power);
 
-        timer_point_4 = LoopTimer.getLoopTime();
+//        timer_point_4 = LoopTimer.getLoopTime();
 
         drivetrain.update(odometry.getPose(), telemetry);
 
-        timer_point_5 = LoopTimer.getLoopTime();
+//        timer_point_5 = LoopTimer.getLoopTime();
 
         telemetry.addData("Main ID", main_id);
 //        telemetry.addData("Distance", intake.getDistance());
@@ -312,11 +327,11 @@ public class TheLeftConeAutoNext extends LoggingOpMode{
 //        telemetry.addData("Lift Position",lift.getCurrentPosition());
 //        telemetry.addData("Horizontal Position",horizontal.getCurrentPosition());
 //        telemetry.addData("Arm Position",arm.getCurrentPosition());
-        telemetry.addData("Timer Point 1", timer_point_1);
-        telemetry.addData("Timer Point 2", timer_point_2);
-        telemetry.addData("Timer Point 3", timer_point_3);
-        telemetry.addData("Timer Point 4", timer_point_4);
-        telemetry.addData("Timer Point 5", timer_point_5);
+//        telemetry.addData("Timer Point 1", timer_point_1);
+//        telemetry.addData("Timer Point 2", timer_point_2);
+//        telemetry.addData("Timer Point 3", timer_point_3);
+//        telemetry.addData("Timer Point 4", timer_point_4);
+//        telemetry.addData("Timer Point 5", timer_point_5);
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();
 

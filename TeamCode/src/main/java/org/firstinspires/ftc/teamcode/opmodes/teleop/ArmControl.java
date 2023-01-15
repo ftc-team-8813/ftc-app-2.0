@@ -16,7 +16,12 @@ public class ArmControl extends ControlModule {
     private Intake intake;
     private double target = 0;
 
-    private final PID pid = new PID(0.0095, 0, 0, 0, 0, 0);
+//    private final PID pid = new PID(FTCDVS.getKPArm(), 0, 0, FTCDVS.getKFArm(), 0, 0);
+
+    private ControllerMap.ButtonEntry dpad_up;
+    private ControllerMap.ButtonEntry dpad_right;
+    private ControllerMap.ButtonEntry dpad_down;
+    private ControllerMap.ButtonEntry dpad_left;
 
     public ArmControl(String name) {
         super(name);
@@ -26,6 +31,11 @@ public class ArmControl extends ControlModule {
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.arm = robot.arm;
         this.intake = robot.intake;
+
+        dpad_up = controllerMap.getButtonMap("arm:1","gamepad2","dpad_up");
+        dpad_right = controllerMap.getButtonMap("arm:5","gamepad2","dpad_right");
+        dpad_down = controllerMap.getButtonMap("amr:-1","gamepad2","dpad_down");
+        dpad_left = controllerMap.getButtonMap("amr:-5","gamepad2","dpad_left");
     }
 
     @Override
@@ -43,12 +53,37 @@ public class ArmControl extends ControlModule {
 
     @Override
     public void update(Telemetry telemetry) {
+
+        PID pid = new PID(FTCDVS.getKPArm(), 0, 0, FTCDVS.getKFArm(), 0, 0);
+
+        arm.setPower(0);
         if(intake.intaken()) {
             target = 0;
         }
 
+        if(dpad_up.edge() == -1) {
+            target += 1;
+        }
+
+        if(dpad_right.edge() == -1) {
+            target += 20;
+        }
+
+        if(dpad_down.edge() == -1) {
+            target -= 1;
+        }
+
+        if(dpad_left.edge() == -1) {
+            target -= 20;
+        }
+
+
         double power = Range.clip(pid.getOutPut(target, arm.getCurrentPosition(), Math.cos(Math.toRadians(arm.getCurrentPosition() + 0))), -0.6, 0.6);
 
         arm.setPower(power);
+
+        telemetry.addData("Arm Position", arm.getCurrentPosition());
+        telemetry.addData("Arm Power", power);
+        telemetry.addData("Target",target);
     }
 }

@@ -16,7 +16,6 @@ public class Odometry {
     private final MotorEx front_right;
     private final MotorEx back_left;
     private final MotorEx back_right;
-    private final MotorEx lift_right;
     private final Servo center_odometry;
     private final Servo left_odometry;
     private final Servo right_odometry;
@@ -33,18 +32,17 @@ public class Odometry {
     private final double TICKS_PER_REV = 8192;
     private final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;
 
-    public Odometry(MotorEx front_left, MotorEx front_right, MotorEx back_left, MotorEx back_right, MotorEx lift_right, Servo center_odometry,Servo left_odometry,Servo right_odometry) {
+    public Odometry(MotorEx front_left, MotorEx front_right, MotorEx back_left, MotorEx back_right, Servo center_odometry,Servo left_odometry,Servo right_odometry) {
         this.front_left = front_left;
         this.front_right = front_right;
         this.back_left = back_left;
         this.back_right = back_right;
-        this.lift_right = lift_right;
         this.center_odometry = center_odometry;
         this.left_odometry = left_odometry;
         this.right_odometry = right_odometry;
 
         left_odometer = back_left.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
-        right_odometer = lift_right.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
+        right_odometer = front_left.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
         center_odometer = back_right.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
 
         left_odometer.setDirection(MotorEx.Direction.REVERSE);

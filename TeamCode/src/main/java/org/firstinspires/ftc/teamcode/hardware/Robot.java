@@ -74,6 +74,6 @@ public class Robot {
         this.arm = new Arm(arm,arm_limit);
         this.horizontal = new Horizontal(horizontal,horizontal_limit);
         this.lift = new Lift(lift_left, lift_right.motorEx, lift_limit, holder);
-        this.odometry = new Odometry(front_left, front_right, back_left, back_right,lift_right, center_odometry, left_odometry, right_odometry);
+        this.odometry = new Odometry(front_left, front_right, back_left, back_right, center_odometry, left_odometry, right_odometry);
     }
 }

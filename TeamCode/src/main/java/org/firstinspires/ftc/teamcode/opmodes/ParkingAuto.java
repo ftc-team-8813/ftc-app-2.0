@@ -74,7 +74,7 @@ public class ParkingAuto extends LoggingOpMode{
             }
         });
 
-        telemetry.setMsTransmissionInterval(50);
+//        telemetry.setMsTransmissionInterval(50);
 
     }
 
@@ -154,6 +154,8 @@ public class ParkingAuto extends LoggingOpMode{
                 drivetrain.stop();
                 break;
         }
+
+        drivetrain.update(odometry.getPose(), telemetry);
 
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();

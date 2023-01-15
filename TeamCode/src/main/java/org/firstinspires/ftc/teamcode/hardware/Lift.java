@@ -11,6 +11,8 @@ public class Lift {
     private final DcMotorEx lift_right;
     private final DigitalChannel lift_limit;
     private final Servo holder;
+    private double liftCurrent;
+    private double lift1Target;
 
     public Lift(DcMotorEx lift_left, DcMotorEx lift_right, DigitalChannel lift_limit, Servo holder){
         this.lift_left = lift_left;
@@ -19,6 +21,22 @@ public class Lift {
         this.holder = holder;
 
 //        lift_right.setDirection(DcMotorSimple.Direction.REVERSE);
+    }
+
+    public void update() {
+        liftCurrent = lift_left.getCurrentPosition();
+    }
+
+    public double getLiftCurrent(){
+        return liftCurrent;
+    }
+
+    public void setLiftTarget(double pos){
+        lift1Target = pos;
+    }
+
+    public double getLiftTarget(){
+        return lift1Target;
     }
 
     public void setPower(double pow){
