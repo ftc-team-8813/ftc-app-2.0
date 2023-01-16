@@ -35,12 +35,12 @@ public class PID {
     double derivative = 0;
     double out = 0;
 
-    public PID (double kp, double ki, double kd, double kf, double mxis, double aVal) {
+    public PID (double kp, double ki, double kd, double kf, double maxIntegralSum, double aVal) {
         Kp = kp;
         Ki = ki;
         Kd = kd;
         Kf = kf;
-        maxIntegralSum = mxis;
+        this.maxIntegralSum = maxIntegralSum;
         a = aVal;
     }
 
