@@ -13,6 +13,9 @@ public class IntakeControl extends ControlModule {
     private Intake intake;
 
     private boolean claw_open = true;
+    private boolean let_cone_go = false;
+
+    private ElapsedTime timer = new ElapsedTime();
 
     private ControllerMap.ButtonEntry right_bumper;
 
@@ -37,7 +40,6 @@ public class IntakeControl extends ControlModule {
             intake.setClawPosition(0.37);
         }
 
-
         if (right_bumper.edge() == -1) {
             claw_open = !claw_open;
         }
@@ -46,8 +48,15 @@ public class IntakeControl extends ControlModule {
             claw_open = false;
         }
 
-        if (intake.intaken()) {
+        if (intake.intaken() && !let_cone_go) {
             intake.setWristPosition(0.678);
+            let_cone_go = true;
+            timer.reset();
+        }
+
+        if(let_cone_go && timer.seconds() > 0.7) {
+            claw_open = true;
+            let_cone_go = false;
         }
     }
 }

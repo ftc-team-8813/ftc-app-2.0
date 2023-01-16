@@ -163,7 +163,6 @@ public class RobotControl extends ControlModule{
         arm.setPower(0.5);
         lift.setPower(-0.2);
         horizontal.setPower(0.3);
-
         //intake.setHorizTarget(0); //used for run to position
     }
 

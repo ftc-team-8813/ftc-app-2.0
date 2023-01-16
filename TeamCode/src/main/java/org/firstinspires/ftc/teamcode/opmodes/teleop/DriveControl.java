@@ -3,11 +3,13 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
 public class DriveControl extends ControlModule {
 
     private Drivetrain drivetrain;
+    private Odometry odometry;
 
     private ControllerMap.AxisEntry ax_drive_left_x;
     private ControllerMap.AxisEntry ax_drive_left_y;
@@ -26,8 +28,10 @@ public class DriveControl extends ControlModule {
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.drivetrain = robot.drivetrain;
+        this.odometry = robot.odometry;
 
         drivetrain.resetEncoders();
+        odometry.Up();
 
         ax_drive_left_x = controllerMap.getAxisMap("drive:strafe", "gamepad1", "left_stick_x");
         ax_drive_left_y = controllerMap.getAxisMap("drive:forward", "gamepad1", "left_stick_y");

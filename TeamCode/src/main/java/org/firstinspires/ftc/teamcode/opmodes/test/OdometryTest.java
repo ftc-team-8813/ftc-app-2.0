@@ -95,6 +95,8 @@ public class OdometryTest extends LoggingOpMode {
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
 //        front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -173,6 +175,7 @@ public class OdometryTest extends LoggingOpMode {
         telemetry.addData("Center",centerOdometer.getPosition());
         telemetry.addData("Left",leftOdometer.getPosition());
         telemetry.addData("Right",rightOdometer.getPosition());
+        telemetry.addData("imu", imu.getAngularOrientation().firstAngle);
 
         telemetry.update();
     }

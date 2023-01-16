@@ -20,6 +20,7 @@ public class Robot {
     public Horizontal horizontal;
     public Lift lift;
     public Odometry odometry;
+    public Mode mode;
     public IMU imu;
 
     public EventBus eventBus = new EventBus();
@@ -75,5 +76,6 @@ public class Robot {
         this.horizontal = new Horizontal(horizontal,horizontal_limit);
         this.lift = new Lift(lift_left, lift_right.motorEx, lift_limit, holder);
         this.odometry = new Odometry(front_left, front_right, back_left, back_right, center_odometry, left_odometry, right_odometry);
+        this.mode = new Mode();
     }
 }

@@ -24,23 +24,23 @@ public class HorizontalControl extends ControlModule {
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.horizontal = robot.horizontal;
         this.intake = robot.intake;
+
+        horizontal.setPower(0.3);
     }
 
     @Override
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry);
 
-        if (!horizontal.getLimit()) {
-            horizontal.setPower(0.3);
-        }
-
         if (horizontal.getLimit()) {
             horizontal.resetEncoders();
+            horizontal.setPower(0);
         }
     }
 
     @Override
     public void update(Telemetry telemetry) {
+
         if(intake.intaken()) {
             target = 0;
         }

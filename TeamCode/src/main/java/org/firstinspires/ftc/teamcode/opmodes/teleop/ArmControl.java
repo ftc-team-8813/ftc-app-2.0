@@ -16,12 +16,7 @@ public class ArmControl extends ControlModule {
     private Intake intake;
     private double target = 0;
 
-//    private final PID pid = new PID(FTCDVS.getKPArm(), 0, 0, FTCDVS.getKFArm(), 0, 0);
-
-    private ControllerMap.ButtonEntry dpad_up;
-    private ControllerMap.ButtonEntry dpad_right;
-    private ControllerMap.ButtonEntry dpad_down;
-    private ControllerMap.ButtonEntry dpad_left;
+    private final PID pid = new PID(0.0095, 0, 0, 0, 0, 0);
 
     public ArmControl(String name) {
         super(name);
@@ -32,51 +27,25 @@ public class ArmControl extends ControlModule {
         this.arm = robot.arm;
         this.intake = robot.intake;
 
-        dpad_up = controllerMap.getButtonMap("arm:1","gamepad2","dpad_up");
-        dpad_right = controllerMap.getButtonMap("arm:5","gamepad2","dpad_right");
-        dpad_down = controllerMap.getButtonMap("amr:-1","gamepad2","dpad_down");
-        dpad_left = controllerMap.getButtonMap("amr:-5","gamepad2","dpad_left");
+        arm.setPower(0.5);
     }
 
     @Override
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry);
 
-        if (!arm.getLimit()) {
-            arm.setPower(0.5);
-        }
-
         if (arm.getLimit()) {
             arm.resetEncoders();
+            arm.setPower(0);
         }
     }
 
     @Override
     public void update(Telemetry telemetry) {
 
-        PID pid = new PID(FTCDVS.getKPArm(), 0, 0, FTCDVS.getKFArm(), 0, 0);
-
-        arm.setPower(0);
         if(intake.intaken()) {
-            target = 0;
+            target = 30;
         }
-
-        if(dpad_up.edge() == -1) {
-            target += 1;
-        }
-
-        if(dpad_right.edge() == -1) {
-            target += 20;
-        }
-
-        if(dpad_down.edge() == -1) {
-            target -= 1;
-        }
-
-        if(dpad_left.edge() == -1) {
-            target -= 20;
-        }
-
 
         double power = Range.clip(pid.getOutPut(target, arm.getCurrentPosition(), Math.cos(Math.toRadians(arm.getCurrentPosition() + 0))), -0.6, 0.6);
 
