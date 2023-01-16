@@ -1,29 +1,16 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import static org.opencv.core.CvType.CV_8UC4;
-
-import android.graphics.Bitmap;
-import android.graphics.ImageFormat;
-
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
-import org.firstinspires.ftc.teamcode.hardware.Lift;
-import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
-import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
+import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.vision.AprilTagDetectionPipeline;
-import org.firstinspires.ftc.teamcode.vision.ConeInfoDetector;
-import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.Mat;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -35,7 +22,7 @@ import java.util.ArrayList;
 public class ParkingAuto extends LoggingOpMode{
 
     private Drivetrain drivetrain;
-    private OdometryNav odometry;
+    private Odometry odometry;
 
     private String result = "Nothing";
 
@@ -60,9 +47,9 @@ public class ParkingAuto extends LoggingOpMode{
         super.init();
         Robot robot = Robot.initialize(hardwareMap);
         drivetrain = robot.drivetrain;
-        odometry = robot.odometryNav;
+        odometry = robot.odometry;
 
-        drivetrain.downOdometry();
+        odometry.Up();
 
         Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(0)));
         odometry.updatePose(start_pose);
@@ -87,7 +74,7 @@ public class ParkingAuto extends LoggingOpMode{
             }
         });
 
-        telemetry.setMsTransmissionInterval(50);
+//        telemetry.setMsTransmissionInterval(50);
 
     }
 
@@ -139,7 +126,7 @@ public class ParkingAuto extends LoggingOpMode{
 
         switch (main_id) {
             case 0:
-                drivetrain.autoMove(-26,0,0,0,1,1,10, odometry.getPose(),telemetry);
+                drivetrain.autoMove(-26,0,0,1,1,10, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
@@ -147,13 +134,13 @@ public class ParkingAuto extends LoggingOpMode{
             case 1:
                 switch (result) {
                     case "FTC8813: 1":
-                        drivetrain.autoMove(-26,23.5,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(-26,23.5,0,1,1,10, odometry.getPose(), telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
                         break;
                     case "FTC8813: 3":
-                        drivetrain.autoMove(-26,-23.5,0,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(-26,-23.5,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
@@ -167,6 +154,8 @@ public class ParkingAuto extends LoggingOpMode{
                 drivetrain.stop();
                 break;
         }
+
+        drivetrain.update(odometry.getPose(), telemetry);
 
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();

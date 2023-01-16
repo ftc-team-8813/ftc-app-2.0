@@ -6,7 +6,7 @@ import com.acmerobotics.dashboard.config.Config;
 public class FTCDVS {
 
     public static double KPLift = 0.02;
-    public static double KPArm = 0.0095;
+    public static double KPArm = 0.015;
     public static double KPHoriz = 0.01;
     public static double KFLift = 0.015;
     public static double KFArm = 0;
