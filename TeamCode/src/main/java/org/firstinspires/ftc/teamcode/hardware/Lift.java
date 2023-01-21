@@ -24,11 +24,11 @@ public class Lift {
     }
 
     public void update() {
-        liftCurrent = lift_left.getCurrentPosition();
+        liftCurrent = lift_left.getCurrentPosition() * 5.23 / 2.89;
     }
 
     public double getLiftCurrent(){
-        return liftCurrent;
+        return liftCurrent ; //changed this
     }
 
     public void setLiftTarget(double pos){
@@ -50,10 +50,6 @@ public class Lift {
 
         lift_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lift_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-    }
-
-    public double getCurrentPosition() {
-        return lift_left.getCurrentPosition();
     }
 
     public boolean getLimit(){

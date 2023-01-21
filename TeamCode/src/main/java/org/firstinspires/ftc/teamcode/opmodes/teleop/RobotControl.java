@@ -38,11 +38,13 @@ public class RobotControl extends ControlModule{
     private double lift_last_height;
 
     private boolean dumped = false;
+    private boolean extendFastHit = false;
 
     private ControllerMap.ButtonEntry y_button;
     private ControllerMap.ButtonEntry b_button;
     private ControllerMap.ButtonEntry a_button;
     private ControllerMap.ButtonEntry x_button;
+    private ControllerMap.ButtonEntry extendFast;
 
     private ControllerMap.ButtonEntry sense;
     private ControllerMap.ButtonEntry dump;
@@ -88,8 +90,8 @@ public class RobotControl extends ControlModule{
 
     private double ARMCOMPLETEDOWNPOS = -120;
     private double ARMMIDPOS = -28;
-    private double ARMMIDPOS2 = -28; //used while the horiz slide is retracting
-    private double ARMHIGHPOS = 30; //positive to make it dig into the end stop
+    private double ARMMIDPOS2 = -28;
+    private double ARMHIGHPOS = 30;
 
     public static double ARMLOWGOAL = -55;
     public static double ARMGROUNDGOAL = -105;
@@ -138,6 +140,7 @@ public class RobotControl extends ControlModule{
         b_button = controllerMap.getButtonMap("lift:mid","gamepad1","b");
         a_button = controllerMap.getButtonMap("lift:low","gamepad1","a");
         x_button = controllerMap.getButtonMap("lift:ground","gamepad1","x");
+        extendFast = controllerMap.getButtonMap("extendFast","gamepad2","x");
 
         rec_right_bumper = controllerMap.getButtonMap("lift:reset_encoder_rb","gamepad2","right_bumper");
         rec_right_trigger = controllerMap.getAxisMap("lift:reset_encoder_rt","gamepad2","right_trigger");
@@ -304,13 +307,18 @@ public class RobotControl extends ControlModule{
                 arm.setArmTarget(ARMCOMPLETEDOWNPOS);
                 intake.setWristPosition(WRISTLOOKINGFORCONE);
                 intake.setClawPosition(CLAWOPENPOS);
+                horizontal.setHorizTarget(FASTMODEHORIZ);
                 if (mode == Modes.Fast) {
-                    if (!intakeTimerReset) {
-                        intakeTimer.reset();
-                        intakeTimerReset = true;
+                    if(extendFast.edge() == -1){
+                        extendFastHit = true;
                     }
-                    if (intakeTimer.seconds() > 0.1) {
-                        horizontal.setHorizTarget(FASTMODEHORIZ);
+                }
+                if(extendFastHit){
+                    if(horizontal.getHorizTarget() > MAXEXTENDEDHORIZ && !(intake.getDistance() <= 17 || sense.edge() == -1)){
+                        FASTMODEHORIZ -= 100;
+                    }
+                    if(intake.getDistance() <= 17 || sense.edge() == -1){
+                        extendFastHit = false;
                     }
                 }
                 if ((intake.getDistance() <= 17 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - arm.getArmCurrent()) < 60) {
@@ -455,12 +463,19 @@ public class RobotControl extends ControlModule{
 //            lift.resetLiftEncoder();
 //        }
 
-        if(mode == Modes.Fast && stateForIntake == IntakeStates.LookingForCone) {
-            FASTMODEHORIZ -= (ax_lift_left_x.get() * 40);
-            if (FASTMODEHORIZ < MAXEXTENDEDHORIZ) FASTMODEHORIZ = MAXEXTENDEDHORIZ;
-            if (FASTMODEHORIZ > 0) FASTMODEHORIZ = 0;
-            horizontal.setHorizTarget(FASTMODEHORIZ);
-        }
+//        if(mode == Modes.Fast && stateForIntake == IntakeStates.LookingForCone) {
+//            FASTMODEHORIZ -= (ax_lift_left_x.get() * 40);
+//            if (FASTMODEHORIZ < MAXEXTENDEDHORIZ) FASTMODEHORIZ = MAXEXTENDEDHORIZ;
+//            if (FASTMODEHORIZ > 0) FASTMODEHORIZ = 0;
+//            horizontal.setHorizTarget(FASTMODEHORIZ);
+//        }
+
+//        if(mode == Modes.Circuit && stateForIntake == IntakeStates.LookingForCone) {
+//            FASTMODEHORIZ -= (ax_lift_left_x.get() * 40);
+//            if (FASTMODEHORIZ < MAXEXTENDEDHORIZ) FASTMODEHORIZ = MAXEXTENDEDHORIZ;
+//            if (FASTMODEHORIZ > 0) FASTMODEHORIZ = 0;
+//            horizontal.setHorizTarget(FASTMODEHORIZ);
+//        } //circuit mode automation
 
         double arm_power = arm_PID.getOutPut(arm.getArmTarget(), arm.getArmCurrent(), Math.cos(Math.toRadians((arm.getArmCurrent() * 1.25) + 136.5)));
         if (arm.getArmCurrent() < -24) {
@@ -495,6 +510,8 @@ public class RobotControl extends ControlModule{
 
         //telemetry.addData("Sensor Distance", intake.getDistance());
         telemetry.addData("Loop Time", loop.time());
+
+        telemetry.addData("Press X", extendFastHit);
 
     }
 }
