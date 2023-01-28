@@ -20,7 +20,7 @@ public class Lift {
     }
 
     public void update() {
-        liftCurrent = lift1.getCurrentPosition();
+        liftCurrent = lift1.getCurrentPosition() * 5.23 / 3.7;
     }
 
     public void setLiftPower(double power){

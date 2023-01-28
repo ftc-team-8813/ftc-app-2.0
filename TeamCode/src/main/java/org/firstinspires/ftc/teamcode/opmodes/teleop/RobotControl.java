@@ -85,7 +85,7 @@ public class RobotControl extends ControlModule{
     private double ARMCOMPLETEDOWNPOS = -120;
     private double ARMMIDPOS = -28;
     private double ARMMIDPOS2 = -28; //used while the horiz slide is retracting
-    private double ARMHIGHPOS = 30; //positive to make it dig into the end stop
+    private double ARMHIGHPOS = 50; //positive to make it dig into the end stop
 
     public static double ARMLOWGOAL = -55;
     public static double ARMGROUNDGOAL = -105;
@@ -95,6 +95,7 @@ public class RobotControl extends ControlModule{
 
     private double MAXEXTENDEDHORIZ = -800;
     private double FASTMODEHORIZ = -410;
+    private double CIRCUITMODEHORIZ = 0;
     private double HORIZRETRACTED = 0;
 
     private double CLAWOPENPOS = 0.3;
@@ -108,6 +109,8 @@ public class RobotControl extends ControlModule{
     public static double ARMCLIPDOWN = 1;
     public static double ARMCLIPDOWNSLOW = 0.2;
     public static double ARMCLIPUP = 1;
+
+    public static double lift_kp = 0.015;
 
     public RobotControl(String name) {
         super(name);
@@ -186,7 +189,7 @@ public class RobotControl extends ControlModule{
 
         arm_PID = new PID(0.009, 0, 0, 0.1, 0, 0);
         horiz_PID = new PID(HORIZ_KP, 0, 0, 0, 0, 0);
-        lift_PID = new PID(0.02, 0, 0, 0.015, 0, 0);
+        lift_PID = new PID(lift_kp, 0, 0, 0.02, 0, 0);
 
         intake.update();
         lift.update();
@@ -204,6 +207,7 @@ public class RobotControl extends ControlModule{
                 } else {
                     lift.setLiftTarget(LIFTDOWNPOS);
                 }
+
                 if (lift.getLiftCurrent() < 200 && dumped == true && (stateForIntake == IntakeStates.DrivingAround || stateForIntake == IntakeStates.LookingForCone)) {
                     if (lift_last_height == LIFTHIGHPOS || lift_last_height == LIFTMIDPOS) {
                         if (mode == Modes.Fast) {
@@ -217,14 +221,14 @@ public class RobotControl extends ControlModule{
                 liftTimerReset = false;
                 if (lift_last_height == LIFTLOWPOS) {
                     if (dumped == true) {
-                        if (liftTimer.seconds() > 0.6) {
+                        if (liftTimer.seconds() > 0.4) {
                             lift.setDumper(DEPOSITLOW3);
                             dumped = false;
-                        } else if (liftTimer.seconds() > 0.3) {
+                        } else if (liftTimer.seconds() > 0.15) {
                             lift.setDumper(DEPOSITLOW2);
                         }
                     }
-                    if (liftTimer.seconds() > 3 && liftTimer.seconds() < 3.1) {
+                    if (liftTimer.seconds() > 2.1 && liftTimer.seconds() < 2.2) {
                         lift.setDumper(DEPOSITTRANSFER);
                     }
                 }
@@ -342,7 +346,7 @@ public class RobotControl extends ControlModule{
                     }
                 }
                 if (lift.getLiftCurrent() < 40 && intake.getHorizCurrent() > -15) {
-                    if ((mode == Modes.Fast && intake.getArmCurrent() > -55) || (mode == Modes.Circuit && intake.getArmCurrent() > -35)) {
+                    if ((mode == Modes.Fast && intake.getArmCurrent() > -55) || (mode == Modes.Circuit && intake.getArmCurrent() > -45)) {
                         stateForIntake = IntakeStates.Transfer;
                         intakeTimerReset = false;
                     }
@@ -384,6 +388,7 @@ public class RobotControl extends ControlModule{
 
             case DrivingAround:
                 intake.setArmTarget(ARMMIDPOS);
+                CIRCUITMODEHORIZ = 0;
                 if (x_button.edge() == -1) {
                     stateForIntake = IntakeStates.LookingForCone;
                 }
@@ -394,7 +399,7 @@ public class RobotControl extends ControlModule{
                     intakeTimer.reset();
                     intakeTimerReset = true;
                 }
-                if (intakeTimer.seconds() > 0.5) {
+                if (intakeTimer.seconds() > 0.2) {
                     intake.setArmTarget(ARMMIDPOS);
                     stateForIntake = IntakeStates.Ground;
                     intakeTimerReset = false;
@@ -416,7 +421,7 @@ public class RobotControl extends ControlModule{
                     intakeTimerReset = true;
                 }
 
-                if (intakeTimerReset && intakeTimer.seconds() > 0.5) {
+                if (intakeTimerReset && intakeTimer.seconds() > 0.2) {
                     intake.setArmTarget(ARMMIDPOS);
                 }
 
@@ -454,6 +459,13 @@ public class RobotControl extends ControlModule{
             if (FASTMODEHORIZ < MAXEXTENDEDHORIZ) FASTMODEHORIZ = MAXEXTENDEDHORIZ;
             if (FASTMODEHORIZ > 0) FASTMODEHORIZ = 0;
             intake.setHorizTarget(FASTMODEHORIZ);
+        }
+
+        if(mode == Modes.Circuit && stateForIntake == IntakeStates.LookingForCone) {
+            CIRCUITMODEHORIZ -= (ax_lift_left_x.get() * 90);
+            if (CIRCUITMODEHORIZ < MAXEXTENDEDHORIZ) CIRCUITMODEHORIZ = MAXEXTENDEDHORIZ;
+            if (CIRCUITMODEHORIZ > 0) CIRCUITMODEHORIZ = 0;
+            intake.setHorizTarget(CIRCUITMODEHORIZ);
         }
 
         double arm_power = arm_PID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), Math.cos(Math.toRadians((intake.getArmCurrent() * 1.25) + 136.5)));
