@@ -18,7 +18,6 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
 public class RobotControl extends ControlModule{
 
-    public static double HORIZ_KP = 0.008;
     private Lift lift;
     private Intake intake;
 
@@ -30,7 +29,7 @@ public class RobotControl extends ControlModule{
 
     private ElapsedTime lift_trapezoid;
     private boolean lift_trapezoid_reset = false;
-    private double lift_accel = 0.4;
+    private double lift_accel = 0.4; //bigger is faster accel
     private double lift_last_height;
 
     private boolean dumped = false;
@@ -62,28 +61,29 @@ public class RobotControl extends ControlModule{
 
     private double LIFTDOWNPOS = 0;
     private double LIFTDOWNPOSFAST = 35;
-    private double LIFTLOWPOS = 125;
-    private double LIFTMIDPOS = 405;
-    private double LIFTHIGHPOS = 715;
+    private double LIFTLOWPOS = 135;
+    private double LIFTMIDPOS = 435;
+    private double LIFTHIGHPOS = 740;
+    private double LIFTHIGHPOSFAST = 735;
 
-    private double DEPOSITLOW = 0.4;
-    private double DEPOSITLOW2 = 0.58;
+    private double DEPOSITLOW = 0.38;
+    private double DEPOSITLOW2 = 0.5;
     private double DEPOSITLOW3 = 0;
-    private double DEPOSITMID = 0.33;
-    private double DEPOSITHIGH = 0.33;
+    private double DEPOSITMID = 0.40;
+    private double DEPOSITHIGH = 0.40;
 
-    private double DEPOSITHIGHFAST = 0.38;
+    private double DEPOSITHIGHFAST = 0.42;
 
-    private double DEPOSITTRANSFER = 0.145;
-    private double DEPOSITTRANSFER2 = 0.2;
-    private double DEPOSITTRANSFERFAST = 0.14;
-    private double DEPOSITTRANSFERFAST2 = 0.23;
+    private double DEPOSITTRANSFER = 0.095;
+    private double DEPOSITTRANSFER2 = 0.13;
+    private double DEPOSITTRANSFERFAST = 0.095;
+    private double DEPOSITTRANSFERFAST2 = 0.13;
 
-    private double DEPOSITLIFT = 0.33;
+    private double DEPOSITLIFT = 0.38;
     private double DEPOSITLIFTFAST = 0.28;
 
     private double ARMCOMPLETEDOWNPOS = -120;
-    private double ARMMIDPOS = -28;
+    private double ARMMIDPOS = -20;
     private double ARMMIDPOS2 = -28; //used while the horiz slide is retracting
     private double ARMHIGHPOS = 50; //positive to make it dig into the end stop
 
@@ -95,8 +95,13 @@ public class RobotControl extends ControlModule{
 
     private double MAXEXTENDEDHORIZ = -800;
     private double FASTMODEHORIZ = -410;
-    private double CIRCUITMODEHORIZ = 0;
+    private double ADJUSTHORIZ = 0;
     private double HORIZRETRACTED = 0;
+
+    public static double HORIZ_KP = 0.008;
+    public static double HORIZ_KP_FINE = 0.002;
+
+    private double horiz_kp_var = HORIZ_KP; //varies between the two values above
 
     private double CLAWOPENPOS = 0.3;
     private double CLAWCLOSEPOS = 0.1;
@@ -110,7 +115,7 @@ public class RobotControl extends ControlModule{
     public static double ARMCLIPDOWNSLOW = 0.2;
     public static double ARMCLIPUP = 1;
 
-    public static double lift_kp = 0.015;
+    public static double LIFT_KP = 0.015;
 
     public RobotControl(String name) {
         super(name);
@@ -188,8 +193,8 @@ public class RobotControl extends ControlModule{
         loop.reset();
 
         arm_PID = new PID(0.009, 0, 0, 0.1, 0, 0);
-        horiz_PID = new PID(HORIZ_KP, 0, 0, 0, 0, 0);
-        lift_PID = new PID(lift_kp, 0, 0, 0.02, 0, 0);
+        horiz_PID = new PID(horiz_kp_var, 0, 0, 0, 0, 0);
+        lift_PID = new PID(LIFT_KP, 0, 0, 0.03, 0, 0);
 
         intake.update();
         lift.update();
@@ -209,7 +214,7 @@ public class RobotControl extends ControlModule{
                 }
 
                 if (lift.getLiftCurrent() < 200 && dumped == true && (stateForIntake == IntakeStates.DrivingAround || stateForIntake == IntakeStates.LookingForCone)) {
-                    if (lift_last_height == LIFTHIGHPOS || lift_last_height == LIFTMIDPOS) {
+                    if (lift_last_height == LIFTHIGHPOS || lift_last_height == LIFTMIDPOS || lift_last_height == LIFTHIGHPOSFAST) {
                         if (mode == Modes.Fast) {
                             lift.setDumper(DEPOSITTRANSFERFAST);
                         } else {
@@ -221,11 +226,9 @@ public class RobotControl extends ControlModule{
                 liftTimerReset = false;
                 if (lift_last_height == LIFTLOWPOS) {
                     if (dumped == true) {
-                        if (liftTimer.seconds() > 0.4) {
+                        if (liftTimer.seconds() > 0.01) {
                             lift.setDumper(DEPOSITLOW3);
                             dumped = false;
-                        } else if (liftTimer.seconds() > 0.15) {
-                            lift.setDumper(DEPOSITLOW2);
                         }
                     }
                     if (liftTimer.seconds() > 2.1 && liftTimer.seconds() < 2.2) {
@@ -387,9 +390,22 @@ public class RobotControl extends ControlModule{
                 break;
 
             case DrivingAround:
-                intake.setArmTarget(ARMMIDPOS);
-                CIRCUITMODEHORIZ = 0;
+                if (!intakeTimerReset) {
+                    intakeTimer.reset();
+                    intakeTimerReset = true;
+                }
+                if (mode == Modes.Circuit) {
+                    intake.setArmTarget(0);
+                    if (intakeTimer.seconds() > 0.4) {
+                        intake.setArmTarget(ARMMIDPOS);
+                    }
+                } else {
+                    intake.setArmTarget(ARMMIDPOS);
+                }
+
+                ADJUSTHORIZ = 0;
                 if (x_button.edge() == -1) {
+                    intakeTimerReset = false;
                     stateForIntake = IntakeStates.LookingForCone;
                 }
                 break;
@@ -417,11 +433,11 @@ public class RobotControl extends ControlModule{
 
                 if (dump.edge() == -1) {
                     intake.setClaw(CLAWOPENPOS);
-                    intakeTimer.reset();
+                    intakeTimer.reset(); //after the cone is dropped, the timer resets. . .
                     intakeTimerReset = true;
                 }
 
-                if (intakeTimerReset && intakeTimer.seconds() > 0.2) {
+                if (intakeTimerReset && intakeTimer.seconds() > 0.1) { //. . . causing the arm to go up
                     intake.setArmTarget(ARMMIDPOS);
                 }
 
@@ -454,18 +470,21 @@ public class RobotControl extends ControlModule{
 //            lift.resetLiftEncoder();
 //        }
 
-        if(mode == Modes.Fast && stateForIntake == IntakeStates.LookingForCone) {
-            FASTMODEHORIZ -= (ax_lift_left_x.get() * 24);
-            if (FASTMODEHORIZ < MAXEXTENDEDHORIZ) FASTMODEHORIZ = MAXEXTENDEDHORIZ;
-            if (FASTMODEHORIZ > 0) FASTMODEHORIZ = 0;
-            intake.setHorizTarget(FASTMODEHORIZ);
-        }
-
-        if(mode == Modes.Circuit && stateForIntake == IntakeStates.LookingForCone) {
-            CIRCUITMODEHORIZ -= (ax_lift_left_x.get() * 90);
-            if (CIRCUITMODEHORIZ < MAXEXTENDEDHORIZ) CIRCUITMODEHORIZ = MAXEXTENDEDHORIZ;
-            if (CIRCUITMODEHORIZ > 0) CIRCUITMODEHORIZ = 0;
-            intake.setHorizTarget(CIRCUITMODEHORIZ);
+        if(stateForIntake == IntakeStates.LookingForCone) {
+            horiz_kp_var = HORIZ_KP_FINE;
+            if (mode == Modes.Fast) {
+                FASTMODEHORIZ -= (ax_lift_left_x.get() * 24);
+                if (FASTMODEHORIZ < MAXEXTENDEDHORIZ) FASTMODEHORIZ = MAXEXTENDEDHORIZ;
+                if (FASTMODEHORIZ > 0) FASTMODEHORIZ = 0;
+                intake.setHorizTarget(FASTMODEHORIZ);
+            } else {
+                ADJUSTHORIZ -= (ax_lift_left_x.get() * 90);
+                if (ADJUSTHORIZ < MAXEXTENDEDHORIZ) ADJUSTHORIZ = MAXEXTENDEDHORIZ;
+                if (ADJUSTHORIZ > 0) ADJUSTHORIZ = 0;
+                intake.setHorizTarget(ADJUSTHORIZ);
+            }
+        } else {
+            horiz_kp_var = HORIZ_KP;
         }
 
         double arm_power = arm_PID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), Math.cos(Math.toRadians((intake.getArmCurrent() * 1.25) + 136.5)));
