@@ -62,8 +62,8 @@ public class RobotControl extends ControlModule{
     private double LIFTDOWNPOS = 0;
     private double LIFTDOWNPOSFAST = 35;
     private double LIFTLOWPOS = 135;
-    private double LIFTMIDPOS = 435;
-    private double LIFTHIGHPOS = 740;
+    private double LIFTMIDPOS = 445;
+    private double LIFTHIGHPOS = 750;
     private double LIFTHIGHPOSFAST = 735;
 
     private double DEPOSITLOW = 0.38;
@@ -74,9 +74,9 @@ public class RobotControl extends ControlModule{
 
     private double DEPOSITHIGHFAST = 0.42;
 
-    private double DEPOSITTRANSFER = 0.095;
+    private double DEPOSITTRANSFER = 0.115;
     private double DEPOSITTRANSFER2 = 0.13;
-    private double DEPOSITTRANSFERFAST = 0.095;
+    private double DEPOSITTRANSFERFAST = 0.115;
     private double DEPOSITTRANSFERFAST2 = 0.13;
 
     private double DEPOSITLIFT = 0.38;
@@ -115,7 +115,7 @@ public class RobotControl extends ControlModule{
     public static double ARMCLIPDOWNSLOW = 0.2;
     public static double ARMCLIPUP = 1;
 
-    public static double LIFT_KP = 0.015;
+    public static double LIFT_KP = 0.02;
 
     public RobotControl(String name) {
         super(name);
@@ -473,12 +473,12 @@ public class RobotControl extends ControlModule{
         if(stateForIntake == IntakeStates.LookingForCone) {
             horiz_kp_var = HORIZ_KP_FINE;
             if (mode == Modes.Fast) {
-                FASTMODEHORIZ -= (ax_lift_left_x.get() * 24);
+                FASTMODEHORIZ -= (ax_lift_left_x.get() * 90);
                 if (FASTMODEHORIZ < MAXEXTENDEDHORIZ) FASTMODEHORIZ = MAXEXTENDEDHORIZ;
                 if (FASTMODEHORIZ > 0) FASTMODEHORIZ = 0;
                 intake.setHorizTarget(FASTMODEHORIZ);
             } else {
-                ADJUSTHORIZ -= (ax_lift_left_x.get() * 90);
+                ADJUSTHORIZ -= (ax_lift_left_x.get() * 110);
                 if (ADJUSTHORIZ < MAXEXTENDEDHORIZ) ADJUSTHORIZ = MAXEXTENDEDHORIZ;
                 if (ADJUSTHORIZ > 0) ADJUSTHORIZ = 0;
                 intake.setHorizTarget(ADJUSTHORIZ);
