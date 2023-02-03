@@ -79,6 +79,8 @@ public class TheLeftConeAutoNext extends LoggingOpMode{
     private double horizontal_power;
     private double arm_power;
 
+    private boolean motion_profile = false;
+
     @Override
     public void init() {
         super.init();
@@ -159,9 +161,11 @@ public class TheLeftConeAutoNext extends LoggingOpMode{
     @Override
     public void loop() {
 
-        odometry.updatePose();
+        odometry.updatePose(-drivetrain.getHeading());
 
         timer_point_1 = LoopTimer.getLoopTime();
+
+//        motion_profile = false;
 
         switch (main_id) {
             case 0:
@@ -297,7 +301,7 @@ public class TheLeftConeAutoNext extends LoggingOpMode{
 
         timer_point_4 = LoopTimer.getLoopTime();
 
-        drivetrain.update(odometry.getPose(), telemetry);
+        drivetrain.update(odometry.getPose(), telemetry, false);
 
         timer_point_5 = LoopTimer.getLoopTime();
 

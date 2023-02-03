@@ -122,7 +122,7 @@ public class ParkingAuto extends LoggingOpMode{
     @Override
     public void loop() {
 
-        odometry.updatePose();
+        odometry.updatePose(-drivetrain.getHeading());
 
         switch (main_id) {
             case 0:
@@ -155,7 +155,7 @@ public class ParkingAuto extends LoggingOpMode{
                 break;
         }
 
-        drivetrain.update(odometry.getPose(), telemetry);
+        drivetrain.update(odometry.getPose(), telemetry,false);
 
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();

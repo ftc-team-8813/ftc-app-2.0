@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -15,7 +17,18 @@ import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
 import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
 
+@Config
 public class Drivetrain {
+
+    /*
+    hits the pole at the beginning
+    * Forward Oscillations
+    * drives slow towards the conoe stack
+    * doesn't get close enough for preload
+    lift dooesn't go high enough ever
+    wobbles side to side while going to the cone stack
+    arm goes too low for first cone
+    * */
 
     private final DcMotorEx front_left;
     private final DcMotorEx front_right;
@@ -24,9 +37,24 @@ public class Drivetrain {
     private final BNO055IMU imu;
     private boolean has_reached;
 
-    private final PID forward_pid = new PID(0.252,0,0,0,0,0);
-    private final PID strafe_pid = new PID(0.252,0,0,0,0,0);
-    private final PID turn_pid = new PID(0.079,0.0012,0,0,32,0);
+    public static double forward_kp = 0.06;
+    public static double forward_ki = 0;
+    public static double forward_kd = 0.0105;
+    public static double forward_a = 0.8;
+    public static double strafe_kp = 0.07;
+    public static double strafe_ki = 0;
+    public static double strafe_kd = 0.02;
+    public static double strafe_a = 0.8;
+    public static double turn_kp = 0.007;
+    public static double turn_ki = 0.12;
+    public static double turn_kd = 0.0028;
+    public static double turn_a = 0.8;
+    public static double turn_max_i_sum = 1;
+    public static double turn_clip = 1;
+
+    private final PID forward_pid = new PID(forward_kp,forward_ki,forward_kd,0,0,forward_a);
+    private final PID strafe_pid = new PID(strafe_kp,strafe_ki,strafe_kd,0,0,strafe_a);
+    private final PID turn_pid = new PID(turn_kp,turn_ki,turn_kd,0,turn_max_i_sum,turn_a);
 
     private double forward = 0;
     private double strafe = 0;
@@ -128,11 +156,11 @@ public class Drivetrain {
         x = odo.getY();
         rot = 0.0;
 
-        if(Math.signum(odo.getRotation().getDegrees()) == -1) {
-            rot = ((odo.getRotation().getDegrees()) + 360);
+        if(Math.signum(-getHeading()) == -1) {
+            rot = ((-getHeading()) + 360);
         }
         else {
-            rot = odo.getRotation().getDegrees();
+            rot = -getHeading();
         }
 
         rot %= 360;
@@ -155,17 +183,17 @@ public class Drivetrain {
 
     }
 
-    public void update(Pose2d odo, Telemetry telemetry) {
+    public void update(Pose2d odo, Telemetry telemetry, boolean motionProfile) {
 
         y = odo.getX();
         x = odo.getY();
         rot = 0.0;
 
-        if(Math.signum(odo.getRotation().getDegrees()) == -1) {
-            rot = ((odo.getRotation().getDegrees()) + 360);
+        if(Math.signum(-getHeading()) == -1) {
+            rot = ((-getHeading()) + 360);
         }
         else {
-            rot = odo.getRotation().getDegrees();
+            rot = -getHeading();
         }
 
         rot %= 360;
@@ -176,12 +204,20 @@ public class Drivetrain {
 
         forward_power = forward_pid.getOutPut(forward,y,0);
         strafe_power = strafe_pid.getOutPut(strafe,x,0);
-        turn_power = Range.clip((turn_pid.getOutPut(turn, rot, 0)),-0.2,0.2);
+        turn_power = Range.clip((turn_pid.getOutPut(turn, rot, 0)),-turn_clip,turn_clip);
 
         botHeading = -1* Math.toRadians(getHeading());
 
-        rotX = 0.41 * (strafe_power * Math.cos(botHeading) - forward_power * Math.sin(botHeading));
-        rotY = 0.41 * (strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading));
+        rotX = /*0.4 **/ (strafe_power * Math.cos(botHeading) - forward_power * Math.sin(botHeading));
+        rotY = /*0.4 **/ (strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading));
+
+        if (motionProfile) {
+            double strafe_error = Math.abs(strafe - x);
+
+            rotY = Range.clip(rotY,-Range.clip(strafe_error * 0.02, 0.2,1),Range.clip(strafe_error * 0.02, 0.2,1));
+
+        }
+
 
         denominator = Math.max(Math.abs(forward_power) + Math.abs(strafe_power) + Math.abs(turn_power), 1);
 
@@ -194,13 +230,23 @@ public class Drivetrain {
 //        telemetry.addData("F Power",forward_power);
 //        telemetry.addData("S Power",strafe_power);
 //        telemetry.addData("T Power",turn_power);
-//        telemetry.addData("F Current",y);
-//        telemetry.addData("S Current",x);
-//        telemetry.addData("T Current",rot);
+        telemetry.addData("F Current",y);
+        telemetry.addData("S Current",x);
+        telemetry.addData("T Current",rot);
+        telemetry.addData("Forward kP",forward_kp);
+        telemetry.addData("Strafe kP",strafe_kp);
+        telemetry.addData("Turn kP",turn_kp);
+        telemetry.addData("Turn Clip",turn_clip);
 //        telemetry.addData("Rotation",-odo.getRotation().getDegrees());
 //        telemetry.addData("RotY",rotY);
-//        telemetry.addData("RotX",rotX);
+//        telemetry.addData("RotX",rotX);hh
 //        telemetry.addData("Has Reached",has_reached);
+    }
+
+    public void updateHeading(Odometry odometry, Telemetry telemetry) {
+        odometry.updatePose(new Pose2d(odometry.getPose().getX(),odometry.getPose().getY(), new Rotation2d(Math.toRadians(-imu.getAngularOrientation().firstAngle))));
+        telemetry.addData("Pose", odometry.getPose());
+        odometry.updatePose(-getHeading());
     }
 
     public double getForwardPosition() {

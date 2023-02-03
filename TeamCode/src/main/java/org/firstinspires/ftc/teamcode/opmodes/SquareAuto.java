@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.hardware.Arm;
@@ -23,8 +22,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 
-@Autonomous(name = "Z Auto")
-public class ZAuto extends LoggingOpMode{
+@Autonomous(name = "Square Auto")
+public class SquareAuto extends LoggingOpMode{
 
     private Lift lift;
     private Horizontal horizontal;
@@ -157,77 +156,39 @@ public class ZAuto extends LoggingOpMode{
 
         switch (main_id) {
             case 0:
-                drivetrain.autoMove(0,-72,0,1,1,2, odometry.getPose(), telemetry);
+                drivetrain.autoMove(0,0,0,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
             case 1:
-                drivetrain.autoMove(-24,-72,0,1,1,2, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-72,0,0,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
             case 2:
-                drivetrain.autoMove(-24,0,0,1,1,2, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-72,-72,0,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
             case 3:
-                drivetrain.autoMove(-48,0,0,1,1,2, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-72,-72,180,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
             case 4:
-                drivetrain.autoMove(-48,-72,0,1,1,2, odometry.getPose(), telemetry);
+                drivetrain.autoMove(0,-72,180,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
             case 5:
-                drivetrain.autoMove(-72,-72,0,1,1,2, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
+                main_id = 0;
                 break;
-            case 6:
-                drivetrain.autoMove(-72,0,0,1,1,2, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
-                break;
-            case 7:
-                drivetrain.autoMove(-48,0,0,1,1,2, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
-                break;
-            case 8:
-                drivetrain.autoMove(-48,-72,0,1,1,2, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
-                break;
-            case 9:
-                drivetrain.autoMove(-24,-72,0,1,1,2, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
-                break;
-            case 10:
-                drivetrain.autoMove(-24,0,0,1,1,2, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
-                break;
-            case 11:
-                drivetrain.autoMove(0,0,0,1,1,2, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
-                break;
+
         }
 
         drivetrain.update(odometry.getPose(), telemetry,false);

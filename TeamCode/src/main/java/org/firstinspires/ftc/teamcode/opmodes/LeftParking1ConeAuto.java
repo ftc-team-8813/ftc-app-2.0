@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -182,58 +183,52 @@ public class LeftParking1ConeAuto extends LoggingOpMode{
     @Override
     public void start() {
         super.start();
-        lift_target = 745;
+        lift_target = 715;
         lift_trapezoid.reset();
     }
 
     @Override
     public void loop() {
 
-        odometry.updatePose();
+        odometry.updatePose(-drivetrain.getHeading());
 
 //        timer_point_1 = LoopTimer.getLoopTime();
 
         switch (main_id) {
             case 0:
-                drivetrain.autoMove(-6,-19,0,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-5,-16,0,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                     lift.setHolderPosition(0.39);
-                }
-                break;
-            case 1:
-                drivetrain.autoMove(-28.3,-23.1,46.34,1,1,1.6, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
                     timer.reset();
                 }
                 break;
-            case 2:
-                drivetrain.autoMove(-33,-24,46.34,0.65,0.65,3, odometry.getPose(), telemetry);
+            case 1:
+                drivetrain.autoMove(-30.24,-24.74,38,1,1,1, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached() || timer.seconds() > 6) {
                     main_id += 1;
                     arm_target = -28;
                     lift_target = 0;
                 }
                 break;
-            case 3:
+            case 2:
                 if (lift.getCurrentPosition() < 200) {
                     lift.setHolderPosition(0.14);
                     main_id += 1;
                 }
                 break;
-            case 4:
+            case 3:
                 if (lift.getCurrentPosition() < 10) {
                     main_id += 1;
                 }
                 break;
-            case 5:
+            case 4:
                 drivetrain.autoMove(-26,-18,0,1,1,1, odometry.getPose(),telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
-            case 6:
+            case 5:
                 switch (result) {
                     case "FTC8813: 1":
                         drivetrain.autoMove(-27,30,0,1,1,1, odometry.getPose(), telemetry);
@@ -252,9 +247,9 @@ public class LeftParking1ConeAuto extends LoggingOpMode{
                         break;
                 }
                 break;
-            case 7:
-                drivetrain.stop();
-                break;
+//            case 6:
+//                drivetrain.stop();
+//                break;
         }
 
 //        timer_point_2 = LoopTimer.getLoopTime();
@@ -271,7 +266,7 @@ public class LeftParking1ConeAuto extends LoggingOpMode{
 
 //        timer_point_4 = LoopTimer.getLoopTime();
 
-        drivetrain.update(odometry.getPose(), telemetry);
+        drivetrain.update(odometry.getPose(), telemetry, false);
 
 //        timer_point_5 = LoopTimer.getLoopTime();
 

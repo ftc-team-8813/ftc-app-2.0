@@ -107,17 +107,14 @@ public class LiftControl extends ControlModule {
         }
 
         if (drop.edge() == -1) {
-            target = 0;
             if (target < 450) {
                 lift.setHolderPosition(0.4);
             }
             else {
                 lift.setHolderPosition(0.33);
             }
-
+            target = 0;
         }
-
-
 
         double power = pid.getOutPut(target, lift.getCurrentPosition(), 1) * Math.min(lift_acceleration_timer.seconds() * LIFT_ACCELERATION_CONSTANT, 1);
 

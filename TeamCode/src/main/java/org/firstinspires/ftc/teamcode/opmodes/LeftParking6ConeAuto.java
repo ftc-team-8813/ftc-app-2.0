@@ -191,7 +191,7 @@ public class LeftParking6ConeAuto extends LoggingOpMode{
     @Override
     public void loop() {
 
-        odometry.updatePose();
+        odometry.updatePose(-drivetrain.getHeading());
 
 //        timer_point_1 = LoopTimer.getLoopTime();
 
@@ -312,7 +312,7 @@ public class LeftParking6ConeAuto extends LoggingOpMode{
 
 //        timer_point_4 = LoopTimer.getLoopTime();
 
-        drivetrain.update(odometry.getPose(), telemetry);
+        drivetrain.update(odometry.getPose(), telemetry,false);
 
 //        timer_point_5 = LoopTimer.getLoopTime();
 

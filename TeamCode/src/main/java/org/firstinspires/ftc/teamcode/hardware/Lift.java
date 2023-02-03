@@ -24,7 +24,7 @@ public class Lift {
     }
 
     public void update() {
-        liftCurrent = lift_left.getCurrentPosition();
+        liftCurrent = lift_left.getCurrentPosition() * (5.23 / 3.7);
     }
 
     public double getLiftCurrent(){
@@ -53,7 +53,7 @@ public class Lift {
     }
 
     public double getCurrentPosition() {
-        return lift_left.getCurrentPosition();
+        return lift_left.getCurrentPosition() * (5.23 / 3.7);
     }
 
     public boolean getLimit(){

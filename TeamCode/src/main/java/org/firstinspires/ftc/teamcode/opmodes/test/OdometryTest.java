@@ -1,14 +1,15 @@
 package org.firstinspires.ftc.teamcode.opmodes.test;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.OdometrySubsystem;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
-import com.arcrobotics.ftclib.kinematics.HolonomicOdometry;
 import com.arcrobotics.ftclib.hardware.motors.Motor.Encoder;
 import com.arcrobotics.ftclib.kinematics.Odometry;
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -26,14 +27,16 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.navigation.HolonomicIMUOdometry;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
 //@Disabled
+@Config
 @Autonomous(name="Odometry Test")
 public class OdometryTest extends LoggingOpMode {
 
-    public final double TRACKWIDTH = 9.12;
+    public static double TRACKWIDTH = 9.00;
     public final double CENTER_WHEEL_OFFSET = -6.089;
     public final double WHEEL_DIAMETER = 1.37795;
     public final double TICKS_PER_REV = 8192;
@@ -44,10 +47,32 @@ public class OdometryTest extends LoggingOpMode {
     private MotorEx frontLeft, frontRight, backLeft, backRight;
     private DcMotorEx front_left, front_right, back_left, back_right;
     private Encoder leftOdometer, rightOdometer, centerOdometer;
-    private HolonomicOdometry odometry;
+    private HolonomicIMUOdometry odometry;
     private BNO055IMU imu;
 
     private boolean has_reached;
+
+    public static double x = -30.5;
+    public static double y = -62.0;
+    public static double SIDE_LENGTH = 14;
+    public static double SIDE_WIDTH = 12;
+
+    private FtcDashboard dashboard;
+
+    private static void rotatePoints(double[] xPoints, double[] yPoints, double angle, double x_cor, double y_cor) {
+        for (int i = 0; i < xPoints.length; i++) {
+            double x = xPoints[i];
+            double y = yPoints[i];
+            xPoints[i] = x * Math.cos(angle) - y * Math.sin(angle);
+            yPoints[i] = x * Math.sin(angle) + y * Math.cos(angle);
+            x = xPoints[i];
+            y = yPoints[i];
+            xPoints[i] = x + x_cor;
+            yPoints[i] = y + y_cor;
+        }
+    }
+
+
 
     @Override
     public void init() {
@@ -78,7 +103,7 @@ public class OdometryTest extends LoggingOpMode {
 
         leftOdometer.setDirection(MotorEx.Direction.REVERSE);
 
-        odometry = new HolonomicOdometry(
+        odometry = new HolonomicIMUOdometry(
                 leftOdometer::getDistance,
                 rightOdometer::getDistance,
                 centerOdometer::getDistance,
@@ -96,6 +121,8 @@ public class OdometryTest extends LoggingOpMode {
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
+        dashboard = FtcDashboard.getInstance();
 
 //        front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -131,16 +158,27 @@ public class OdometryTest extends LoggingOpMode {
 
     @Override
     public void loop() {
-        odometry.updatePose();
+        odometry.updatePose(-imu.getAngularOrientation().firstAngle);
 
-        double forward_power = -gamepad1.left_stick_y;
-        double strafe_power = gamepad1.left_stick_x;
+        double forward_power = gamepad1.left_stick_y;
+        double strafe_power = -gamepad1.left_stick_x;
         double turn_power = gamepad1.right_stick_x;
 
         front_left.setPower(((forward_power + strafe_power + (turn_power + 0))));
         front_right.setPower(((forward_power - strafe_power - (turn_power + 0))));
         back_left.setPower(((forward_power - strafe_power + (turn_power + 0))));
         back_right.setPower(((forward_power + strafe_power - (turn_power + 0))));
+
+        x = -30.5 - odometry.getPose().getY();
+        y = -62 - odometry.getPose().getX();
+
+        double sL = SIDE_LENGTH / 2;
+        double sW = SIDE_WIDTH / 2;
+
+        double[] bxPoints = { sW, -sW, -sW, sW };
+        double[] byPoints = { sL, sL, -sL, -sL };
+
+
 
 //        switch (main_id) {
 //            case 0:
@@ -168,14 +206,47 @@ public class OdometryTest extends LoggingOpMode {
 //        back_left.setPower(turn_pow);
 //        back_right.setPower(-turn_pow);
 
+        double rot;
+
+        if(Math.signum(-imu.getAngularOrientation().firstAngle) == -1) {
+            rot = ((-imu.getAngularOrientation().firstAngle) + 360);
+        }
+        else {
+            rot = -imu.getAngularOrientation().firstAngle;
+        }
+
+        rot %= 360;
+
+        double odometry_rotation;
+
+        if(Math.signum(odometry.getPose().getRotation().getDegrees()) == -1) {
+            odometry_rotation = ((odometry.getPose().getRotation().getDegrees()) + 360);
+        }
+        else {
+            odometry_rotation = odometry.getPose().getRotation().getDegrees();
+        }
+
+        odometry_rotation %= 360;
+
+        rotatePoints(bxPoints, byPoints,-Math.toRadians(rot),x,y);
+
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.fieldOverlay()
+                .setStrokeWidth(1)
+                .setFill("black")
+                .fillPolygon(bxPoints, byPoints);
+        dashboard.sendTelemetryPacket(packet);
+
         telemetry.addData("Odometry", odometry.getPose());
         telemetry.addData("X",odometry.getPose().getY());
         telemetry.addData("Y",odometry.getPose().getX());
+        telemetry.addData("Rotation",odometry_rotation);
         telemetry.addData("ID",main_id);
         telemetry.addData("Center",centerOdometer.getPosition());
         telemetry.addData("Left",leftOdometer.getPosition());
         telemetry.addData("Right",rightOdometer.getPosition());
-        telemetry.addData("imu", imu.getAngularOrientation().firstAngle);
+        telemetry.addData("imu", rot);
+        telemetry.addData("Trackwidth", TRACKWIDTH);
 
         telemetry.update();
     }

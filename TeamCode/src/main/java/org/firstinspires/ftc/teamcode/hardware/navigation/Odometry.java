@@ -2,13 +2,10 @@ package org.firstinspires.ftc.teamcode.hardware.navigation;
 
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
-import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.hardware.motors.Motor.Encoder;
-import com.arcrobotics.ftclib.kinematics.HolonomicOdometry;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.Servo;
-
-import java.io.Serializable;
 
 public class Odometry {
 
@@ -20,13 +17,13 @@ public class Odometry {
     private final Servo left_odometry;
     private final Servo right_odometry;
 
-    private final HolonomicOdometry odometry;
+    private final HolonomicIMUOdometry odometry;
 
     private final Encoder left_odometer;
     private final Encoder right_odometer;
     private final Encoder center_odometer;
 
-    private final double TRACKWIDTH = 9.12;
+    private final double TRACKWIDTH = 9.00;
     private final double CENTER_WHEEL_OFFSET = -6.089;
     private final double WHEEL_DIAMETER = 1.37795;
     private final double TICKS_PER_REV = 8192;
@@ -47,7 +44,7 @@ public class Odometry {
 
         left_odometer.setDirection(MotorEx.Direction.REVERSE);
 
-        odometry = new HolonomicOdometry(
+        odometry = new HolonomicIMUOdometry(
                 left_odometer::getDistance,
                 right_odometer::getDistance,
                 center_odometer::getDistance,
@@ -60,8 +57,8 @@ public class Odometry {
         odometry.updatePose(start_pose);
     }
 
-    public void updatePose() {
-        odometry.updatePose();
+    public void updatePose(double heading) {
+        odometry.updatePose(heading);
     }
 
     public void updatePose(Pose2d pose) {
