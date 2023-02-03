@@ -70,7 +70,7 @@ public class LiftControl extends ControlModule {
             target = 0;
             lift.setHolderPosition(0.17);
             lift_ready_for_cone = false;
-            if (lift.getCurrentPosition() < 10) {
+            if (lift.getLiftCurrent() < 10) {
                 lift_ready_for_cone = true;
                 time_till_held.reset();
             }
@@ -119,7 +119,7 @@ public class LiftControl extends ControlModule {
 
 
 
-        double power = pid.getOutPut(target, lift.getCurrentPosition(), 1) * Math.min(lift_acceleration_timer.seconds() * LIFT_ACCELERATION_CONSTANT, 1);
+        double power = pid.getOutPut(target, lift.getLiftCurrent(), 1) * Math.min(lift_acceleration_timer.seconds() * LIFT_ACCELERATION_CONSTANT, 1);
 
         lift.setPower(power);
     }

@@ -24,7 +24,7 @@ public class Lift {
     }
 
     public void update() {
-        liftCurrent = lift_left.getCurrentPosition() * 5.23 / 2.89;
+        liftCurrent = lift_left.getCurrentPosition() * 5.23 / 3.7;
     }
 
     public double getLiftCurrent(){
