@@ -72,8 +72,6 @@ public class OdometryTest extends LoggingOpMode {
         }
     }
 
-
-
     @Override
     public void init() {
         super.init();
@@ -116,44 +114,18 @@ public class OdometryTest extends LoggingOpMode {
 
         Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(0)));
         odometry.updatePose(start_pose);
-//
+
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         dashboard = FtcDashboard.getInstance();
-
-//        front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     @Override
     public void init_loop() {
         super.init_loop();
-//        if(!intake.getArmLimit()){
-//            intake.setArmPow(0.5);
-//        }
-//        if(!lift.getLift_limit()){
-//            lift.setLiftPower(-0.2);
-//        }
-//        if(!intake.getHorizLimit()){
-//            intake.setHorizPow(0.3);
-//        }
-//
-//        if(intake.getArmLimit()){
-//            intake.resetArmEncoder();
-//        }
-//        if(lift.getLift_limit()){
-//            lift.resetLiftEncoder();
-//        }
-//        if(intake.getHorizLimit()){
-//            intake.resetHorizEncoder();
-//        }
-
-//        lift.setDumper(0.3);
     }
 
     @Override
@@ -177,34 +149,6 @@ public class OdometryTest extends LoggingOpMode {
 
         double[] bxPoints = { sW, -sW, -sW, sW };
         double[] byPoints = { sL, sL, -sL, -sL };
-
-
-
-//        switch (main_id) {
-//            case 0:
-//                autoMove(-24,0,0,0,1,1,3);
-//                if (has_reached) {
-//                    main_id += 1;
-//                }
-//                break;
-//            case 1:
-//                autoMove(-25,-35,0,0,1,1,3);
-//                if (has_reached) {
-//                    main_id += 1;
-//                }
-//                break;
-//            case 2:
-//                front_left.setPower(0);
-//                front_right.setPower(0);
-//                back_left.setPower(0);
-//                back_right.setPower(0);
-//                break;
-//        }
-
-//        front_left.setPower(turn_pow);
-//        front_right.setPower(-turn_pow);
-//        back_left.setPower(turn_pow);
-//        back_right.setPower(-turn_pow);
 
         double rot;
 
@@ -250,75 +194,4 @@ public class OdometryTest extends LoggingOpMode {
 
         telemetry.update();
     }
-
-//    public void autoMove(double forward, double strafe, double turn, double turn_correct, double forward_error_band, double strafe_error_band, double turn_error_band) {
-//
-//        has_reached = false;
-//
-//        PID forward_pid = new PID(0.4,0,0,0,0,0);
-//        PID strafe_pid = new PID(0.3,0,0,0,0,0);
-//        PID turn_pid = new PID(0.006,0,0,0,0,0);
-//
-//
-//        double y = odometry.getPose().getX();
-//        double x = odometry.getPose().getY();
-//        double rot = 0.0;
-//
-//        if(Math.signum(odometry.getPose().getRotation().getDegrees()) == -1) {
-//            rot = ((odometry.getPose().getRotation().getDegrees()) + 360);
-//        }
-//        else {
-//            rot = odometry.getPose().getRotation().getDegrees();
-//        }
-//
-//        rot %= 360;
-//
-//        if (Math.abs(turn - rot) > Math.abs(turn - (rot-360))) {
-//            rot -= 360;
-//        }
-//
-//        double forward_error = Math.abs(forward - y);
-//        double strafe_error = Math.abs(strafe - x);
-//        double turn_error = Math.abs(turn - rot);
-//
-//        double forward_power = forward_pid.getOutPut(forward,y,0);
-//        double strafe_power = strafe_pid.getOutPut(strafe,x,0);
-//        double turn_power = Range.clip((turn_pid.getOutPut(turn, rot, 0)),-0.2,0.2);
-//
-//        double botHeading = -1* Math.toRadians(getHeading());
-//
-//        double rotX = 0.4 * (strafe_power * Math.cos(botHeading) - forward_power * Math.sin(botHeading));
-//        double rotY = 0.4 * (strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading));
-//
-//        double denominator = Math.max(Math.abs(forward_power) + Math.abs(strafe_power) + Math.abs(turn_power), 1);
-//
-//        front_left.setPower(((rotY + rotX + (turn_power + 0)) / denominator));
-//        front_right.setPower(((rotY - rotX - (turn_power + 0)) / denominator));
-//        back_left.setPower(((rotY - rotX + (turn_power + 0)) / denominator));
-//        back_right.setPower(((rotY + rotX - (turn_power + 0)) / denominator));
-//
-//        if((forward_error <= forward_error_band) && (strafe_error <= strafe_error_band) && (turn_error <= turn_error_band)){
-//            has_reached = true;
-//        }
-//
-//
-//        telemetry.addData("F Power",forward_power);
-//        telemetry.addData("S Power",strafe_power);
-//        telemetry.addData("T Power",turn_power);
-//        telemetry.addData("F Error",forward_error);
-//        telemetry.addData("S Error",strafe_error);
-//        telemetry.addData("T Error",turn_error);
-//        telemetry.addData("F Current",y);
-//        telemetry.addData("S Current",x);
-//        telemetry.addData("T Current",rot);
-//        telemetry.addData("Rotation",-odometry.getPose().getRotation().getDegrees());
-//        telemetry.addData("RotY",rotY);
-//        telemetry.addData("RotX",rotX);
-//        telemetry.addData("Has Reached",has_reached);
-//
-//    }
-//
-//    public double getHeading() {
-//        return imu.getAngularOrientation().firstAngle;
-//    }
 }
