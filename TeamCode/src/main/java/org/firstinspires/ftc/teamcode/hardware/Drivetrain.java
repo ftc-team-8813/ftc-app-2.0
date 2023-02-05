@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.navigation.MotionProfile;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 
@@ -52,6 +53,8 @@ public class Drivetrain {
     private final PID forward_pid = new PID(forward_kp,forward_ki,forward_kd,0,0,forward_a);
     private final PID strafe_pid = new PID(strafe_kp,strafe_ki,strafe_kd,0,0,strafe_a);
     private final PID turn_pid = new PID(turn_kp,turn_ki,turn_kd,0,turn_max_i_sum,turn_a);
+
+    private MotionProfile strafe_cs = new MotionProfile(0.1,0.8,0.,1);
 
     private double forward = 0;
     private double strafe = 0;
@@ -211,7 +214,7 @@ public class Drivetrain {
         if (motionProfile) {
             double strafe_error = Math.abs(strafe - x);
 
-            rotY = Range.clip(rotY,-Range.clip(strafe_error * 0.02, 0.2,1),Range.clip(strafe_error * 0.02, 0.2,1));
+            rotY = Range.clip((strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading)),-0.2,0.3);
 
         }
 
@@ -246,13 +249,13 @@ public class Drivetrain {
         odometry.updatePose(-getHeading());
     }
 
-    public double getForwardPosition() {
-        return (front_left.getCurrentPosition() + front_right.getCurrentPosition() + back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
-    }
-
-    public double getStrafePosition() {
-        return (front_left.getCurrentPosition() - front_right.getCurrentPosition() - back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
-    }
+//    public double getForwardPosition() {
+//        return (front_left.getCurrentPosition() + front_right.getCurrentPosition() + back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
+//    }
+//
+//    public double getStrafePosition() {
+//        return (front_left.getCurrentPosition() - front_right.getCurrentPosition() - back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
+//    }
 
     public double getHeading() {
         return imu.getAngularOrientation().firstAngle;

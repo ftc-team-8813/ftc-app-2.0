@@ -42,6 +42,7 @@ public class SixConeAuto extends LoggingOpMode{
 
     private int main_id = 0;
     private int cs_id = 0;
+    private int park_id = 0;
 
     private OpenCvCamera camera;
     private AprilTagDetectionPipeline aprilTagDetectionPipeline;
@@ -56,10 +57,11 @@ public class SixConeAuto extends LoggingOpMode{
     private final double tagsize = 0.166;
 
     private final PID arm_PID = new PID(0.009, 0, 0, 0.1, 0, 0);
-    private final PID horizontal_PID = new PID(0.01, 0, 0, 0, 0, 0);
+    private final PID horizontal_PID = new PID(0.008, 0, 0, 0, 0, 0);
     private final PID lift_PID = new PID(0.02, 0, 0, 0.015, 0, 0);
 
     private final ElapsedTime timer = new ElapsedTime();
+    private final ElapsedTime auto_timer = new ElapsedTime();
 
     private final ElapsedTime lift_trapezoid = new ElapsedTime();;
     private final double lift_accel = 0.39;
@@ -85,11 +87,11 @@ public class SixConeAuto extends LoggingOpMode{
 
     private double t_cs = t_cs_1;
 
-    public static double x_cs_1 = 8.91;
-    public static double x_cs_2 = 8.84;
-    public static double x_cs_3 = 8.77;
-    public static double x_cs_4 = 8.74;
-    public static double x_cs_5 = 8.68;
+    public static double x_cs_1 = 10.5;
+    public static double x_cs_2 = 9.97;
+    public static double x_cs_3 = 9.89;
+    public static double x_cs_4 = 9.81;
+    public static double x_cs_5 = 9.73;
 
     private double x_cs = x_cs_1;
 
@@ -101,11 +103,11 @@ public class SixConeAuto extends LoggingOpMode{
 
     private double y_cs = y_cs_1;
 
-    public static double arm_target_cs_1 = -65.0;
-    public static double arm_target_cs_2 = -66.0;
-    public static double arm_target_cs_3 = -66.5;
-    public static double arm_target_cs_4 = -68.0;
-    public static double arm_target_cs_5 = -70.0;
+    public static double arm_target_cs_1 = -66.5;
+    public static double arm_target_cs_2 = -68.0;
+    public static double arm_target_cs_3 = -68.5;
+    public static double arm_target_cs_4 = -70.0;
+    public static double arm_target_cs_5 = -72.0;
 
     private double arm_target_cs = arm_target_cs_1;
 
@@ -117,7 +119,7 @@ public class SixConeAuto extends LoggingOpMode{
     @Override
     public void init() {
 
-        arm_coefficient = getBatteryVoltage()/12;
+        arm_coefficient = Math.sqrt(getBatteryVoltage()/12);
 
         super.init();
         Robot robot = Robot.initialize(hardwareMap);
@@ -159,6 +161,12 @@ public class SixConeAuto extends LoggingOpMode{
 
         intake.setWristPosition(0.019);
         intake.setClawPosition(0.37);
+
+        arm_target_cs_1 -= ((arm_coefficient - 1)/2) * 9;
+        arm_target_cs_2 -= ((arm_coefficient - 1)/2) * 9;
+        arm_target_cs_3 -= ((arm_coefficient - 1)/2) * 9;
+        arm_target_cs_4 -= ((arm_coefficient - 1)/2) * 9;
+        arm_target_cs_5 -= ((arm_coefficient - 1)/2) * 9;
     }
 
     @Override
@@ -214,7 +222,7 @@ public class SixConeAuto extends LoggingOpMode{
             horizontal.resetEncoders();
         }
 
-        lift.setHolderPosition(0.3);
+        lift.setHolderPosition(0.12);
 
         arm.resetEncoders();
         lift.resetEncoders();
@@ -226,6 +234,8 @@ public class SixConeAuto extends LoggingOpMode{
     @Override
     public void start() {
         super.start();
+        lift.setHolderPosition(0.3);
+        auto_timer.reset();
         lift_target = 745;
         lift_trapezoid.reset();
     }
@@ -235,158 +245,225 @@ public class SixConeAuto extends LoggingOpMode{
 
         odometry.updatePose(-drivetrain.getHeading());
         motion_profile = false;
+        if (auto_timer.seconds() < 26) {
+            switch (main_id) {
+                case 0:
+                    drivetrain.autoMove(-6.0, -13.0, 29.0, 2, 2, 3, odometry.getPose(), telemetry);
+                    if (drivetrain.hasReached()) {
+                        main_id += 1;
+                        lift.setHolderPosition(0.39);
+                        timer.reset();
+                    }
+                    break;
+                case 1:
+                    drivetrain.autoMove(-30.24, -24.74, 29.0, 0.9, 0.9, 0.9, odometry.getPose(), telemetry);
+                    if (drivetrain.hasReached() || timer.seconds() > 6) {
+                        main_id += 1;
+                        arm_target = -28;
+                        lift_target = 0;
+                    }
+                    break;
+                case 2:
+                    if (lift.getCurrentPosition() < 200) {
+                        lift_clip = 0.17;
+                        lift.setHolderPosition(0.095);
+                        main_id += 1;
+                    }
+                    break;
+                case 3:
+                    if (lift.getCurrentPosition() < 150) {
+                        main_id += 1;
+                        lift_clip = 1;
+                    }
+                    break;
 
-        switch (main_id) {
-            case 0:
-                drivetrain.autoMove(-6.0,-13.0,29.0,2,2,3, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                    lift.setHolderPosition(0.39);
-                    timer.reset();
-                }
-                break;
-            case 1:
-                drivetrain.autoMove(-30.24,-24.74,29.0,0.9,0.9,0.9, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached() || timer.seconds() > 6) {
-                    main_id += 1;
-                    arm_target = -28;
-                    lift_target = 0;
-                }
-                break;
-            case 2:
-                if (lift.getCurrentPosition() < 200) {
-                    lift_clip = 0.17;
-                    lift.setHolderPosition(0.095);
-                    main_id += 1;
-                }
-                break;
-            case 3:
-                if (lift.getCurrentPosition() < 150) {
-                    main_id += 1;
+                case 4:
                     lift_clip = 1;
-                }
-                break;
-
-            case 4:
-                lift_clip = 1;
-                drivetrain.autoMove(-49.4,-16.51,90.0,2,2,4, odometry.getPose(),telemetry);
-                if (drivetrain.hasReached()) {
-                    intake.setWristPosition(0.019);
-                    horizontal_target = -800;
-                    arm_target = arm_target_cs * arm_coefficient;
-                    main_id += 1;
-                }
-                break;
-            case 5:
-                motion_profile = true;
-                drivetrain.autoMove(y_cs,x_cs,t_cs,1,1,0.5, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    intake.setClawPosition(0.1);
-                    main_id += 1;
-                    timer.reset();
-                }
-                break;
-            case 6:
-                if (timer.seconds() > 0.7) {
-                    arm_target = -30;
-                    main_id += 1;
-                    timer.reset();
-                }
-                break;
-            case 7:
-                if (arm.getCurrentPosition() > -50) {
-                    drivetrain.autoMove(-55.9,-16.51,126.9375,1,1,3, odometry.getPose(),telemetry);
+                    drivetrain.autoMove(-49.4, -16.51, 90.0, 2, 2, 4, odometry.getPose(), telemetry);
+                    if (drivetrain.hasReached()) {
+                        intake.setWristPosition(0.019);
+                        horizontal_target = -750;
+                        arm_target = arm_target_cs * arm_coefficient;
+                        main_id += 1;
+                    }
+                    break;
+                case 5:
+                    motion_profile = true;
+                    drivetrain.autoMove(y_cs, x_cs, t_cs, 1, 1, 0.5, odometry.getPose(), telemetry);
+                    if (drivetrain.hasReached()) {
+                        intake.setClawPosition(0.1);
+                        main_id += 1;
+                        timer.reset();
+                    }
+                    break;
+                case 6:
+                    drivetrain.stop();
+                    if (timer.seconds() > 0.7) {
+                        arm_target = -30;
+                        main_id += 1;
+                        timer.reset();
+                    }
+                    break;
+                case 7:
+                    drivetrain.stop();
+                    if (arm.getCurrentPosition() > -50) {
+                        main_id += 1;
+                    }
+                    break;
+                case 8:
+                    drivetrain.autoMove(-55.9, -16.51, 126.9375, 1, 1, 3, odometry.getPose(), telemetry);
                     intake.setWristPosition(0.678);
-                    if(timer.seconds() >  0.5) {
+                    if (timer.seconds() > 0.5) {
                         horizontal_target = 0;
                         if (horizontal.getCurrentPosition() > -80) {
                             arm_target = 30;
-                             if(arm.getCurrentPosition() > -15) {
-                                 intake.setClawPosition(0.37);
-                                 main_id += 1;
-                             }
+                            if (arm.getCurrentPosition() > -15) {
+                                intake.setClawPosition(0.37);
+                                main_id += 1;
+                            }
                         }
                     }
-                }
-                break;
-            case 8:
-                arm_target = -28;
-                lift_trapezoid.reset();
-                drivetrain.autoMove(-55.9,-16.51,126.9375,4,4,7, odometry.getPose(),telemetry);
-                if (drivetrain.hasReached()) {
-                    lift_target = 745;
-                    lift.setHolderPosition(0.39);
-                    main_id += 1;
-                }
-                break;
-            case 9:
-                drivetrain.autoMove(-44.48,-21.97,126.9375,1.9,1.9,1.6, odometry.getPose(),telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
-                break;
-            case 10:
-                lift_clip = 1;
-                if (lift.getCurrentPosition() > 700) {
-                    main_id += 1;
-                }
-                break;
-            case 11:
-                lift_target = 0;
-                if (lift.getCurrentPosition() < 200) {
-                    lift_clip = 0.17;
-                    lift.setHolderPosition(0.095);
-                    main_id += 1;
-                }
-                break;
-            case 12:
-                if (lift.getCurrentPosition() < 150) {
-                    intake.setWristPosition(0.019);
-                    cs_id += 1;
-                    if (cs_id > 4) {
+                    break;
+                case 9:
+                    arm_target = -28;
+                    lift_trapezoid.reset();
+                    drivetrain.autoMove(-55.8, -16.51, 126.9375, 4, 4, 7, odometry.getPose(), telemetry);
+                    if (drivetrain.hasReached()) {
+                        lift_target = 745;
+                        lift.setHolderPosition(0.39);
                         main_id += 1;
                     }
-                    else {
-                        main_id = 4;
+                    break;
+                case 10:
+                    drivetrain.autoMove(-43, -21.97, 126.9375, 1.9, 1.9, 1.6, odometry.getPose(), telemetry);
+                    if (drivetrain.hasReached()) {
+                        main_id += 1;
                     }
-                }
-                break;
+                    break;
+                case 11:
+                    lift_clip = 1;
+                    if (lift.getCurrentPosition() > 700) {
+                        main_id += 1;
+                    }
+                    break;
+                case 12:
+                    lift_target = 0;
+                    if (lift.getCurrentPosition() < 200) {
+                        lift_clip = 0.17;
+                        lift.setHolderPosition(0.095);
+                        main_id += 1;
+                    }
+                    break;
+                case 13:
+                    if (lift.getCurrentPosition() < 150) {
+                        intake.setWristPosition(0.019);
+                        cs_id += 1;
+                        if (cs_id > 4) {
+                            main_id += 1;
+                        } else {
+                            main_id = 4;
+                        }
+                    }
+                    break;
+            }
+
+
+            switch (cs_id) {
+                case 0:
+                    x_cs = x_cs_1;
+                    y_cs = y_cs_1;
+                    t_cs = t_cs_1;
+                    arm_target_cs = arm_target_cs_1;
+                    break;
+                case 1:
+                    x_cs = x_cs_2;
+                    y_cs = y_cs_2;
+                    t_cs = t_cs_2;
+                    arm_target_cs = arm_target_cs_2;
+                    break;
+                case 2:
+                    x_cs = x_cs_3;
+                    y_cs = y_cs_3;
+                    t_cs = t_cs_3;
+                    arm_target_cs = arm_target_cs_3;
+                    break;
+                case 3:
+                    x_cs = x_cs_4;
+                    y_cs = y_cs_4;
+                    t_cs = t_cs_4;
+                    arm_target_cs = arm_target_cs_4;
+                    break;
+                case 4:
+                    x_cs = x_cs_5;
+                    y_cs = y_cs_5;
+                    t_cs = t_cs_5;
+                    arm_target_cs = arm_target_cs_5;
+                    break;
+            }
         }
+        else {
+            lift_clip = 0.17;
+            lift_target = 0;
+            arm_target = 0;
+            horizontal_target = 0;
+            switch (result) {
+                case "FTC8813: 1":
+                    switch (park_id) {
+                        case 0:
+                            drivetrain.autoMove(-45,28,0,1,1,1, odometry.getPose(), telemetry);
+                            if (drivetrain.hasReached()) {
+                                park_id += 1;
+                            }
+                            break;
+                        case 1:
+                            drivetrain.autoMove(-41.48, 28, 0, 1, 1, 1, odometry.getPose(), telemetry);
+                            if (drivetrain.hasReached()) {
+                                park_id += 1;
+                            }
+                            break;
 
+                    }
+                    break;
+                case "FTC8813: 3":
+                    switch (park_id) {
+                        case 0:
+                            drivetrain.autoMove(-45, -19.36, 0, 1, 1, 1, odometry.getPose(), telemetry);
+                            if (drivetrain.hasReached()) {
+                                park_id += 1;
+                                arm_target = 0;
+                                horizontal_target = 0;
+                            }
+                            break;
+                        case 1:
+                            drivetrain.autoMove(-41.48, -19.36, 0, 1, 1, 1, odometry.getPose(), telemetry);
+                            if (drivetrain.hasReached()) {
+                                park_id += 1;
+                            }
+                            break;
 
-        switch (cs_id) {
-            case 0:
-                x_cs = x_cs_1;
-                y_cs = y_cs_1;
-                t_cs = t_cs_1;
-                arm_target_cs = arm_target_cs_1;
-                break;
-            case 1:
-                x_cs = x_cs_2;
-                y_cs = y_cs_2;
-                t_cs = t_cs_2;
-                arm_target_cs = arm_target_cs_2;
-                break;
-            case 2:
-                x_cs = x_cs_3;
-                y_cs = y_cs_3;
-                t_cs = t_cs_3;
-                arm_target_cs = arm_target_cs_3;
-                break;
-            case 3:
-                x_cs = x_cs_4;
-                y_cs = y_cs_4;
-                t_cs = t_cs_4;
-                arm_target_cs = arm_target_cs_4;
-                break;
-            case 4:
-                x_cs = x_cs_5;
-                y_cs = y_cs_5;
-                t_cs = t_cs_5;
-                arm_target_cs = arm_target_cs_5;
-                break;
+                    }
+                    break;
+                default:
+                    switch (park_id) {
+                        case 0:
+                            drivetrain.autoMove(-45, 2.7, 0, 1, 1, 1, odometry.getPose(), telemetry);
+                            if (drivetrain.hasReached()) {
+                                park_id += 1;
+                                arm_target = 0;
+                                horizontal_target = 0;
+                            }
+                            break;
+                        case 1:
+                            drivetrain.autoMove(-41.48, 2.7, 0, 1, 1, 1, odometry.getPose(), telemetry);
+                            if (drivetrain.hasReached()) {
+                                park_id += 1;
+                            }
+                            break;
+
+                    }
+                    break;
+            }
         }
-
 
 
 

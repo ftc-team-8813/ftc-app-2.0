@@ -79,7 +79,7 @@ public class DriveControl extends ControlModule {
             drivetrain.move(rotY, rotX, rx, (heading_delta * 0.001), denominator);
         }
         else {
-            drivetrain.move((-ax_drive_left_y.get()*0.7),(ax_drive_left_x.get()*0.7),(ax_drive_right_x.get()*0.4),(heading_delta * 0.001));
+            drivetrain.move(Math.pow(Math.abs(-ax_drive_left_y.get()), 1.6) * Math.signum(-ax_drive_left_y.get()),Math.pow(Math.abs(ax_drive_left_x.get()), 1.6) * Math.signum(ax_drive_left_x.get()),Math.pow(Math.abs(ax_drive_right_x.get()), 1.6) * Math.signum(ax_drive_right_x.get()) * 0.7,(heading_delta * 0.001));
         }
 
         heading_was = drivetrain.getHeading();

@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -14,7 +16,6 @@ import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
-import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.vision.AprilTagDetectionPipeline;
 import org.openftc.apriltag.AprilTagDetection;
@@ -24,9 +25,9 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 
-@Disabled
-@Autonomous(name = "!!Right Parking 1 Cone Auto!!")
-public class RightParking1ConeAuto extends LoggingOpMode{
+@Config
+@Autonomous(name = "!!! Left 1 Cone Park !!!")
+public class LeftCone1Park extends LoggingOpMode{
 
     private Lift lift;
     private Horizontal horizontal;
@@ -38,51 +39,87 @@ public class RightParking1ConeAuto extends LoggingOpMode{
     private String result = "Nothing";
 
     private int main_id = 0;
-    private int arm_id = 0;
+    private int cs_id = 0;
 
     private OpenCvCamera camera;
     private AprilTagDetectionPipeline aprilTagDetectionPipeline;
 
-    private static final double FEET_PER_METER = 3.28084;
+//    private static final double FEET_PER_METER = 3.28084;
 
-    private double fx = 578.272;
-    private double fy = 578.272;
-    private double cx = 402.145;
-    private double cy = 221.506;
+    private final double fx = 578.272;
+    private final double fy = 578.272;
+    private final double cx = 402.145;
+    private final double cy = 221.506;
 
-    private double tagsize = 0.166;
+    private final double tagsize = 0.166;
 
     private final PID arm_PID = new PID(0.009, 0, 0, 0.1, 0, 0);
     private final PID horizontal_PID = new PID(0.01, 0, 0, 0, 0, 0);
     private final PID lift_PID = new PID(0.02, 0, 0, 0.015, 0, 0);
 
-    private ElapsedTime timer = new ElapsedTime();
+    private boolean rise = false;
+    private boolean fall = false;
 
-    private ElapsedTime lift_trapezoid = new ElapsedTime();;
-    private double lift_accel = 0.27;
+    private final ElapsedTime timer = new ElapsedTime();
+
+    private final ElapsedTime lift_trapezoid = new ElapsedTime();;
+    private final double lift_accel = 0.39;
 
     private double lift_target = 0;
     private double horizontal_target = 0;
     private double arm_target = 0;
 
-    private ElapsedTime liftTimer = new ElapsedTime();
-    private boolean liftTimerReset = false;
-
-    private final Logger log = new Logger("Cone Auto");
-
-    private double timer_point_1;
-    private double timer_point_2;
-    private double timer_point_3;
-    private double timer_point_4;
-    private double timer_point_5;
-    private double timer_point_6;
-
     private double lift_power;
     private double horizontal_power;
     private double arm_power;
 
+    public static double y1 = -49.4;
+    public static double x1 = -16.51;
+    public static double t1 = 90.0;
+    public static double y2 = -49.4;
+
+    public static double t_cs_1 = 90;
+    public static double t_cs_2 = 90;
+    public static double t_cs_3 = 90;
+    public static double t_cs_4 = 90;
+    public static double t_cs_5 = 90;
+
+    private double t_cs = t_cs_1;
+
+    public static double x_cs_1 = 8.91;
+    public static double x_cs_2 = 8.84;
+    public static double x_cs_3 = 8.77;
+    public static double x_cs_4 = 8.74;
+    public static double x_cs_5 = 8.68;
+
+    private double x_cs = x_cs_1;
+
+    public static double y_cs_1 = -49.4;
+    public static double y_cs_2 = -49.4;
+    public static double y_cs_3 = -49.4;
+    public static double y_cs_4 = -49.4;
+    public static double y_cs_5 = -49.4;
+
+    private double y_cs = y_cs_1;
+
+    public static double arm_target_cs_1 = -65.0;
+    public static double arm_target_cs_2 = -66.0;
+    public static double arm_target_cs_3 = -66.5;
+    public static double arm_target_cs_4 = -68.0;
+    public static double arm_target_cs_5 = -70.0;
+
+    private double arm_target_cs = arm_target_cs_1;
+
+    public double arm_coefficient = 1.056;
+
+    private boolean motion_profile = false;
+    private double lift_clip = 1;
+
     @Override
     public void init() {
+
+//        arm_coefficient = getBatteryVoltage()/12;
+
         super.init();
         Robot robot = Robot.initialize(hardwareMap);
         lift = robot.lift;
@@ -116,6 +153,13 @@ public class RightParking1ConeAuto extends LoggingOpMode{
 //        telemetry.setMsTransmissionInterval(50);
 
         odometry.resetEncoders();
+
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
+//        dashboard = FtcDashboard.getInstance();
+
+        intake.setWristPosition(0.019);
+        intake.setClawPosition(0.37);
     }
 
     @Override
@@ -171,7 +215,7 @@ public class RightParking1ConeAuto extends LoggingOpMode{
             horizontal.resetEncoders();
         }
 
-        lift.setHolderPosition(0.3);
+        lift.setHolderPosition(0.12);
 
         arm.resetEncoders();
         lift.resetEncoders();
@@ -185,113 +229,93 @@ public class RightParking1ConeAuto extends LoggingOpMode{
         super.start();
         lift_target = 745;
         lift_trapezoid.reset();
+        lift.setHolderPosition(0.3);
     }
 
     @Override
     public void loop() {
 
         odometry.updatePose(-drivetrain.getHeading());
+        motion_profile = false;
 
-//        timer_point_1 = LoopTimer.getLoopTime();
+        rise = false;
+        fall = false;
 
         switch (main_id) {
             case 0:
-                drivetrain.autoMove(-6,19,0,1,1,1, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-6.0, -13.0, 29.0, 2, 2, 3, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                     lift.setHolderPosition(0.39);
-                }
-                break;
-            case 1:
-                drivetrain.autoMove(-25,19,-46.34,1,1,1.2, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
                     timer.reset();
                 }
                 break;
-            case 2:
-                drivetrain.autoMove(-33.7,24,-46.34,0.65,0.65,3, odometry.getPose(), telemetry);
+            case 1:
+                drivetrain.autoMove(-30.24, -24.74, 29.0, 0.9, 0.9, 0.9, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached() || timer.seconds() > 6) {
                     main_id += 1;
                     arm_target = -28;
                     lift_target = 0;
                 }
                 break;
-            case 3:
+            case 2:
                 if (lift.getCurrentPosition() < 200) {
-                    lift.setHolderPosition(0.14);
+                    lift_clip = 0.17;
+                    lift.setHolderPosition(0.095);
                     main_id += 1;
+                }
+                break;
+            case 3:
+                if (lift.getCurrentPosition() < 150) {
+                    main_id += 1;
+                    lift_clip = 1;
                 }
                 break;
             case 4:
-                if (lift.getCurrentPosition() < 10) {
-                    main_id += 1;
-                }
-                break;
-            case 5:
-                drivetrain.autoMove(-26,18,0,1,1,1, odometry.getPose(),telemetry);
-                if (drivetrain.hasReached()) {
-                    main_id += 1;
-                }
-                break;
-            case 6:
                 switch (result) {
                     case "FTC8813: 1":
-                        main_id += 1;
+                        drivetrain.autoMove(-27,28,0,1,1,1, odometry.getPose(), telemetry);
+                        if (drivetrain.hasReached()) {
+                            main_id += 1;
+                        }
                         break;
                     case "FTC8813: 3":
-                        drivetrain.autoMove(-27,-30,0,1,1,1, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(-27,-18,0,1,1,1, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
                         break;
                     default:
-                        drivetrain.autoMove(-27,-5,0,1,1,1, odometry.getPose(), telemetry);
+                        drivetrain.autoMove(-27,7,0,1,1,1, odometry.getPose(), telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
                         break;
                 }
                 break;
-            case 7:
+            case 5:
                 drivetrain.stop();
                 break;
         }
 
-//        timer_point_2 = LoopTimer.getLoopTime();
 
-        lift_power = lift_PID.getOutPut(lift_target, lift.getCurrentPosition(), 1) * Math.min(lift_trapezoid.seconds() * lift_accel, 1); //change
+
+
+
+
+        lift_power = Range.clip((lift_PID.getOutPut(lift_target, lift.getCurrentPosition(), 1) * Math.min(lift_trapezoid.seconds() * lift_accel, 1)), -lift_clip, lift_clip); //change
         horizontal_power = horizontal_PID.getOutPut(horizontal_target,horizontal.getCurrentPosition(),0); //change
         arm_power = Range.clip(arm_PID.getOutPut(arm_target, arm.getCurrentPosition(), Math.cos(Math.toRadians(arm.getCurrentPosition() + 0))), -0.6, 1); //change
-
-//        timer_point_3 = LoopTimer.getLoopTime();
 
         lift.setPower(lift_power);
         horizontal.setPower(horizontal_power);
         arm.setPower(arm_power);
 
-//        timer_point_4 = LoopTimer.getLoopTime();
-
-        drivetrain.update(odometry.getPose(), telemetry, false);
-
-//        timer_point_5 = LoopTimer.getLoopTime();
+        drivetrain.update(odometry.getPose(), telemetry,motion_profile);
 
         telemetry.addData("Main ID", main_id);
-//        telemetry.addData("Distance", intake.getDistance());
-//        telemetry.addData("Lift Power", lift_power);
-//        telemetry.addData("Horizontal Power", horizontal_power);
-//        telemetry.addData("Arm Power", arm_power);
-//        telemetry.addData("Lift Target",lift_target);
-//        telemetry.addData("Horizontal Target",horizontal_target);
-//        telemetry.addData("Arm Target",arm_target);
-//        telemetry.addData("Lift Position",lift.getCurrentPosition());
-//        telemetry.addData("Horizontal Position",horizontal.getCurrentPosition());
-//        telemetry.addData("Arm Position",arm.getCurrentPosition());
-//        telemetry.addData("Timer Point 1", timer_point_1);
-//        telemetry.addData("Timer Point 2", timer_point_2);
-//        telemetry.addData("Timer Point 3", timer_point_3);
-//        telemetry.addData("Timer Point 4", timer_point_4);
-//        telemetry.addData("Timer Point 5", timer_point_5);
+//        telemetry.addData("Voltage", getBatteryVoltage());
+        telemetry.addData("Coefficient", arm_coefficient);
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();
 

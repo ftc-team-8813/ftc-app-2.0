@@ -55,7 +55,15 @@ public class RobotControl extends ControlModule{
     private ControllerMap.ButtonEntry switchGround;
     private ControllerMap.ButtonEntry switchCircuit;
 
+    private ControllerMap.ButtonEntry testswitchFast;
+    private ControllerMap.ButtonEntry testswitchGround;
+    private ControllerMap.ButtonEntry testswitchCircuit;
+
     private ControllerMap.AxisEntry ax_lift_left_x;
+
+    private ControllerMap.AxisEntry horiz_fwd;
+    private ControllerMap.AxisEntry horiz_back;
+
     private ControllerMap.AxisEntry ax_lift_left_y;
     private ControllerMap.AxisEntry ax_lift_right_y;
 
@@ -78,7 +86,7 @@ public class RobotControl extends ControlModule{
 
     private double DEPOSITHIGHFAST = 0.42;
 
-    private double DEPOSITTRANSFER = 0.095;
+    private double DEPOSITTRANSFER = 0.0975;
     private double DEPOSITTRANSFER2 = 0.13;
     private double DEPOSITTRANSFERFAST = 0.095;
     private double DEPOSITTRANSFERFAST2 = 0.13;
@@ -156,7 +164,15 @@ public class RobotControl extends ControlModule{
         switchGround = controllerMap.getButtonMap("switchGround", "gamepad2", "dpad_down");
         switchCircuit = controllerMap.getButtonMap("switchCircuit", "gamepad2", "dpad_right");
 
-        ax_lift_left_x = controllerMap.getAxisMap("lift:left_x", "gamepad2", "left_stick_x"); //finetuning
+        testswitchFast = controllerMap.getButtonMap("testswitchFast", "gamepad1", "dpad_up");
+        testswitchGround = controllerMap.getButtonMap("testswitchGround", "gamepad1", "dpad_down");
+        testswitchCircuit = controllerMap.getButtonMap("testswitchCircuit", "gamepad1", "dpad_right");
+
+        ax_lift_left_x = controllerMap.getAxisMap("lift:left_x", "gamepad2", "left_stick_x");//finetuning
+
+        horiz_fwd = controllerMap.getAxisMap("testhoriz:fwd", "gamepad1", "right_trigger");//finetuning
+        horiz_back = controllerMap.getAxisMap("testhoriz:back", "gamepad1", "left_trigger");//finetuning
+
         ax_lift_left_y = controllerMap.getAxisMap("lift:left_y", "gamepad2", "left_stick_y");
         ax_lift_right_y = controllerMap.getAxisMap("lift:right_y", "gamepad2", "right_stick_y");
 
@@ -453,17 +469,17 @@ public class RobotControl extends ControlModule{
                 break;
         }
 
-        if (switchFast.edge() == -1) {
+        if (testswitchFast.edge() == -1) {
             mode = Modes.Fast;
             lift_trapezoid.reset();
         }
 
-        if (switchGround.edge() == -1) {
+        if (testswitchGround.edge() == -1) {
             mode = Modes.Ground;
             lift_trapezoid.reset();
         }
 
-        if (switchCircuit.edge() == -1) {
+        if (testswitchCircuit.edge() == -1) {
             mode = Modes.Circuit;
             lift_trapezoid.reset();
         }
@@ -476,15 +492,15 @@ public class RobotControl extends ControlModule{
 //            lift.resetLiftEncoder();
 //        }
 
-        if(stateForIntake == IntakeStates.LookingForCone) {
+        if(stateForIntake == IntakeStates.LookingForCone || stateForIntake == IntakeStates.GroundDrivingAround || stateForIntake == IntakeStates.Ground) {
             horiz_kp_var = HORIZ_KP_FINE;
             if (mode == Modes.Fast) {
-                FASTMODEHORIZ -= (ax_lift_left_x.get() * 24);
+                FASTMODEHORIZ -= ((horiz_fwd.get() - horiz_back.get()) * 24);
                 if (FASTMODEHORIZ < MAXEXTENDEDHORIZ) FASTMODEHORIZ = MAXEXTENDEDHORIZ;
                 if (FASTMODEHORIZ > 0) FASTMODEHORIZ = 0;
                 horizontal.setHorizTarget(FASTMODEHORIZ);
             } else {
-                ADJUSTHORIZ -= (ax_lift_left_x.get() * 90);
+                ADJUSTHORIZ -= ((horiz_fwd.get() - horiz_back.get()) * 90);
                 if (ADJUSTHORIZ < MAXEXTENDEDHORIZ) ADJUSTHORIZ = MAXEXTENDEDHORIZ;
                 if (ADJUSTHORIZ > 0) ADJUSTHORIZ = 0;
                 horizontal.setHorizTarget(ADJUSTHORIZ);
