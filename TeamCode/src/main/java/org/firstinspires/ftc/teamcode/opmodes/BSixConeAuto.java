@@ -30,7 +30,7 @@ import java.util.ArrayList;
 
 @Disabled
 @Config
-@Autonomous(name = "!!! B Six Cone Auto !!!")
+@Autonomous(name = "B Six Cone Auto")
 public class BSixConeAuto extends LoggingOpMode{
 
     private Lift lift;

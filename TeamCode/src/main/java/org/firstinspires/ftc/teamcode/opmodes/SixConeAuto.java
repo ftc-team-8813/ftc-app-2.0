@@ -28,7 +28,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import java.util.ArrayList;
 
 @Config
-@Autonomous(name = "!!! Six Cone Auto !!!")
+@Autonomous(name = "! !! Six Cone Auto !! !")
 public class SixConeAuto extends LoggingOpMode{
 
     private Lift lift;

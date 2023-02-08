@@ -212,9 +212,10 @@ public class Drivetrain {
         rotY = /*0.4 **/ (strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading));
 
         if (motionProfile) {
-            double strafe_error = Math.abs(strafe - x);
 
-            rotY = Range.clip((strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading)),-0.2,0.3);
+//            turn_power = Range.clip((turn_pid.getOutPut(turn, rot, 0)),-0.3,0.3);
+//            rotX = Range.clip((strafe_power * Math.cos(botHeading) - forward_power * Math.sin(botHeading)),-0.2,0.4);
+            rotY = Range.clip((strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading)),-0.2,0.4);
 
         }
 

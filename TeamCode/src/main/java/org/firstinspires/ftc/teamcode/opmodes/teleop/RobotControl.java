@@ -170,8 +170,8 @@ public class RobotControl extends ControlModule{
 
         ax_lift_left_x = controllerMap.getAxisMap("lift:left_x", "gamepad2", "left_stick_x");//finetuning
 
-        horiz_fwd = controllerMap.getAxisMap("testhoriz:fwd", "gamepad1", "right_trigger");//finetuning
-        horiz_back = controllerMap.getAxisMap("testhoriz:back", "gamepad1", "left_trigger");//finetuning
+//        horiz_fwd = controllerMap.getAxisMap("testhoriz:fwd", "gamepad1", "right_trigger");//finetuning
+//        horiz_back = controllerMap.getAxisMap("testhoriz:back", "gamepad1", "left_trigger");//finetuning
 
         ax_lift_left_y = controllerMap.getAxisMap("lift:left_y", "gamepad2", "left_stick_y");
         ax_lift_right_y = controllerMap.getAxisMap("lift:right_y", "gamepad2", "right_stick_y");
@@ -469,17 +469,17 @@ public class RobotControl extends ControlModule{
                 break;
         }
 
-        if (testswitchFast.edge() == -1) {
+        if (switchFast.edge() == -1) {
             mode = Modes.Fast;
             lift_trapezoid.reset();
         }
 
-        if (testswitchGround.edge() == -1) {
+        if (switchGround.edge() == -1) {
             mode = Modes.Ground;
             lift_trapezoid.reset();
         }
 
-        if (testswitchCircuit.edge() == -1) {
+        if (switchCircuit.edge() == -1) {
             mode = Modes.Circuit;
             lift_trapezoid.reset();
         }
@@ -495,12 +495,12 @@ public class RobotControl extends ControlModule{
         if(stateForIntake == IntakeStates.LookingForCone || stateForIntake == IntakeStates.GroundDrivingAround || stateForIntake == IntakeStates.Ground) {
             horiz_kp_var = HORIZ_KP_FINE;
             if (mode == Modes.Fast) {
-                FASTMODEHORIZ -= ((horiz_fwd.get() - horiz_back.get()) * 24);
+                FASTMODEHORIZ -= (ax_lift_left_x.get() * 24);
                 if (FASTMODEHORIZ < MAXEXTENDEDHORIZ) FASTMODEHORIZ = MAXEXTENDEDHORIZ;
                 if (FASTMODEHORIZ > 0) FASTMODEHORIZ = 0;
                 horizontal.setHorizTarget(FASTMODEHORIZ);
             } else {
-                ADJUSTHORIZ -= ((horiz_fwd.get() - horiz_back.get()) * 90);
+                ADJUSTHORIZ -= (ax_lift_left_x.get() * 90);
                 if (ADJUSTHORIZ < MAXEXTENDEDHORIZ) ADJUSTHORIZ = MAXEXTENDEDHORIZ;
                 if (ADJUSTHORIZ > 0) ADJUSTHORIZ = 0;
                 horizontal.setHorizTarget(ADJUSTHORIZ);

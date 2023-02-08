@@ -18,7 +18,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 
-@Autonomous(name = "Parking Auto")
+@Autonomous(name = "! Parking Auto !")
 public class ParkingAuto extends LoggingOpMode{
 
     private Drivetrain drivetrain;

@@ -27,7 +27,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import java.util.ArrayList;
 
 @Config
-@Autonomous(name = "!!! Right 1 Cone Park !!!")
+@Autonomous(name = "!! Right 1 Cone Park !!")
 public class RightCone1Park extends LoggingOpMode{
 
     private Lift lift;
