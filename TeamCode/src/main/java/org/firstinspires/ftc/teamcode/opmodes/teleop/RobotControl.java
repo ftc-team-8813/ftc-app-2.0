@@ -76,10 +76,10 @@ public class RobotControl extends ControlModule{
 
     private double DEPOSITHIGHFAST = 0.42;
 
-    private double DEPOSITTRANSFER = 0.115;
-    private double DEPOSITTRANSFER2 = 0.13;
-    private double DEPOSITTRANSFERFAST = 0.115;
-    private double DEPOSITTRANSFERFAST2 = 0.13;
+    private double DEPOSITTRANSFER = 0.1;
+    private double DEPOSITTRANSFER2 = 0.11;
+    private double DEPOSITTRANSFERFAST = 0.1;
+    private double DEPOSITTRANSFERFAST2 = 0.11;
 
     private double DEPOSITLIFT = 0.38;
     private double DEPOSITLIFTFAST = 0.35;
@@ -115,8 +115,9 @@ public class RobotControl extends ControlModule{
     private boolean GroundLow;
 
     public static double ARMCLIPDOWN = 1;
-    public static double ARMCLIPDOWNSLOW = 0.2;
+    public static double ARMCLIPDOWNSLOW = 1;
     public static double ARMCLIPUP = 1;
+    public static double ARMClIPUPSLOW = 0.5;
 
     public static double LIFT_KP = 0.02;
 
@@ -195,7 +196,7 @@ public class RobotControl extends ControlModule{
     public void update(Telemetry telemetry) {
         loop.reset();
 
-        arm_PID = new PID(0.009, 0, 0, 0.1, 0, 0);
+        arm_PID = new PID(0.009, 0, 0, /*0.1*/ 0, 0, 0);
         horiz_PID = new PID(horiz_kp_var, 0, 0, 0, 0, 0);
         lift_PID = new PID(LIFT_KP, 0, 0, 0.03, 0, 0);
 
@@ -205,7 +206,7 @@ public class RobotControl extends ControlModule{
         lift_trapezoid.setSlopes(lift_accel, lift_decel);
 
         if (mode == Modes.Circuit) {
-            if ((a_button.edge() == -1 || b_button.edge() == -1 || y_button.edge() == -1) && stateForIntake != IntakeStates.Transfer && stateForIntake != IntakeStates.PickingConeUp) {
+            if ((a_button.edge() == -1 || b_button.edge() == -1 || y_button.edge() == -1) && !(stateForIntake == IntakeStates.Transfer && intakeTimer.seconds() < 0.2) && stateForIntake != IntakeStates.PickingConeUp) {
                 stateForLift = LiftStates.LiftUp;
             }
         }
@@ -318,7 +319,7 @@ public class RobotControl extends ControlModule{
                         intake.setHorizTarget(FASTMODEHORIZ);
                     }
                 }
-                if ((intake.getDistance() <= 17 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - intake.getArmCurrent()) < 60) {
+                if ((intake.getDistance() <= 25 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - intake.getArmCurrent()) < 60) {
                     stateForLift = LiftStates.LiftDown;
                     intakeTimerReset = false;
                     if (mode == Modes.Ground) {
@@ -333,12 +334,12 @@ public class RobotControl extends ControlModule{
 
             case PickingConeUp:
                 intake.setClaw(CLAWCLOSEPOS);
+                intake.setWrist(WRISTTRANSFER);
                 if (!intakeTimerReset) {
                     intakeTimer.reset();
                     intakeTimerReset = true;
                 }
                 if (intakeTimer.seconds() > 0.11 && lift.getLiftCurrent() < 40) {
-                    intake.setWrist(WRISTTRANSFER);
                     if (intake.getHorizCurrent() < -50) {
                         intake.setArmTarget(ARMMIDPOS2);
                     } else {
@@ -352,7 +353,7 @@ public class RobotControl extends ControlModule{
                     }
                 }
                 if (lift.getLiftCurrent() < 40 && intake.getHorizCurrent() > -15) {
-                    if ((mode == Modes.Fast && intake.getArmCurrent() > -55) || (mode == Modes.Circuit && intake.getArmCurrent() > -55)) {
+                    if ((mode == Modes.Fast && intake.getArmCurrent() > -50) || (mode == Modes.Circuit && intake.getArmCurrent() > -50)) {
                         stateForIntake = IntakeStates.Transfer;
                         intakeTimerReset = false;
                     }
@@ -485,10 +486,10 @@ public class RobotControl extends ControlModule{
         }
 
         double arm_power = arm_PID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), Math.cos(Math.toRadians((intake.getArmCurrent() * 1.25) + 136.5)));
-        if (intake.getArmCurrent() < -24) {
+        if (intake.getArmCurrent() < -32) {
             arm_power = Range.clip(arm_power, -ARMCLIPDOWNSLOW, ARMCLIPUP);
         } else {
-            arm_power = Range.clip(arm_power, -ARMCLIPDOWN, ARMCLIPUP);
+            arm_power = Range.clip(arm_power, -ARMCLIPDOWN, ARMClIPUPSLOW);
         }
 
         double lift_power = lift_trapezoid.getProfiledPower((lift.getLiftTarget() - lift.getLiftCurrent()), lift_PID.getOutPut(lift.getLiftTarget(), lift.getLiftCurrent(), 1), 0.03);
