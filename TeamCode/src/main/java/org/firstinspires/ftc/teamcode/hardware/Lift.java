@@ -11,6 +11,9 @@ public class Lift {
     private Servo dumper;
     private double lift1Target;
     private double liftCurrent;
+    private double dumper_pos = 0;
+
+    private boolean old_state = true;
 
     public Lift(DigitalChannel lift_limit, DcMotorEx lift1, DcMotorEx lift2, Servo dumper){
         this.lift_limit = lift_limit;
@@ -30,6 +33,19 @@ public class Lift {
 
     public void setDumper(double pos){
         dumper.setPosition(pos);
+        dumper_pos = pos;
+    }
+
+    public void setDumperState(boolean on){
+        if (on != old_state) { //if the state changed
+            if (on) {
+                dumper.setPosition(dumper_pos);
+            }
+            old_state = on;
+        }
+        if (!on) {
+            dumper.setPosition(0);
+        }
     }
 
     public boolean getLift_limit(){

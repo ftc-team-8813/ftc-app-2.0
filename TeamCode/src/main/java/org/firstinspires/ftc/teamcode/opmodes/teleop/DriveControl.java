@@ -30,13 +30,12 @@ public class DriveControl extends ControlModule {
     private double heading_unwrapped = 0;
     private double wraparounds = 0;
 
-    private ElapsedTime turn_correct_timer;
-    private boolean turn_correct_timer_reset;
-
     private OdometryNav odo;
     private double target_heading = 0;
 
-    private double heading_p = 0.009;
+    private double speed_dependent_steering = 0.5; //0 is no speed dependent steering, 1 is too much
+
+    //private double heading_p = 0.009;
 
     public DriveControl(String name) {
         super(name);
@@ -53,8 +52,6 @@ public class DriveControl extends ControlModule {
         dpad_up = controllerMap.getButtonMap("drive:dpad_up", "gamepad1","dpad_up");
 
         this.odo = robot.odometryNav;
-
-        turn_correct_timer = new ElapsedTime();
     }
 
     @Override
@@ -96,6 +93,9 @@ public class DriveControl extends ControlModule {
         double y = -ax_drive_left_y.get() * forward_speed * slow;
         double x = ax_drive_left_x.get() * strafe_speed * slow;
         double rx = ax_drive_right_x.get() * turn_speed * slow;
+
+        //this makes turning slower as lateral motion gets faster
+        rx *= (1 - (Math.sqrt(Math.pow(ax_drive_left_y.get(), 2) + Math.pow(ax_drive_left_x.get(), 2)) * speed_dependent_steering)); //pythagorean theorem
 
 //        target_heading += rx * 11;
 

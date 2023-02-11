@@ -57,6 +57,8 @@ public class RobotControl extends ControlModule{
     private ControllerMap.AxisEntry ax_lift_left_y;
     private ControllerMap.AxisEntry ax_lift_right_y;
 
+    private ControllerMap.AxisEntry servo_kill;
+
     private LiftStates stateForLift;
     private IntakeStates stateForIntake;
     private Modes mode;
@@ -117,7 +119,7 @@ public class RobotControl extends ControlModule{
     public static double ARMCLIPDOWN = 1;
     public static double ARMCLIPDOWNSLOW = 1;
     public static double ARMCLIPUP = 1;
-    public static double ARMClIPUPSLOW = 0.5;
+    public static double ARMClIPUPSLOW = 0.6;
 
     public static double LIFT_KP = 0.02;
 
@@ -149,6 +151,8 @@ public class RobotControl extends ControlModule{
         rec_right_trigger = controllerMap.getAxisMap("lift:reset_encoder_rt","gamepad2","right_trigger");
         rec_left_bumper = controllerMap.getButtonMap("lift:reset_encoder_lb","gamepad2","left_bumper");
         rec_left_trigger = controllerMap.getAxisMap("lift:reset_encoder_lt","gamepad2","left_trigger");
+
+        servo_kill = controllerMap.getAxisMap("lift:servo_kill","gamepad1","right_trigger");
 
         switchFast = controllerMap.getButtonMap("switchFast", "gamepad2", "dpad_up");
         switchGround = controllerMap.getButtonMap("switchGround", "gamepad2", "dpad_down");
@@ -319,7 +323,7 @@ public class RobotControl extends ControlModule{
                         intake.setHorizTarget(FASTMODEHORIZ);
                     }
                 }
-                if ((intake.getDistance() <= 25 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - intake.getArmCurrent()) < 60) {
+                if ((intake.getDistance() <= 21 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - intake.getArmCurrent()) < 60) {
                     stateForLift = LiftStates.LiftDown;
                     intakeTimerReset = false;
                     if (mode == Modes.Ground) {
@@ -485,8 +489,12 @@ public class RobotControl extends ControlModule{
             horiz_kp_var = HORIZ_KP;
         }
 
+        lift.setDumperState(servo_kill.get() < 0.2);
+
         double arm_power = arm_PID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), Math.cos(Math.toRadians((intake.getArmCurrent() * 1.25) + 136.5)));
         if (intake.getArmCurrent() < -32) {
+            arm_power = Range.clip(arm_power, -ARMCLIPDOWN, ARMCLIPUP);
+        } else if (intake.getArmCurrent() < -55) {
             arm_power = Range.clip(arm_power, -ARMCLIPDOWNSLOW, ARMCLIPUP);
         } else {
             arm_power = Range.clip(arm_power, -ARMCLIPDOWN, ARMClIPUPSLOW);
