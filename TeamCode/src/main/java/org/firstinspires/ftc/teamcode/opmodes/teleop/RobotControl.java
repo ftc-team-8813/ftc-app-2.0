@@ -86,7 +86,7 @@ public class RobotControl extends ControlModule{
     private double DEPOSITLIFT = 0.38;
     private double DEPOSITLIFTFAST = 0.35;
 
-    private double ARMCOMPLETEDOWNPOS = -120;
+    private double ARMCOMPLETEDOWNPOS = -115;
     private double ARMMIDPOS = -20;
     private double ARMMIDPOS2 = -28; //used while the horiz slide is retracting
     private double ARMHIGHPOS = 50; //positive to make it dig into the end stop
@@ -119,7 +119,7 @@ public class RobotControl extends ControlModule{
     public static double ARMCLIPDOWN = 1;
     public static double ARMCLIPDOWNSLOW = 1;
     public static double ARMCLIPUP = 1;
-    public static double ARMClIPUPSLOW = 0.6;
+    public static double ARMClIPUPSLOW = 0.2;
 
     public static double LIFT_KP = 0.02;
 
@@ -323,7 +323,7 @@ public class RobotControl extends ControlModule{
                         intake.setHorizTarget(FASTMODEHORIZ);
                     }
                 }
-                if ((intake.getDistance() <= 21 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - intake.getArmCurrent()) < 60) {
+                if ((intake.getDistance() <= 18 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - intake.getArmCurrent()) < 60) {
                     stateForLift = LiftStates.LiftDown;
                     intakeTimerReset = false;
                     if (mode == Modes.Ground) {
@@ -338,26 +338,30 @@ public class RobotControl extends ControlModule{
 
             case PickingConeUp:
                 intake.setClaw(CLAWCLOSEPOS);
-                intake.setWrist(WRISTTRANSFER);
                 if (!intakeTimerReset) {
                     intakeTimer.reset();
                     intakeTimerReset = true;
                 }
-                if (intakeTimer.seconds() > 0.11 && lift.getLiftCurrent() < 40) {
-                    if (intake.getHorizCurrent() < -50) {
-                        intake.setArmTarget(ARMMIDPOS2);
-                    } else {
-                        intake.setArmTarget(ARMHIGHPOS);
+                if (lift.getLiftCurrent() < 40) {
+                    if (intakeTimer.seconds() > 0.03) {
+                        intake.setWrist(WRISTTRANSFER);
                     }
-                    intake.setHorizTarget(HORIZRETRACTED);
-                    if (mode == Modes.Fast) {
-                        lift.setDumper(DEPOSITTRANSFERFAST);
-                    } else {
-                        lift.setDumper(DEPOSITTRANSFER);
+                    if (intakeTimer.seconds() > 0.11) {
+                        if (intake.getHorizCurrent() < -50) {
+                            intake.setArmTarget(ARMMIDPOS2);
+                        } else {
+                            intake.setArmTarget(ARMHIGHPOS);
+                        }
+                        intake.setHorizTarget(HORIZRETRACTED);
+                        if (mode == Modes.Fast) {
+                            lift.setDumper(DEPOSITTRANSFERFAST);
+                        } else {
+                            lift.setDumper(DEPOSITTRANSFER);
+                        }
                     }
                 }
                 if (lift.getLiftCurrent() < 40 && intake.getHorizCurrent() > -15) {
-                    if ((mode == Modes.Fast && intake.getArmCurrent() > -50) || (mode == Modes.Circuit && intake.getArmCurrent() > -50)) {
+                    if ((mode == Modes.Fast && intake.getArmCurrent() > -34) || (mode == Modes.Circuit && intake.getArmCurrent() > -34)) {
                         stateForIntake = IntakeStates.Transfer;
                         intakeTimerReset = false;
                     }
@@ -365,14 +369,14 @@ public class RobotControl extends ControlModule{
                 break;
 
             case Transfer:
-                intake.setClaw(CLAWOPENPOS);
                 if (!intakeTimerReset) {
                     intakeTimer.reset();
                     intakeTimerReset = true;
                 }
                 if (mode == Modes.Fast) {
                     FASTMODEHORIZ = FASTMODEHORIZCONST;
-                    if (intakeTimer.seconds() > 0.05) { //used to be 0.2 and 0.25
+                    if (intakeTimer.seconds() > 0.1) { //used to be 0.2 and 0.25
+                        intake.setClaw(CLAWOPENPOS);
                         lift.setDumper(DEPOSITTRANSFERFAST2);
                     }
                     if (intakeTimer.seconds() > 0.15) {
@@ -384,10 +388,11 @@ public class RobotControl extends ControlModule{
                     }
                 }
                 if (mode == Modes.Circuit) {
-                    if (intakeTimer.seconds() > 0.3) {
+                    if (intakeTimer.seconds() > 0.2) {
+                        intake.setClaw(CLAWOPENPOS);
                         lift.setDumper(DEPOSITTRANSFER2);
                     }
-                    if (intakeTimer.seconds() > 0.4) {
+                    if (intakeTimer.seconds() > 0.3) {
                         stateForIntake = IntakeStates.DrivingAround;
                         intakeTimerReset = false;
                     }
@@ -401,7 +406,7 @@ public class RobotControl extends ControlModule{
                 }
                 if (mode == Modes.Circuit) {
                     intake.setArmTarget(0);
-                    if (intakeTimer.seconds() > 0.4) {
+                    if (intakeTimer.seconds() > 0.5) {
                         intake.setArmTarget(ARMMIDPOS);
                     }
                 } else {
