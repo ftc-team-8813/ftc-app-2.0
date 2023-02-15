@@ -59,6 +59,7 @@ public class Robot {
         Servo claw = hardwareMap.get(Servo.class, "claw");
         Servo dumper = hardwareMap.get(Servo.class, "deposit");
         Servo wrist = hardwareMap.get(Servo.class, "wrist");
+        Servo latch = hardwareMap.get(Servo.class, "latch");
 
         //Sensors
         DigitalChannel lift_limit = hardwareMap.get(DigitalChannel.class, "lift limit");
@@ -71,7 +72,7 @@ public class Robot {
 
         // Sub-Assemblies
         this.drivetrain = new Drivetrain(front_left.motorEx, front_right.motorEx, back_left.motorEx, back_right.motorEx, imu_sensor, center_odo, left_odo, right_odo);
-        this.lift = new Lift(lift_limit, lift_1, lift_2.motorEx, dumper);
+        this.lift = new Lift(lift_limit, lift_1, lift_2.motorEx, dumper, latch);
         this.intake = new Intake(horizontal,arm,horizontal_limit,arm_limit,claw_sensor,claw,wrist);
         this.odometryNav = new OdometryNav(front_left, front_right, back_left, back_right,lift_2, center_odo, left_odo, right_odo);
     }

@@ -21,6 +21,7 @@ public class LiftTest extends OpMode {
 
     // Servos
     Servo dumper = hardwareMap.get(Servo.class, "dumper");
+    Servo latch = hardwareMap.get(Servo.class, "latch");
 
     //Sensors
     DigitalChannel lift_limit = hardwareMap.get(DigitalChannel.class, "lift limit");
@@ -29,7 +30,7 @@ public class LiftTest extends OpMode {
     public void init() {
         robot = new Robot(hardwareMap);
 
-        lift = new Lift(lift_limit, lift1, lift2, dumper);
+        lift = new Lift(lift_limit, lift1, lift2, dumper, latch);
 
         robot.lift = lift;
     }

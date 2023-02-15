@@ -86,7 +86,7 @@ public class RobotControl extends ControlModule{
     private double DEPOSITLIFT = 0.38;
     private double DEPOSITLIFTFAST = 0.35;
 
-    private double ARMCOMPLETEDOWNPOS = -115;
+    private double ARMCOMPLETEDOWNPOS = -123;
     private double ARMMIDPOS = -20;
     private double ARMMIDPOS2 = -28; //used while the horiz slide is retracting
     private double ARMHIGHPOS = 50; //positive to make it dig into the end stop
@@ -111,13 +111,16 @@ public class RobotControl extends ControlModule{
     private double CLAWOPENPOS = 0.3;
     private double CLAWCLOSEPOS = 0.1;
 
+    private double LATCHINPOS = 0.36;
+    private double LATCHOUTPOS = 0.08;
+
     private PID arm_PID;
     private PID horiz_PID;
     private PID lift_PID;
     private boolean GroundLow;
 
     public static double ARMCLIPDOWN = 1;
-    public static double ARMCLIPDOWNSLOW = 1;
+    public static double ARMCLIPDOWNSLOW = 0.4;
     public static double ARMCLIPUP = 1;
     public static double ARMClIPUPSLOW = 0.2;
 
@@ -278,6 +281,8 @@ public class RobotControl extends ControlModule{
                 break;
 
             case Dump:
+                lift.setLatch(LATCHINPOS);
+
                 if (lift.getLiftTarget() == LIFTMIDPOS) {
                     lift.setDumper(DEPOSITMID);
                 }
@@ -373,10 +378,12 @@ public class RobotControl extends ControlModule{
                     intakeTimer.reset();
                     intakeTimerReset = true;
                 }
+
                 if (mode == Modes.Fast) {
                     FASTMODEHORIZ = FASTMODEHORIZCONST;
                     if (intakeTimer.seconds() > 0.1) { //used to be 0.2 and 0.25
                         intake.setClaw(CLAWOPENPOS);
+                        lift.setLatch(LATCHOUTPOS);
                         lift.setDumper(DEPOSITTRANSFERFAST2);
                     }
                     if (intakeTimer.seconds() > 0.15) {
@@ -388,6 +395,9 @@ public class RobotControl extends ControlModule{
                     }
                 }
                 if (mode == Modes.Circuit) {
+                    if (intakeTimer.seconds() > 0.2) {
+                        lift.setLatch(LATCHOUTPOS);
+                    }
                     if (intakeTimer.seconds() > 0.2) {
                         intake.setClaw(CLAWOPENPOS);
                         lift.setDumper(DEPOSITTRANSFER2);
@@ -416,6 +426,7 @@ public class RobotControl extends ControlModule{
                 ADJUSTHORIZ = 0;
                 if (x_button.edge() == -1) {
                     intakeTimerReset = false;
+                    lift.setLatch(LATCHINPOS);
                     stateForIntake = IntakeStates.LookingForCone;
                 }
                 break;
