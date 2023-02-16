@@ -170,8 +170,8 @@ public class RobotControl extends ControlModule{
 
         ax_lift_left_x = controllerMap.getAxisMap("lift:left_x", "gamepad2", "left_stick_x");//finetuning
 
-//        horiz_fwd = controllerMap.getAxisMap("testhoriz:fwd", "gamepad1", "right_trigger");//finetuning
-//        horiz_back = controllerMap.getAxisMap("testhoriz:back", "gamepad1", "left_trigger");//finetuning
+        horiz_fwd = controllerMap.getAxisMap("testhoriz:fwd", "gamepad1", "right_trigger");//finetuning
+        horiz_back = controllerMap.getAxisMap("testhoriz:back", "gamepad1", "left_trigger");//finetuning
 
         ax_lift_left_y = controllerMap.getAxisMap("lift:left_y", "gamepad2", "left_stick_y");
         ax_lift_right_y = controllerMap.getAxisMap("lift:right_y", "gamepad2", "right_stick_y");
@@ -229,6 +229,7 @@ public class RobotControl extends ControlModule{
         //lift
         switch (stateForLift) {
             case LiftDown:
+                lift.setLatchPosition(0.356);
                 if (mode == Modes.Fast) {
                     lift.setLiftTarget(LIFTDOWNPOSFAST);
                 } else {
@@ -260,6 +261,7 @@ public class RobotControl extends ControlModule{
                 break;
 
             case LiftUp:
+                lift.setLatchPosition(0.18);
                 if (mode == Modes.Fast) {
                     lift.setHolderPosition(DEPOSITLIFTFAST);
                 } else {
@@ -337,7 +339,7 @@ public class RobotControl extends ControlModule{
                         horizontal.setHorizTarget(FASTMODEHORIZ);
                     }
                 }
-                if ((intake.getDistance() <= 17 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - arm.getCurrentPosition()) < 60) {
+                if ((intake.getDistance() <= 25 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - arm.getCurrentPosition()) < 60) {
                     stateForLift = LiftStates.LiftDown;
                     intakeTimerReset = false;
                     if (mode == Modes.Ground) {
@@ -469,17 +471,17 @@ public class RobotControl extends ControlModule{
                 break;
         }
 
-        if (switchFast.edge() == -1) {
+        if (testswitchFast.edge() == -1) {
             mode = Modes.Fast;
             lift_trapezoid.reset();
         }
 
-        if (switchGround.edge() == -1) {
+        if (testswitchGround.edge() == -1) {
             mode = Modes.Ground;
             lift_trapezoid.reset();
         }
 
-        if (switchCircuit.edge() == -1) {
+        if (testswitchCircuit.edge() == -1) {
             mode = Modes.Circuit;
             lift_trapezoid.reset();
         }
@@ -495,12 +497,12 @@ public class RobotControl extends ControlModule{
         if(stateForIntake == IntakeStates.LookingForCone || stateForIntake == IntakeStates.GroundDrivingAround || stateForIntake == IntakeStates.Ground) {
             horiz_kp_var = HORIZ_KP_FINE;
             if (mode == Modes.Fast) {
-                FASTMODEHORIZ -= (ax_lift_left_x.get() * 24);
+                FASTMODEHORIZ -= ((horiz_fwd.get() - horiz_back.get()) * 24);
                 if (FASTMODEHORIZ < MAXEXTENDEDHORIZ) FASTMODEHORIZ = MAXEXTENDEDHORIZ;
                 if (FASTMODEHORIZ > 0) FASTMODEHORIZ = 0;
                 horizontal.setHorizTarget(FASTMODEHORIZ);
             } else {
-                ADJUSTHORIZ -= (ax_lift_left_x.get() * 90);
+                ADJUSTHORIZ -= ((horiz_fwd.get() - horiz_back.get()) * 100);
                 if (ADJUSTHORIZ < MAXEXTENDEDHORIZ) ADJUSTHORIZ = MAXEXTENDEDHORIZ;
                 if (ADJUSTHORIZ > 0) ADJUSTHORIZ = 0;
                 horizontal.setHorizTarget(ADJUSTHORIZ);

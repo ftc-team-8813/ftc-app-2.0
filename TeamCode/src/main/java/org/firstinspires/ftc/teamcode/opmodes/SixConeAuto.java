@@ -88,10 +88,10 @@ public class SixConeAuto extends LoggingOpMode{
     private double t_cs = t_cs_1;
 
     public static double x_cs_1 = 10.5;
-    public static double x_cs_2 = 9.97;
-    public static double x_cs_3 = 9.89;
-    public static double x_cs_4 = 9.81;
-    public static double x_cs_5 = 9.73;
+    public static double x_cs_2 = 10.3;
+    public static double x_cs_3 = 10.1;
+    public static double x_cs_4 = 10.25;
+    public static double x_cs_5 = 10.45;
 
     private double x_cs = x_cs_1;
 
@@ -103,23 +103,27 @@ public class SixConeAuto extends LoggingOpMode{
 
     private double y_cs = y_cs_1;
 
-    public static double arm_target_cs_1 = -66.5;
-    public static double arm_target_cs_2 = -68.0;
-    public static double arm_target_cs_3 = -68.5;
-    public static double arm_target_cs_4 = -70.0;
-    public static double arm_target_cs_5 = -72.0;
+    public static double arm_target_cs_1 = (-83.22793502974713)+((1.0272941805214966 - 1)/2) * 9;
+    public static double arm_target_cs_2 = (-85.72793502974713)+((1.0272941805214966 - 1)/2) * 9;
+    public static double arm_target_cs_3 = (-89.22793502974713)+((1.0272941805214966 - 1)/2) * 9;
+    public static double arm_target_cs_4 = (-94.22793502974713)+((1.0272941805214966 - 1)/2) * 9;
+    public static double arm_target_cs_5 = (-96.72793502974713)+((1.0272941805214966 - 1)/2) * 9;
 
     private double arm_target_cs = arm_target_cs_1;
 
-    public double arm_coefficient = 1.056;
+    private double arm_coefficient = 1.056;
+    public double cs_coefficient = 1.056;
 
     private boolean motion_profile = false;
     private double lift_clip = 1;
 
+    private boolean rise = false;
+    private boolean fall = false;
+
     @Override
     public void init() {
-
         arm_coefficient = Math.sqrt(getBatteryVoltage()/12);
+        cs_coefficient = 1;
 
         super.init();
         Robot robot = Robot.initialize(hardwareMap);
@@ -131,6 +135,7 @@ public class SixConeAuto extends LoggingOpMode{
         odometry = robot.odometry;
 
         odometry.Down();
+        lift.setLatchPosition(0.08);
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
@@ -243,9 +248,12 @@ public class SixConeAuto extends LoggingOpMode{
     @Override
     public void loop() {
 
+        rise = false;
+        fall = false;
+
         odometry.updatePose(-drivetrain.getHeading());
         motion_profile = false;
-        if (auto_timer.seconds() < 26) {
+        if (auto_timer.seconds() < 28) {
             switch (main_id) {
                 case 0:
                     drivetrain.autoMove(-6.0, -13.0, 29.0, 2, 2, 3, odometry.getPose(), telemetry);
@@ -256,10 +264,11 @@ public class SixConeAuto extends LoggingOpMode{
                     }
                     break;
                 case 1:
-                    drivetrain.autoMove(-30.24, -24.74, 29.0, 0.9, 0.9, 0.9, odometry.getPose(), telemetry);
-                    if (drivetrain.hasReached() || timer.seconds() > 6) {
+                    drivetrain.autoMove(-30.24, -24.74, 29.0, 1, 1, 1, odometry.getPose(), telemetry);
+                    if (drivetrain.hasReached() || timer.seconds() > 5) {
                         main_id += 1;
                         arm_target = -28;
+                        lift.setLatchPosition(0.356);
                         lift_target = 0;
                     }
                     break;
@@ -279,7 +288,7 @@ public class SixConeAuto extends LoggingOpMode{
 
                 case 4:
                     lift_clip = 1;
-                    drivetrain.autoMove(-49.4, -16.51, 90.0, 2, 2, 4, odometry.getPose(), telemetry);
+                    drivetrain.autoMove(-49.4, -16.51, 90.0, 2, 2, 3, odometry.getPose(), telemetry);
                     if (drivetrain.hasReached()) {
                         intake.setWristPosition(0.019);
                         horizontal_target = -750;
@@ -289,7 +298,10 @@ public class SixConeAuto extends LoggingOpMode{
                     break;
                 case 5:
                     motion_profile = true;
-                    drivetrain.autoMove(y_cs, x_cs, t_cs, 1, 1, 0.5, odometry.getPose(), telemetry);
+                    if (odometry.getPose().getY() > 0) {
+                        fall = true;
+                    }
+                    drivetrain.autoMove(y_cs, (x_cs * cs_coefficient), t_cs, 1, 2, 0.5, odometry.getPose(), telemetry);
                     if (drivetrain.hasReached()) {
                         intake.setClawPosition(0.1);
                         main_id += 1;
@@ -316,8 +328,9 @@ public class SixConeAuto extends LoggingOpMode{
                     if (timer.seconds() > 0.5) {
                         horizontal_target = 0;
                         if (horizontal.getCurrentPosition() > -80) {
-                            arm_target = 30;
+                            arm_target = 50;
                             if (arm.getCurrentPosition() > -15) {
+                                lift.setLatchPosition(0.08);
                                 intake.setClawPosition(0.37);
                                 main_id += 1;
                             }
@@ -344,6 +357,7 @@ public class SixConeAuto extends LoggingOpMode{
                     lift_clip = 1;
                     if (lift.getCurrentPosition() > 700) {
                         main_id += 1;
+                        lift.setLatchPosition(0.356);
                     }
                     break;
                 case 12:
@@ -471,16 +485,16 @@ public class SixConeAuto extends LoggingOpMode{
 
         lift_power = Range.clip((lift_PID.getOutPut(lift_target, lift.getCurrentPosition(), 1) * Math.min(lift_trapezoid.seconds() * lift_accel, 1)), -lift_clip, lift_clip); //change
         horizontal_power = horizontal_PID.getOutPut(horizontal_target,horizontal.getCurrentPosition(),0); //change
-        arm_power = Range.clip(arm_PID.getOutPut(arm_target, arm.getCurrentPosition(), Math.cos(Math.toRadians(arm.getCurrentPosition() + 0))), -0.6, 1); //change
+        arm_power = Range.clip(arm_PID.getOutPut(arm_target, arm.getCurrentPosition(), Math.cos(Math.toRadians(arm.getCurrentPosition() + 0))), -1, 1); //change
 
         lift.setPower(lift_power);
         horizontal.setPower(horizontal_power);
         arm.setPower(arm_power);
 
-        drivetrain.update(odometry.getPose(), telemetry,motion_profile);
+        drivetrain.update(odometry.getPose(), telemetry,motion_profile, main_id, rise, fall);
 
         telemetry.addData("Main ID", main_id);
-        telemetry.addData("Voltage", getBatteryVoltage());
+//        telemetry.addData("Voltage", getBatteryVoltage());
         telemetry.addData("Coefficient", arm_coefficient);
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();

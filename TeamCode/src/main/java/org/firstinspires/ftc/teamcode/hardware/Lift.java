@@ -11,14 +11,16 @@ public class Lift {
     private final DcMotorEx lift_right;
     private final DigitalChannel lift_limit;
     private final Servo holder;
+    private final Servo latch;
     private double liftCurrent;
     private double lift1Target;
 
-    public Lift(DcMotorEx lift_left, DcMotorEx lift_right, DigitalChannel lift_limit, Servo holder){
+    public Lift(DcMotorEx lift_left, DcMotorEx lift_right, DigitalChannel lift_limit, Servo holder, Servo latch){
         this.lift_left = lift_left;
         this.lift_right = lift_right;
         this.lift_limit = lift_limit;
         this.holder = holder;
+        this.latch = latch;
 
 //        lift_right.setDirection(DcMotorSimple.Direction.REVERSE);
     }
@@ -68,4 +70,11 @@ public class Lift {
         return holder.getPosition();
     }
 
+    public void setLatchPosition(double pos) {
+        latch.setPosition(pos);
+    }
+
+    public double getLatchPosition() {
+        return latch.getPosition();
+    }
 }

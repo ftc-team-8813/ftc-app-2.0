@@ -155,7 +155,7 @@ public class ParkingAuto extends LoggingOpMode{
                 break;
         }
 
-        drivetrain.update(odometry.getPose(), telemetry,false);
+        drivetrain.update(odometry.getPose(), telemetry,false, main_id, false, false);
 
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();

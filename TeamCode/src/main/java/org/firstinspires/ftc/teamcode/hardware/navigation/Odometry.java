@@ -82,7 +82,7 @@ public class Odometry {
     }
 
     public void Down() {
-        center_odometry.setPosition(0.34);
+        center_odometry.setPosition(0.36);
         left_odometry.setPosition(0.566);
         right_odometry.setPosition(0.63);
     }

@@ -67,9 +67,9 @@ public class PID {
             integralSum = -maxIntegralSum;
         }
 
-//        if (reference != lastReference) {
-//            integralSum = 0;
-//        }
+        if (reference != lastReference) {
+            integralSum = 0;
+        }
 
         out = (Kp * error) + (Ki * integralSum) + (Kd * derivative) + (Kf * feedforward);
 
@@ -93,7 +93,15 @@ public class PID {
         return error;
     }
 
-//    public void update(double pos, double target_pos) {
+    public void setKp(double kp) {
+        Kp = kp;
+    }
+
+    public void setKi(double ki) {
+        Ki = ki;
+    }
+
+    //    public void update(double pos, double target_pos) {
 //        position = pos;
 //        target_position = target_pos;
 //    }

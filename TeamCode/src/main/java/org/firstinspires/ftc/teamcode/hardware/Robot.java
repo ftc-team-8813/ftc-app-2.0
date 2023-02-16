@@ -61,6 +61,7 @@ public class Robot {
         Servo claw = hardwareMap.get(Servo.class, "claw");
         Servo wrist = hardwareMap.get(Servo.class, "wrist");
         Servo holder = hardwareMap.get(Servo.class, "deposit"); // holder
+        Servo latch = hardwareMap.get(Servo.class, "latch");
 
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
@@ -74,7 +75,7 @@ public class Robot {
         this.intake = new Intake(claw_sensor,claw,wrist);
         this.arm = new Arm(arm,arm_limit);
         this.horizontal = new Horizontal(horizontal,horizontal_limit);
-        this.lift = new Lift(lift_left, lift_right.motorEx, lift_limit, holder);
+        this.lift = new Lift(lift_left, lift_right.motorEx, lift_limit, holder, latch);
         this.odometry = new Odometry(front_left, front_right, back_left, back_right, center_odometry, left_odometry, right_odometry);
         this.mode = new Mode();
     }

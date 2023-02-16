@@ -312,7 +312,7 @@ public class RightCone1Park extends LoggingOpMode{
         horizontal.setPower(horizontal_power);
         arm.setPower(arm_power);
 
-        drivetrain.update(odometry.getPose(), telemetry,motion_profile);
+        drivetrain.update(odometry.getPose(), telemetry,motion_profile, main_id, false, false);
 
         telemetry.addData("Main ID", main_id);
 //        telemetry.addData("Voltage", getBatteryVoltage());

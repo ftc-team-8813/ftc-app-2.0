@@ -194,7 +194,7 @@ public class SquareAuto extends LoggingOpMode {
 
         }
 
-        drivetrain.update(odometry.getPose(), telemetry,false);
+        drivetrain.update(odometry.getPose(), telemetry,false, main_id, false, false);
 
         telemetry.addData("Main ID", main_id);
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());

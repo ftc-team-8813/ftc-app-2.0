@@ -701,7 +701,7 @@ public class DrivetrainTunePID extends LoggingOpMode{
 
 //        timer_point_4 = LoopTimer.getLoopTime();
 
-        drivetrain.update(odometry.getPose(), telemetry,motion_profile);
+        drivetrain.update(odometry.getPose(), telemetry,motion_profile, main_id, false, false);
 
 //        double rot;
 //

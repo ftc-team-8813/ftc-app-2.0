@@ -52,7 +52,7 @@ public class MotionProfile {
         }
 
         if (!rise && !fall) {
-            output = 2.0;
+            output = 0.7;
         }
 
         output = Range.clip(output, min, max);
