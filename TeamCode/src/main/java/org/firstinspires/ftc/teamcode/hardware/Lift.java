@@ -14,6 +14,7 @@ public class Lift {
     private final Servo latch;
     private double liftCurrent;
     private double lift1Target;
+    private boolean old_state = true;
 
     public Lift(DcMotorEx lift_left, DcMotorEx lift_right, DigitalChannel lift_limit, Servo holder, Servo latch){
         this.lift_left = lift_left;
@@ -76,5 +77,17 @@ public class Lift {
 
     public double getLatchPosition() {
         return latch.getPosition();
+    }
+
+    public void setHolderState(boolean on){
+        if (on != old_state) { //if the state changed
+            if (on) {
+                holder.setPosition(holder.getPosition());
+            }
+            old_state = on;
+        }
+        if (!on) {
+            holder.setPosition(0);
+        }
     }
 }
