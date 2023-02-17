@@ -8,7 +8,6 @@ import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
-import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
 
 public class ArmControl extends ControlModule {
 

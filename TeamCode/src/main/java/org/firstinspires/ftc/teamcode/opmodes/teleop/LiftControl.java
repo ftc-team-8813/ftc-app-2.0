@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
@@ -9,8 +8,6 @@ import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
-import org.firstinspires.ftc.teamcode.opmodes.util.FTCDVS;
-import org.firstinspires.ftc.teamcode.util.Logger;
 
 public class LiftControl extends ControlModule {
 
@@ -70,7 +67,7 @@ public class LiftControl extends ControlModule {
             target = 0;
             lift.setHolderPosition(0.17);
             lift_ready_for_cone = false;
-            if (lift.getLiftCurrent() < 10) {
+            if (lift.getCurrentPosition() < 10) {
                 lift_ready_for_cone = true;
                 time_till_held.reset();
             }
@@ -107,19 +104,16 @@ public class LiftControl extends ControlModule {
         }
 
         if (drop.edge() == -1) {
-            target = 0;
             if (target < 450) {
                 lift.setHolderPosition(0.4);
             }
             else {
                 lift.setHolderPosition(0.33);
             }
-
+            target = 0;
         }
 
-
-
-        double power = pid.getOutPut(target, lift.getLiftCurrent(), 1) * Math.min(lift_acceleration_timer.seconds() * LIFT_ACCELERATION_CONSTANT, 1);
+        double power = pid.getOutPut(target, lift.getCurrentPosition(), 1) * Math.min(lift_acceleration_timer.seconds() * LIFT_ACCELERATION_CONSTANT, 1);
 
         lift.setPower(power);
     }

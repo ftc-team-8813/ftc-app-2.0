@@ -20,7 +20,7 @@ public class Arm {
     }
 
     public void update() {
-        armCurrent = -arm.getCurrentPosition() * 288 / 8192;
+        armCurrent = -arm.getCurrentPosition() * 288.0 / 8192.0;
     }
 
     public void setPower(double pow) {

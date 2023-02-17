@@ -56,7 +56,7 @@ public class PID {
 
         derivative = currentFilterEstimate / timer.seconds();
 
-        integralSum = integralSum + (error * timer.seconds());
+        integralSum += (error * timer.seconds());
 
 
         if (integralSum > maxIntegralSum) {
@@ -67,9 +67,9 @@ public class PID {
             integralSum = -maxIntegralSum;
         }
 
-        if (reference != lastReference) {
-            integralSum = 0;
-        }
+//        if (reference != lastReference) {
+//            integralSum = 0;
+//        }
 
         out = (Kp * error) + (Ki * integralSum) + (Kd * derivative) + (Kf * feedforward);
 
@@ -79,6 +79,18 @@ public class PID {
 
         timer.reset();
         return out;
+    }
+
+    public double getIntergralSum() {
+        return integralSum;
+    }
+
+    public double getTimer() {
+        return timer.seconds();
+    }
+
+    public double getError() {
+        return error;
     }
 
 //    public void update(double pos, double target_pos) {
