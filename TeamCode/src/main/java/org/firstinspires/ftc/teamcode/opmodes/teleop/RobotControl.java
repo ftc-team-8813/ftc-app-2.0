@@ -46,7 +46,8 @@ public class RobotControl extends ControlModule{
     private ControllerMap.ButtonEntry a_button;
     private ControllerMap.ButtonEntry x_button;
     private ControllerMap.ButtonEntry extendFast;
-
+    private ControllerMap.ButtonEntry upDepo;
+    private ControllerMap.ButtonEntry downDepo;
     private ControllerMap.ButtonEntry sense;
     private ControllerMap.ButtonEntry dump;
 
@@ -153,6 +154,8 @@ public class RobotControl extends ControlModule{
         switchFast = controllerMap.getButtonMap("switchFast", "gamepad2", "dpad_up");
         switchGround = controllerMap.getButtonMap("switchGround", "gamepad2", "dpad_down");
         switchCircuit = controllerMap.getButtonMap("switchCircuit", "gamepad2", "dpad_right");
+        upDepo = controllerMap.getButtonMap("upDepo", "gamepad2", "y");
+        downDepo = controllerMap.getButtonMap("downDepo", "gamepad2", "a");
 
         ax_lift_left_x = controllerMap.getAxisMap("lift:left_x", "gamepad2", "left_stick_x"); //finetuning
         ax_lift_left_y = controllerMap.getAxisMap("lift:left_y", "gamepad2", "left_stick_y");
