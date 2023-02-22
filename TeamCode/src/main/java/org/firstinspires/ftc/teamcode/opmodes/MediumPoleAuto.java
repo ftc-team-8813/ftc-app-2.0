@@ -3,8 +3,9 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -18,7 +19,6 @@ import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
-import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.vision.AprilTagDetectionPipeline;
 import org.openftc.apriltag.AprilTagDetection;
@@ -27,11 +27,11 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
+import java.util.List;
 
-@Disabled
 @Config
-@Autonomous(name = "B Six Cone Auto")
-public class BSixConeAuto extends LoggingOpMode{
+@Autonomous(name = "!  !! Medium Pole Auto !!  !")
+public class MediumPoleAuto extends LoggingOpMode{
 
     private Lift lift;
     private Horizontal horizontal;
@@ -44,6 +44,7 @@ public class BSixConeAuto extends LoggingOpMode{
 
     private int main_id = 0;
     private int cs_id = 0;
+    private int park_id = 0;
 
     private OpenCvCamera camera;
     private AprilTagDetectionPipeline aprilTagDetectionPipeline;
@@ -56,12 +57,15 @@ public class BSixConeAuto extends LoggingOpMode{
     private final double cy = 221.506;
 
     private final double tagsize = 0.166;
+    public static double exponent = 0.75;
+    public static double multiplier = 2.1;
 
     private final PID arm_PID = new PID(0.009, 0, 0, 0.1, 0, 0);
-    private final PID horizontal_PID = new PID(0.01, 0, 0, 0, 0, 0);
+    private final PID horizontal_PID = new PID(0.008, 0, 0, 0, 0, 0);
     private final PID lift_PID = new PID(0.02, 0, 0, 0.015, 0, 0);
 
     private final ElapsedTime timer = new ElapsedTime();
+    private final ElapsedTime auto_timer = new ElapsedTime();
 
     private final ElapsedTime lift_trapezoid = new ElapsedTime();;
     private final double lift_accel = 0.39;
@@ -74,10 +78,10 @@ public class BSixConeAuto extends LoggingOpMode{
     private double horizontal_power;
     private double arm_power;
 
-    public static double y1 = -49.4;
+    public static double y1 = -49.85;
     public static double x1 = -16.51;
     public static double t1 = 90.0;
-    public static double y2 = -49.4;
+    public static double y2 = -49.85;
 
     public static double t_cs_1 = 90;
     public static double t_cs_2 = 90;
@@ -87,39 +91,53 @@ public class BSixConeAuto extends LoggingOpMode{
 
     private double t_cs = t_cs_1;
 
-    public static double x_cs_1 = -400;
-    public static double x_cs_2 = -400;
-    public static double x_cs_3 = -400;
-    public static double x_cs_4 = -400;
-    public static double x_cs_5 = -400;
+    public static double x_cs_1 = 11.28;
+    public static double x_cs_2 = 11.18;
+    public static double x_cs_3 = 10.78;
+    public static double x_cs_4 = 10.88;
+    public static double x_cs_5 = 11.08;
 
     private double x_cs = x_cs_1;
 
-    public static double y_cs_1 = -49.4;
-    public static double y_cs_2 = -49.4;
-    public static double y_cs_3 = -49.4;
-    public static double y_cs_4 = -49.4;
-    public static double y_cs_5 = -49.4;
+    public static double y_cs_1 = -49.85;
+    public static double y_cs_2 = -49.85;
+    public static double y_cs_3 = -49.85;
+    public static double y_cs_4 = -49.85;
+    public static double y_cs_5 = -49.85;
 
     private double y_cs = y_cs_1;
 
-    public static double arm_target_cs_1 = -67.0;
-    public static double arm_target_cs_2 = -68.0;
-    public static double arm_target_cs_3 = -68.5;
-    public static double arm_target_cs_4 = -70.0;
-    public static double arm_target_cs_5 = -72.0;
+    public static double arm_target_cs_1 = -95.7;
+    public static double arm_target_cs_2 = -100.2;
+    public static double arm_target_cs_3 = -104.5;
+    public static double arm_target_cs_4 = -109.5;
+    public static double arm_target_cs_5 = -112;
 
     private double arm_target_cs = arm_target_cs_1;
 
-    public double arm_coefficient = 1.056;
+    private double voltage_cofficient;
 
     private boolean motion_profile = false;
     private double lift_clip = 1;
 
+    private boolean rise = false;
+    private boolean fall = false;
+
+    //TODO Change the parkings stuff
+
+    private double voltage;
+
     @Override
     public void init() {
 
-        arm_coefficient = Math.sqrt(getBatteryVoltage()/12);
+        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
+
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
+
+        voltage = getBatteryVoltage();
+        voltage_cofficient = Math.pow(((12.4/voltage) * multiplier),exponent);
 
         super.init();
         Robot robot = Robot.initialize(hardwareMap);
@@ -131,6 +149,7 @@ public class BSixConeAuto extends LoggingOpMode{
         odometry = robot.odometry;
 
         odometry.Down();
+        lift.setLatchPosition(0.08);
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
@@ -161,6 +180,10 @@ public class BSixConeAuto extends LoggingOpMode{
 
         intake.setWristPosition(0.019);
         intake.setClawPosition(0.37);
+
+        arm.setPower(0.5);
+        lift.setPower(-0.2);
+        horizontal.setPower(0.3);
     }
 
     @Override
@@ -196,27 +219,22 @@ public class BSixConeAuto extends LoggingOpMode{
 
         telemetry.update();
 
-        if(!arm.getLimit()){
-            arm.setPower(0.5);
-        }
-        if(!lift.getLimit()){
-            lift.setPower(-0.2);
-        }
-        if(!horizontal.getLimit()){
-            horizontal.setPower(0.3);
-        }
-
         if(arm.getLimit()){
             arm.resetEncoders();
-        }
-        if(lift.getLimit()){
-            lift.resetEncoders();
-        }
-        if(horizontal.getLimit()){
-            horizontal.resetEncoders();
+            arm.setPower(0);
         }
 
-        lift.setHolderPosition(0.3);
+        if(lift.getLimit()){
+            lift.resetEncoders();
+            lift.setPower(0);
+        }
+
+        if(horizontal.getLimit()){
+            horizontal.resetEncoders();
+            horizontal.setPower(0);
+        }
+
+        lift.setHolderPosition(0.12);
 
         arm.resetEncoders();
         lift.resetEncoders();
@@ -228,191 +246,143 @@ public class BSixConeAuto extends LoggingOpMode{
     @Override
     public void start() {
         super.start();
-        lift_target = 745;
+        drivetrain.resetEncoders();
         lift_trapezoid.reset();
     }
 
     @Override
     public void loop() {
 
+        arm.updatePosition();
+        lift.updatePosition();
+        horizontal.updatePosition();
+        drivetrain.updateHeading();
+
+        rise = false;
+        fall = false;
+
         odometry.updatePose(-drivetrain.getHeading());
+        Pose2d odometryPose = odometry.getPose();
+
         motion_profile = false;
 
         switch (main_id) {
             case 0:
-                drivetrain.autoMove(-6.0,-13.0,29.0,2,2,3, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-10, 3, 0, 1.5, 1.5, 1, odometryPose, telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
-                    lift.setHolderPosition(0.39);
-                    timer.reset();
+                    lift_target = 400;
+                    lift_trapezoid.reset();
                 }
                 break;
             case 1:
-                drivetrain.autoMove(-30.24,-24.74,29.0,0.9,0.9,0.9, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached() || timer.seconds() > 6) {
+                drivetrain.autoMove(-42.48, 4, 0, 1, 2, 1, odometryPose, telemetry);
+                if (drivetrain.hasReached()) {
                     main_id += 1;
-                    arm_target = -28;
-                    lift_target = 0;
                 }
                 break;
             case 2:
+                drivetrain.autoMove(-42.48, 4, 111.8125, 1, 1, 1, odometryPose, telemetry);
+                if (drivetrain.hasReached()) {
+                    main_id += 1;
+                    horizontal_target = -760;
+                    lift.setHolderPosition(0.39);
+                    lift_target = 450;
+                    lift_trapezoid.reset();
+                }
+                break;
+            case 3:
+                drivetrain.autoMove(-42.48, 2.209, 111.8125, 0.45, 0.45, 1, odometryPose, telemetry);
+                if (drivetrain.hasReached()) {
+                    main_id += 1;
+                    lift_target = 0;
+                }
+                break;
+            case 4:
                 if (lift.getCurrentPosition() < 200) {
                     lift_clip = 0.17;
                     lift.setHolderPosition(0.095);
                     main_id += 1;
                 }
-                break;
-            case 3:
+            case 5:
                 if (lift.getCurrentPosition() < 150) {
                     main_id += 1;
                     lift_clip = 1;
                 }
                 break;
-
-            case 4:
-                lift_clip = 1;
-                drivetrain.autoMove(-49.4,-16.51,90.0,2,2,4, odometry.getPose(),telemetry);
-                if (drivetrain.hasReached()) {
-                    intake.setWristPosition(0.019);
-                    horizontal_target = x_cs;
-                    main_id += 1;
-                }
-                break;
-            case 5:
-                motion_profile = true;
-                drivetrain.autoMove(y_cs,11,t_cs,1,1,0.5, odometry.getPose(), telemetry);
-                if (drivetrain.hasReached()) {
-                    arm_target = arm_target_cs * arm_coefficient;
-                    main_id += 1;
-                    timer.reset();
-                }
-                break;
             case 6:
-                if (timer.seconds() > 0.7) {
-                    intake.setClawPosition(0.1);
+                drivetrain.autoMove(-45, 2.209, 111.8125, 1, 1, 1, odometryPose, telemetry);
+                if (drivetrain.hasReached()) {
                     main_id += 1;
-                    timer.reset();
                 }
                 break;
             case 7:
-                if (timer.seconds() > 0.7) {
-                    arm_target = -30;
-                    main_id += 1;
+                drivetrain.autoMove(-44.673, 8.3, 100, 1, 1, 1, odometryPose, telemetry);
+                if (drivetrain.hasReached()) {
+                    telemetry.addData("Distance", intake.getDistance());
+//                    main_id += 1;
+                    arm_target = -95;
                     timer.reset();
                 }
                 break;
             case 8:
-                if (arm.getCurrentPosition() > -50) {
-                    drivetrain.autoMove(-55.9,-16.51,126.9375,1,1,3, odometry.getPose(),telemetry);
-                    intake.setWristPosition(0.678);
-                    if(timer.seconds() >  0.5) {
-                        horizontal_target = 0;
-                        if (horizontal.getCurrentPosition() > -80) {
-                            arm_target = 30;
-                            if(arm.getCurrentPosition() > -15) {
-                                intake.setClawPosition(0.37);
-                                main_id += 1;
-                            }
-                        }
-                    }
+                if (arm.getCurrentPosition() < -90 && arm.getCurrentPosition() > -110 && timer.seconds() > 0.7) {
+                    intake.setClawPosition(0.1);
+                    timer.reset();
+                    main_id += 1;
                 }
                 break;
             case 9:
-                arm_target = -28;
-                lift_trapezoid.reset();
-                drivetrain.autoMove(-55.9,-16.51,126.9375,4,4,7, odometry.getPose(),telemetry);
-                if (drivetrain.hasReached()) {
-                    lift_target = 745;
-                    lift.setHolderPosition(0.39);
+                if (timer.seconds() > 0.7) {
+                    horizontal_target = -200;
+                    arm_target = -50;
                     main_id += 1;
                 }
                 break;
             case 10:
-                drivetrain.autoMove(-44.48,-21.97,126.9375,1.9,1.9,1.6, odometry.getPose(),telemetry);
-                if (drivetrain.hasReached()) {
+                if (arm.getCurrentPosition() > -70) {
+                    intake.setWristPosition(0.678);
                     main_id += 1;
                 }
                 break;
             case 11:
-                lift_clip = 1;
-                if (lift.getCurrentPosition() > 700) {
+                if (timer.seconds() > 1.2) {
+                    horizontal_target = 0;
+                    arm_target = 50;
                     main_id += 1;
                 }
                 break;
             case 12:
-                lift_target = 0;
-                if (lift.getCurrentPosition() < 200) {
-                    lift_clip = 0.17;
-                    lift.setHolderPosition(0.095);
+                if (arm.getCurrentPosition() > 40 && horizontal.getCurrentPosition() < -50) {
+                    intake.setClawPosition(0.37);
                     main_id += 1;
                 }
                 break;
             case 13:
-                if (lift.getCurrentPosition() < 150) {
-                    intake.setWristPosition(0.019);
-                    cs_id += 1;
-                    if (cs_id > 4) {
-                        main_id += 1;
-                    }
-                    else {
-                        main_id = 4;
-                    }
-                }
+                arm_target = -28;
+                main_id += 1;
                 break;
+//            case 2:
+//                drivetrain.autoMove(-42.48, 2.209, 111.8125, 1, 1, 1, odometryPose, telemetry);
+//                if (drivetrain.hasReached()) {
+//                    main_id += 1;
+//                }
+//                break;
         }
-
-
-        switch (cs_id) {
-            case 0:
-                x_cs = x_cs_1;
-                y_cs = y_cs_1;
-                t_cs = t_cs_1;
-                arm_target_cs = arm_target_cs_1;
-                break;
-            case 1:
-                x_cs = x_cs_2;
-                y_cs = y_cs_2;
-                t_cs = t_cs_2;
-                arm_target_cs = arm_target_cs_2;
-                break;
-            case 2:
-                x_cs = x_cs_3;
-                y_cs = y_cs_3;
-                t_cs = t_cs_3;
-                arm_target_cs = arm_target_cs_3;
-                break;
-            case 3:
-                x_cs = x_cs_4;
-                y_cs = y_cs_4;
-                t_cs = t_cs_4;
-                arm_target_cs = arm_target_cs_4;
-                break;
-            case 4:
-                x_cs = x_cs_5;
-                y_cs = y_cs_5;
-                t_cs = t_cs_5;
-                arm_target_cs = arm_target_cs_5;
-                break;
-        }
-
-
-
-
-
 
         lift_power = Range.clip((lift_PID.getOutPut(lift_target, lift.getCurrentPosition(), 1) * Math.min(lift_trapezoid.seconds() * lift_accel, 1)), -lift_clip, lift_clip); //change
         horizontal_power = horizontal_PID.getOutPut(horizontal_target,horizontal.getCurrentPosition(),0); //change
-        arm_power = Range.clip(arm_PID.getOutPut(arm_target, arm.getCurrentPosition(), Math.cos(Math.toRadians(arm.getCurrentPosition() + 0))), -0.6, 1); //change
+        arm_power = Range.clip(arm_PID.getOutPut(arm_target, arm.getCurrentPosition(), Math.cos(Math.toRadians(arm.getCurrentPosition() + 0))), -1, 0.5); //change
 
         lift.setPower(lift_power);
         horizontal.setPower(horizontal_power);
-        arm.setPower(arm_power);
+        arm.setPower((arm_power*voltage_cofficient));
 
-        drivetrain.update(odometry.getPose(), telemetry,motion_profile, main_id, false, false);
+        drivetrain.update(odometryPose, telemetry,motion_profile, main_id, rise, fall, voltage);
 
         telemetry.addData("Main ID", main_id);
-        telemetry.addData("Voltage", getBatteryVoltage());
-        telemetry.addData("Coefficient", arm_coefficient);
+//        telemetry.addData("Voltage", getBatteryVoltage());
+//        telemetry.addData("Coefficient", voltage_cofficient);
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();
 

@@ -27,7 +27,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import java.util.ArrayList;
 
 @Config
-@Autonomous(name = "!! Right 1 Cone Park !!")
+@Autonomous(name = "! ! Right 1 Cone Park ! !")
 public class RightCone1Park extends LoggingOpMode{
 
     private Lift lift;
@@ -161,6 +161,10 @@ public class RightCone1Park extends LoggingOpMode{
 
         intake.setWristPosition(0.019);
         intake.setClawPosition(0.37);
+
+        arm.setPower(0.5);
+        lift.setPower(-0.2);
+        horizontal.setPower(0.3);
     }
 
     @Override
@@ -196,24 +200,19 @@ public class RightCone1Park extends LoggingOpMode{
 
         telemetry.update();
 
-        if(!arm.getLimit()){
-            arm.setPower(0.5);
-        }
-        if(!lift.getLimit()){
-            lift.setPower(-0.2);
-        }
-        if(!horizontal.getLimit()){
-            horizontal.setPower(0.3);
-        }
-
         if(arm.getLimit()){
             arm.resetEncoders();
+            arm.setPower(0);
         }
+
         if(lift.getLimit()){
             lift.resetEncoders();
+            lift.setPower(0);
         }
+
         if(horizontal.getLimit()){
             horizontal.resetEncoders();
+            horizontal.setPower(0);
         }
 
         lift.setHolderPosition(0.12);
@@ -228,6 +227,7 @@ public class RightCone1Park extends LoggingOpMode{
     @Override
     public void start() {
         super.start();
+        drivetrain.resetEncoders();
         lift_target = 745;
         lift_trapezoid.reset();
         lift.setHolderPosition(0.3);
@@ -235,6 +235,11 @@ public class RightCone1Park extends LoggingOpMode{
 
     @Override
     public void loop() {
+
+        arm.updatePosition();
+        lift.updatePosition();
+        horizontal.updatePosition();
+        drivetrain.updateHeading();
 
         odometry.updatePose(-drivetrain.getHeading());
         motion_profile = false;
@@ -312,7 +317,7 @@ public class RightCone1Park extends LoggingOpMode{
         horizontal.setPower(horizontal_power);
         arm.setPower(arm_power);
 
-        drivetrain.update(odometry.getPose(), telemetry,motion_profile, main_id, false, false);
+        drivetrain.update(odometry.getPose(), telemetry,motion_profile, main_id, false, false,0);
 
         telemetry.addData("Main ID", main_id);
 //        telemetry.addData("Voltage", getBatteryVoltage());

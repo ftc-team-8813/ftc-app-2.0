@@ -233,7 +233,7 @@ public class ZAuto extends LoggingOpMode {
                 break;
         }
 
-        drivetrain.update(odometry.getPose(), telemetry,false, main_id, false, false);
+        drivetrain.update(odometry.getPose(), telemetry,false, main_id, false, false, 0);
 
         telemetry.addData("Main ID", main_id);
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());

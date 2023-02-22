@@ -9,6 +9,7 @@ public class Horizontal {
     private final DcMotorEx horizontal;
     private final DigitalChannel horizontal_limit;
     private double horizTarget;
+    private double horizontal_position;
 
     public Horizontal(DcMotorEx horizontal, DigitalChannel horizontal_limit) {
         this.horizontal = horizontal;
@@ -34,8 +35,12 @@ public class Horizontal {
         return horizTarget;
     }
 
+    public void updatePosition() {
+        horizontal_position = horizontal.getCurrentPosition();
+    }
+
     public double getCurrentPosition() {
-        return horizontal.getCurrentPosition();
+        return horizontal_position;
     }
 
     public boolean getLimit() {

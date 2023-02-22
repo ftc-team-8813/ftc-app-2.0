@@ -60,7 +60,7 @@ public class Drivetrain {
 
     public static double rise_slope = 0.1;
     public static double fall_slope = 0.00000000000000000000001;
-    public static double minimum = 0;
+    public static double minimum = 0.137;
     public static double maximum = 1;
     public static double feed_forward = 1;
 
@@ -92,6 +92,7 @@ public class Drivetrain {
 
     private double heading_delta;
     private double heading_was;
+    private double heading;
 
     public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu) {
         this.front_left = front_left;
@@ -198,7 +199,7 @@ public class Drivetrain {
 
     }
 
-    public void update(Pose2d odo, Telemetry telemetry, boolean motionProfile, int id, boolean rise, boolean fall) {
+    public void update(Pose2d odo, Telemetry telemetry, boolean motionProfile, int id, boolean rise, boolean fall, double voltage) {
         double heading = getHeading();
 
         heading_delta = heading - heading_was;
@@ -259,7 +260,8 @@ public class Drivetrain {
             strafe_cs.updateMotionProfile(id,rise,fall);
             strafe_error = Math.abs(strafe - x);
 
-            rotY = strafe_cs.getProfiledPower(strafe_error, rotY,0);
+            rotY = strafe_cs.getProfiledPower(strafe_error, rotY,0) * (12.4/voltage);
+
 //            rotY = Range.clip((strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading)),-0.2,0.4);
 
         }
@@ -291,12 +293,6 @@ public class Drivetrain {
 //        telemetry.addData("Has Reached",has_reached);
     }
 
-    public void updateHeading(Odometry odometry, Telemetry telemetry) {
-        odometry.updatePose(new Pose2d(odometry.getPose().getX(),odometry.getPose().getY(), new Rotation2d(Math.toRadians(-imu.getAngularOrientation().firstAngle))));
-        telemetry.addData("Pose", odometry.getPose());
-        odometry.updatePose(-getHeading());
-    }
-
 //    public double getForwardPosition() {
 //        return (front_left.getCurrentPosition() + front_right.getCurrentPosition() + back_left.getCurrentPosition() + back_right.getCurrentPosition()) / 4.0;
 //    }
@@ -306,6 +302,10 @@ public class Drivetrain {
 //    }
 
     public double getHeading() {
-        return imu.getAngularOrientation().firstAngle;
+        return heading;
+    }
+
+    public void updateHeading() {
+        heading = imu.getAngularOrientation().firstAngle;
     }
 }

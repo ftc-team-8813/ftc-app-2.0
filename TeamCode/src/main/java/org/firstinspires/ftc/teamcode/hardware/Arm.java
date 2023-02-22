@@ -9,7 +9,7 @@ public class Arm {
     private final DcMotorEx arm;
     private final DigitalChannel arm_limit;
     private String val = "Default";
-    private double armCurrent;
+    private double arm_position;
     private double armTarget;
 
     public Arm (DcMotorEx arm, DigitalChannel arm_limit) {
@@ -19,8 +19,8 @@ public class Arm {
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public void update() {
-        armCurrent = -arm.getCurrentPosition() * 288.0 / 8192.0;
+    public void updatePosition() {
+        arm_position = -arm.getCurrentPosition() * 288.0 / 8192.0;
     }
 
     public void setPower(double pow) {
@@ -34,12 +34,12 @@ public class Arm {
     }
 
     public double getCurrentPosition() {
-        return -arm.getCurrentPosition() * 288.0 / 8192.0;
+        return arm_position;
     }
 
-    public double getArmCurrent() {
-        return armCurrent;
-    }
+//    public double getarm_position() {
+//        return arm_position;
+//    }
 
     public void setArmTarget(double position){
         armTarget = position;

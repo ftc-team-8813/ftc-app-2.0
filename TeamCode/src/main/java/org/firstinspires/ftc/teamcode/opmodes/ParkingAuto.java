@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
+import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.util.Logger;
@@ -18,11 +19,12 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 
-@Autonomous(name = "! Parking Auto !")
+@Autonomous(name = "!! Parking Auto !!")
 public class ParkingAuto extends LoggingOpMode{
 
     private Drivetrain drivetrain;
     private Odometry odometry;
+    private Lift lift;
 
     private String result = "Nothing";
 
@@ -48,11 +50,14 @@ public class ParkingAuto extends LoggingOpMode{
         Robot robot = Robot.initialize(hardwareMap);
         drivetrain = robot.drivetrain;
         odometry = robot.odometry;
+        lift = robot.lift;
 
-        odometry.Up();
+        odometry.Down();
 
         Pose2d start_pose = new Pose2d(0,0,new Rotation2d(Math.toRadians(0)));
         odometry.updatePose(start_pose);
+
+        odometry.resetEncoders();
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -75,6 +80,8 @@ public class ParkingAuto extends LoggingOpMode{
         });
 
 //        telemetry.setMsTransmissionInterval(50);
+
+        lift.setHolderPosition(0.12);
 
     }
 
@@ -122,11 +129,13 @@ public class ParkingAuto extends LoggingOpMode{
     @Override
     public void loop() {
 
+        drivetrain.updateHeading();
+
         odometry.updatePose(-drivetrain.getHeading());
 
         switch (main_id) {
             case 0:
-                drivetrain.autoMove(-26,0,0,1,1,10, odometry.getPose(), telemetry);
+                drivetrain.autoMove(-28,0,0,1,1,10, odometry.getPose(), telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
@@ -134,13 +143,13 @@ public class ParkingAuto extends LoggingOpMode{
             case 1:
                 switch (result) {
                     case "FTC8813: 1":
-                        drivetrain.autoMove(-26,23.5,0,1,1,10, odometry.getPose(), telemetry);
+                        drivetrain.autoMove(-28,24,0,1,1,10, odometry.getPose(), telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
                         break;
                     case "FTC8813: 3":
-                        drivetrain.autoMove(-26,-23.5,0,1,1,10, odometry.getPose(),telemetry);
+                        drivetrain.autoMove(-28,-24,0,1,1,10, odometry.getPose(),telemetry);
                         if (drivetrain.hasReached()) {
                             main_id += 1;
                         }
@@ -150,12 +159,9 @@ public class ParkingAuto extends LoggingOpMode{
                         break;
                 }
                 break;
-            case 2:
-                drivetrain.stop();
-                break;
         }
 
-        drivetrain.update(odometry.getPose(), telemetry,false, main_id, false, false);
+        drivetrain.update(odometry.getPose(), telemetry,false, main_id, false, false,0);
 
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
         telemetry.update();

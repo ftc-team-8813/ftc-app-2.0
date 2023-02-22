@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.hardware.navigation.LiftStates;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Modes;
 import org.firstinspires.ftc.teamcode.hardware.navigation.MotionProfile;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
+import org.firstinspires.ftc.teamcode.hardware.navigation.TPMotionProfile;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
 @Config
@@ -34,7 +35,7 @@ public class RobotControl extends ControlModule{
 
     public static double lift_accel = 3; //bigger is faster accel
     public static double lift_decel = 0.002; //bigger is faster decel
-    private MotionProfile lift_trapezoid;
+    private TPMotionProfile lift_trapezoid;
 
     private double lift_last_height;
 
@@ -128,7 +129,7 @@ public class RobotControl extends ControlModule{
     public static double ARMCLIPUP = 1;
     public static double ARMClIPUPSLOW = 0.2;
 
-    public static double LIFT_KP = 0.02;
+    public static double LIFT_KP = 0.015;
 
     public RobotControl(String name) {
         super(name);
@@ -141,7 +142,7 @@ public class RobotControl extends ControlModule{
         liftTimer = new ElapsedTime();
         loop = new ElapsedTime();
 
-        lift_trapezoid = new MotionProfile(lift_accel, lift_decel, 0.4, 1);
+        lift_trapezoid = new TPMotionProfile(lift_accel, lift_decel, 0.4, 1);
 
         this.lift = robot.lift;
         this.intake = robot.intake;
@@ -209,12 +210,13 @@ public class RobotControl extends ControlModule{
     public void update(Telemetry telemetry) {
         loop.reset();
 
+        arm.updatePosition();
+        lift.updatePosition();
+        horizontal.updatePosition();
+
         arm_PID = new PID(0.009, 0, 0, /*0.1*/ 0, 0, 0);
         horiz_PID = new PID(horiz_kp_var, 0, 0, 0, 0, 0);
         lift_PID = new PID(LIFT_KP, 0, 0, 0.03, 0, 0);
-
-//        intake.update();
-        lift.update();
 
         lift_trapezoid.setSlopes(lift_accel, lift_decel);
 
@@ -233,7 +235,7 @@ public class RobotControl extends ControlModule{
                     lift.setLiftTarget(LIFTDOWNPOS);
                 }
 
-                if (lift.getLiftCurrent() < 200 && dumped && (stateForIntake == IntakeStates.DrivingAround || stateForIntake == IntakeStates.LookingForCone)) {
+                if (lift.getCurrentPosition() < 200 && dumped && (stateForIntake == IntakeStates.DrivingAround || stateForIntake == IntakeStates.LookingForCone)) {
                     if (lift_last_height == LIFTHIGHPOS || lift_last_height == LIFTMIDPOS || lift_last_height == LIFTHIGHPOSFAST) {
                         if (mode == Modes.Fast) {
                             lift.setHolderPosition(DEPOSITTRANSFERFAST);
@@ -279,7 +281,7 @@ public class RobotControl extends ControlModule{
 
                 } else if (mode == Modes.Fast){
                     lift.setLiftTarget(LIFTHIGHPOSFAST);
-                    if (Math.abs(lift.getLiftCurrent() - lift.getLiftTarget()) <= 30) {
+                    if (Math.abs(lift.getCurrentPosition() - lift.getLiftTarget()) <= 30) {
                         stateForLift = LiftStates.Dump;
                     }
                 }
@@ -334,7 +336,7 @@ public class RobotControl extends ControlModule{
                         horizontal.setHorizTarget(FASTMODEHORIZ);
                     }
                 }
-                if ((intake.getDistance() <= 18 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - arm.getArmCurrent()) < 60) {
+                if ((intake.getDistance() <= 18 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - arm.getCurrentPosition()) < 60) {
                     stateForLift = LiftStates.LiftDown;
                     intakeTimerReset = false;
                     if (mode == Modes.Ground) {
@@ -353,7 +355,7 @@ public class RobotControl extends ControlModule{
                     intakeTimer.reset();
                     intakeTimerReset = true;
                 }
-                if (lift.getLiftCurrent() < 40) {
+                if (lift.getCurrentPosition() < 40) {
                     if (intakeTimer.seconds() > 0.03) {
                         intake.setWristPosition(WRISTTRANSFER);
                     }
@@ -371,8 +373,8 @@ public class RobotControl extends ControlModule{
                         }
                     }
                 }
-                if (lift.getLiftCurrent() < 40 && horizontal.getCurrentPosition() > -15) {
-                    if ((mode == Modes.Fast && arm.getArmCurrent() > -34) || (mode == Modes.Circuit && arm.getArmCurrent() > -34)) {
+                if (lift.getCurrentPosition() < 40 && horizontal.getCurrentPosition() > -15) {
+                    if ((mode == Modes.Fast && arm.getCurrentPosition() > -34) || (mode == Modes.Circuit && arm.getCurrentPosition() > -34)) {
                         stateForIntake = IntakeStates.Transfer;
                         intakeTimerReset = false;
                     }
@@ -511,29 +513,31 @@ public class RobotControl extends ControlModule{
             horiz_kp_var = HORIZ_KP;
         }
 
-        lift.setHolderState(servo_kill.get() < 0.2); //TODO
+        lift.setHolderState(servo_kill.get() < 0.2);
 
-        double arm_power = arm_PID.getOutPut(arm.getArmTarget(), arm.getArmCurrent(), Math.cos(Math.toRadians((arm.getArmCurrent() * 1.25) + 136.5)));
-        if (arm.getArmCurrent() < -32) {
+        double arm_power = arm_PID.getOutPut(arm.getArmTarget(), arm.getCurrentPosition(), Math.cos(Math.toRadians((arm.getCurrentPosition() * 1.25) + 136.5)));
+        if (arm.getCurrentPosition() < -32) {
             arm_power = Range.clip(arm_power, -ARMCLIPDOWN, ARMCLIPUP);
-        } else if (arm.getArmCurrent() < -55) {
+        } else if (arm.getCurrentPosition() < -55) {
             arm_power = Range.clip(arm_power, -ARMCLIPDOWNSLOW, ARMCLIPUP);
         } else {
             arm_power = Range.clip(arm_power, -ARMCLIPDOWN, ARMClIPUPSLOW);
         }
 
-        double lift_power = lift_trapezoid.getProfiledPower((lift.getLiftTarget() - lift.getLiftCurrent()), lift_PID.getOutPut(lift.getLiftTarget(), lift.getLiftCurrent(), 1), 0.03);
+        double lift_power = lift_trapezoid.getProfiledPower((lift.getLiftTarget() - lift.getCurrentPosition()), lift_PID.getOutPut(lift.getLiftTarget(), lift.getCurrentPosition(), 1), 0.03);
 
         arm.setPower(arm_power);
         lift.setPower(lift_power);
         horizontal.setPower(horiz_PID.getOutPut(horizontal.getHorizTarget(), horizontal.getCurrentPosition(), 0));
 
+        telemetry.addData("Sense",sense.edge());
+
         telemetry.addData("Arm Pow", arm_power);
         telemetry.addData("Lift Pow", lift_power);
         telemetry.addData("Horiz Pow", horiz_PID.getOutPut(horizontal.getHorizTarget(), horizontal.getCurrentPosition(), 0));
 
-        telemetry.addData("Arm Encoder", arm.getArmCurrent());
-        telemetry.addData("Lift Encoder", lift.getLiftCurrent());
+        telemetry.addData("Arm Encoder", arm.getCurrentPosition());
+        telemetry.addData("Lift Encoder", lift.getCurrentPosition());
         telemetry.addData("Horiz Encoder", horizontal.getCurrentPosition());
 
         telemetry.addData("Arm Target", arm.getArmTarget());
