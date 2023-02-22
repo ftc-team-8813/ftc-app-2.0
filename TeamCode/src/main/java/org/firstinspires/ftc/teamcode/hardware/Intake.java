@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -19,6 +20,8 @@ public class Intake {
     private double armTarget;
     private double horizTarget;
 
+    private double claw_distance = 0;
+
     private double armCurrent;
     private double horizCurrent;
 
@@ -34,6 +37,7 @@ public class Intake {
 
     public void update() {
         armCurrent = -arm.getCurrentPosition() * 288 / 8192;
+        claw_distance = claw_sens.getDistance(DistanceUnit.MM);
     }
 
     public void resetArmEncoder(){
@@ -97,7 +101,7 @@ public class Intake {
     }
 
     public double getDistance() {
-        return claw_sens.getDistance(DistanceUnit.MM);
+        return claw_distance;
     }
 
     public double getClaw(){

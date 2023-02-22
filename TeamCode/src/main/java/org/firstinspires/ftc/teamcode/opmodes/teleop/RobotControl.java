@@ -112,7 +112,7 @@ public class RobotControl extends ControlModule{
     private double CLAWCLOSEPOS = 0.1;
 
     private double LATCHINPOS = 0.36;
-    private double LATCHOUTPOS = 0.08;
+    private double LATCHOUTPOS = 0.02;
 
     private PID arm_PID;
     private PID horiz_PID;
@@ -328,7 +328,7 @@ public class RobotControl extends ControlModule{
                         intake.setHorizTarget(FASTMODEHORIZ);
                     }
                 }
-                if ((intake.getDistance() <= 18 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - intake.getArmCurrent()) < 60) {
+                if ((intake.getDistance() <= 19 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - intake.getArmCurrent()) < 60) {
                     stateForLift = LiftStates.LiftDown;
                     intakeTimerReset = false;
                     if (mode == Modes.Ground) {
@@ -542,7 +542,7 @@ public class RobotControl extends ControlModule{
         telemetry.addData("Current Lift State", stateForLift);
         telemetry.addData("Current Mode", mode);
 
-        //telemetry.addData("Sensor Distance", intake.getDistance());
+        telemetry.addData("Sensor Distance", intake.getDistance());
         telemetry.addData("Loop Time", loop.time());
 
     }
