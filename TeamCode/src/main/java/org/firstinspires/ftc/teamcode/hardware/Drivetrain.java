@@ -35,13 +35,13 @@ public class Drivetrain {
     private final BNO055IMU imu;
     private boolean has_reached;
 
-    public static double forward_kp = 0.06;
-    public static double forward_ki = 0;
-    public static double forward_kd = 0.0105;
+    public static double forward_kp = 0.061;
+    public static double forward_ki = 0.02;
+    public static double forward_kd = 0.010;
     public static double forward_a = 0.8;
-    public static double strafe_kp = 0.07;
-    public static double strafe_ki = 0;
-    public static double strafe_kd = 0.02;
+    public static double strafe_kp = 0.071;
+    public static double strafe_ki = 0.02;
+    public static double strafe_kd = 0.019;
     public static double strafe_a = 0.8;
     public static double turn_kp = 0.007;
     public static double turn_ki = 0.12;
@@ -54,9 +54,9 @@ public class Drivetrain {
     public static double cs_turn_ki = 0.09;
     public static double cs_strafe_kp = 0.063;
 
-    private final PID forward_pid = new PID(forward_kp,forward_ki,forward_kd,0,0,forward_a);
-    private final PID strafe_pid = new PID(strafe_kp,strafe_ki,strafe_kd,0,0,strafe_a);
-    private final PID turn_pid = new PID(turn_kp,turn_ki,turn_kd,0,turn_max_i_sum,turn_a);
+    private final PID forward_pid = new PID(forward_kp,forward_ki,forward_kd,0.2,1,forward_a);
+    private final PID strafe_pid = new PID(strafe_kp,strafe_ki,strafe_kd,0.2,1,strafe_a);
+    private final PID turn_pid = new PID(turn_kp,turn_ki,turn_kd,0.55,turn_max_i_sum,turn_a);
 
     public static double rise_slope = 0.1;
     public static double fall_slope = 0.00000000000000000000001;
@@ -234,37 +234,37 @@ public class Drivetrain {
         }
 
         if (motionProfile) {
-            turn_pid.setKp(cs_turn_kp);
-            turn_pid.setKi(cs_turn_ki);
-            strafe_pid.setKp(cs_strafe_kp);
+//            turn_pid.setKp(cs_turn_kp);
+//            turn_pid.setKi(cs_turn_ki);
+//            strafe_pid.setKp(cs_strafe_kp);
             feed_forward = 1;
         }
         else {
-            turn_pid.setKp(turn_kp);
-            turn_pid.setKi(turn_ki);
-            strafe_pid.setKp(strafe_kp);
+//            turn_pid.setKp(turn_kp);
+//            turn_pid.setKi(turn_ki);
+//            strafe_pid.setKp(strafe_kp);
             feed_forward = 0;
         }
 
-        forward_power = forward_pid.getOutPut(forward,y,0);
+        forward_power = forward_pid.getOutPut(forward,y,feed_forward);
         strafe_power = strafe_pid.getOutPut(strafe,x,feed_forward);
-        turn_power = Range.clip((turn_pid.getOutPut(turn, rot, 0)),-turn_clip,turn_clip);
+        turn_power = Range.clip((turn_pid.getOutPut(turn, rot, feed_forward)),-turn_clip,turn_clip);
 
         botHeading = -1* Math.toRadians(heading);
 
         rotX = /*0.4 **/ (strafe_power * Math.cos(botHeading) - forward_power * Math.sin(botHeading));
         rotY = /*0.4 **/ (strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading));
 
-        if (motionProfile) {
-
-            strafe_cs.updateMotionProfile(id,rise,fall);
-            strafe_error = Math.abs(strafe - x);
-
-            rotY = strafe_cs.getProfiledPower(strafe_error, rotY,0) * (12.4/voltage);
-
-//            rotY = Range.clip((strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading)),-0.2,0.4);
-
-        }
+//        if (motionProfile) {
+//
+//            strafe_cs.updateMotionProfile(id,rise,fall);
+//            strafe_error = Math.abs(strafe - x);
+//
+//            rotY = strafe_cs.getProfiledPower(strafe_error, rotY,0) * (12.4/voltage);
+//
+////            rotY = Range.clip((strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading)),-0.2,0.4);
+//
+//        }
 
 
         denominator = Math.max(Math.abs(forward_power) + Math.abs(strafe_power) + Math.abs(turn_power), 1);
