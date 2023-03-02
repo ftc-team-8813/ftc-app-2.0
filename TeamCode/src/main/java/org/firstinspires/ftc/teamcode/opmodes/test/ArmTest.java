@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 @TeleOp(name="Arm Test")
 public class ArmTest extends LoggingOpMode {
 
-    private DcMotorEx arm;
+    private DcMotorEx arm_encoder;
 
     public static double exponent = 1;
     public static double target = 0;
@@ -30,15 +30,15 @@ public class ArmTest extends LoggingOpMode {
 
     private double coefficent;
 
-    private final PID pid = new PID(kp, ki, 0, kf, mxis, 0);
+//    private final PID pid = new PID(kp, ki, 0, kf, mxis, 0);
 
     @Override
     public void init() {
         coefficent = Math.pow((12.5/getBatteryVoltage()),exponent);
-        arm = hardwareMap.get(DcMotorEx.class,"arm");
+        arm_encoder = hardwareMap.get(DcMotorEx.class,"arm encoder");
 
-        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        arm_encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm_encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
@@ -57,17 +57,17 @@ public class ArmTest extends LoggingOpMode {
          */
 
 
-        double power = Range.clip(pid.getOutPut(target, (-arm.getCurrentPosition() * 288.0 / 8192.0), Math.cos(Math.toRadians((-arm.getCurrentPosition() * 288.0 / 8192.0)))), -0.6, 0.6);
+//        double power = Range.clip(pid.getOutPut(target, (-arm.getCurrentPosition() * 288.0 / 8192.0), Math.cos(Math.toRadians((-arm.getCurrentPosition() * 288.0 / 8192.0)))), -0.6, 0.6);
+//
+//        arm_encoder.setPower((power * coefficent));
 
-        arm.setPower((power * coefficent));
-
-        telemetry.addData("Arm Position",-arm.getCurrentPosition() * 288.0 / 8192.0);
-        telemetry.addData("Arm Power", power);
-        telemetry.addData("Voltage Based Power", (power * coefficent));
-        telemetry.addData("Voltage Coefficient", coefficent);
-        telemetry.addData("Voltage", getBatteryVoltage());
-        telemetry.addData("Exponent", exponent);
-        telemetry.addData("Target",target);
+        telemetry.addData("Arm Position",-arm_encoder.getCurrentPosition() * 288.0 / 8192.0);
+//        telemetry.addData("Arm Power", power);
+//        telemetry.addData("Voltage Based Power", (power * coefficent));
+//        telemetry.addData("Voltage Coefficient", coefficent);
+//        telemetry.addData("Voltage", getBatteryVoltage());
+//        telemetry.addData("Exponent", exponent);
+//        telemetry.addData("Target",target);
         telemetry.update();
     }
 

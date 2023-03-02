@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -18,13 +19,16 @@ public class DriveControl extends ControlModule {
     private ControllerMap.AxisEntry ax_drive_left_y;
     private ControllerMap.AxisEntry ax_drive_right_x;
     private ControllerMap.AxisEntry ax_slow;
+    private ControllerMap.ButtonEntry right_trigger;
     private ControllerMap.ButtonEntry dpad_up;
+    private ControllerMap.ButtonEntry guide;
 
     private double forward_speed = 1;
     private double strafe_speed = 1.1;
     private double turn_speed = 0.75;
 
     private boolean field_centric = false;
+    private boolean smooth = false;
 
     private double heading_delta = 0;
     private double heading_was = 0;
@@ -36,6 +40,10 @@ public class DriveControl extends ControlModule {
     private double speed_dependent_steering = 0.5; //0 is no speed dependent steering, 1 is too much
 
     //private double heading_p = 0.009;
+
+    private double forward;
+    private double strafe;
+    private double turn;
 
     public DriveControl(String name) {
         super(name);
@@ -50,7 +58,12 @@ public class DriveControl extends ControlModule {
         ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");
         ax_drive_right_x = controllerMap.getAxisMap("drive:right_x", "gamepad1", "right_stick_x");
         ax_slow = controllerMap.getAxisMap("drive:slow", "gamepad1", "left_trigger");
+
+        right_trigger = controllerMap.getButtonMap("drive:right_trigger", "gamepad1","right_trigger");
+
         dpad_up = controllerMap.getButtonMap("drive:dpad_up", "gamepad1","dpad_up");
+
+        guide = controllerMap.getButtonMap("drive:guide", "gamepad1","guide");
 
     }
 
@@ -66,8 +79,12 @@ public class DriveControl extends ControlModule {
 
         double heading = drivetrain.getHeading();
 
-        if (dpad_up.edge() == -1) {
+        if (right_trigger.edge() == -1) {
             field_centric = !field_centric;
+        }
+
+        if (guide.edge() == -1) {
+            smooth = !smooth;
         }
 
         heading_delta = heading - heading_was;
@@ -109,7 +126,18 @@ public class DriveControl extends ControlModule {
 
         double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
 
-        if (field_centric) {
+        if (smooth) {
+
+            odometry.updatePose(-drivetrain.getHeading());
+            Pose2d odometryPose = odometry.getPose();
+            forward += y;
+            strafe += x;
+            turn += rx;
+
+            drivetrain.autoMove(forward,strafe,turn,0,0,0,odometryPose,telemetry);
+            drivetrain.update(odometryPose, telemetry,false, 0, false, false, 0);
+        }
+        else if (field_centric) {
             drivetrain.move(rotY, rotX, rx, (heading_delta * 0.001), denominator);
         }
         else {

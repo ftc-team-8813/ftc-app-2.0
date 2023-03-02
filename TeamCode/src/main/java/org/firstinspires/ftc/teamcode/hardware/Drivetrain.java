@@ -36,15 +36,15 @@ public class Drivetrain {
     private boolean has_reached;
 
     public static double forward_kp = 0.061;
-    public static double forward_ki = 0.02;
+    public static double forward_ki = 0.0225;
     public static double forward_kd = 0.010;
     public static double forward_a = 0.8;
     public static double strafe_kp = 0.071;
-    public static double strafe_ki = 0.02;
+    public static double strafe_ki = 0.0225;
     public static double strafe_kd = 0.019;
     public static double strafe_a = 0.8;
     public static double turn_kp = 0.007;
-    public static double turn_ki = 0.12;
+    public static double turn_ki = 0.125;
     public static double turn_kd = 0.0028;
     public static double turn_a = 0.8;
     public static double turn_max_i_sum = 1;
@@ -56,7 +56,7 @@ public class Drivetrain {
 
     private final PID forward_pid = new PID(forward_kp,forward_ki,forward_kd,0.2,1,forward_a);
     private final PID strafe_pid = new PID(strafe_kp,strafe_ki,strafe_kd,0.2,1,strafe_a);
-    private final PID turn_pid = new PID(turn_kp,turn_ki,turn_kd,0.55,turn_max_i_sum,turn_a);
+    private final PID turn_pid = new PID(turn_kp,turn_ki,turn_kd,0.2,turn_max_i_sum,turn_a);
 
     public static double rise_slope = 0.1;
     public static double fall_slope = 0.00000000000000000000001;
@@ -237,7 +237,7 @@ public class Drivetrain {
 //            turn_pid.setKp(cs_turn_kp);
 //            turn_pid.setKi(cs_turn_ki);
 //            strafe_pid.setKp(cs_strafe_kp);
-            feed_forward = 1;
+            feed_forward = 0;
         }
         else {
 //            turn_pid.setKp(turn_kp);

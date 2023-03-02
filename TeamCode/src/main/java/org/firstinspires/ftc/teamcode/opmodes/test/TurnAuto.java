@@ -144,7 +144,7 @@ public class TurnAuto extends LoggingOpMode {
 
         telemetry.update();
 
-        arm.resetEncoders();
+//        arm.resetEncoders();
         lift.resetEncoders();
         horizontal.resetEncoders();
         odometry.resetEncoders();

@@ -60,7 +60,6 @@ public class MediumPoleAuto extends LoggingOpMode{
     public static double exponent = 0.75;
     public static double multiplier = 2.1;
 
-    private final PID arm_PID = new PID(0.009, 0, 0, 0.1, 0, 0);
     private final PID horizontal_PID = new PID(0.008, 0, 0, 0, 0, 0);
     private final PID lift_PID = new PID(0.02, 0, 0, 0.015, 0, 0);
 
@@ -72,7 +71,7 @@ public class MediumPoleAuto extends LoggingOpMode{
 
     private double lift_target = 0;
     private double horizontal_target = 0;
-    private double arm_target = 0;
+    private double arm_target = -20;
 
     private double lift_power;
     private double horizontal_power;
@@ -107,13 +106,30 @@ public class MediumPoleAuto extends LoggingOpMode{
 
     private double y_cs = y_cs_1;
 
-    public static double arm_target_cs_1 = -94;
-    public static double arm_target_cs_2 = -100;
-    public static double arm_target_cs_3 = -104.5;
-    public static double arm_target_cs_4 = -109.5;
-    public static double arm_target_cs_5 = -112;
+    public static double arm_target_cs_1 = -102.8;
+    public static double arm_target_cs_2 = -108.3;
+    public static double arm_target_cs_3 = -113.0;
+    public static double arm_target_cs_4 = -117.1;
+    public static double arm_target_cs_5 = -121.0;
 
     private double arm_target_cs = arm_target_cs_1;
+
+
+    public static double horizontal_target_cs_1 = -685;
+    public static double horizontal_target_cs_2 = -677.5;
+    public static double horizontal_target_cs_3 = -672.5;
+    public static double horizontal_target_cs_4 = -666.5;
+    public static double horizontal_target_cs_5 = -663.5;
+
+    private double horizontal_target_cs = horizontal_target_cs_1;
+
+    public static double angle_target_cs_1 = -42.53;
+    public static double angle_target_cs_2 = -43.03;
+    public static double angle_target_cs_3 = -43.78;
+    public static double angle_target_cs_4 = -44.53;
+    public static double angle_target_cs_5 = -45.28;
+
+    private double angle_target_cs = angle_target_cs_1;
 
     private double voltage_cofficient;
 
@@ -181,7 +197,7 @@ public class MediumPoleAuto extends LoggingOpMode{
         intake.setWristPosition(0.019);
         intake.setClawPosition(0.37);
 
-        arm.setPower(0.5);
+        arm.setPosition(-20);
         lift.setPower(-0.2);
         horizontal.setPower(0.3);
     }
@@ -219,10 +235,7 @@ public class MediumPoleAuto extends LoggingOpMode{
 
         telemetry.update();
 
-        if(arm.getLimit()){
-            arm.resetEncoders();
-            arm.setPower(0);
-        }
+        arm.resetEncoders();
 
         if(lift.getLimit()){
             lift.resetEncoders();
@@ -233,6 +246,8 @@ public class MediumPoleAuto extends LoggingOpMode{
             horizontal.resetEncoders();
             horizontal.setPower(0);
         }
+
+        arm.update();
 
         lift.setHolderPosition(0.12);
 
@@ -253,7 +268,13 @@ public class MediumPoleAuto extends LoggingOpMode{
     @Override
     public void loop() {
 
-        arm.updatePosition();
+        /*
+        Arm Possitions
+        50 = -10
+        feed forawrd potentially remove to  stop the move then move back thing
+         */
+
+        arm.update();
         lift.updatePosition();
         horizontal.updatePosition();
         drivetrain.updateHeading();
@@ -282,17 +303,17 @@ public class MediumPoleAuto extends LoggingOpMode{
                 }
                 break;
             case 2:
-                drivetrain.autoMove(-42.48, 4, 111.8125, 1.5, 1.5, 1.5, odometryPose, telemetry);
+                drivetrain.autoMove(-42.48, 4, 111.675, 1.5, 1.5, 1.5, odometryPose, telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
-                    horizontal_target = -680;
+                    horizontal_target = horizontal_target_cs;
                     lift.setHolderPosition(0.39);
                     lift_target = 440;
                     lift_trapezoid.reset();
                 }
                 break;
             case 3:
-                drivetrain.autoMove(-42.48, 2.209, 111.8125, 0.6, 0.6, 1, odometryPose, telemetry);
+                drivetrain.autoMove(-42.48, 2.209, 111.675, 0.6, 0.6, 1, odometryPose, telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                     lift.setLatchPosition(0.356);
@@ -302,9 +323,10 @@ public class MediumPoleAuto extends LoggingOpMode{
             case 4:
                 if (lift.getCurrentPosition() < 200) {
                     lift_clip = 0.17;
-                    lift.setHolderPosition(0.095);
+                    lift.setHolderPosition(0.08);
                     main_id += 1;
                 }
+                break;
             case 5:
                 if (lift.getCurrentPosition() < 150) {
                     main_id += 1;
@@ -312,14 +334,14 @@ public class MediumPoleAuto extends LoggingOpMode{
                 }
                 break;
             case 6:
-                drivetrain.autoMove(-45, 2.209, 111.8125, 1.2, 1.2, 2, odometryPose, telemetry);
+                drivetrain.autoMove(-45, 2.209, 111.675, 1.2, 1.2, 2, odometryPose, telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                 }
                 break;
 
             case 7:
-                drivetrain.autoMove(-45.573, 9.2, 100, 0.7, 0.7, 0.5, odometryPose, telemetry);
+                drivetrain.autoMove(-45.573, 9.2, 99.7, 0.8, 0.8, 0.6, odometryPose, telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
                     arm_target = arm_target_cs;
@@ -327,16 +349,17 @@ public class MediumPoleAuto extends LoggingOpMode{
                 }
                 break;
             case 8:
-                if (arm.getCurrentPosition() < (arm_target_cs + 5) && arm.getCurrentPosition() > (arm_target_cs - 15) && timer.seconds() > 0.7) {
+                if (arm.getCurrentEncoderPosition() < (arm_target_cs + 15) && arm.getCurrentEncoderPosition() > (arm_target_cs - 15) && timer.seconds() > 0.7) {
                     timer.reset();
                     main_id += 1;
                 }
                 break;
             case 9:
+                motion_profile = true;
                 if (horizontal_target >= -800) {
-                    horizontal_target -= 1;
+                    horizontal_target -= 3;
                 }
-                if (intake.getDistance() < 17) {
+                if (intake.getDistance() < 17 || timer.seconds() > 1.75) {
                     intake.setClawPosition(0.1);
                     timer.reset();
                     main_id += 1;
@@ -344,13 +367,14 @@ public class MediumPoleAuto extends LoggingOpMode{
                 break;
             case 10:
                 if (timer.seconds() > 0.8) {
-                    horizontal_target = -400;
-                    arm_target = -30;
+//                    horizontal_target = -650;
+                    arm_target = -40;
                     main_id += 1;
                 }
                 break;
             case 11:
-                if (arm.getCurrentPosition() > -70) {
+                if (arm.getCurrentEncoderPosition() > -70) {
+                    horizontal_target = -5;
                     intake.setWristPosition(0.678);
                     timer.reset();
                     main_id += 1;
@@ -358,45 +382,60 @@ public class MediumPoleAuto extends LoggingOpMode{
                 break;
             case 12:
                 if (timer.seconds() > 0.5) {
-                    horizontal_target = 0;
-                    arm_target = 50;
+                    arm_target = -19.5;
+                    timer.reset();
                     main_id += 1;
                 }
                 break;
             case 13:
-                if (arm.getCurrentPosition() > -5 && horizontal.getCurrentPosition() > -50) {
-                    lift.setLatchPosition(0.08);
+                if (timer.seconds() > 0.2) {
+                    main_id += 1;
+                }
+                break;
+            case 14:
+                if (arm.getCurrentEncoderPosition() > -25) {
+                    lift.setLatchPosition(0.0);
+                }
+
+                if (arm.getCurrentEncoderPosition() > -22.5 && horizontal.getCurrentPosition() > -20) {
                     intake.setClawPosition(0.37);
-                    arm_target = -28;
-                    horizontal_target = -680;
+                    timer.reset();
+                    main_id += 1;
+                }
+                break;
+            case 15:
+                if (timer.seconds() > 0.6) {
                     lift.setHolderPosition(0.39);
+                    arm_target = -35;
                     lift_target = 450;
                     lift_trapezoid.reset();
                     main_id += 1;
                 }
                 break;
-            case 14:
-                drivetrain.autoMove(-42.48, 2.209, 111.8125, 0.75, 0.65, 1, odometryPose, telemetry);
+            case 16:
+                drivetrain.autoMove(angle_target_cs, 1.3, 111.575, 0.75, 0.65, 1, odometryPose, telemetry);
                 if (drivetrain.hasReached()) {
                     main_id += 1;
+                    horizontal_target = -650;
                     lift_target = 0;
-                    lift.setLatchPosition(0.356);
                 }
                 break;
-            case 15:
+            case 17:
                 if (lift.getCurrentPosition() < 200) {
+                    lift.setLatchPosition(0.35);
                     lift_clip = 0.17;
-                    lift.setHolderPosition(0.095);
+                    lift.setHolderPosition(0.08);
                     main_id += 1;
                 }
-            case 16:
+                break;
+            case 18:
                 if (lift.getCurrentPosition() < 150) {
                     main_id += 1;
                     lift_clip = 1;
                 }
                 break;
-            case 17:
-                drivetrain.autoMove(-45, 2.209, 111.3125, 1.5, 1.5, 1.5, odometryPose, telemetry);
+            case 19:
+                drivetrain.autoMove(-45, 2.209, 111.3125, 1.7, 1.7, 1.7, odometryPose, telemetry);
                 if (drivetrain.hasReached()) {
                     cs_id += 1;
                     if (cs_id > 4) {
@@ -413,28 +452,37 @@ public class MediumPoleAuto extends LoggingOpMode{
         switch (cs_id) {
             case 0:
                 arm_target_cs = arm_target_cs_1;
+                horizontal_target_cs = horizontal_target_cs_1;
+                angle_target_cs = angle_target_cs_1;
                 break;
             case 1:
                 arm_target_cs = arm_target_cs_2;
+                horizontal_target_cs = horizontal_target_cs_2;
+                angle_target_cs = angle_target_cs_2;
                 break;
             case 2:
                 arm_target_cs = arm_target_cs_3;
+                horizontal_target_cs = horizontal_target_cs_3;
+                angle_target_cs = angle_target_cs_3;
                 break;
             case 3:
                 arm_target_cs = arm_target_cs_4;
+                horizontal_target_cs = horizontal_target_cs_4;
+                angle_target_cs = angle_target_cs_4;
                 break;
             case 4:
                 arm_target_cs = arm_target_cs_5;
+                horizontal_target_cs = horizontal_target_cs_5;
+                angle_target_cs = angle_target_cs_5;
                 break;
         }
 
         lift_power = Range.clip((lift_PID.getOutPut(lift_target, lift.getCurrentPosition(), 1) * Math.min(lift_trapezoid.seconds() * lift_accel, 1)), -lift_clip, lift_clip); //change
         horizontal_power = horizontal_PID.getOutPut(horizontal_target,horizontal.getCurrentPosition(),0); //change
-        arm_power = Range.clip(arm_PID.getOutPut(arm_target, arm.getCurrentPosition(), Math.cos(Math.toRadians(arm.getCurrentPosition() + 0))), -1, 0.5); //change
 
+        arm.setPosition(arm_target);
         lift.setPower(lift_power);
         horizontal.setPower(horizontal_power);
-        arm.setPower((arm_power*voltage_cofficient));
 
         drivetrain.update(odometryPose, telemetry,motion_profile, main_id, rise, fall, voltage);
 
