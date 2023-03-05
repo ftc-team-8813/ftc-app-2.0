@@ -8,6 +8,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
+import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
 public class DriveControl extends ControlModule {
@@ -21,6 +22,9 @@ public class DriveControl extends ControlModule {
     private ControllerMap.AxisEntry ax_slow;
     private ControllerMap.ButtonEntry right_trigger;
     private ControllerMap.ButtonEntry dpad_up;
+    private ControllerMap.ButtonEntry dpad_down;
+    private ControllerMap.ButtonEntry dpad_left;
+    private ControllerMap.ButtonEntry dpad_right;
     private ControllerMap.ButtonEntry guide;
 
     private double forward_speed = 1;
@@ -45,6 +49,21 @@ public class DriveControl extends ControlModule {
     private double strafe;
     private double turn;
 
+    private boolean deg_0 = false;
+    private boolean deg_90 = false;
+    private boolean deg_180 = false;
+    private boolean deg_270 = false;
+
+    public static double turn_kp = 0.007;
+    public static double turn_ki = 0.125;
+    public static double turn_kd = 0.0028;
+    public static double turn_a = 0.8;
+    public static double turn_max_i_sum = 1;
+    public static double turn_clip = 1;
+
+    private final PID turn_pid = new PID(turn_kp,turn_ki,turn_kd,0.2,turn_max_i_sum,turn_a);
+
+
     public DriveControl(String name) {
         super(name);
     }
@@ -59,9 +78,12 @@ public class DriveControl extends ControlModule {
         ax_drive_right_x = controllerMap.getAxisMap("drive:right_x", "gamepad1", "right_stick_x");
         ax_slow = controllerMap.getAxisMap("drive:slow", "gamepad1", "left_trigger");
 
-        right_trigger = controllerMap.getButtonMap("drive:right_trigger", "gamepad1","right_trigger");
+//        right_trigger = controllerMap.getButtonMap("drive:right_trigger", "gamepad1","right_trigger");
 
         dpad_up = controllerMap.getButtonMap("drive:dpad_up", "gamepad1","dpad_up");
+        dpad_down = controllerMap.getButtonMap("drive:dpad_down", "gamepad1","dpad_down");
+        dpad_left = controllerMap.getButtonMap("drive:dpad_left", "gamepad1","dpad_left");
+        dpad_right = controllerMap.getButtonMap("drive:dpad_right", "gamepad1","dpad_right");
 
         guide = controllerMap.getButtonMap("drive:guide", "gamepad1","guide");
 
@@ -79,13 +101,13 @@ public class DriveControl extends ControlModule {
 
         double heading = drivetrain.getHeading();
 
-        if (right_trigger.edge() == -1) {
-            field_centric = !field_centric;
-        }
-
-        if (guide.edge() == -1) {
-            smooth = !smooth;
-        }
+//        if (right_trigger.edge() == -1) {
+//            field_centric = !field_centric;
+//        }
+//
+//        if (guide.edge() == -1) {
+//            smooth = !smooth;
+//        }
 
         heading_delta = heading - heading_was;
 
@@ -164,6 +186,7 @@ public class DriveControl extends ControlModule {
 //        telemetry.addData("Angular Velocity: ", drivetrain.getAngularVelocity());
 
         telemetry.addData("Field Centric",field_centric);
+        telemetry.addData("Smooth",smooth);
 
 
     }

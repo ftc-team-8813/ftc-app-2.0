@@ -42,6 +42,10 @@ public class Arm {
         arm_target = pos;
     }
 
+    public double getTargetPosition() {
+        return arm_target;
+    }
+
     public void resetEncoders() {
         arm_encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         arm_encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
