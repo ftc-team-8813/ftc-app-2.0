@@ -1,31 +1,14 @@
 package org.firstinspires.ftc.teamcode.opmodes.test;
 
-import static org.opencv.core.CvType.CV_8UC4;
-
-import android.graphics.Bitmap;
-import android.graphics.ImageFormat;
-
-import com.arcrobotics.ftclib.geometry.Pose2d;
-import com.arcrobotics.ftclib.geometry.Rotation2d;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
-import org.firstinspires.ftc.teamcode.hardware.Lift;
-import org.firstinspires.ftc.teamcode.hardware.navigation.OdometryNav;
-import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.vision.AprilTagDetectionPipeline;
-import org.firstinspires.ftc.teamcode.vision.ConeInfoDetector;
-import org.firstinspires.ftc.teamcode.vision.webcam.Webcam;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.Mat;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -33,6 +16,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 
+@Disabled
 @TeleOp(name = "ConeVisionTest")
 public class ConeVisionTest extends LoggingOpMode {
 
@@ -51,8 +35,6 @@ public class ConeVisionTest extends LoggingOpMode {
     private double cy = 221.506;
 
     private double tagsize = 0.166;
-
-    private final Logger log = new Logger("Parking Auto");
 
     @Override
     public void init() {

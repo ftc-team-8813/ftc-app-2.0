@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Arm;
@@ -14,14 +13,13 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.IntakeStates;
 import org.firstinspires.ftc.teamcode.hardware.navigation.LiftStates;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Modes;
-import org.firstinspires.ftc.teamcode.hardware.navigation.MotionProfile;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.hardware.navigation.TPMotionProfile;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
 @Config
 
-public class RobotControl extends ControlModule{
+public class InitializeRobotControl extends ControlModule{
 
     private Lift lift;
     private Intake intake;
@@ -139,7 +137,7 @@ public class RobotControl extends ControlModule{
 
     private boolean stop_setting_arm_position = false;
 
-    public RobotControl(String name) {
+    public InitializeRobotControl(String name) {
         super(name);
     }
 
@@ -188,13 +186,13 @@ public class RobotControl extends ControlModule{
         stateForIntake = IntakeStates.DrivingAround;
         mode = Modes.Circuit;
 
-//        lift.setHolderPosition(DEPOSITTRANSFER);
+        lift.setHolderPosition(DEPOSITTRANSFER);
 
         GroundLow = false;
 
-//        arm.setPosition(ARMHIGHPOS);
-//        lift.setPower(-0.2);
-//        horizontal.setPower(0.3);
+        arm.setPosition(ARMHIGHPOS);
+        lift.setPower(-0.2);
+        horizontal.setPower(0.3);
 
         //horizontal.setHorizTarget(0); //used for run to position
     }
@@ -203,33 +201,33 @@ public class RobotControl extends ControlModule{
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry);
 
-//        arm.setPosition(ARMHIGHPOS);
-//
-//        arm.update();
-//        arm.resetEncoders();
+        arm.setPosition(ARMHIGHPOS);
 
-//        if(lift.getLimit()){
-//            lift.resetEncoders();
-//            lift.setPower(0);
-//        }
-//        if(horizontal.getLimit()){
-//            horizontal.resetEncoders();
-//            horizontal.setPower(0);
-//            //intake.setHorizPow(1); //this scales the speed for run to position; it won't move until you set a target
-//        }
+        arm.update();
+        arm.resetEncoders();
 
-//        if (lift.getLimit() && horizontal.getLimit()) {
-//            telemetry.addData("READY", "GO");
-//            if (rumble) {
-//                gamepad1.rumble(1000);
-//                gamepad2.rumble(1000);
-//                rumble = false;
-//            }
-//
-//        }
+        if(lift.getLimit()){
+            lift.resetEncoders();
+            lift.setPower(0);
+        }
+        if(horizontal.getLimit()){
+            horizontal.resetEncoders();
+            horizontal.setPower(0);
+            //intake.setHorizPow(1); //this scales the speed for run to position; it won't move until you set a target
+        }
 
-//        telemetry.addData("Lift Limit", lift.getLimit());
-//        telemetry.addData("Horizonal Limit", horizontal.getLimit());
+        if (lift.getLimit() && horizontal.getLimit()) {
+            telemetry.addData("READY", "GO");
+            if (rumble) {
+                gamepad1.rumble(1000);
+                gamepad2.rumble(1000);
+                rumble = false;
+            }
+
+        }
+
+        telemetry.addData("Lift Limit", lift.getLimit());
+        telemetry.addData("Horizonal Limit", horizontal.getLimit());
 
         game_timer.reset();
     }
@@ -607,10 +605,6 @@ public class RobotControl extends ControlModule{
 
         //telemetry.addData("Sensor Distance", intake.getDistance());
         telemetry.addData("Loop Time", loop.time());
-        telemetry.addData("Sensor Distance", intake.getDistance());
-        telemetry.addData("Time", loop.time());
-        telemetry.addData("Sensor Distance", intake.getDistance());
-        telemetry.addData("Current Draw", intake.getamps());
 
     }
 }

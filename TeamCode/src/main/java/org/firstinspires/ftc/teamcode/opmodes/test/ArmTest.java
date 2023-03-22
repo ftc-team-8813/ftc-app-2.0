@@ -3,60 +3,82 @@ package org.firstinspires.ftc.teamcode.opmodes.test;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.hardware.Intake;
-import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
+import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
 
+//@Disabled
 @Config
-
 @TeleOp(name="Arm Test")
-public class ArmTest extends OpMode {
+public class ArmTest extends LoggingOpMode {
 
-    Robot robot;
-    Intake intake;
-    ElapsedTime arm_trapezoid;
-    PID armPID;
-    double target;
-    public static double armAccel;
-    public static double KPArm = 0.0095;
-    public static double KFArm;
-    public static double KIArm;
-    public static double KDArm;
-    public static double maxPower = 0.6;
-    
+    private DcMotorEx arm_encoder;
+
+    public static double exponent = 1;
+    public static double target = 0;
+    public static double kf = 0.1;
+    public static double kp = 0.009;
+    public static double ki = 0;
+    public static double mxis = 0;
+
+
+    private double coefficent;
+
+//    private final PID pid = new PID(kp, ki, 0, kf, mxis, 0);
+
     @Override
     public void init() {
-        robot = Robot.initialize(hardwareMap);
-        intake = robot.intake;
-        armAccel = 2;
-        arm_trapezoid = new ElapsedTime();
-        intake.resetArmEncoder();
+        coefficent = Math.pow((12.5/getBatteryVoltage()),exponent);
+        arm_encoder = hardwareMap.get(DcMotorEx.class,"arm encoder");
+
+        arm_encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm_encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
+        super.init();
     }
 
     @Override
     public void loop() {
-        target = Range.clip(target + (gamepad1.right_stick_y * 2), -120, 0);
-        armPID = new PID(KPArm,KIArm,KDArm,KFArm,0,0);
-        double arm_power = Range.clip(armPID.getOutPut(intake.getArmTarget(), intake.getArmCurrent(), 0), -maxPower, maxPower) + (Math.cos(Math.toRadians((intake.getArmCurrent() * 1.25) + 136.5)) * KFArm) * Math.min(arm_trapezoid.seconds() * armAccel, 1);
-        if(gamepad1.a){
-            arm_trapezoid.reset();
-            intake.setArmTarget(target);
-        }
-        intake.setArmPow(arm_power);
-        telemetry.addData("Arm Target: ", target);
-        telemetry.addData("Arm Current: ", intake.getArmCurrent());
-        telemetry.addData("Arm Degrees: ", (intake.getArmCurrent() * 1.25) + 136.5);
-        telemetry.addData("Arm Power: ", arm_power);
 
+        /*
+         * -97
+         * -102
+         * -105
+         * -110
+         * -112.5
+         */
+
+
+//        double power = Range.clip(pid.getOutPut(target, (-arm.getCurrentPosition() * 288.0 / 8192.0), Math.cos(Math.toRadians((-arm.getCurrentPosition() * 288.0 / 8192.0)))), -0.6, 0.6);
+//
+//        arm_encoder.setPower((power * coefficent));
+
+        telemetry.addData("Arm Position",-arm_encoder.getCurrentPosition() * 288.0 / 8192.0);
+//        telemetry.addData("Arm Power", power);
+//        telemetry.addData("Voltage Based Power", (power * coefficent));
+//        telemetry.addData("Voltage Coefficient", coefficent);
+//        telemetry.addData("Voltage", getBatteryVoltage());
+//        telemetry.addData("Exponent", exponent);
+//        telemetry.addData("Target",target);
         telemetry.update();
     }
-}
 
-//low = -120
-// kf = 0.5
+    double getBatteryVoltage() {
+        double result = Double.POSITIVE_INFINITY;
+        for (VoltageSensor sensor : hardwareMap.voltageSensor) {
+            double voltage = sensor.getVoltage();
+            if (voltage > 0) {
+                result = Math.min(result, voltage);
+            }
+        }
+        return result;
+    }
+}
