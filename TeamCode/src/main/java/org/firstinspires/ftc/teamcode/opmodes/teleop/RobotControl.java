@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Arm;
@@ -14,7 +13,6 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.IntakeStates;
 import org.firstinspires.ftc.teamcode.hardware.navigation.LiftStates;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Modes;
-import org.firstinspires.ftc.teamcode.hardware.navigation.MotionProfile;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.hardware.navigation.TPMotionProfile;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
@@ -37,7 +35,7 @@ public class RobotControl extends ControlModule{
     private final ElapsedTime game_timer = new ElapsedTime();
 
     public static double lift_accel = 3; //bigger is faster accel
-    public static double lift_decel = 0.002; //bigger is faster decel
+    public static double lift_decel = 0.004; //bigger is faster decel
     private TPMotionProfile lift_trapezoid;
 
     private double lift_last_height;
@@ -87,10 +85,10 @@ public class RobotControl extends ControlModule{
 
     private double DEPOSITHIGHFAST = 0.42;
 
-    private double DEPOSITTRANSFER = 0.09;
-    private double DEPOSITTRANSFER2 = 0.11;
-    private double DEPOSITTRANSFERFAST = 0.1;
-    private double DEPOSITTRANSFERFAST2 = 0.11;
+    private double DEPOSITTRANSFER = 0.157;
+    private double DEPOSITTRANSFER2 = 0.15;
+    private double DEPOSITTRANSFERFAST = 0.157;
+    private double DEPOSITTRANSFERFAST2 = 0.15;
 
     private double DEPOSITLIFT = 0.38;
     private double DEPOSITLIFTFAST = 0.35;
@@ -98,7 +96,7 @@ public class RobotControl extends ControlModule{
     private double ARMCOMPLETEDOWNPOS = -123;
     private double ARMMIDPOS = -30;
     private double ARMMIDPOS2 = -28; //used while the horiz slide is retracting
-    private double ARMHIGHPOS = -8; //transfer position
+    private double ARMHIGHPOS = -19; //transfer position
 
     public static double ARMLOWGOAL = -76;
     public static double ARMGROUNDGOAL = -120;
@@ -120,8 +118,8 @@ public class RobotControl extends ControlModule{
     private double CLAWOPENPOS = 0.3;
     private double CLAWCLOSEPOS = 0.065;
 
-    private double LATCHINPOS = 0.36;
-    private double LATCHOUTPOS = 0.07;
+    private double LATCHOPENPOS = 0.66;
+    private double LATCHGRABPOS = 0.08;
 
     private PID arm_PID;
     private PID horiz_PID;
@@ -341,7 +339,7 @@ public class RobotControl extends ControlModule{
                 break;
 
             case Dump:
-                lift.setLatchPosition(LATCHINPOS);
+                lift.setLatchPosition(LATCHOPENPOS);
 
                 if (lift.getLiftTarget() == LIFTMIDPOS) {
                     lift.setHolderPosition(DEPOSITMID);
@@ -446,7 +444,7 @@ public class RobotControl extends ControlModule{
                     FASTMODEHORIZ = FASTMODEHORIZCONST;
                     if (intakeTimer.seconds() > 0.12) { //used to be 0.2 and 0.25
                         intake.setClawPosition(CLAWOPENPOS);
-                        lift.setLatchPosition(LATCHOUTPOS);
+                        lift.setLatchPosition(LATCHGRABPOS);
                         lift.setHolderPosition(DEPOSITTRANSFERFAST2);
                     }
                     if (intakeTimer.seconds() > 0.05) {
@@ -460,7 +458,7 @@ public class RobotControl extends ControlModule{
                 }
                 if (mode == Modes.Circuit) {
                     if (intakeTimer.seconds() > 0.12) {
-                        lift.setLatchPosition(LATCHOUTPOS);
+                        lift.setLatchPosition(LATCHGRABPOS);
                     }
                     if (intakeTimer.seconds() > 0.12) {
                         intake.setClawPosition(CLAWOPENPOS);
@@ -489,7 +487,7 @@ public class RobotControl extends ControlModule{
                 ADJUSTHORIZ = 0;
                 if (x_button.edge() == -1) {
                     intakeTimerReset = false;
-                    lift.setLatchPosition(LATCHINPOS);
+                    lift.setLatchPosition(LATCHOPENPOS);
                     stateForIntake = IntakeStates.LookingForCone;
                     stop_setting_arm_position = false;
                 }
@@ -610,7 +608,7 @@ public class RobotControl extends ControlModule{
         telemetry.addData("Sensor Distance", intake.getDistance());
         telemetry.addData("Time", loop.time());
         telemetry.addData("Sensor Distance", intake.getDistance());
-        telemetry.addData("Current Draw", intake.getamps());
+        telemetry.addData("Current Draw", horizontal.getAmps());
 
     }
 }

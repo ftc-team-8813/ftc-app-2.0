@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 public class Horizontal {
 
     private final DcMotorEx horizontal;
@@ -46,4 +48,6 @@ public class Horizontal {
     public boolean getLimit() {
         return !horizontal_limit.getState();
     }
+
+    public double getAmps() { return horizontal.getCurrent(CurrentUnit.AMPS); }
 }
