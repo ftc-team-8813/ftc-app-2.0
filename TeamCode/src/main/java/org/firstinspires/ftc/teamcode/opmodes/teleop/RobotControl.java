@@ -64,7 +64,7 @@ public class RobotControl extends ControlModule{
     private double LIFTDOWNPOS = 0;
     private double LIFTLOWPOS = 135;
     private double LIFTMIDPOS = 410;
-    private double LIFTHIGHPOS = 720;
+    private double LIFTHIGHPOS = 715;
 
     private double DEPOSITLOW = 0.4;
     private double DEPOSITLOW2 = 0.58;
@@ -74,10 +74,10 @@ public class RobotControl extends ControlModule{
 
     private double DEPOSITHIGHFAST = 0.38;
 
-    private double DEPOSITTRANSFER = 0.14;
+    private double DEPOSITTRANSFER = 0.15;
     private double DEPOSITLIFT = 0.33;
 
-    private double ARMCOMPLETEDOWNPOS = -125;
+    private double ARMCOMPLETEDOWNPOS = -124;
     private double ARMMIDPOS = -35;
     private double ARMHIGHPOS = 0;
 
@@ -91,7 +91,7 @@ public class RobotControl extends ControlModule{
     private double CLAWOPENPOS = 0.3;
     private double CLAWCLOSEPOS = 0.1;
 
-    private double ARMLOWGOAL = -45;
+    private double ARMLOWGOAL = -40;
     private double ARMGROUNDGOAL = -80;
 
     private PID arm_PID;
@@ -140,7 +140,7 @@ public class RobotControl extends ControlModule{
         ax_lift_right_y = controllerMap.getAxisMap("lift:right_y", "gamepad2", "right_stick_y");
 
         stateForLift = LiftStates.LiftDown;
-        stateForIntake = IntakeStates.LookingForCone;
+        stateForIntake = IntakeStates.DrivingAround;
         stateForMode = Modes.Circuit;
 
         lift.setDumper(DEPOSITTRANSFER);
@@ -179,7 +179,7 @@ public class RobotControl extends ControlModule{
 
         arm_PID = new PID(0.0095, 0, 0, 0, 0, 0);
         horiz_PID = new PID(0.01, 0, 0, 0, 0, 0);
-        lift_PID = new PID(0.02, 0, 0, 0.015, 0, 0);
+        lift_PID = new PID(0.011, 0, 0, 0.02, 0, 0);
 
 
         if (stateForMode == Modes.Circuit) {
@@ -443,6 +443,7 @@ public class RobotControl extends ControlModule{
         telemetry.addData("Sensor Distance", intake.getDistance());
         telemetry.addData("Time", loop.time());
         telemetry.addData("Sensor Distance", intake.getDistance());
+        telemetry.addData("Current Draw", intake.getamps());
 
     }
 }

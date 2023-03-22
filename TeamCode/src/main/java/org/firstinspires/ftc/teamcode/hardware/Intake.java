@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Intake {
@@ -32,7 +34,7 @@ public class Intake {
     public void resetArmEncoder(){
         arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE); //used to be FLOAT for some reason
     }
 
     public void resetHorizEncoder(){
@@ -95,5 +97,7 @@ public class Intake {
     public double getClaw(){
         return claw.getPosition();
     }
+
+    public double getamps(){ return horiz.getCurrent(CurrentUnit.AMPS); }
 
 }
