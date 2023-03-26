@@ -150,8 +150,7 @@ public class ControllerMap
     {
         Gamepad gamepad = getController(c);
         byte[] data;
-        try { data = gamepad.toByteArray(); }
-        catch (RobotCoreException e) { return -1; }
+        data = gamepad.toByteArray();
         /*  buffer:
             0x00: s32  ROBOCOL_GAMEPAD_VERSION
             0x04: s32 id

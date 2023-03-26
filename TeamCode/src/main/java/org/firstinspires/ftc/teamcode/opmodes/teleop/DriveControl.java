@@ -3,13 +3,13 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
-import org.firstinspires.ftc.teamcode.opmodes.util.FTCDashboardValues;
 
 public class DriveControl extends ControlModule {
 
     private Drivetrain drivetrain;
-    private FTCDashboardValues ftcdbvals;
+    private Odometry odometry;
 
     private ControllerMap.AxisEntry ax_drive_left_x;
     private ControllerMap.AxisEntry ax_drive_left_y;
@@ -28,14 +28,15 @@ public class DriveControl extends ControlModule {
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.drivetrain = robot.drivetrain;
-        ftcdbvals = new FTCDashboardValues();
+        this.odometry = robot.odometry;
 
-        ax_drive_left_x = controllerMap.getAxisMap("drive:left_x", "gamepad1", "left_stick_x");
-        ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");
-        ax_drive_right_x = controllerMap.getAxisMap("drive:right_x", "gamepad1", "right_stick_x");
-        dpad_up = controllerMap.getButtonMap("drive:dpad_up", "gamepad1","dpad_up");
+        drivetrain.resetEncoders();
+        odometry.Up();
 
-        drivetrain.imuAccelStart();
+        ax_drive_left_x = controllerMap.getAxisMap("drive:strafe", "gamepad1", "left_stick_x");
+        ax_drive_left_y = controllerMap.getAxisMap("drive:forward", "gamepad1", "left_stick_y");
+        ax_drive_right_x = controllerMap.getAxisMap("drive:turn", "gamepad1", "right_stick_x");
+        dpad_up = controllerMap.getButtonMap("drive:mode", "gamepad1","dpad_up");
     }
 
     @Override
@@ -54,13 +55,14 @@ public class DriveControl extends ControlModule {
         if (heading_delta > 300) {
             heading_delta -= 360;
         }
+
         if (heading_delta < -300) {
             heading_delta += 360;
         }
 
-        double y = -ax_drive_left_y.get() * 0.7;
-        double x = ax_drive_left_x.get() /* 1.1 */* 0.7;
-        double rx = ax_drive_right_x.get() * 0.4;
+        double y = -ax_drive_left_y.get();
+        double x = ax_drive_left_x.get() /* 1.1 */;
+        double rx = ax_drive_right_x.get() * 0.7;
 
 
         double botHeading = -1* Math.toRadians(drivetrain.getHeading());
@@ -77,7 +79,7 @@ public class DriveControl extends ControlModule {
             drivetrain.move(rotY, rotX, rx, (heading_delta * 0.001), denominator);
         }
         else {
-            drivetrain.move((-ax_drive_left_y.get()*0.7),(ax_drive_left_x.get()*0.7),(ax_drive_right_x.get()*0.4),(heading_delta * 0.001));
+            drivetrain.move(Math.pow(Math.abs(-ax_drive_left_y.get()), 1.6) * Math.signum(-ax_drive_left_y.get()),Math.pow(Math.abs(ax_drive_left_x.get()), 1.6) * Math.signum(ax_drive_left_x.get()),Math.pow(Math.abs(ax_drive_right_x.get()), 1.6) * Math.signum(ax_drive_right_x.get()) * 0.7,(heading_delta * 0.001));
         }
 
         heading_was = drivetrain.getHeading();
@@ -90,22 +92,11 @@ public class DriveControl extends ControlModule {
         telemetry.addData("denominator", denominator);
 
         telemetry.addData("Heading: ", drivetrain.getHeading());
-        telemetry.addData("Angular Velocity: ", drivetrain.getAngularVelocity());
-
         telemetry.addData("Field Centric",field_centric);
-
-        telemetry.addData("Z Acceleration", drivetrain.getZAcceleration());
-        telemetry.addData("Y Acceleration", drivetrain.getYAcceleration());
-
-        telemetry.addData("Z Velocity", drivetrain.getZVelocity());
-        telemetry.addData("Y Velocity", drivetrain.getYVelocity());
-
     }
 
     @Override
     public void stop() {
         super.stop();
-        // drivetrain.closeIMU();
-        drivetrain.imuAccelStop();
     }
 }
