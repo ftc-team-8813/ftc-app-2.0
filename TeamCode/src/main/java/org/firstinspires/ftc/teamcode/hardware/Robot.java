@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.hardware.navigation.Odometry;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
@@ -60,7 +61,7 @@ public class Robot {
         Servo claw = hardwareMap.get(Servo.class, "claw");
         Servo wrist = hardwareMap.get(Servo.class, "wrist");
         Servo holder = hardwareMap.get(Servo.class, "deposit"); // holder
-        Servo latch = hardwareMap.get(Servo.class, "latch");
+        ServoImplEx latch = hardwareMap.get(ServoImplEx.class, "latch");
         Servo arm_left = hardwareMap.get(Servo.class, "arm1");
         Servo arm_right = hardwareMap.get(Servo.class, "arm2");
 
