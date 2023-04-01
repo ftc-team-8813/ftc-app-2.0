@@ -87,10 +87,10 @@ public class RobotControl extends ControlModule{
 
     private double DEPOSITHIGHFAST = 0.42;
 
-    private double DEPOSITTRANSFER = 0.09;
-    private double DEPOSITTRANSFER2 = 0.11;
-    private double DEPOSITTRANSFERFAST = 0.1;
-    private double DEPOSITTRANSFERFAST2 = 0.11;
+    private double DEPOSITTRANSFER = 0.157;
+    private double DEPOSITTRANSFER2 = 0.15;
+    private double DEPOSITTRANSFERFAST = 0.157;
+    private double DEPOSITTRANSFERFAST2 = 0.15;
 
     private double DEPOSITLIFT = 0.38;
     private double DEPOSITLIFTFAST = 0.35;
@@ -106,14 +106,14 @@ public class RobotControl extends ControlModule{
     private double WRISTLOOKINGFORCONE = 0.021;
     private double WRISTTRANSFER = 0.692;
 
-    private double MAXEXTENDEDHORIZ = -800;
-    private double FASTMODEHORIZCONST = -410;
-    private double FASTMODEHORIZ = -410;
+    private double MAXEXTENDEDHORIZ = 2145;
+    private double FASTMODEHORIZCONST = 410;
+    private double FASTMODEHORIZ = 410;
     private double ADJUSTHORIZ = 0;
     private double HORIZRETRACTED = 0;
 
     public static double HORIZ_KP = 0.008;
-    public static double HORIZ_KP_FINE = 0.002;
+    public static double HORIZ_KP_FINE = 0.005;
 
     private double horiz_kp_var = HORIZ_KP; //varies between the two values above
 
@@ -138,6 +138,7 @@ public class RobotControl extends ControlModule{
     private boolean ten_seconds_left = false;
 
     private boolean stop_setting_arm_position = false;
+    private boolean game_timer_reset = false;
 
     public RobotControl(String name) {
         super(name);
@@ -202,40 +203,16 @@ public class RobotControl extends ControlModule{
     @Override
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry);
-
-//        arm.setPosition(ARMHIGHPOS);
-//
-//        arm.update();
-//        arm.resetEncoders();
-
-//        if(lift.getLimit()){
-//            lift.resetEncoders();
-//            lift.setPower(0);
-//        }
-//        if(horizontal.getLimit()){
-//            horizontal.resetEncoders();
-//            horizontal.setPower(0);
-//            //intake.setHorizPow(1); //this scales the speed for run to position; it won't move until you set a target
-//        }
-
-//        if (lift.getLimit() && horizontal.getLimit()) {
-//            telemetry.addData("READY", "GO");
-//            if (rumble) {
-//                gamepad1.rumble(1000);
-//                gamepad2.rumble(1000);
-//                rumble = false;
-//            }
-//
-//        }
-
-//        telemetry.addData("Lift Limit", lift.getLimit());
-//        telemetry.addData("Horizonal Limit", horizontal.getLimit());
-
-        game_timer.reset();
     }
 
     @Override
     public void update(Telemetry telemetry) {
+
+        if (!game_timer_reset) {
+            game_timer.reset();
+            game_timer_reset = true;
+        }
+
         loop.reset();
 
         arm.update();
@@ -415,7 +392,7 @@ public class RobotControl extends ControlModule{
                         intake.setWristPosition(WRISTTRANSFER);
                     }
                     if (intakeTimer.seconds() > 0.11) {
-                        if (horizontal.getCurrentPosition() < -50) {
+                        if (horizontal.getCurrentPosition() > 50) {
                             arm.setPosition(ARMMIDPOS2);
                         } else {
                             arm.setPosition(ARMHIGHPOS);
@@ -428,7 +405,7 @@ public class RobotControl extends ControlModule{
                         }
                     }
                 }
-                if (lift.getCurrentPosition() < 40 && horizontal.getCurrentPosition() > -15) {
+                if (lift.getCurrentPosition() < 40 && horizontal.getCurrentPosition() < 15) {
                     if ((mode == Modes.Fast && arm.getCurrentEncoderPosition() > -34) || (mode == Modes.Circuit && arm.getCurrentEncoderPosition() > -34)) {
                         stateForIntake = IntakeStates.Transfer;
                         intakeTimerReset = false;
@@ -558,14 +535,14 @@ public class RobotControl extends ControlModule{
         if(stateForIntake == IntakeStates.LookingForCone || stateForIntake == IntakeStates.Ground || stateForIntake == IntakeStates.GroundDrivingAround) {
             horiz_kp_var = HORIZ_KP_FINE;
             if (mode == Modes.Fast) {
-                FASTMODEHORIZ -= (ax_horizontal_left_x.get() * 90);
-                if (FASTMODEHORIZ < MAXEXTENDEDHORIZ) FASTMODEHORIZ = MAXEXTENDEDHORIZ;
-                if (FASTMODEHORIZ > 0) FASTMODEHORIZ = 0;
+                FASTMODEHORIZ += (ax_horizontal_left_x.get() * 90);
+                if (FASTMODEHORIZ > MAXEXTENDEDHORIZ) FASTMODEHORIZ = MAXEXTENDEDHORIZ;
+                if (FASTMODEHORIZ < 0) FASTMODEHORIZ = 0;
                 horizontal.setHorizTarget(FASTMODEHORIZ);
             } else {
-                ADJUSTHORIZ -= (ax_horizontal_left_x.get() * 110);
-                if (ADJUSTHORIZ < MAXEXTENDEDHORIZ) ADJUSTHORIZ = MAXEXTENDEDHORIZ;
-                if (ADJUSTHORIZ > 0) ADJUSTHORIZ = 0;
+                ADJUSTHORIZ += (ax_horizontal_left_x.get() * 110);
+                if (ADJUSTHORIZ > MAXEXTENDEDHORIZ) ADJUSTHORIZ = MAXEXTENDEDHORIZ;
+                if (ADJUSTHORIZ < 0) ADJUSTHORIZ = 0;
                 horizontal.setHorizTarget(ADJUSTHORIZ);
             }
         } else {

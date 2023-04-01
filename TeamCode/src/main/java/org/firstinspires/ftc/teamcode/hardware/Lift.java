@@ -4,6 +4,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
+
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 public class Lift {
 
@@ -11,12 +14,12 @@ public class Lift {
     private final DcMotorEx lift_right;
     private final DigitalChannel lift_limit;
     private final Servo holder;
-    private final Servo latch;
+    private final ServoImplEx latch;
     private double lift_position;
     private double lift1Target;
     private boolean old_state = true;
 
-    public Lift(DcMotorEx lift_left, DcMotorEx lift_right, DigitalChannel lift_limit, Servo holder, Servo latch){
+    public Lift(DcMotorEx lift_left, DcMotorEx lift_right, DigitalChannel lift_limit, Servo holder, ServoImplEx latch){
         this.lift_left = lift_left;
         this.lift_right = lift_right;
         this.lift_limit = lift_limit;
@@ -86,4 +89,13 @@ public class Lift {
             holder.setPosition(0);
         }
     }
+
+    public double getPower() {
+        return lift_right.getPower();
+    }
+
+    public double getCurrentAmps() {
+        return lift_right.getCurrent(CurrentUnit.AMPS);
+    }
+
 }

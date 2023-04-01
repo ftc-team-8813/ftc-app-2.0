@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 public class Horizontal {
 
     private final DcMotorEx horizontal;
@@ -26,12 +28,16 @@ public class Horizontal {
         horizontal.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void setHorizTarget (double position){
+    public void setHorizTarget(double position) {
         horizTarget = position;
         //horiz.setTargetPosition((int) position); //used for run to position
     }
 
-    public double getHorizTarget(){
+    public double getPower() {
+        return horizontal.getPower();
+    }
+
+    public double getHorizTarget() {
         return horizTarget;
     }
 
@@ -45,5 +51,9 @@ public class Horizontal {
 
     public boolean getLimit() {
         return !horizontal_limit.getState();
+    }
+
+    public double getCurrentAmps() {
+        return horizontal.getCurrent(CurrentUnit.AMPS);
     }
 }

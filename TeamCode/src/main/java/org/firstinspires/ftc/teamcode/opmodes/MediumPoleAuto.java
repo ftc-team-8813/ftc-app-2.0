@@ -200,9 +200,9 @@ public class MediumPoleAuto extends LoggingOpMode{
         intake.setWristPosition(0.021);
         intake.setClawPosition(0.37);
 
-        arm.setPosition(-20);
+        arm.setPosition(-30);
         lift.setPower(-0.2);
-        horizontal.setPower(0.3);
+        horizontal.setPower(-0.3);
     }
 
     @Override
@@ -240,12 +240,11 @@ public class MediumPoleAuto extends LoggingOpMode{
 
         telemetry.update();
 
-        if(lift.getLimit()){
+        if(lift.getCurrentAmps() > 2){
             lift.resetEncoders();
             lift.setPower(0);
         }
-
-        if(horizontal.getLimit()){
+        if(horizontal.getCurrentAmps() > 3){
             horizontal.resetEncoders();
             horizontal.setPower(0);
         }
@@ -311,7 +310,7 @@ public class MediumPoleAuto extends LoggingOpMode{
                     drivetrain.autoMove(-42.48, 4, 111.675, 1.5, 1.5, 1.5, odometryPose, telemetry);
                     if (drivetrain.hasReached()) {
                         main_id += 1;
-                        horizontal_target = horizontal_target_cs;
+                        horizontal_target = 2145;
                         lift.setHolderPosition(0.39);
                         lift_target = 440;
                         lift_trapezoid.reset();
@@ -319,11 +318,11 @@ public class MediumPoleAuto extends LoggingOpMode{
                     break;
                 case 3:
                     drivetrain.autoMove(-42.48, 2.209, 111.675, 0.6, 0.6, 1, odometryPose, telemetry);
-                    if (drivetrain.hasReached()) {
-                        main_id += 1;
-                        lift.setLatchPosition(0.356);
-                        lift_target = 0;
-                    }
+//                    if (drivetrain.hasReached()) {
+//                        main_id += 1;
+//                        lift.setLatchPosition(0.356);
+//                        lift_target = 0;
+//                    }
                     break;
                 case 4:
                     if (lift.getCurrentPosition() < 200) {
