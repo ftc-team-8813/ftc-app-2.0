@@ -30,6 +30,10 @@ public class PID {
     private double Kd;
     private double Kf;
 
+    double error = 0;
+    double errorChange = 0;
+    double derivative = 0;
+    double out = 0;
 
     public PID (double kp, double ki, double kd, double kf, double maxIntegralSum, double aVal) {
         Kp = kp;
@@ -43,16 +47,16 @@ public class PID {
 
     public double getOutPut(double reference, double cur, double feedforward) {
 
-        double error = reference - cur;
+        error = reference - cur;
 
-        double errorChange = (error - lastError);
+        errorChange = (error - lastError);
 
         currentFilterEstimate = (a * previousFilterEstimate) + (1-a) * errorChange;
         previousFilterEstimate = currentFilterEstimate;
 
-        double derivative = currentFilterEstimate / timer.seconds();
+        derivative = currentFilterEstimate / timer.seconds();
 
-        integralSum = integralSum + (error * timer.seconds());
+        integralSum += (error * timer.seconds());
 
 
         if (integralSum > maxIntegralSum) {
@@ -67,7 +71,7 @@ public class PID {
             integralSum = 0;
         }
 
-        double out = (Kp * error) + (Ki * integralSum) + (Kd * derivative) + (Kf * feedforward);
+        out = (Kp * error) + (Ki * integralSum) + (Kd * derivative) + (Kf * feedforward);
 
         lastError = error;
 
@@ -77,7 +81,27 @@ public class PID {
         return out;
     }
 
-//    public void update(double pos, double target_pos) {
+    public double getIntergralSum() {
+        return integralSum;
+    }
+
+    public double getTimer() {
+        return timer.seconds();
+    }
+
+    public double getError() {
+        return error;
+    }
+
+    public void setKp(double kp) {
+        Kp = kp;
+    }
+
+    public void setKi(double ki) {
+        Ki = ki;
+    }
+
+    //    public void update(double pos, double target_pos) {
 //        position = pos;
 //        target_position = target_pos;
 //    }

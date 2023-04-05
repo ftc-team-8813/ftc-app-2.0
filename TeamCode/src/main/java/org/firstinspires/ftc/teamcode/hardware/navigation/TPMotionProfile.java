@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware.navigation;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-public class MotionProfile {
+public class TPMotionProfile {
     private double min;
     private double max;
 
@@ -18,7 +18,7 @@ public class MotionProfile {
 
     private double old_id;
 
-    public MotionProfile(double rise_slope, double fall_slope, double min, double max) {
+    public TPMotionProfile(double rise_slope, double fall_slope, double min, double max) {
         rise_timer = new ElapsedTime();
         this.rise_slope = rise_slope;
         this.fall_slope = fall_slope;
@@ -52,7 +52,7 @@ public class MotionProfile {
         }
 
         if (!rise && !fall) {
-            output = 0.7;
+            output = 2.0;
         }
 
         output = Range.clip(output, min, max);

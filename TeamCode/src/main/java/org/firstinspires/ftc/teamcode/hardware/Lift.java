@@ -1,66 +1,36 @@
 package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
+
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 public class Lift {
-    private DigitalChannel lift_limit;
-    private DcMotorEx lift1;
-    private DcMotorEx lift2;
-    private Servo dumper;
-    private Servo latch;
-    private double lift1Target;
-    private double liftCurrent;
-    private double dumper_pos = 0;
 
+    private final DcMotorEx lift_left;
+    private final DcMotorEx lift_right;
+    private final DigitalChannel lift_limit;
+    private final Servo holder;
+    private final ServoImplEx latch;
+    private double lift_position;
+    private double lift1Target;
     private boolean old_state = true;
 
-    public Lift(DigitalChannel lift_limit, DcMotorEx lift1, DcMotorEx lift2, Servo dumper, Servo latch){
+    public Lift(DcMotorEx lift_left, DcMotorEx lift_right, DigitalChannel lift_limit, Servo holder, ServoImplEx latch){
+        this.lift_left = lift_left;
+        this.lift_right = lift_right;
         this.lift_limit = lift_limit;
-        this.lift1 = lift1;
-        this.lift2 = lift2;
-        this.dumper = dumper;
+        this.holder = holder;
         this.latch = latch;
+
+//        lift_right.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
-    public void update() {
-        liftCurrent = lift1.getCurrentPosition() * 5.23 / 3.7;
-    }
-
-    public void setLiftPower(double power){
-        lift1.setPower(power);
-        lift2.setPower(-power);
-    }
-
-    public void setDumper(double pos){
-        dumper.setPosition(pos);
-        dumper_pos = pos;
-    }
-
-    public void setLatch(double pos){
-        latch.setPosition(pos);
-    }
-
-    public void setDumperState(boolean on){
-        if (on != old_state) { //if the state changed
-            if (on) {
-                dumper.setPosition(dumper_pos);
-            }
-            old_state = on;
-        }
-        if (!on) {
-            dumper.setPosition(0);
-        }
-    }
-
-    public boolean getLift_limit(){
-        return !lift_limit.getState();
-    }
-
-    public void resetLiftEncoder(){
-        lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    public void updatePosition() {
+        lift_position = lift_left.getCurrentPosition() * (5.23 / 3.7);
     }
 
     public void setLiftTarget(double pos){
@@ -71,8 +41,61 @@ public class Lift {
         return lift1Target;
     }
 
-    public double getLiftCurrent(){
-        return liftCurrent;
+    public void setPower(double pow){
+        lift_left.setPower(pow);
+        lift_right.setPower(-pow);
+    }
+
+    public void resetEncoders() {
+        lift_left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift_right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        lift_left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lift_right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public double getCurrentPosition() {
+        return lift_position;
+    }
+
+    public boolean getLimit(){
+        return !lift_limit.getState();
+    }
+
+    public void setHolderPosition (double pos) {
+        holder.setPosition(pos);
+    }
+
+    public double getHolderPosition() {
+        return holder.getPosition();
+    }
+
+    public void setLatchPosition(double pos) {
+        latch.setPosition(pos);
+    }
+
+    public double getLatchPosition() {
+        return latch.getPosition();
+    }
+
+    public void setHolderState(boolean on){
+        if (on != old_state) { //if the state changed
+            if (on) {
+                holder.setPosition(holder.getPosition());
+            }
+            old_state = on;
+        }
+        if (!on) {
+            holder.setPosition(0);
+        }
+    }
+
+    public double getPower() {
+        return lift_right.getPower();
+    }
+
+    public double getCurrentAmps() {
+        return lift_right.getCurrent(CurrentUnit.AMPS);
     }
 
 }
