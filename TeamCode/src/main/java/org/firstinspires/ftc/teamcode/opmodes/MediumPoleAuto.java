@@ -301,28 +301,29 @@ public class MediumPoleAuto extends LoggingOpMode{
                     }
                     break;
                 case 1:
-                    drivetrain.autoMove(-42.48, 4, 0, 1.5, 2, 2, odometryPose, telemetry);
+                    drivetrain.autoMove(-41.23, 4, 0, 1.5, 2, 2, odometryPose, telemetry);
                     if (drivetrain.hasReached()) {
                         main_id += 1;
                     }
                     break;
                 case 2:
-                    drivetrain.autoMove(-42.48, 4, 111.675, 1.5, 1.5, 1.5, odometryPose, telemetry);
+                    drivetrain.autoMove(-41.23, 4, 106.7625, 1.5, 1.5, 1.5, odometryPose, telemetry);
                     if (drivetrain.hasReached()) {
                         main_id += 1;
-                        horizontal_target = 2145;
+                        horizontal_target = 1355;
                         lift.setHolderPosition(0.39);
                         lift_target = 440;
                         lift_trapezoid.reset();
                     }
                     break;
                 case 3:
-                    drivetrain.autoMove(-42.48, 2.209, 111.675, 0.6, 0.6, 1, odometryPose, telemetry);
-//                    if (drivetrain.hasReached()) {
+                    drivetrain.autoMove(-41.23, 2.209, 106.7625, 0.6, 0.6, 1, odometryPose, telemetry);
+                    if (drivetrain.hasReached()) {
+                        arm_target = -100;
 //                        main_id += 1;
 //                        lift.setLatchPosition(0.356);
 //                        lift_target = 0;
-//                    }
+                    }
                     break;
                 case 4:
                     if (lift.getCurrentPosition() < 200) {

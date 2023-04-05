@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 import org.opencv.android.OpenCVLoader;
 
-@TeleOp(name = "!!THE TeleOp!!")
+//@TeleOp(name = "!!THE TeleOp!!")
 public class CurrentTele extends LoggingOpMode
 {
     // Robot and Controller Vars
