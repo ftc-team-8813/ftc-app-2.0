@@ -112,12 +112,12 @@ public class RobotControl extends ControlModule{
     private double ADJUSTHORIZ = 0;
     private double HORIZRETRACTED = 0;
 
-    public static double HORIZ_KP = 0.008;
+    public static double HORIZ_KP = 0.01;
     public static double HORIZ_KP_FINE = 0.005;
 
     private double horiz_kp_var = HORIZ_KP; //varies between the two values above
 
-    private double CLAWOPENPOS = 0.3;
+    private double CLAWOPENPOS = 0.35;
     private double CLAWCLOSEPOS = 0.065;
 
     private double LATCHINPOS = 0.36;
@@ -216,7 +216,7 @@ public class RobotControl extends ControlModule{
         loop.reset();
 
         arm.update();
-        lift.updatePosition();
+        lift.update();
         horizontal.updatePosition();
 
         if (dpad_left.edge() == -1) {
@@ -368,7 +368,7 @@ public class RobotControl extends ControlModule{
                         horizontal.setHorizTarget(FASTMODEHORIZ);
                     }
                 }
-                if ((intake.getDistance() <= 18 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - arm.getCurrentEncoderPosition()) < 60) {
+                if ((intake.getDistance() <= 19 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - arm.getCurrentEncoderPosition()) < 50) {
                     stateForLift = LiftStates.LiftDown;
                     intakeTimerReset = false;
                     if (mode == Modes.Ground) {

@@ -73,6 +73,7 @@ public class InitializeRobotControl extends ControlModule{
 
     private double LIFTDOWNPOS = 0;
     private double LIFTDOWNPOSFAST = 35;
+    private double LIFTDOWNPOSLOWGOALS = 35;
     private double LIFTLOWPOS = 135;
     private double LIFTMIDPOS = 450;
     private double LIFTHIGHPOS = 750;
@@ -86,10 +87,10 @@ public class InitializeRobotControl extends ControlModule{
 
     private double DEPOSITHIGHFAST = 0.42;
 
-    private double DEPOSITTRANSFER = 0.121;
-    private double DEPOSITTRANSFER2 = 0.119;
-    private double DEPOSITTRANSFERFAST = 0.121;
-    private double DEPOSITTRANSFERFAST2 = 0.119;
+    private double DEPOSITTRANSFER = 0.129;
+    private double DEPOSITTRANSFER2 = 0.122;
+    private double DEPOSITTRANSFERFAST = 0.129;
+    private double DEPOSITTRANSFERFAST2 = 0.122;
 
     private double DEPOSITLIFT = 0.38;
     private double DEPOSITLIFTFAST = 0.35;
@@ -111,15 +112,18 @@ public class InitializeRobotControl extends ControlModule{
     private double FASTMODEHORIZ = 410;
     private double ADJUSTHORIZ = 0;
     private double HORIZRETRACTED = 0;
-    private double HORIZ_KICK = 100;
+    private double HORIZ_KICK = 40;
 
     public static double HORIZ_KP = 0.01;
-    public static double HORIZ_KP_FINE = 0.002;
+    public static double HORIZ_KP_FINE = 0.005;
 
     private double horiz_kp_var = HORIZ_KP; //varies between the two values above
 
-    private double CLAWOPENPOS = 0.3;
+    public static double CLAWOPENPOS = 0.4;
     private double CLAWCLOSEPOS = 0.065;
+
+    public static double CLAW_SENSOR_RANGE = 25;
+    public static double POLE_SENSOR_RANGE = 18;
 
     private double LATCHOPENPOS = 0.68;
     private double LATCHGRABPOS = 0.08;
@@ -246,7 +250,7 @@ public class InitializeRobotControl extends ControlModule{
         loop.reset();
 
         arm.update();
-        lift.updatePosition();
+        lift.update();
         horizontal.updatePosition();
 
         if (dpad_left.edge() == -1) {
@@ -307,6 +311,7 @@ public class InitializeRobotControl extends ControlModule{
                 }
                 liftTimerReset = false;
                 if (lift_last_height == LIFTLOWPOS) {
+                    lift.setLiftTarget(LIFTDOWNPOSLOWGOALS);
                     if (dumped) {
                         if (liftTimer.seconds() > 0.25) {
                             lift.setHolderPosition(DEPOSITLOW3);
@@ -316,6 +321,7 @@ public class InitializeRobotControl extends ControlModule{
                     }
                     if (liftTimer.seconds() > 2.1 && liftTimer.seconds() < 2.2) {
                         lift.setHolderPosition(DEPOSITTRANSFER);
+                        lift.setLiftTarget(LIFTDOWNPOS);
                     }
                 }
                 break;
@@ -399,7 +405,7 @@ public class InitializeRobotControl extends ControlModule{
                         horizontal.setHorizTarget(FASTMODEHORIZ);
                     }
                 }
-                if ((intake.getDistance() <= 20 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - arm.getCurrentEncoderPosition()) < 60) {
+                if ((intake.getDistance() <= CLAW_SENSOR_RANGE || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - arm.getCurrentEncoderPosition()) < 50) {
                     stateForLift = LiftStates.LiftDown;
                     intakeTimerReset = false;
                     if (mode == Modes.Ground) {
@@ -559,7 +565,7 @@ public class InitializeRobotControl extends ControlModule{
             mode = Modes.Circuit;
         }
 
-        if (dump.edge() == -1 && stateForLift == LiftStates.LiftUp) {
+        if ((dump.edge() == -1 || lift.getPoleDistance() < POLE_SENSOR_RANGE) && stateForLift == LiftStates.LiftUp) {
             stateForLift = LiftStates.Dump;
         }
 
@@ -616,6 +622,8 @@ public class InitializeRobotControl extends ControlModule{
         telemetry.addData("Current Intake State", stateForIntake);
         telemetry.addData("Current Lift State", stateForLift);
         telemetry.addData("Current Mode", mode);
+
+        telemetry.addData("Pole Distance", lift.getPoleDistance());
 
         //telemetry.addData("Sensor Distance", intake.getDistance());
         telemetry.addData("Loop Time", loop.time());
