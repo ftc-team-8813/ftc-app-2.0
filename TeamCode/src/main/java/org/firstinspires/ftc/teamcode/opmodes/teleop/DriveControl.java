@@ -19,6 +19,7 @@ public class DriveControl extends ControlModule {
     private ControllerMap.AxisEntry ax_drive_left_x;
     private ControllerMap.AxisEntry ax_drive_left_y;
     private ControllerMap.AxisEntry ax_drive_right_x;
+    private ControllerMap.AxisEntry ax_horizontal_left_x;
     private ControllerMap.AxisEntry ax_slow;
     private ControllerMap.ButtonEntry right_trigger;
     private ControllerMap.ButtonEntry dpad_up;
@@ -63,6 +64,8 @@ public class DriveControl extends ControlModule {
 
     private final PID turn_pid = new PID(turn_kp,turn_ki,turn_kd,0.2,turn_max_i_sum,turn_a);
 
+    private double ADJUSTHORIZ = 0;
+    private double MAXEXTENDEDHORIZ = 1440;
 
     public DriveControl(String name) {
         super(name);
@@ -77,6 +80,8 @@ public class DriveControl extends ControlModule {
         ax_drive_left_y = controllerMap.getAxisMap("drive:right_y", "gamepad1", "left_stick_y");
         ax_drive_right_x = controllerMap.getAxisMap("drive:right_x", "gamepad1", "right_stick_x");
         ax_slow = controllerMap.getAxisMap("drive:slow", "gamepad1", "left_trigger");
+
+        ax_horizontal_left_x = controllerMap.getAxisMap("horizontal:left_x", "gamepad2", "left_stick_x");
 
 //        right_trigger = controllerMap.getButtonMap("drive:right_trigger", "gamepad1","right_trigger");
 
@@ -100,6 +105,10 @@ public class DriveControl extends ControlModule {
         drivetrain.updateHeading();
 
         double heading = drivetrain.getHeading();
+
+//        ADJUSTHORIZ += ((ax_horizontal_left_x.get() * 110) / MAXEXTENDEDHORIZ);
+//        if (ADJUSTHORIZ > 1) ADJUSTHORIZ = 1;
+//        if (ADJUSTHORIZ < 0) ADJUSTHORIZ = 0;
 
 //        if (right_trigger.edge() == -1) {
 //            field_centric = !field_centric;
@@ -139,6 +148,7 @@ public class DriveControl extends ControlModule {
         //this makes turning slower as lateral motion gets faster
         rx *= (1 - (Math.sqrt(Math.pow(ax_drive_left_y.get(), 2) + Math.pow(ax_drive_left_x.get(), 2)) * speed_dependent_steering)); //pythagorean theorem
 
+        rx *= (1-(ADJUSTHORIZ * 0.5));
 //        target_heading += rx * 11;
 
         double heading_radians = Math.toRadians(heading);
@@ -149,7 +159,6 @@ public class DriveControl extends ControlModule {
         double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
 
         if (smooth) {
-
             odometry.updatePose(-drivetrain.getHeading());
             Pose2d odometryPose = odometry.getPose();
             forward += y;
