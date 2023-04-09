@@ -83,6 +83,8 @@ public class InitializeRobotControl extends ControlModule{
     private double DEPOSITLOW = 0.38;
     private double DEPOSITLOW2 = 0.5;
     private double DEPOSITLOW3 = 0;
+    public static double LOWTIMEOUT = 1.5;
+
     private double DEPOSITMID = 0.40;
     private double DEPOSITHIGH = 0.40;
 
@@ -134,6 +136,8 @@ public class InitializeRobotControl extends ControlModule{
     private PID horiz_PID;
     private PID lift_PID;
     private boolean GroundLow;
+
+    private boolean waitForRetract = false;
 
     public static double LIFT_KP = 0.015;
 
@@ -302,13 +306,14 @@ public class InitializeRobotControl extends ControlModule{
                     lift.setLiftTarget(LIFTDOWNPOS);
                 }
 
-                if (lift.getCurrentPosition() < 200 && dumped && (stateForIntake == IntakeStates.DrivingAround || stateForIntake == IntakeStates.LookingForCone)) {
+                if (lift.getCurrentPosition() < 200 && dumped && (stateForIntake == IntakeStates.DrivingAround || stateForIntake == IntakeStates.LookingForCone || stateForIntake == IntakeStates.Ground)) {
                     if (lift_last_height == LIFTHIGHPOS || lift_last_height == LIFTMIDPOS || lift_last_height == LIFTHIGHPOSFAST) {
                         if (mode == Modes.Fast) {
                             lift.setHolderPosition(DEPOSITTRANSFERFAST);
                         } else {
                             lift.setHolderPosition(DEPOSITTRANSFER);
                         }
+                        waitForRetract = false;
                         dumped = false;
                     }
                 }
@@ -322,8 +327,9 @@ public class InitializeRobotControl extends ControlModule{
                             dumped = false;
                         }
                     }
-                    if (liftTimer.seconds() > 2.1 && liftTimer.seconds() < 2.2) {
+                    if (liftTimer.seconds() > LOWTIMEOUT - 0.2 && liftTimer.seconds() < LOWTIMEOUT) {
                         lift.setHolderPosition(DEPOSITTRANSFER);
+                        waitForRetract = false;
                         lift.setLiftTarget(LIFTDOWNPOS);
                     }
                 }
@@ -455,7 +461,7 @@ public class InitializeRobotControl extends ControlModule{
                     }
                 }
                 if (lift.getCurrentPosition() < 40 && horizontal.getCurrentPosition() < 35) {
-                    if ((mode == Modes.Fast && arm.getCurrentEncoderPosition() > -34) || (mode == Modes.Circuit && arm.getCurrentEncoderPosition() > -34)) {
+                    if (((mode == Modes.Fast && arm.getCurrentEncoderPosition() > -34) || (mode == Modes.Circuit && arm.getCurrentEncoderPosition() > -34)) && intakeTimer.seconds() > 0.2) {
                         stateForIntake = IntakeStates.Transfer;
                         intakeTimerReset = false;
                     }
@@ -531,6 +537,7 @@ public class InitializeRobotControl extends ControlModule{
                 if (intakeTimer.seconds() > 0.2) {
                     arm.setPosition(ARMMIDPOS);
                     ADJUSTHORIZ = 0;
+                    waitForRetract = true;
                     stateForIntake = IntakeStates.Ground;
                     intakeTimerReset = false;
                 }
@@ -545,7 +552,7 @@ public class InitializeRobotControl extends ControlModule{
                     GroundLow = true;
                 }
 
-                if (dump.edge() == -1) {
+                if (dump.edge() == -1 && mode == Modes.Ground) {
                     intake.setClawPosition(CLAWOPENPOS);
                     intakeTimer.reset(); //after the cone is dropped, the timer resets. . .
                     intakeTimerReset = true;
@@ -558,6 +565,17 @@ public class InitializeRobotControl extends ControlModule{
                 if (x_button.edge() == -1) {
                     stateForIntake = IntakeStates.LookingForCone;
                     stop_setting_arm_position = false;
+                }
+
+                if (!waitForRetract) {
+                    if (!intakeTimerReset) {
+                        intakeTimer.reset();
+                        intakeTimerReset = true;
+                    }
+                    intake.setWristPosition(WRISTTRANSFER);
+                    if (intakeTimer.seconds() > 0.3) {
+                        stateForIntake = IntakeStates.PickingConeUp;
+                    }
                 }
                 break;
         }

@@ -146,7 +146,7 @@ public class DriveControl extends ControlModule {
         double rx = ax_drive_right_x.get() * turn_speed * slow;
 
         //this makes turning slower as lateral motion gets faster
-        rx *= (1 - (Math.sqrt(Math.pow(ax_drive_left_y.get(), 2) + Math.pow(ax_drive_left_x.get(), 2)) * speed_dependent_steering)); //pythagorean theorem
+        rx *= (1 - (Math.sqrt(Math.pow(ax_drive_left_y.get(), 2) + Math.pow(ax_drive_left_x.get() * 0.8, 2)) * speed_dependent_steering)); //pythagorean theorem
 
         rx *= (1-(ADJUSTHORIZ * 0.5));
 //        target_heading += rx * 11;
