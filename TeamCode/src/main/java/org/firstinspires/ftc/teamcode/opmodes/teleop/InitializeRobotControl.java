@@ -35,8 +35,8 @@ public class InitializeRobotControl extends ControlModule{
 
     private final ElapsedTime game_timer = new ElapsedTime();
 
-    public static double lift_accel = 3; //bigger is faster accel
-    public static double lift_decel = 0.003; //bigger is faster decel
+    private double lift_accel = 2.7; //bigger is faster accel
+    private double lift_decel = 0.003; //bigger is faster decel
     private TPMotionProfile lift_trapezoid;
 
     private double lift_last_height;
@@ -104,8 +104,8 @@ public class InitializeRobotControl extends ControlModule{
     private double ARMMIDPOS3 = -13;
     private double ARMHIGHPOS = -9; //transfer position
 
-    public static double ARMLOWGOAL = -76;
-    public static double ARMGROUNDGOAL = -120;
+    private double ARMLOWGOAL = -76;
+    private double ARMGROUNDGOAL = -120;
 
     private double WRISTLOOKINGFORCONE = 0.021;
     private double WRISTTRANSFER = 0.692;
@@ -115,7 +115,9 @@ public class InitializeRobotControl extends ControlModule{
     private double FASTMODEHORIZ = 410;
     private double ADJUSTHORIZ = 0;
     private double HORIZRETRACTED = 0;
-    private double HORIZ_KICK = 50;
+    public static double HORIZ_KICK = 10;
+
+    public static double PICKUP_TIMER = 0.07;
 
     public static double HORIZ_KP = 0.01;
     public static double HORIZ_KP_FINE = 0.005;
@@ -443,10 +445,10 @@ public class InitializeRobotControl extends ControlModule{
                     intakeTimerReset = true;
                 }
                 if (lift.getCurrentPosition() < 40) {
-                    if (intakeTimer.seconds() > 0.03) {
+                    if (intakeTimer.seconds() > 0.03 + PICKUP_TIMER) {
                         intake.setWristPosition(WRISTTRANSFER);
                     }
-                    if (intakeTimer.seconds() > 0.2) {
+                    if (intakeTimer.seconds() > 0.2 + PICKUP_TIMER) {
                         if (horizontal.getCurrentPosition() > 50) {
                             arm.setPosition(ARMMIDPOS2);
                         } else {
