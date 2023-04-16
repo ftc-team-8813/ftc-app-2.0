@@ -83,26 +83,26 @@ public class InitializeRobotControl extends ControlModule{
     private double DEPOSITLOW = 0.38;
     private double DEPOSITLOW2 = 0.5;
     private double DEPOSITLOW3 = 0;
-    public static double LOWTIMEOUT = 1.5;
+    public static double LOWTIMEOUT = 1.3;
 
     private double DEPOSITMID = 0.40;
     private double DEPOSITHIGH = 0.40;
 
     private double DEPOSITHIGHFAST = 0.42;
 
-    public static double DEPOSITTRANSFER = 0.129;
-    public static double DEPOSITTRANSFER2 = 0.122;
-    private double DEPOSITTRANSFERFAST = 0.129;
-    private double DEPOSITTRANSFERFAST2 = 0.122;
+    public static double DEPOSITTRANSFER = 0.110;
+    public static double DEPOSITTRANSFER2 = 0.106;
+    private double DEPOSITTRANSFERFAST = 0.110;
+    private double DEPOSITTRANSFERFAST2 = 0.106;
 
     private double DEPOSITLIFT = 0.38;
     private double DEPOSITLIFTFAST = 0.35;
 
-    public static double ARMCOMPLETEDOWNPOS = -124;
+    public static double ARMCOMPLETEDOWNPOS = -123;
     private double ARMMIDPOS = -36;
     private double ARMMIDPOS2 = -35; //used while the horiz slide is retracting
-    private double ARMMIDPOS3 = -13;
-    private double ARMHIGHPOS = -9; //transfer position
+    public static double ARMMIDPOS3 = -12;
+    public static double ARMHIGHPOS = -12; //transfer position
 
     private double ARMLOWGOAL = -76;
     private double ARMGROUNDGOAL = -120;
@@ -115,7 +115,7 @@ public class InitializeRobotControl extends ControlModule{
     private double FASTMODEHORIZ = 410;
     private double ADJUSTHORIZ = 0;
     private double HORIZRETRACTED = 0;
-    public static double HORIZ_KICK = 10;
+    public static double HORIZ_KICK = 45;
 
     public static double PICKUP_TIMER = 0.07;
 
@@ -124,15 +124,17 @@ public class InitializeRobotControl extends ControlModule{
 
     private double horiz_kp_var = HORIZ_KP; //varies between the two values above
 
-    public static double CLAWOPENPOS = 0.4;
-    private double CLAWCLOSEPOS = 0.065;
+    public static double CLAWOPENPOS = 0.35;
+    private double CLAWCLOSEPOS = 0.73;
 
     public static double CLAW_SENSOR_RANGE = 37;
     public static double POLE_SENSOR_RANGE = 18;
 
-    private double LATCHOPENPOS = 0.92;
-    private double LATCHGRABPOS = 0.08;
-    public static double LATCHDELAY = 0.07;
+    private double LATCHOPENPOS = 0.8;
+    private double LATCHGRABPOS = 0.075;
+    private double LATCHTRANSFERPOS = 0.55;
+
+    public static double LATCHDELAY = 0.2;
 
     private PID arm_PID;
     private PID horiz_PID;
@@ -315,6 +317,7 @@ public class InitializeRobotControl extends ControlModule{
                         } else {
                             lift.setHolderPosition(DEPOSITTRANSFER);
                         }
+                        lift.setLatchPosition(LATCHOPENPOS);
                         waitForRetract = false;
                         dumped = false;
                     }
@@ -331,17 +334,22 @@ public class InitializeRobotControl extends ControlModule{
                     }
                     if (liftTimer.seconds() > LOWTIMEOUT - 0.2 && liftTimer.seconds() < LOWTIMEOUT) {
                         lift.setHolderPosition(DEPOSITTRANSFER);
+                        lift.setLatchPosition(LATCHTRANSFERPOS);
                         waitForRetract = false;
                         lift.setLiftTarget(LIFTDOWNPOS);
                     }
                 }
-                if (lift_last_height == LIFTHIGHPOS || lift_last_height == LIFTMIDPOS || lift_last_height == LIFTHIGHPOSFAST) {
-                    if (dumped) {
-                        if (liftTimer.seconds() > LATCHDELAY) {
-                            lift.setLatchPosition(LATCHOPENPOS);
-                        }
-                    }
-                }
+//                if (lift_last_height == LIFTHIGHPOS || lift_last_height == LIFTMIDPOS || lift_last_height == LIFTHIGHPOSFAST) {
+//                    if (dumped) {
+//                        if (liftTimer.seconds() > LATCHDELAY) {
+//                            if (stateForIntake == IntakeStates.PickingConeUp) {
+//                                lift.setLatchPosition(LATCHTRANSFERPOS);
+//                            } else {
+//                                lift.setLatchPosition(LATCHOPENPOS);
+//                            }
+//                        }
+//                    }
+//                }
                 break;
 
             case LiftUp:
@@ -400,7 +408,6 @@ public class InitializeRobotControl extends ControlModule{
                     }
                 } else {
                     dumped = true;
-                    lift.setLatchPosition(LATCHOPENPOS);
                     stateForLift = LiftStates.LiftDown;
                 }
                 break;
@@ -438,7 +445,7 @@ public class InitializeRobotControl extends ControlModule{
 
             case PickingConeUp:
                 intake.setClawPosition(CLAWCLOSEPOS);
-                lift.setLatchPosition(LATCHOPENPOS);
+                lift.setLatchPosition(LATCHTRANSFERPOS);
                 horizontal.setHorizTarget(Range.clip(horizontal.getHorizTarget() + HORIZ_KICK, 0,MAXEXTENDEDHORIZ));
                 if (!intakeTimerReset) {
                     intakeTimer.reset();
@@ -516,7 +523,7 @@ public class InitializeRobotControl extends ControlModule{
                     if (intakeTimer.seconds() > 0.12) {
                         arm.setPosition(ARMMIDPOS3);
                     }
-                    if (intakeTimer.seconds() > 0.2) {
+                    if (intakeTimer.seconds() > 0.3) {
                         arm.setPosition(ARMMIDPOS);
                     }
                 } else {
