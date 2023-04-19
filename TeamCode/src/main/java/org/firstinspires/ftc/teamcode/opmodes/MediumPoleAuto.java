@@ -241,7 +241,7 @@ public class MediumPoleAuto extends LoggingOpMode{
          */
 
         arm.update();
-        lift.updatePosition();
+        lift.update();
         horizontal.updatePosition();
         drivetrain.updateHeading();
 

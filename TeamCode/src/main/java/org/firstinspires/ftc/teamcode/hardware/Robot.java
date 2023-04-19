@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -68,6 +69,7 @@ public class Robot {
         // Sensors
         BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
         DistanceSensor claw_sensor = hardwareMap.get(DistanceSensor.class, "claw sensor");
+        DistanceSensor pole_sensor = hardwareMap.get(DistanceSensor.class, "pole sensor");
         DigitalChannel lift_limit = hardwareMap.get(DigitalChannel.class, "lift limit");
         DigitalChannel horizontal_limit = hardwareMap.get(DigitalChannel.class, "horizontal limit");
 
@@ -76,7 +78,7 @@ public class Robot {
         this.intake = new Intake(claw_sensor,claw,wrist);
         this.arm = new Arm(arm_left,arm_right, arm_encoder);
         this.horizontal = new Horizontal(horizontal,horizontal_limit);
-        this.lift = new Lift(lift_left, lift_right.motorEx, lift_limit, holder, latch);
+        this.lift = new Lift(lift_left, lift_right.motorEx, lift_limit, holder, latch, pole_sensor);
         this.odometry = new Odometry(front_left, front_right, back_left, back_right, center_odometry, left_odometry, right_odometry);
     }
 }
