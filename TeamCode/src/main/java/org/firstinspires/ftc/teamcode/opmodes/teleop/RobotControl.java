@@ -14,7 +14,6 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.navigation.IntakeStates;
 import org.firstinspires.ftc.teamcode.hardware.navigation.LiftStates;
 import org.firstinspires.ftc.teamcode.hardware.navigation.Modes;
-import org.firstinspires.ftc.teamcode.hardware.navigation.MotionProfile;
 import org.firstinspires.ftc.teamcode.hardware.navigation.PID;
 import org.firstinspires.ftc.teamcode.hardware.navigation.TPMotionProfile;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
@@ -36,8 +35,8 @@ public class RobotControl extends ControlModule{
 
     private final ElapsedTime game_timer = new ElapsedTime();
 
-    public static double lift_accel = 3; //bigger is faster accel
-    public static double lift_decel = 0.002; //bigger is faster decel
+    private double lift_accel = 2.7; //bigger is faster accel
+    private double lift_decel = 0.003; //bigger is faster decel
     private TPMotionProfile lift_trapezoid;
 
     private double lift_last_height;
@@ -51,6 +50,7 @@ public class RobotControl extends ControlModule{
     private ControllerMap.ButtonEntry dpad_left;
 
     private ControllerMap.ButtonEntry sense;
+    private ControllerMap.ButtonEntry sense2;
     private ControllerMap.ButtonEntry dump;
 
     private ControllerMap.ButtonEntry rec_right_bumper;
@@ -74,6 +74,7 @@ public class RobotControl extends ControlModule{
 
     private double LIFTDOWNPOS = 0;
     private double LIFTDOWNPOSFAST = 35;
+    private double LIFTDOWNPOSLOWGOALS = 35;
     private double LIFTLOWPOS = 135;
     private double LIFTMIDPOS = 450;
     private double LIFTHIGHPOS = 750;
@@ -82,51 +83,65 @@ public class RobotControl extends ControlModule{
     private double DEPOSITLOW = 0.38;
     private double DEPOSITLOW2 = 0.5;
     private double DEPOSITLOW3 = 0;
+    public static double LOWTIMEOUT = 1.3;
+
     private double DEPOSITMID = 0.40;
     private double DEPOSITHIGH = 0.40;
 
     private double DEPOSITHIGHFAST = 0.42;
 
-    private double DEPOSITTRANSFER = 0.157;
-    private double DEPOSITTRANSFER2 = 0.15;
-    private double DEPOSITTRANSFERFAST = 0.157;
-    private double DEPOSITTRANSFERFAST2 = 0.15;
+    public static double DEPOSITTRANSFER = 0.110;
+    public static double DEPOSITTRANSFER2 = 0.106;
+    private double DEPOSITTRANSFERFAST = 0.110;
+    private double DEPOSITTRANSFERFAST2 = 0.106;
 
     private double DEPOSITLIFT = 0.38;
     private double DEPOSITLIFTFAST = 0.35;
 
-    private double ARMCOMPLETEDOWNPOS = -123;
-    private double ARMMIDPOS = -30;
-    private double ARMMIDPOS2 = -28; //used while the horiz slide is retracting
-    private double ARMHIGHPOS = -8; //transfer position
+    public static double ARMCOMPLETEDOWNPOS = -123;
+    private double ARMMIDPOS = -36;
+    private double ARMMIDPOS2 = -35; //used while the horiz slide is retracting
+    public static double ARMMIDPOS3 = -12;
+    public static double ARMHIGHPOS = -12; //transfer position
 
-    public static double ARMLOWGOAL = -76;
-    public static double ARMGROUNDGOAL = -120;
+    private double ARMLOWGOAL = -76;
+    private double ARMGROUNDGOAL = -120;
 
     private double WRISTLOOKINGFORCONE = 0.021;
     private double WRISTTRANSFER = 0.692;
 
-    private double MAXEXTENDEDHORIZ = 2145;
+    private double MAXEXTENDEDHORIZ = 1440;
     private double FASTMODEHORIZCONST = 410;
     private double FASTMODEHORIZ = 410;
     private double ADJUSTHORIZ = 0;
     private double HORIZRETRACTED = 0;
+    public static double HORIZ_KICK = 45;
+
+    public static double PICKUP_TIMER = 0.07;
 
     public static double HORIZ_KP = 0.01;
     public static double HORIZ_KP_FINE = 0.005;
 
     private double horiz_kp_var = HORIZ_KP; //varies between the two values above
 
-    private double CLAWOPENPOS = 0.35;
-    private double CLAWCLOSEPOS = 0.065;
+    public static double CLAWOPENPOS = 0.35;
+    private double CLAWCLOSEPOS = 0.73;
 
-    private double LATCHINPOS = 0.36;
-    private double LATCHOUTPOS = 0.07;
+    public static double CLAW_SENSOR_RANGE = 37;
+    public static double POLE_SENSOR_RANGE = 18;
+
+    private double LATCHOPENPOS = 0.8;
+    private double LATCHGRABPOS = 0.075;
+    private double LATCHTRANSFERPOS = 0.55;
+
+    public static double LATCHDELAY = 0.2;
 
     private PID arm_PID;
     private PID horiz_PID;
     private PID lift_PID;
     private boolean GroundLow;
+
+    private boolean waitForRetract = false;
 
     public static double LIFT_KP = 0.015;
 
@@ -139,6 +154,7 @@ public class RobotControl extends ControlModule{
 
     private boolean stop_setting_arm_position = false;
     private boolean game_timer_reset = false;
+    private boolean initialize = false;
 
     public RobotControl(String name) {
         super(name);
@@ -162,6 +178,7 @@ public class RobotControl extends ControlModule{
         gamepad2 = controllerMap.gamepad2;
 
         sense = controllerMap.getButtonMap("senseCone", "gamepad1", "right_bumper");
+        sense2 = controllerMap.getButtonMap("senseCone2", "gamepad2", "right_bumper");
         dump = controllerMap.getButtonMap("dump", "gamepad1", "left_bumper");
 
         y_button = controllerMap.getButtonMap("lift:high","gamepad1","y");
@@ -189,13 +206,9 @@ public class RobotControl extends ControlModule{
         stateForIntake = IntakeStates.DrivingAround;
         mode = Modes.Circuit;
 
-//        lift.setHolderPosition(DEPOSITTRANSFER);
+        lift.setHolderPosition(DEPOSITTRANSFER);
 
         GroundLow = false;
-
-//        arm.setPosition(ARMHIGHPOS);
-//        lift.setPower(-0.2);
-//        horizontal.setPower(0.3);
 
         //horizontal.setHorizTarget(0); //used for run to position
     }
@@ -203,6 +216,40 @@ public class RobotControl extends ControlModule{
     @Override
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry);
+
+        if (!initialize) {
+            arm.setPosition(ARMHIGHPOS);
+            lift.setPower(-0.2);
+            horizontal.setPower(-0.3);
+            initialize = true;
+        }
+
+        arm.update();
+        arm.resetEncoders();
+
+        lift.resetEncoders();
+        horizontal.resetEncoders();
+
+        if(lift.getCurrentAmps() > 1.5){
+            lift.resetEncoders();
+            lift.setPower(0);
+        }
+        if(horizontal.getCurrentAmps() > 3){
+            horizontal.resetEncoders();
+            horizontal.setPower(0);
+        }
+
+        if (lift.getPower() == 0 && horizontal.getPower() == 0) {
+            telemetry.addData("READY", "GO");
+            if (rumble) {
+                gamepad1.rumble(1000);
+                gamepad2.rumble(1000);
+                rumble = false;
+            }
+        }
+
+        telemetry.addData("Lift Amps", lift.getCurrentAmps());
+        telemetry.addData("Horizonal Amps", horizontal.getCurrentAmps());
     }
 
     @Override
@@ -252,6 +299,7 @@ public class RobotControl extends ControlModule{
         if (mode == Modes.Circuit) {
             if ((a_button.edge() == -1 || b_button.edge() == -1 || y_button.edge() == -1) && !(stateForIntake == IntakeStates.Transfer && intakeTimer.seconds() < 0.2) && stateForIntake != IntakeStates.PickingConeUp) {
                 stateForLift = LiftStates.LiftUp;
+                lift.setLatchPosition(LATCHGRABPOS);
             }
         }
         //lift
@@ -264,28 +312,46 @@ public class RobotControl extends ControlModule{
                     lift.setLiftTarget(LIFTDOWNPOS);
                 }
 
-                if (lift.getCurrentPosition() < 200 && dumped && (stateForIntake == IntakeStates.DrivingAround || stateForIntake == IntakeStates.LookingForCone)) {
+                if (lift.getCurrentPosition() < 200 && dumped && (stateForIntake == IntakeStates.DrivingAround || stateForIntake == IntakeStates.LookingForCone || stateForIntake == IntakeStates.Ground)) {
                     if (lift_last_height == LIFTHIGHPOS || lift_last_height == LIFTMIDPOS || lift_last_height == LIFTHIGHPOSFAST) {
                         if (mode == Modes.Fast) {
                             lift.setHolderPosition(DEPOSITTRANSFERFAST);
                         } else {
                             lift.setHolderPosition(DEPOSITTRANSFER);
                         }
+                        lift.setLatchPosition(LATCHOPENPOS);
+                        waitForRetract = false;
                         dumped = false;
                     }
                 }
                 liftTimerReset = false;
                 if (lift_last_height == LIFTLOWPOS) {
+                    lift.setLiftTarget(LIFTDOWNPOSLOWGOALS);
                     if (dumped) {
-                        if (liftTimer.seconds() > 0.01) {
+                        if (liftTimer.seconds() > 0.25) {
                             lift.setHolderPosition(DEPOSITLOW3);
+                            lift.setLatchPosition(LATCHOPENPOS);
                             dumped = false;
                         }
                     }
-                    if (liftTimer.seconds() > 2.1 && liftTimer.seconds() < 2.2) {
+                    if (liftTimer.seconds() > LOWTIMEOUT - 0.2 && liftTimer.seconds() < LOWTIMEOUT) {
                         lift.setHolderPosition(DEPOSITTRANSFER);
+                        lift.setLatchPosition(LATCHTRANSFERPOS);
+                        waitForRetract = false;
+                        lift.setLiftTarget(LIFTDOWNPOS);
                     }
                 }
+//                if (lift_last_height == LIFTHIGHPOS || lift_last_height == LIFTMIDPOS || lift_last_height == LIFTHIGHPOSFAST) {
+//                    if (dumped) {
+//                        if (liftTimer.seconds() > LATCHDELAY) {
+//                            if (stateForIntake == IntakeStates.PickingConeUp) {
+//                                lift.setLatchPosition(LATCHTRANSFERPOS);
+//                            } else {
+//                                lift.setLatchPosition(LATCHOPENPOS);
+//                            }
+//                        }
+//                    }
+//                }
                 break;
 
             case LiftUp:
@@ -318,8 +384,6 @@ public class RobotControl extends ControlModule{
                 break;
 
             case Dump:
-                lift.setLatchPosition(LATCHINPOS);
-
                 if (lift.getLiftTarget() == LIFTMIDPOS) {
                     lift.setHolderPosition(DEPOSITMID);
                 }
@@ -339,7 +403,7 @@ public class RobotControl extends ControlModule{
 
                 if (lift.getLiftTarget() == LIFTLOWPOS) {
                     lift.setHolderPosition(DEPOSITLOW);
-                    if (liftTimer.seconds() > 0.2) {
+                    if (liftTimer.seconds() > 0.1) {
                         dumped = true;
                         liftTimer.reset();
                         stateForLift = LiftStates.LiftDown;
@@ -368,7 +432,7 @@ public class RobotControl extends ControlModule{
                         horizontal.setHorizTarget(FASTMODEHORIZ);
                     }
                 }
-                if ((intake.getDistance() <= 19 || sense.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - arm.getCurrentEncoderPosition()) < 50) {
+                if ((intake.getDistance() <= CLAW_SENSOR_RANGE || sense.edge() == -1 || sense2.edge() == -1) && Math.abs(ARMCOMPLETEDOWNPOS - arm.getCurrentEncoderPosition()) < 50) {
                     stateForLift = LiftStates.LiftDown;
                     intakeTimerReset = false;
                     if (mode == Modes.Ground) {
@@ -383,15 +447,17 @@ public class RobotControl extends ControlModule{
 
             case PickingConeUp:
                 intake.setClawPosition(CLAWCLOSEPOS);
+                lift.setLatchPosition(LATCHTRANSFERPOS);
+                horizontal.setHorizTarget(Range.clip(horizontal.getHorizTarget() + HORIZ_KICK, 0,MAXEXTENDEDHORIZ));
                 if (!intakeTimerReset) {
                     intakeTimer.reset();
                     intakeTimerReset = true;
                 }
                 if (lift.getCurrentPosition() < 40) {
-                    if (intakeTimer.seconds() > 0.03) {
+                    if (intakeTimer.seconds() > 0.03 + PICKUP_TIMER) {
                         intake.setWristPosition(WRISTTRANSFER);
                     }
-                    if (intakeTimer.seconds() > 0.11) {
+                    if (intakeTimer.seconds() > 0.2 + PICKUP_TIMER) {
                         if (horizontal.getCurrentPosition() > 50) {
                             arm.setPosition(ARMMIDPOS2);
                         } else {
@@ -405,8 +471,8 @@ public class RobotControl extends ControlModule{
                         }
                     }
                 }
-                if (lift.getCurrentPosition() < 40 && horizontal.getCurrentPosition() < 15) {
-                    if ((mode == Modes.Fast && arm.getCurrentEncoderPosition() > -34) || (mode == Modes.Circuit && arm.getCurrentEncoderPosition() > -34)) {
+                if (lift.getCurrentPosition() < 40 && horizontal.getCurrentPosition() < 35) {
+                    if (((mode == Modes.Fast && arm.getCurrentEncoderPosition() > -34) || (mode == Modes.Circuit && arm.getCurrentEncoderPosition() > -34)) && intakeTimer.seconds() > 0.2) {
                         stateForIntake = IntakeStates.Transfer;
                         intakeTimerReset = false;
                     }
@@ -423,7 +489,7 @@ public class RobotControl extends ControlModule{
                     FASTMODEHORIZ = FASTMODEHORIZCONST;
                     if (intakeTimer.seconds() > 0.12) { //used to be 0.2 and 0.25
                         intake.setClawPosition(CLAWOPENPOS);
-                        lift.setLatchPosition(LATCHOUTPOS);
+                        lift.setLatchPosition(LATCHGRABPOS);
                         lift.setHolderPosition(DEPOSITTRANSFERFAST2);
                     }
                     if (intakeTimer.seconds() > 0.05) {
@@ -436,10 +502,10 @@ public class RobotControl extends ControlModule{
                     }
                 }
                 if (mode == Modes.Circuit) {
-                    if (intakeTimer.seconds() > 0.12) {
-                        lift.setLatchPosition(LATCHOUTPOS);
+                    if (intakeTimer.seconds() > 0.08) {
+                        lift.setLatchPosition(LATCHGRABPOS);
                     }
-                    if (intakeTimer.seconds() > 0.12) {
+                    if (intakeTimer.seconds() > 0.2) {
                         intake.setClawPosition(CLAWOPENPOS);
                         lift.setHolderPosition(DEPOSITTRANSFER2);
                     }
@@ -456,7 +522,10 @@ public class RobotControl extends ControlModule{
                     intakeTimerReset = true;
                 }
                 if (mode == Modes.Circuit) {
-                    if (intakeTimer.seconds() > 0.4) {
+                    if (intakeTimer.seconds() > 0.12) {
+                        arm.setPosition(ARMMIDPOS3);
+                    }
+                    if (intakeTimer.seconds() > 0.3) {
                         arm.setPosition(ARMMIDPOS);
                     }
                 } else {
@@ -466,7 +535,6 @@ public class RobotControl extends ControlModule{
                 ADJUSTHORIZ = 0;
                 if (x_button.edge() == -1) {
                     intakeTimerReset = false;
-                    lift.setLatchPosition(LATCHINPOS);
                     stateForIntake = IntakeStates.LookingForCone;
                     stop_setting_arm_position = false;
                 }
@@ -480,6 +548,7 @@ public class RobotControl extends ControlModule{
                 if (intakeTimer.seconds() > 0.2) {
                     arm.setPosition(ARMMIDPOS);
                     ADJUSTHORIZ = 0;
+                    waitForRetract = true;
                     stateForIntake = IntakeStates.Ground;
                     intakeTimerReset = false;
                 }
@@ -494,7 +563,7 @@ public class RobotControl extends ControlModule{
                     GroundLow = true;
                 }
 
-                if (dump.edge() == -1) {
+                if (dump.edge() == -1 && mode == Modes.Ground) {
                     intake.setClawPosition(CLAWOPENPOS);
                     intakeTimer.reset(); //after the cone is dropped, the timer resets. . .
                     intakeTimerReset = true;
@@ -507,6 +576,17 @@ public class RobotControl extends ControlModule{
                 if (x_button.edge() == -1) {
                     stateForIntake = IntakeStates.LookingForCone;
                     stop_setting_arm_position = false;
+                }
+
+                if (!waitForRetract) {
+                    if (!intakeTimerReset) {
+                        intakeTimer.reset();
+                        intakeTimerReset = true;
+                    }
+                    intake.setWristPosition(WRISTTRANSFER);
+                    if (intakeTimer.seconds() > 0.3) {
+                        stateForIntake = IntakeStates.PickingConeUp;
+                    }
                 }
                 break;
         }
@@ -524,7 +604,7 @@ public class RobotControl extends ControlModule{
             mode = Modes.Circuit;
         }
 
-        if (dump.edge() == -1 && stateForLift == LiftStates.LiftUp) {
+        if ((dump.edge() == -1 || lift.getPoleDistance() < POLE_SENSOR_RANGE) && stateForLift == LiftStates.LiftUp) {
             stateForLift = LiftStates.Dump;
         }
 
@@ -563,24 +643,22 @@ public class RobotControl extends ControlModule{
         }
 
         telemetry.addData("Claw Position", CLAWCLOSEPOS);
-        telemetry.addData("Sense",sense.edge());
 
         telemetry.addData("Lift Pow", lift_power);
-        telemetry.addData("Horiz Pow", horiz_PID.getOutPut(horizontal.getHorizTarget(), horizontal.getCurrentPosition(), 0));
-
-        telemetry.addData("Arm Encoder", arm.getCurrentEncoderPosition());
+        telemetry.addData("Lift Target", lift.getLiftTarget());
         telemetry.addData("Lift Encoder", lift.getCurrentPosition());
+
+        telemetry.addData("Horiz Pow", horiz_PID.getOutPut(horizontal.getHorizTarget(), horizontal.getCurrentPosition(), 0));
+        telemetry.addData("Horiz Target", horizontal.getHorizTarget());
         telemetry.addData("Horiz Encoder", horizontal.getCurrentPosition());
 
-        telemetry.addData("Lift Target", lift.getLiftTarget());
-        telemetry.addData("Horiz Target", horizontal.getHorizTarget());
-
-        telemetry.addData("Horiz Limit", horizontal.getCurrentPosition());
-        telemetry.addData("Lift Limit", lift.getLimit());
+        telemetry.addData("Arm Encoder", arm.getCurrentEncoderPosition());
 
         telemetry.addData("Current Intake State", stateForIntake);
         telemetry.addData("Current Lift State", stateForLift);
         telemetry.addData("Current Mode", mode);
+
+        telemetry.addData("Pole Distance", lift.getPoleDistance());
 
         //telemetry.addData("Sensor Distance", intake.getDistance());
         telemetry.addData("Loop Time", loop.time());
