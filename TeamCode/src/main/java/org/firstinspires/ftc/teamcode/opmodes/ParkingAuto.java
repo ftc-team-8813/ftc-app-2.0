@@ -122,6 +122,7 @@ public class ParkingAuto extends LoggingOpMode{
     @Override
     public void start() {
         super.start();
+        odometry.resetEncoders();
         drivetrain.resetEncoders();
         camera.closeCameraDevice();
     }

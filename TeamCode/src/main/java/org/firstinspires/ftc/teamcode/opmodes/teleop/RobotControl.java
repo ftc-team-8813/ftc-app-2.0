@@ -90,10 +90,10 @@ public class RobotControl extends ControlModule{
 
     private double DEPOSITHIGHFAST = 0.42;
 
-    public static double DEPOSITTRANSFER = 0.110;
-    public static double DEPOSITTRANSFER2 = 0.106;
-    private double DEPOSITTRANSFERFAST = 0.110;
-    private double DEPOSITTRANSFERFAST2 = 0.106;
+    public static double DEPOSITTRANSFER = 0.10;
+    public static double DEPOSITTRANSFER2 = 0.097;
+    private double DEPOSITTRANSFERFAST = 0.10;
+    private double DEPOSITTRANSFERFAST2 = 0.097;
 
     private double DEPOSITLIFT = 0.38;
     private double DEPOSITLIFTFAST = 0.35;
@@ -102,7 +102,7 @@ public class RobotControl extends ControlModule{
     private double ARMMIDPOS = -36;
     private double ARMMIDPOS2 = -35; //used while the horiz slide is retracting
     public static double ARMMIDPOS3 = -12;
-    public static double ARMHIGHPOS = -12; //transfer position
+    public static double ARMHIGHPOS = -9; //transfer position
 
     private double ARMLOWGOAL = -76;
     private double ARMGROUNDGOAL = -120;
@@ -206,7 +206,6 @@ public class RobotControl extends ControlModule{
         stateForIntake = IntakeStates.DrivingAround;
         mode = Modes.Circuit;
 
-        lift.setHolderPosition(DEPOSITTRANSFER);
 
         GroundLow = false;
 
@@ -218,6 +217,7 @@ public class RobotControl extends ControlModule{
         super.init_loop(telemetry);
 
         if (!initialize) {
+            lift.setHolderPosition(DEPOSITTRANSFER);
             arm.setPosition(ARMHIGHPOS);
             lift.setPower(-0.2);
             horizontal.setPower(-0.3);

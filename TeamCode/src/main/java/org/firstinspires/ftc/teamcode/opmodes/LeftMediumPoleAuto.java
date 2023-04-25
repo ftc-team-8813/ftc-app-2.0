@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Config
-@Autonomous(name = "!  !! Medium Pole Auto !!  !")
-public class MediumPoleAuto extends LoggingOpMode{
+@Autonomous(name = "!  !! Left Medium Pole Auto !!  !")
+public class LeftMediumPoleAuto extends LoggingOpMode{
 
     private Lift lift;
     private Horizontal horizontal;
@@ -61,7 +61,7 @@ public class MediumPoleAuto extends LoggingOpMode{
     public static double exponent = 0.75;
     public static double multiplier = 2.1;
 
-    private final PID horizontal_PID = new PID(0.008, 0, 0, 0, 0, 0);
+    private final PID horizontal_PID = new PID(0.0065, 0, 0, 0, 0, 0);
     private final PID lift_PID = new PID(0.02, 0, 0, 0.03, 0, 0);
 
     private final ElapsedTime timer = new ElapsedTime();
@@ -89,11 +89,11 @@ public class MediumPoleAuto extends LoggingOpMode{
     private double arm_target_cs = arm_target_cs_1;
 
 
-    public static double horizontal_target_cs_1 = 1255; //1285
-    public static double horizontal_target_cs_2 = 1320;
-    public static double horizontal_target_cs_3 = 1310;
-    public static double horizontal_target_cs_4 = 1340;
-    public static double horizontal_target_cs_5 = 1350;
+    public static double horizontal_target_cs_1 = 1230; //1285
+    public static double horizontal_target_cs_2 = 1270;
+    public static double horizontal_target_cs_3 = 1275;
+    public static double horizontal_target_cs_4 = 1305;
+    public static double horizontal_target_cs_5 = 1315;
 
     private double horizontal_target_cs = horizontal_target_cs_1;
 
@@ -164,7 +164,7 @@ public class MediumPoleAuto extends LoggingOpMode{
 //        dashboard = FtcDashboard.getInstance();
 
         intake.setWristPosition(0.021);
-        intake.setClawPosition(0.35);
+        intake.setClawPosition(0.2);
 
         arm.setPosition(-30);
         lift.setPower(-0.2);
@@ -230,7 +230,7 @@ public class MediumPoleAuto extends LoggingOpMode{
     public void start() {
         super.start();
 //        drivetrain.resetEncoders();
-        lift.setLatchPosition(0);
+        lift.setLatchPosition(0.075);
         auto_timer.reset();
     }
 
@@ -269,13 +269,13 @@ public class MediumPoleAuto extends LoggingOpMode{
                     }
                     break;
                 case 1:
-                    drivetrain.autoMove(-41.23, 4, 0, 1.5, 2, 2, odometryPose, telemetry);
+                    drivetrain.autoMove(-41.21, 4, 0, 1.5, 2, 2, odometryPose, telemetry);
                     if (drivetrain.hasReached()) {
                         main_id += 1;
                     }
                     break;
                 case 2:
-                    drivetrain.autoMove(-41.23, 4, 106.7625, 1.5, 1.5, 1.5, odometryPose, telemetry);
+                    drivetrain.autoMove(-41.21, 4, 105.5125, 1.5, 1.5, 1.5, odometryPose, telemetry);
                     if (drivetrain.hasReached()) {
                         main_id += 1;
                         lift.setHolderPosition(0.40);
@@ -284,7 +284,7 @@ public class MediumPoleAuto extends LoggingOpMode{
                     }
                     break;
                 case 3:
-                    drivetrain.autoMove(-41.43, 2.309, 106.7625, 0.6, 0.6, 1, odometryPose, telemetry);
+                    drivetrain.autoMove(-41.21, 2.309, 105.5125, 0.6, 0.6, 1, odometryPose, telemetry);
                     if (drivetrain.hasReached()) {
                         transfer_id += 1;
                         main_id += 1;
@@ -419,7 +419,7 @@ public class MediumPoleAuto extends LoggingOpMode{
                     }
                     break;
                 case 5:
-                    horizontal_target -= 7;
+                    horizontal_target -= 6.5;
                     if (arm.getCurrentEncoderPosition() > -70) {
                         horizontal_target = 0;
                         intake.setWristPosition(0.692);
@@ -435,9 +435,9 @@ public class MediumPoleAuto extends LoggingOpMode{
                     break;
                 case 8:
                     if (arm.getCurrentEncoderPosition() > -14 && horizontal.getCurrentPosition() < 30) {
-                        lift.setLatchPosition(0);
+                        lift.setLatchPosition(0.075);
                         if (timer.seconds() > 0.7) {
-                            intake.setClawPosition(0.35);
+                            intake.setClawPosition(0.2);
                             timer.reset();
                             transfer_id += 1;
                         }
@@ -448,12 +448,12 @@ public class MediumPoleAuto extends LoggingOpMode{
         else {
             horizontal_target = 0;
             lift_target = 0;
-            arm_target = 0;
+            arm_target = -12;
             arm.resetEncoders();
 
             switch (main_park_id) {
                 case 0:
-                    drivetrain.autoMove(-50, 4.8, 0, 10, 2.5, 3.5, odometryPose, telemetry);
+                    drivetrain.autoMove(-50, 4.8, 0, 10, 4, 7, odometryPose, telemetry);
                     if (drivetrain.hasReached()) {
                         main_park_id += 1;
                     }
@@ -463,7 +463,7 @@ public class MediumPoleAuto extends LoggingOpMode{
                         case "FTC8813: 1":
                             switch (park_id) {
                                 case 0:
-                                    drivetrain.autoMove(-51.1, 27.15, 0, 5, 2.5, 3.5, odometryPose, telemetry);
+                                    drivetrain.autoMove(-51.1, 27.15, 0, 5, 3, 5, odometryPose, telemetry);
                                     if (drivetrain.hasReached()) {
                                         park_id += 1;
                                     }
@@ -480,7 +480,7 @@ public class MediumPoleAuto extends LoggingOpMode{
                         case "FTC8813: 3":
                             switch (park_id) {
                                 case 0:
-                                    drivetrain.autoMove(-48.8, -19.2, 0, 5, 2.5, 3.5, odometryPose, telemetry);
+                                    drivetrain.autoMove(-48.8, -19.2, 0, 5, 3, 5, odometryPose, telemetry);
                                     if (drivetrain.hasReached()) {
                                         park_id += 1;
                                         arm_target = 0;
@@ -499,7 +499,7 @@ public class MediumPoleAuto extends LoggingOpMode{
                         default:
                             switch (park_id) {
                                 case 0:
-                                    drivetrain.autoMove(-49.4, 4.8, 0, 5, 2.5, 3.5, odometryPose, telemetry);
+                                    drivetrain.autoMove(-49.4, 4.8, 0, 5, 3, 5, odometryPose, telemetry);
                                     if (drivetrain.hasReached()) {
                                         park_id += 1;
                                         arm_target = 0;
