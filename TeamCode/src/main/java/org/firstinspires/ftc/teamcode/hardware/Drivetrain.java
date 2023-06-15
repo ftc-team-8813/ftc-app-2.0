@@ -43,7 +43,7 @@ public class Drivetrain {
     public static double strafe_ki = 0.0225;
     public static double strafe_kd = 0.019;
     public static double strafe_a = 0.8;
-    public static double turn_kp = 0.007;
+    public static double turn_kp = 0.0075;
     public static double turn_ki = 0.125;
     public static double turn_kd = 0.0028;
     public static double turn_a = 0.8;

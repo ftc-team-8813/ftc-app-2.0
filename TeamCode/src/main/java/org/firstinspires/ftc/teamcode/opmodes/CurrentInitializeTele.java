@@ -8,7 +8,6 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.InitializeRobotControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.RobotControl;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Persistent;
@@ -48,7 +47,7 @@ public class CurrentInitializeTele extends LoggingOpMode
 
         // Controller Modules
         controlMgr.addModule(new DriveControl("Drive Control"));
-        controlMgr.addModule(new InitializeRobotControl("Initialize Robot Control"));
+        controlMgr.addModule(new RobotControl("Initialize Robot Control"));
 //        controlMgr.addModule(new HorizontalControl("Horizontal Control"));
 //        controlMgr.addModule(new ArmControl("Arm Control"));
 
@@ -59,7 +58,7 @@ public class CurrentInitializeTele extends LoggingOpMode
     @Override
     public void init_loop()
     {
-        controlMgr.init_loop(telemetry);
+        controlMgr.init_loop(telemetry); //TODO
     }
     
     @Override

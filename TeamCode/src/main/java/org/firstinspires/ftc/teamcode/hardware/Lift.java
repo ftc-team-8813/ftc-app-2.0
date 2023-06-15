@@ -3,8 +3,12 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
+
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Lift {
 
@@ -13,22 +17,26 @@ public class Lift {
     private final DigitalChannel lift_limit;
     private final Servo holder;
     private final ServoImplEx latch;
+    private final DistanceSensor pole_sensor;
     private double lift_position;
     private double lift1Target;
     private boolean old_state = true;
+    private double pole_distance;
 
-    public Lift(DcMotorEx lift_left, DcMotorEx lift_right, DigitalChannel lift_limit, Servo holder, ServoImplEx latch){
+    public Lift(DcMotorEx lift_left, DcMotorEx lift_right, DigitalChannel lift_limit, Servo holder, ServoImplEx latch, DistanceSensor pole_sensor){
         this.lift_left = lift_left;
         this.lift_right = lift_right;
         this.lift_limit = lift_limit;
         this.holder = holder;
         this.latch = latch;
+        this.pole_sensor = pole_sensor;
 
 //        lift_right.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
-    public void updatePosition() {
+    public void update() {
         lift_position = lift_left.getCurrentPosition() * (5.23 / 3.7);
+        pole_distance = pole_sensor.getDistance(DistanceUnit.MM);
     }
 
     public void setLiftTarget(double pos){
@@ -37,6 +45,10 @@ public class Lift {
 
     public double getLiftTarget(){
         return lift1Target;
+    }
+
+    public double getPoleDistance() {
+        return pole_distance;
     }
 
     public void setPower(double pow){
@@ -87,4 +99,13 @@ public class Lift {
             holder.setPosition(0);
         }
     }
+
+    public double getPower() {
+        return lift_right.getPower();
+    }
+
+    public double getCurrentAmps() {
+        return lift_right.getCurrent(CurrentUnit.AMPS);
+    }
+
 }
