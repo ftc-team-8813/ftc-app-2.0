@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 public class Lift {
 
@@ -11,24 +12,23 @@ public class Lift {
     private final DcMotorEx lift_right;
     private final DigitalChannel lift_limit;
     private final Servo holder;
-    private double liftCurrent;
+    private final ServoImplEx latch;
+    private double lift_position;
     private double lift1Target;
+    private boolean old_state = true;
 
-    public Lift(DcMotorEx lift_left, DcMotorEx lift_right, DigitalChannel lift_limit, Servo holder){
+    public Lift(DcMotorEx lift_left, DcMotorEx lift_right, DigitalChannel lift_limit, Servo holder, ServoImplEx latch){
         this.lift_left = lift_left;
         this.lift_right = lift_right;
         this.lift_limit = lift_limit;
         this.holder = holder;
+        this.latch = latch;
 
 //        lift_right.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
-    public void update() {
-        liftCurrent = lift_left.getCurrentPosition() * (5.23 / 3.7);
-    }
-
-    public double getLiftCurrent(){
-        return liftCurrent;
+    public void updatePosition() {
+        lift_position = lift_left.getCurrentPosition() * (5.23 / 3.7);
     }
 
     public void setLiftTarget(double pos){
@@ -53,7 +53,7 @@ public class Lift {
     }
 
     public double getCurrentPosition() {
-        return lift_left.getCurrentPosition() * (5.23 / 3.7);
+        return lift_position;
     }
 
     public boolean getLimit(){
@@ -68,4 +68,23 @@ public class Lift {
         return holder.getPosition();
     }
 
+    public void setLatchPosition(double pos) {
+        latch.setPosition(pos);
+    }
+
+    public double getLatchPosition() {
+        return latch.getPosition();
+    }
+
+    public void setHolderState(boolean on){
+        if (on != old_state) { //if the state changed
+            if (on) {
+                holder.setPosition(holder.getPosition());
+            }
+            old_state = on;
+        }
+        if (!on) {
+            holder.setPosition(0);
+        }
+    }
 }

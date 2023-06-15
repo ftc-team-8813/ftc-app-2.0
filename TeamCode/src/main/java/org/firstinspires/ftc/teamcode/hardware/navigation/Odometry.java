@@ -5,6 +5,7 @@ import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.hardware.motors.Motor.Encoder;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class Odometry {
@@ -82,7 +83,7 @@ public class Odometry {
     }
 
     public void Down() {
-        center_odometry.setPosition(0.34);
+        center_odometry.setPosition(0.36);
         left_odometry.setPosition(0.566);
         right_odometry.setPosition(0.63);
     }

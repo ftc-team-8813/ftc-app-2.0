@@ -35,26 +35,36 @@ public class Drivetrain {
     private final BNO055IMU imu;
     private boolean has_reached;
 
-    public static double forward_kp = 0.06;
-    public static double forward_ki = 0;
-    public static double forward_kd = 0.0105;
+    public static double forward_kp = 0.061;
+    public static double forward_ki = 0.0225;
+    public static double forward_kd = 0.010;
     public static double forward_a = 0.8;
-    public static double strafe_kp = 0.07;
-    public static double strafe_ki = 0;
-    public static double strafe_kd = 0.02;
+    public static double strafe_kp = 0.071;
+    public static double strafe_ki = 0.0225;
+    public static double strafe_kd = 0.019;
     public static double strafe_a = 0.8;
     public static double turn_kp = 0.007;
-    public static double turn_ki = 0.12;
+    public static double turn_ki = 0.125;
     public static double turn_kd = 0.0028;
     public static double turn_a = 0.8;
     public static double turn_max_i_sum = 1;
     public static double turn_clip = 1;
 
-    private final PID forward_pid = new PID(forward_kp,forward_ki,forward_kd,0,0,forward_a);
-    private final PID strafe_pid = new PID(strafe_kp,strafe_ki,strafe_kd,0,0,strafe_a);
-    private final PID turn_pid = new PID(turn_kp,turn_ki,turn_kd,0,turn_max_i_sum,turn_a);
+    public static double cs_turn_kp = 0.0058;
+    public static double cs_turn_ki = 0.09;
+    public static double cs_strafe_kp = 0.063;
 
-    private MotionProfile strafe_cs = new MotionProfile(0.1,0.8,0.,1);
+    private final PID forward_pid = new PID(forward_kp,forward_ki,forward_kd,0.2,1,forward_a);
+    private final PID strafe_pid = new PID(strafe_kp,strafe_ki,strafe_kd,0.2,1,strafe_a);
+    private final PID turn_pid = new PID(turn_kp,turn_ki,turn_kd,0.2,turn_max_i_sum,turn_a);
+
+    public static double rise_slope = 0.1;
+    public static double fall_slope = 0.00000000000000000000001;
+    public static double minimum = 0.137;
+    public static double maximum = 1;
+    public static double feed_forward = 1;
+
+    private final MotionProfile strafe_cs = new MotionProfile(rise_slope,fall_slope,minimum,maximum);
 
     private double forward = 0;
     private double strafe = 0;
@@ -79,6 +89,10 @@ public class Drivetrain {
     private double forward_error;
     private double strafe_error;
     private double turn_error;
+
+    private double heading_delta;
+    private double heading_was;
+    private double heading;
 
     public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right, BNO055IMU imu) {
         this.front_left = front_left;
@@ -143,6 +157,8 @@ public class Drivetrain {
 
     public void autoMove(double forward, double strafe, double turn, double forward_error_band, double strafe_error_band, double turn_error_band, Pose2d odo, Telemetry telemetry) {
 
+        double heading = getHeading();
+
         has_reached = false;
 
         this.forward = forward;
@@ -156,11 +172,11 @@ public class Drivetrain {
         x = odo.getY();
         rot = 0.0;
 
-        if(Math.signum(-getHeading()) == -1) {
-            rot = ((-getHeading()) + 360);
+        if(Math.signum(-heading) == -1) {
+            rot = ((-heading) + 360);
         }
         else {
-            rot = -getHeading();
+            rot = -heading;
         }
 
         rot %= 360;
@@ -183,17 +199,32 @@ public class Drivetrain {
 
     }
 
-    public void update(Pose2d odo, Telemetry telemetry, boolean motionProfile) {
+    public void update(Pose2d odo, Telemetry telemetry, boolean motionProfile, int id, boolean rise, boolean fall, double voltage) {
+        double heading = getHeading();
+
+        heading_delta = heading - heading_was;
+        turn_error = Math.abs(turn - rot);
+
+        if (turn_error != 0) {
+            heading_delta = 0;
+        }
+
+        if (heading_delta > 300) {
+            heading_delta -= 360;
+        }
+        if (heading_delta < -300) {
+            heading_delta += 360;
+        }
 
         y = odo.getX();
         x = odo.getY();
         rot = 0.0;
 
-        if(Math.signum(-getHeading()) == -1) {
-            rot = ((-getHeading()) + 360);
+        if(Math.signum(-heading) == -1) {
+            rot = ((-heading) + 360);
         }
         else {
-            rot = -getHeading();
+            rot = -heading;
         }
 
         rot %= 360;
@@ -202,51 +233,64 @@ public class Drivetrain {
             rot -= 360;
         }
 
-        forward_power = forward_pid.getOutPut(forward,y,0);
-        strafe_power = strafe_pid.getOutPut(strafe,x,0);
-        turn_power = Range.clip((turn_pid.getOutPut(turn, rot, 0)),-turn_clip,turn_clip);
+        if (motionProfile) {
+//            turn_pid.setKp(cs_turn_kp);
+//            turn_pid.setKi(cs_turn_ki);
+//            strafe_pid.setKp(cs_strafe_kp);
+            feed_forward = 0;
+        }
+        else {
+//            turn_pid.setKp(turn_kp);
+//            turn_pid.setKi(turn_ki);
+//            strafe_pid.setKp(strafe_kp);
+            feed_forward = 0;
+        }
 
-        botHeading = -1* Math.toRadians(getHeading());
+        forward_power = forward_pid.getOutPut(forward,y,feed_forward);
+        strafe_power = strafe_pid.getOutPut(strafe,x,feed_forward);
+        turn_power = Range.clip((turn_pid.getOutPut(turn, rot, feed_forward)),-turn_clip,turn_clip);
+
+        botHeading = -1* Math.toRadians(heading);
 
         rotX = /*0.4 **/ (strafe_power * Math.cos(botHeading) - forward_power * Math.sin(botHeading));
         rotY = /*0.4 **/ (strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading));
 
-        if (motionProfile) {
-            double strafe_error = Math.abs(strafe - x);
-
-            rotY = Range.clip((strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading)),-0.2,0.3);
-
-        }
+//        if (motionProfile) {
+//
+//            strafe_cs.updateMotionProfile(id,rise,fall);
+//            strafe_error = Math.abs(strafe - x);
+//
+//            rotY = strafe_cs.getProfiledPower(strafe_error, rotY,0) * (12.4/voltage);
+//
+////            rotY = Range.clip((strafe_power * Math.sin(botHeading) + forward_power * Math.cos(botHeading)),-0.2,0.4);
+//
+//        }
 
 
         denominator = Math.max(Math.abs(forward_power) + Math.abs(strafe_power) + Math.abs(turn_power), 1);
 
         if (move) {
-            move(rotY, rotX, turn_power, 0, denominator);
+            move(rotY, rotX, turn_power, (heading_delta * 0.001), denominator);
         }
 
         move = true;
+
+        heading_was = heading;
 //
 //        telemetry.addData("F Power",forward_power);
 //        telemetry.addData("S Power",strafe_power);
 //        telemetry.addData("T Power",turn_power);
-        telemetry.addData("F Current",y);
-        telemetry.addData("S Current",x);
-        telemetry.addData("T Current",rot);
-        telemetry.addData("Forward kP",forward_kp);
-        telemetry.addData("Strafe kP",strafe_kp);
-        telemetry.addData("Turn kP",turn_kp);
-        telemetry.addData("Turn Clip",turn_clip);
+//        telemetry.addData("F Current",y);
+//        telemetry.addData("S Current",x);
+//        telemetry.addData("T Current",rot);
+//        telemetry.addData("Forward kP",forward_kp);
+//        telemetry.addData("Strafe kP",strafe_kp);
+//        telemetry.addData("Turn kP",turn_kp);
+//        telemetry.addData("Turn Clip",turn_clip);
 //        telemetry.addData("Rotation",-odo.getRotation().getDegrees());
 //        telemetry.addData("RotY",rotY);
 //        telemetry.addData("RotX",rotX);hh
 //        telemetry.addData("Has Reached",has_reached);
-    }
-
-    public void updateHeading(Odometry odometry, Telemetry telemetry) {
-        odometry.updatePose(new Pose2d(odometry.getPose().getX(),odometry.getPose().getY(), new Rotation2d(Math.toRadians(-imu.getAngularOrientation().firstAngle))));
-        telemetry.addData("Pose", odometry.getPose());
-        odometry.updatePose(-getHeading());
     }
 
 //    public double getForwardPosition() {
@@ -258,6 +302,10 @@ public class Drivetrain {
 //    }
 
     public double getHeading() {
-        return imu.getAngularOrientation().firstAngle;
+        return heading;
+    }
+
+    public void updateHeading() {
+        heading = imu.getAngularOrientation().firstAngle;
     }
 }

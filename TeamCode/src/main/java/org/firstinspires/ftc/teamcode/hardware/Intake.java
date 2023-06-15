@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Intake {
@@ -19,13 +20,13 @@ public class Intake {
 
     private ElapsedTime timer = new ElapsedTime();
 
-    public Intake(DistanceSensor claw_sensor, Servo claw, Servo wrist){
+    public Intake(DistanceSensor claw_sensor, Servo claw, Servo wrist) {
         this.claw_sensor = claw_sensor;
         this.claw = claw;
         this.wrist = wrist;
     }
 
-    public void setClawPosition(double position){
+    public void setClawPosition(double position) {
         claw.setPosition(position);
     }
 

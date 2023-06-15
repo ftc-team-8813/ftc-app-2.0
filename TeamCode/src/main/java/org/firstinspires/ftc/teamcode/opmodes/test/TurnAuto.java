@@ -144,7 +144,7 @@ public class TurnAuto extends LoggingOpMode {
 
         telemetry.update();
 
-        arm.resetEncoders();
+//        arm.resetEncoders();
         lift.resetEncoders();
         horizontal.resetEncoders();
         odometry.resetEncoders();
@@ -201,7 +201,7 @@ public class TurnAuto extends LoggingOpMode {
 
         }
 
-        drivetrain.update(odometry.getPose(), telemetry,false);
+        drivetrain.update(odometry.getPose(), telemetry,false, main_id, false, false,0);
 
         telemetry.addData("Main ID", main_id);
         telemetry.addData("Loop Time: ", LoopTimer.getLoopTime());
