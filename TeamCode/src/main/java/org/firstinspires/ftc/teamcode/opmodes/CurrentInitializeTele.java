@@ -18,76 +18,9 @@ import org.opencv.android.OpenCVLoader;
 //@TeleOp(name = "!THE Initialize TeleOp!")
 public class CurrentInitializeTele extends LoggingOpMode
 {
-    // Robot and Controller Vars
-    private Robot robot;
-    private ControllerMap controllerMap;
-    private ControlMgr controlMgr;
 
-    private EventBus evBus;
-    private Scheduler scheduler;
-    static
-    {
-        OpenCVLoader.initDebug();
-    }
-    
     @Override
-    public void init()
-    {
-        //PhotonCore.enable();
-        super.init();
-        robot = Robot.initialize(hardwareMap);
-        evBus = robot.eventBus;
-        scheduler = robot.scheduler;
+    public void loop() {
 
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-
-        controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
-        
-        controlMgr = new ControlMgr(robot, controllerMap);
-
-        // Controller Modules
-        controlMgr.addModule(new DriveControl("Drive Control"));
-        controlMgr.addModule(new RobotControl("Initialize Robot Control"));
-//        controlMgr.addModule(new HorizontalControl("Horizontal Control"));
-//        controlMgr.addModule(new ArmControl("Arm Control"));
-
-        controlMgr.initModules();
-
-    }
-    
-    @Override
-    public void init_loop()
-    {
-        controlMgr.init_loop(telemetry); //TODO
-    }
-    
-    @Override
-    public void start()
-    {
-        Persistent.clear();
-        LoopTimer.resetTimer();
-    }
-    
-    @Override
-    public void loop()
-    {
-        // Loop Updaters
-        controllerMap.update();
-        try {
-            controlMgr.loop(telemetry);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        scheduler.loop();
-        evBus.update();
-        telemetry.update();
-        LoopTimer.resetTimer();
-    }
-    
-    @Override
-    public void stop()
-    {
-        controlMgr.stop();
-        super.stop();
     }
 }
