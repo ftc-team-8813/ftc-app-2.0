@@ -4,15 +4,20 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.AndroidSerialNumberNotFoundException;
 
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 public class Robot {
     public Drivetrain drivetrain;
-    public Lift lift;
-    public Horizontal horiz;
-    public Claw claw;
+    public DroneLauncher droneLauncher;
+//    public Hoist hoist;
+//    public Intake intake;
+//    public Lift lift;
+//    public Transfer transfer;
+//    public Deposit deposit;
+//    public DroneLauncher droneLauncher;
 
     public EventBus eventBus = new EventBus();
     public Scheduler scheduler = new Scheduler(eventBus);
@@ -34,26 +39,38 @@ public class Robot {
     }
 
     public Robot(HardwareMap hardwareMap){
-        //Motors
+//        //Motors
         DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "FL");
         DcMotorEx front_right = hardwareMap.get(DcMotorEx.class, "FR");
         DcMotorEx back_left = hardwareMap.get(DcMotorEx.class, "BL");
         DcMotorEx back_right = hardwareMap.get(DcMotorEx.class, "BR");
-        DcMotorEx lift1 = hardwareMap.get(DcMotorEx.class, "lift1");
-        DcMotorEx lift2 = hardwareMap.get(DcMotorEx.class, "lift2");
+//        DcMotorEx lift1 = hardwareMap.get(DcMotorEx.class, "lift1");
+//        DcMotorEx lift2 = hardwareMap.get(DcMotorEx.class, "lift2");
+//        DcMotorEx Hoist = hardwareMap.get(DcMotorEx.class, "hoist");
+//        DcMotorEx intake = hardwareMap.get(DcMotorEx.class, "intake");
+//
+//
+//        //Servos
+//        Servo horizServo = hardwareMap.get(Servo.class, "horiz");
+//        Servo clawServo = hardwareMap.get(Servo.class, "claw");
+//        Servo lockin1 = hardwareMap.get(Servo.class, "l1");
+//        Servo lockin2 = hardwareMap.get(Servo.class, "l2");
+//        Servo intake1 = hardwareMap.get(Servo.class, "i1");
+//        Servo intake2 = hardwareMap.get(Servo.class, "i2");
+//        Servo deposit1 = hardwareMap.get(Servo.class, "d1");
+//        Servo deposit2 = hardwareMap.get(Servo.class, "d2");
 
-        //Servos
-        Servo horizServo = hardwareMap.get(Servo.class, "horiz");
-        Servo clawServo = hardwareMap.get(Servo.class, "claw");
-
-        //Distance Sensor
-        DistanceSensor claw_sensor = hardwareMap.get(DistanceSensor.class, "sensor");
-
+        Servo droneLauncher = hardwareMap.get(Servo.class, "drone");
+//
+//        //Distance Sensor
+//        DistanceSensor claw_sensor = hardwareMap.get(DistanceSensor.class, "sensor");
 
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
-        this.claw = new Claw(clawServo, claw_sensor);
-        this.lift = new Lift(lift1, lift2);
-        this.horiz = new Horizontal(horizServo);
+        this.droneLauncher = new DroneLauncher(droneLauncher);
+//        this.claw = new Claw(clawServo, claw_sensor);
+//        this.lift = new Lift(lift1, lift2);
+//        this.horiz = new Horizontal(horizServo);
     }
+
 
 }

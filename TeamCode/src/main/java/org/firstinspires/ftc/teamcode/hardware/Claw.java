@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcontroller.external.samples.SensorREVColorDistance;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Claw {

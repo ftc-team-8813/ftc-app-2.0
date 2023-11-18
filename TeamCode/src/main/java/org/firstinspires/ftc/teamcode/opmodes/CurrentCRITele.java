@@ -59,22 +59,25 @@
 //}
 
 package org.firstinspires.ftc.teamcode.opmodes;
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.ClawControl;
+//import org.firstinspires.ftc.teamcode.opmodes.teleop.ClawControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.HorizControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.DroneModule;
+//import org.firstinspires.ftc.teamcode.opmodes.teleop.HorizControl;
+//import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
 import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 
-@TeleOp(name = "!!CRI TeleOp!!")
+@TeleOp(name = "!!The TeleOp!!")
 public class CurrentCRITele extends LoggingOpMode {
 
     private Robot robot;
@@ -84,20 +87,21 @@ public class CurrentCRITele extends LoggingOpMode {
     private EventBus evBus;
     private Scheduler scheduler;
 
-
     @Override
     public void init() {
         super.init();
         robot = Robot.initialize(hardwareMap);
         evBus = robot.eventBus;
         scheduler = robot.scheduler;
+//        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         controllerMap = new ControllerMap(gamepad1, gamepad2, evBus);
         controlMgr = new ControlMgr(robot, controllerMap);
-        controlMgr.addModule(new DriveControl("Drive Control"));
-        controlMgr.addModule(new LiftControl("Lift Control"));
-        controlMgr.addModule(new HorizControl("Horiz Control"));
-        controlMgr.addModule(new ClawControl("Claw Control"));
 
+        controlMgr.addModule(new DriveControl("Drive Control"));
+//        controlMgr.addModule(new LiftControl("Lift Control"));
+//        controlMgr.addModule(new HorizControl("Horiz Control"));
+//        controlMgr.addModule(new ClawControl("Claw Control"));
+        controlMgr.addModule(new DroneModule("Drone Control"));
         controlMgr.initModules();
     }
 

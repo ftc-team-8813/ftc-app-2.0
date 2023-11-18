@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 @Config
 public class Drivetrain{
 
-    private DcMotorEx front_left;
+    private DcMotor front_left;
     private DcMotorEx front_right;
     private DcMotorEx back_left;
     private DcMotorEx back_right;
@@ -20,7 +20,6 @@ public class Drivetrain{
         this.front_right = front_right;
         this.back_left = back_left;
         this.back_right = back_right;
-
 
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -45,9 +44,9 @@ public class Drivetrain{
 
 
     public void move(double forward, double strafe, double turn, double turn_correct) {
-        front_left.setPower((forward + strafe + (turn + turn_correct)));
+        front_left.setPower((forward - strafe + (turn + turn_correct)));
         front_right.setPower((forward - strafe - (turn + turn_correct)));
-        back_left.setPower((forward - strafe + (turn + turn_correct)));
+        back_left.setPower((forward + strafe + (turn + turn_correct)));
         back_right.setPower((forward + strafe - (turn + turn_correct)));
     }
 
