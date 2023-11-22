@@ -59,8 +59,8 @@
 //}
 
 package org.firstinspires.ftc.teamcode.opmodes;
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+//import com.acmerobotics.dashboard.FtcDashboard;
+//import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
@@ -102,6 +102,8 @@ public class CurrentCRITele extends LoggingOpMode {
 //        controlMgr.addModule(new HorizControl("Horiz Control"));
 //        controlMgr.addModule(new ClawControl("Claw Control"));
         controlMgr.addModule(new DroneModule("Drone Control"));
+        controlMgr.addModule(new sensorTest("Sensor Control"));
+
         controlMgr.initModules();
     }
 

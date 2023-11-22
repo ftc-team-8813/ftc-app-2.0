@@ -1,52 +1,43 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.gamepad.GamepadEx;
-import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.commands.DriveCommand;
-import org.firstinspires.ftc.teamcode.hardware.CommandBasedDriveSystem;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.util.Logger;
-import org.firstinspires.ftc.teamcode.vision.AprilTagDetectionPipeline;
-import org.openftc.apriltag.AprilTagDetection;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 
-@Autonomous(name = "!!Command TeleOp!")
-public class CRIAuto extends CommandOpMode {
+@Autonomous(name = "!!Parking Auto")
+public class CRIAuto extends LoggingOpMode {
 
-    private Motor FL, BL, FR, BR;
-    private CommandBasedDriveSystem driveSystem;
-    private DriveCommand driveCommand;
-
-    private GamepadEx controller1;
-
+    private Drivetrain drivetrain;
+    private ElapsedTime timer;
 
 
     @Override
-    public void initialize(){
-        FL = new Motor(hardwareMap, "FL");
-        BL = new Motor(hardwareMap, "BL");
-        FR = new Motor(hardwareMap, "FR");
-        BR = new Motor(hardwareMap, "BR");
+    public void init() {
+        super.init();
+        Robot robot = Robot.initialize(hardwareMap);
+        drivetrain = robot.drivetrain;
+        timer = new ElapsedTime(ElapsedTime.MILLIS_IN_NANO);
 
-        controller1 = new GamepadEx(gamepad1);
+        timer.startTime();
 
-        driveSystem = new CommandBasedDriveSystem(FL, BL, FR, BR);
-        driveCommand = new DriveCommand(driveSystem, controller1::getLeftX, controller1::getLeftY, controller1::getRightX);
-
-        register(driveSystem);
-        driveSystem.setDefaultCommand(driveCommand);
 
     }
 
+    @Override
+    public void loop() {
 
+        if(timer.time() == 20){
+            drivetrain.move(0, 0.1, 0, 0);
+            timer.reset();
+        }
+        if(timer.time() == 100){
+            drivetrain.move(0.5,0, 0, 0);
+        }
+
+
+    }
 }

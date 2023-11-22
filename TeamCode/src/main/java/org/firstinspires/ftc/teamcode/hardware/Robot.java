@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -12,6 +14,8 @@ import org.firstinspires.ftc.teamcode.util.event.EventBus;
 public class Robot {
     public Drivetrain drivetrain;
     public DroneLauncher droneLauncher;
+    public Sensor sensors;
+    public Intake intake;
 //    public Hoist hoist;
 //    public Intake intake;
 //    public Lift lift;
@@ -40,10 +44,11 @@ public class Robot {
 
     public Robot(HardwareMap hardwareMap){
 //        //Motors
-        DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "FL");
-        DcMotorEx front_right = hardwareMap.get(DcMotorEx.class, "FR");
-        DcMotorEx back_left = hardwareMap.get(DcMotorEx.class, "BL");
-        DcMotorEx back_right = hardwareMap.get(DcMotorEx.class, "BR");
+        DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "front left");
+        DcMotorEx front_right = hardwareMap.get(DcMotorEx.class, "front right");
+        DcMotorEx back_left = hardwareMap.get(DcMotorEx.class, "back left");
+        DcMotorEx back_right = hardwareMap.get(DcMotorEx.class, "back right");
+        DcMotorEx intake = hardwareMap.get(DcMotorEx.class, "intake");
 //        DcMotorEx lift1 = hardwareMap.get(DcMotorEx.class, "lift1");
 //        DcMotorEx lift2 = hardwareMap.get(DcMotorEx.class, "lift2");
 //        DcMotorEx Hoist = hardwareMap.get(DcMotorEx.class, "hoist");
@@ -61,12 +66,18 @@ public class Robot {
 //        Servo deposit2 = hardwareMap.get(Servo.class, "d2");
 
         Servo droneLauncher = hardwareMap.get(Servo.class, "drone");
+
+//        Rev2mDistanceSensor sensor1 = hardwareMap.get(Rev2mDistanceSensor.class, "sens1");
+//        Rev2mDistanceSensor sensor2 = hardwareMap.get(Rev2mDistanceSensor.class, "sens2");
+        ColorSensor sensor1 = hardwareMap.get(ColorSensor.class, "sens1");
 //
 //        //Distance Sensor
 //        DistanceSensor claw_sensor = hardwareMap.get(DistanceSensor.class, "sensor");
 
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
         this.droneLauncher = new DroneLauncher(droneLauncher);
+        this.sensors = new Sensor(sensor1);
+        this.intake = new Intake(intake);
 //        this.claw = new Claw(clawServo, claw_sensor);
 //        this.lift = new Lift(lift1, lift2);
 //        this.horiz = new Horizontal(horizServo);
