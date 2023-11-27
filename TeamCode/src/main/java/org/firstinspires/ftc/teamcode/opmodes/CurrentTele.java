@@ -68,9 +68,11 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 //import org.firstinspires.ftc.teamcode.opmodes.teleop.ClawControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.ControlMgr;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.DroneModule;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.DroneControl;
 //import org.firstinspires.ftc.teamcode.opmodes.teleop.HorizControl;
 //import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.HorizControl;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
@@ -78,7 +80,7 @@ import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 
 @TeleOp(name = "!!The TeleOp!!")
-public class CurrentCRITele extends LoggingOpMode {
+public class CurrentTele extends LoggingOpMode {
 
     private Robot robot;
     private ControllerMap controllerMap;
@@ -99,10 +101,11 @@ public class CurrentCRITele extends LoggingOpMode {
 
         controlMgr.addModule(new DriveControl("Drive Control"));
 //        controlMgr.addModule(new LiftControl("Lift Control"));
-//        controlMgr.addModule(new HorizControl("Horiz Control"));
 //        controlMgr.addModule(new ClawControl("Claw Control"));
-        controlMgr.addModule(new DroneModule("Drone Control"));
-        controlMgr.addModule(new sensorTest("Sensor Control"));
+        controlMgr.addModule(new DroneControl("Drone Control"));
+//        controlMgr.addModule(new IntakeControl("Intake Control"));
+        controlMgr.addModule(new HorizControl("Horiz Control"));
+
 
         controlMgr.initModules();
     }

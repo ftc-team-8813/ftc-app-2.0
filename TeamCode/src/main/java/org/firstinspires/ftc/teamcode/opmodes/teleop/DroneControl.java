@@ -5,7 +5,7 @@ import org.firstinspires.ftc.teamcode.hardware.DroneLauncher;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
-public class DroneModule extends ControlModule{
+public class DroneControl extends ControlModule{
 
     public final double DroneSpinPos = 0;
 
@@ -13,7 +13,7 @@ public class DroneModule extends ControlModule{
 
     public ControllerMap.ButtonEntry launchButton;
 
-    public DroneModule(String name) {
+    public DroneControl(String name) {
         super(name);
     }
 

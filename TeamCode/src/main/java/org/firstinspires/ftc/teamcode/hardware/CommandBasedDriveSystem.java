@@ -3,13 +3,14 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 public class CommandBasedDriveSystem extends SubsystemBase {
     private MecanumDrive drive;
-    private Motor FL, BL, FR, BR;
+    private MotorEx FL, BL, FR, BR;
 
-    public CommandBasedDriveSystem(Motor FL, Motor BL, Motor FR, Motor BR){
+    public CommandBasedDriveSystem(MotorEx FL, MotorEx BL, MotorEx FR, MotorEx BR){
         this.FL = FL;
         this.BL = BL;
         this.FR = FR;
