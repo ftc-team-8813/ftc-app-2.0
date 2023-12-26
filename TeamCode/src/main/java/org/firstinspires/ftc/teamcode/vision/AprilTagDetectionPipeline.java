@@ -237,6 +237,7 @@ public class AprilTagDetectionPipeline extends OpenCvPipeline
         // Project those points
         MatOfPoint2f matProjectedPoints = new MatOfPoint2f();
         Calib3d.projectPoints(axis, rvec, tvec, cameraMatrix, new MatOfDouble(), matProjectedPoints);
+        Calib3d.projectPoints(axis, rvec, tvec, cameraMatrix, new MatOfDouble(), matProjectedPoints);
         Point[] projectedPoints = matProjectedPoints.toArray();
 
         // Pillars

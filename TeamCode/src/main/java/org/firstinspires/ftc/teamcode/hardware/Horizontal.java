@@ -5,6 +5,13 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 public class Horizontal{
     private DcMotorEx horiz;
+    private double horizPos;
+    private double horizTarget;
+
+    public void update() {
+        horizPos = horiz.getCurrentPosition();
+    }
+
     public Horizontal(DcMotorEx horiz){
         this.horiz = horiz;
     }
@@ -13,29 +20,25 @@ public class Horizontal{
         horiz.setPower(pwr);
     }
 
-
     public double getHorizPwr(){
         return horiz.getPower();
     }
 
-
     public void resetEncoders() {
         horiz.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-
-//        horiz.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        horiz.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
     }
-
-    public void setHorizTarget(double position) {
-        horiz.setTargetPosition((int) position); //used for run to position
+    public void setHorizTarget(double pos) {
+        horizTarget = pos;
     }
 
     public double getHorizTarget() {
-        return horiz.getTargetPosition();
+        return horizTarget;
     }
-
 
     public double getCurrentPosition() {
-        return horiz.getCurrentPosition();
+        return horizPos;
     }
+
 
 }

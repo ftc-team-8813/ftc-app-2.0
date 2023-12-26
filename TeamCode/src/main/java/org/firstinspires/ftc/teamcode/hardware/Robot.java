@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
-import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.kinematics.HolonomicOdometry;
@@ -24,11 +23,13 @@ public class Robot {
     public DistanceSensors sensors;
     public Intake intake;
     public Horizontal horiz;
-    private final Motor.Encoder left_odometer;
-    private final Motor.Encoder right_odometer;
-    private final Motor.Encoder center_odometer;
+    public Lift lift;
+    public Deposit deposit;
+    public boolean transferring;
+    private Motor.Encoder left_odometer;
+    private Motor.Encoder right_odometer;
+    private Motor.Encoder center_odometer;
     private final double TRACKWIDTH = 9.167;
-
     private final double CENTER_WHEEL_OFFSET = -6.024; // Center wheel offset is the distance between the
     // center of rotation of the robot and the center odometer.
     // This is to correct for the error that might occur when turning.
@@ -60,40 +61,43 @@ public class Robot {
 
     public Robot(HardwareMap hardwareMap){
 
-//        //Motors
-        MotorEx front_left = new MotorEx(hardwareMap, "front left");
-        MotorEx front_right = new MotorEx(hardwareMap, "front right");
-        MotorEx back_left = new MotorEx(hardwareMap, "back left");
-        MotorEx back_right = new MotorEx(hardwareMap, "back right");
+        //Motors
+        MotorEx front_left = new MotorEx(hardwareMap, "front left"); //done
+        MotorEx front_right = new MotorEx(hardwareMap, "front right"); //done
+        MotorEx back_left = new MotorEx(hardwareMap, "back left"); //done
+        MotorEx back_right = new MotorEx(hardwareMap, "back right"); //done
 
-//        DcMotorEx intake = hardwareMap.get(DcMotorEx.class, "intake");
+        DcMotorEx intake = hardwareMap.get(DcMotorEx.class, "intake");
         DcMotorEx horiz = hardwareMap.get(DcMotorEx.class, "horizontal");
 
-        BNO055IMU imu_sensor = hardwareMap.get(BNO055IMU.class, "imu");
+        DcMotorEx lift1 = hardwareMap.get(DcMotorEx.class, "lift1"); //done
+        DcMotorEx lift2 = hardwareMap.get(DcMotorEx.class, "lift2"); //done
 
-        Servo droneLauncher = hardwareMap.get(Servo.class, "drone");
+//        Servo droneLauncher = hardwareMap.get(Servo.class, "drone");
 
 //        Rev2mDistanceSensor l1 = hardwareMap.get(Rev2mDistanceSensor.class, "l1");
-//        Rev2mDistanceSensor l2 = hardwareMap.get(Rev2mDistanceSensor.class, "l2");
-//        Rev2mDistanceSensor r1 = hardwareMap.get(Rev2mDistanceSensor.class, "r2");
-//        Rev2mDistanceSensor r2 = hardwareMap.get(Rev2mDistanceSensor.class, "r2");
-//        RevColorSensorV3 color = hardwareMap.get(RevColorSensorV3.class, "color");
+        Rev2mDistanceSensor r1 = hardwareMap.get(Rev2mDistanceSensor.class, "r1");
 
-//        //Distance Sensor
-//        DistanceSensor claw_sensor = hardwareMap.get(DistanceSensor.class, "sensor");
+        Servo intakelock = hardwareMap.get(Servo.class, "intakeLock"); //done
 
-        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right, imu_sensor);
-        this.droneLauncher = new DroneLauncher(droneLauncher);
-//        this.sensors = new DistanceSensors(l1, l2, r1, r2, color);
-//        this.intake = new Intake(intake);
+        Servo depoPivot = hardwareMap.get(Servo.class, "depoPivot");
+        Servo depoLock = hardwareMap.get(Servo.class, "depoLock");
+        Servo leftLiftDepo = hardwareMap.get(Servo.class, "leftLiftDepo");
+        Servo rightLiftDepo = hardwareMap.get(Servo.class, "rightLiftDepo");
+//
+        this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
+//        this.droneLauncher = new DroneLauncher(droneLauncher);
+        this.sensors = new DistanceSensors(r1);
+        this.intake = new Intake(intake, intakelock);
         this.horiz = new Horizontal(horiz);
-
+        this.lift = new Lift(lift1, lift2);
+        this.deposit = new Deposit(leftLiftDepo, rightLiftDepo, depoPivot, depoLock);
+//
         left_odometer = back_left.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
         right_odometer = front_left.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
         center_odometer = back_right.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
 
-//        left_odometer.setDirection(MotorEx.Direction.REVERSE);
-
+        right_odometer.setDirection(MotorEx.Direction.REVERSE);
 
         odo = new HolonomicOdometry(
             left_odometer::getDistance,

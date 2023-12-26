@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
@@ -15,9 +17,11 @@ public class IntakeControl extends ControlModule{
 
     public boolean forward = true;
     public boolean stop = false;
-    public int power = 1;
+    public double power = 1;
 
+    private ElapsedTime timer;
 
+//    private boolean startOfGame = false;
     public IntakeControl(String name) {
         super(name);
     }
@@ -27,46 +31,26 @@ public class IntakeControl extends ControlModule{
         this.intake = robot.intake;
         switchForward = controllerMap.getButtonMap("switchForward", "gamepad1", "x");
         switchBackward = controllerMap.getButtonMap("switchBackward", "gamepad1", "b");
-
         stopIntake = controllerMap.getButtonMap("stopIntake", "gamepad1", "a");
-        forward = true;
-        stop = false;
-        power =  1;
 
+        forward = false;
+        stop = true;
+        power =  0;
+//        startOfGame = true;
+
+        timer = new ElapsedTime();
     }
 
     @Override
     public void update(Telemetry telemetry) {
 
-//        if(forward && !stop){
-//            intake.setPower(1);
-//        }else if(!forward && !stop){
-//            intake.setPower(-1);
-//        }else if(stop){
-//            intake.setPower(0);
-//        }
-//
-//        if(switchForward.edge() == -1 ) {
-//            forward = true;
-//            stop = false;
-//        }else if(switchBackward.edge() == -1){
-//            forward = false;
-//            stop = false;
-//        }
-//        if(stopIntake.edge() == -1){
-//            stop = true;
-//        }
-
-
-
         if (forward && !stop) {
-            power = 1;
+            power = 0.9;
         } else if (!forward && !stop) {
-            power = -1;
+            power = -0.9;
         } else if (stop){
             power = 0;
         }
-
         intake.setPower(power);
 
         if (switchForward.edge() == -1) {
@@ -79,6 +63,11 @@ public class IntakeControl extends ControlModule{
             stop = true;
         }
 
-        telemetry.addData("Intake Power", intake.getPower());
+        if(switchForward.edge() == -1){
+            timer.reset();
+        }
+
+        telemetry.addData("Time", timer.time());
+        telemetry.addData("Timer time", timer.milliseconds());
     }
 }

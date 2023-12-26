@@ -7,50 +7,15 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Lift {
-//    private Motor lift1;
-//    private Motor lift2;
-//
-//
-//    public Lift(Motor lift1, Motor lift2){
-//        this.lift1 = lift1;
-//        this.lift2 = lift2;
-//    }
-//
-//    public void setLiftsPower(double power) {
-//        lift1.set(power);
-//        lift2.set(-power);
-//    }
-//
-//    public void setLiftsPos(double pos){
-//        lift1.
-//    }
-//
-//
-//
-//    public enum Heights{
-//        LOW,
-//        MEDIUM,
-//        HIGH,
-//        GROUND
-//    }
-//
-//
-//
-//    @Override
-//    public void periodic() {
-//        super.periodic();
-//    }
-
     private DcMotorEx lift1;
     private DcMotorEx lift2;
     private double liftPos;
-    private double lift1Target;
+    private double liftTarget;
 
     public Lift(DcMotorEx lift1, DcMotorEx lift2) {
         this.lift1 = lift1;
         this.lift2 = lift2;
     }
-
     public void update() {
         liftPos = lift1.getCurrentPosition();
     }
@@ -65,11 +30,11 @@ public class Lift {
     }
 
     public void setLiftTarget(double pos) {
-        lift1Target = pos;
+        liftTarget = pos;
     }
 
     public double getLiftTarget() {
-        return lift1Target;
+        return liftTarget;
     }
 
     public void resetEncoders() {
