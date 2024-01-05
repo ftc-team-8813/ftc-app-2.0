@@ -4,6 +4,8 @@ public enum DepositStates {
     Pre,
     Full,
     Up,
-    Init
+    Init,
+    LowUp,
+    HighUp
 
 }

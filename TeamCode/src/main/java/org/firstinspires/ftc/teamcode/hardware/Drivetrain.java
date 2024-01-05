@@ -13,21 +13,30 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 public class Drivetrain{
-    private MotorEx front_left;
-    private MotorEx front_right;
-    private MotorEx back_left;
-    private MotorEx back_right;
+    public DcMotorEx front_left;
+    public DcMotorEx front_right;
+    public DcMotorEx back_left;
+    public DcMotorEx back_right;
     private MecanumDrive drive;
     private BNO055IMU imu_sensor;
-    public Drivetrain(MotorEx front_left, MotorEx front_right, MotorEx back_left, MotorEx back_right){
+    public Drivetrain(DcMotorEx front_left, DcMotorEx front_right, DcMotorEx back_left, DcMotorEx back_right){
         this.front_left = front_left;
         this.front_right = front_right;
         this.back_left = back_left;
         this.back_right = back_right;
+
+        front_left.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        front_right.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        back_left.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        back_right.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
 //        this.imu_sensor = imu_sensor;
-        drive = new MecanumDrive(front_left, front_right, back_left, back_right);
+//        drive = new MecanumDrive(front_left, front_right, back_left, back_right);
+
+
     }
 
     public void moveRobotCentric(double strafeSpeed, double forwardSpeed, double turnSpeed){
@@ -48,6 +57,21 @@ public class Drivetrain{
         telemetry.addData("x Power", xPower);
         telemetry.addData("y Power", yPower);
         telemetry.addData("heading Power", headingPower);
+
+    }
+
+    public void move(double forward, double strafe, double turn, double turn_correct) {
+        front_left.setPower((forward + strafe + (turn + turn_correct)));
+        front_right.setPower((forward - strafe - (turn + turn_correct)));
+        back_left.setPower((forward - strafe + (turn + turn_correct)));
+        back_right.setPower((forward + strafe - (turn + turn_correct)));
+    }
+
+    public void getMotorPowers(Telemetry telemetry){
+        telemetry.addData("Front Left Power", front_left.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("Front Right Power", front_right.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("Back Left Power", back_left.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("Back Right Power", back_right.getCurrent(CurrentUnit.AMPS));
 
     }
 

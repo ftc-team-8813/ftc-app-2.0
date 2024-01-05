@@ -62,10 +62,14 @@ public class Robot {
     public Robot(HardwareMap hardwareMap){
 
         //Motors
-        MotorEx front_left = new MotorEx(hardwareMap, "front left"); //done
-        MotorEx front_right = new MotorEx(hardwareMap, "front right"); //done
-        MotorEx back_left = new MotorEx(hardwareMap, "back left"); //done
-        MotorEx back_right = new MotorEx(hardwareMap, "back right"); //done
+//        MotorEx front_left = new MotorEx(hardwareMap, "front left"); //done
+//        MotorEx front_right = new MotorEx(hardwareMap, "front right"); //done
+//        MotorEx back_left = new MotorEx(hardwareMap, "back left"); //done
+//        MotorEx back_right = new MotorEx(hardwareMap, "back right"); //done
+        DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "front left"); //done
+        DcMotorEx front_right = hardwareMap.get(DcMotorEx.class, "front right"); //done
+        DcMotorEx back_left = hardwareMap.get(DcMotorEx.class, "back left"); //done
+        DcMotorEx back_right = hardwareMap.get(DcMotorEx.class, "back right"); //done
 
         DcMotorEx intake = hardwareMap.get(DcMotorEx.class, "intake");
         DcMotorEx horiz = hardwareMap.get(DcMotorEx.class, "horizontal");
@@ -92,19 +96,19 @@ public class Robot {
         this.horiz = new Horizontal(horiz);
         this.lift = new Lift(lift1, lift2);
         this.deposit = new Deposit(leftLiftDepo, rightLiftDepo, depoPivot, depoLock);
+////
+//        left_odometer = back_left.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
+//        right_odometer = front_left.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
+//        center_odometer = back_right.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
+
+//        right_odometer.setDirection(MotorEx.Direction.REVERSE);
 //
-        left_odometer = back_left.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
-        right_odometer = front_left.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
-        center_odometer = back_right.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
-
-        right_odometer.setDirection(MotorEx.Direction.REVERSE);
-
-        odo = new HolonomicOdometry(
-            left_odometer::getDistance,
-            right_odometer::getDistance,
-            center_odometer::getDistance,
-            TRACKWIDTH, CENTER_WHEEL_OFFSET
-        );
+//        odo = new HolonomicOdometry(
+//            left_odometer::getDistance,
+//            right_odometer::getDistance,
+//            center_odometer::getDistance,
+//            TRACKWIDTH, CENTER_WHEEL_OFFSET
+//        );
 
     }
 

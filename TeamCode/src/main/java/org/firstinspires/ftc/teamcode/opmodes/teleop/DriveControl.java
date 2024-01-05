@@ -35,7 +35,8 @@ public class DriveControl extends ControlModule{
     public void update(Telemetry telemetry) {
 //        drivetrain.move(-ax_drive_left_y.get(), ax_drive_left_x.get(), ax_drive_right_x.get(), 0);
 //        if(robotCentric){
-        drivetrain.moveRobotCentric(ax_drive_left_x.get(), -ax_drive_left_y.get(), ax_drive_right_x.get());
+        drivetrain.move(ax_drive_right_x.get(), -ax_drive_left_x.get(), -ax_drive_left_y.get(), 0);
+        drivetrain.getMotorPowers(telemetry);
 //        }else if(!robotCentric){
 //            drivetrain.moveFieldCentric(ax_drive_left_x.get(), -ax_drive_left_y.get(), ax_drive_right_x.get());
 //        }

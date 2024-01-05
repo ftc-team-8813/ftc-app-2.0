@@ -4,4 +4,5 @@ public enum IntakeStates {
     DrivingAround,
 //    PickingPixelUp,
     Transfer,
+    PixelIn
 }
