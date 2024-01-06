@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.DroneLauncher;
+import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
@@ -12,6 +15,7 @@ public class DroneControl extends ControlModule{
     public DroneLauncher droneLauncher;
 
     public ControllerMap.ButtonEntry launchButton;
+//    public ElapsedTime timer;
 
     public DroneControl(String name) {
         super(name);
@@ -24,6 +28,7 @@ public class DroneControl extends ControlModule{
         launchButton = controllerMap.getButtonMap("droneLauncher", "gamepad1", "dpad_up");
         droneLauncher.setLaunchPos(1);
 
+//        timer = new ElapsedTime();
     }
 
     @Override
