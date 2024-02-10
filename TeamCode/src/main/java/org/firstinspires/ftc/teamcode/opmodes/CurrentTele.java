@@ -12,10 +12,11 @@ import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.DroneControl;
 //import org.firstinspires.ftc.teamcode.opmodes.teleop.HorizControl;
 //import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.HoistControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.HorizControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
-import org.firstinspires.ftc.teamcode.opmodes.teleop.OdoTestModule;
+//import org.firstinspires.ftc.teamcode.opmodes.teleop.OdoTestModule;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.RobotControl;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Persistent;
@@ -44,13 +45,13 @@ public class CurrentTele extends LoggingOpMode {
         controlMgr = new ControlMgr(robot, controllerMap);
 
         controlMgr.addModule(new DriveControl("Drive Control"));
-//        controlMgr.addModule(new DroneControl("Drone Control"));
+        controlMgr.addModule(new DroneControl("Drone Control"));
 //        controlMgr.addModule(new IntakeControl("Intake Control"));
 //        controlMgr.addModule(new HorizControl("Horiz Control"));
 //        controlMgr.addModule(new LiftControl("Lift Control"));
 //        controlMgr.addModule(new DepoControl("Depo Control"));
-//        controlMgr.addModule(new RobotControl("Robot Control"));
-
+        controlMgr.addModule(new RobotControl("Robot Control"));
+        controlMgr.addModule(new HoistControl("Hoist Control"));
 
 //        controlMgr.addModule(new OdoTestModule("Odo Control"));
 
@@ -60,7 +61,9 @@ public class CurrentTele extends LoggingOpMode {
     @Override
     public void init_loop()
     {
+
     }
+
 
     @Override
     public void start()
@@ -68,6 +71,7 @@ public class CurrentTele extends LoggingOpMode {
         Persistent.clear();
         LoopTimer.resetTimer();
     }
+
 
     @Override
     public void loop()

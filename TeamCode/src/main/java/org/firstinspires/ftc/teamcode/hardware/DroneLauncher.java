@@ -3,20 +3,27 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class DroneLauncher {
-    public Servo droneServo;
+    public Servo droneLauncher;
+    public Servo droneHeight;
 
-    public DroneLauncher(Servo droneServo){
-        this.droneServo = droneServo;
+    public DroneLauncher(Servo droneServo, Servo droneHeight){
+        this.droneLauncher = droneServo;
+        this.droneHeight = droneHeight;
     }
 
     public void setLaunchPos(double setPos){
-        droneServo.setPosition(setPos);
+        droneLauncher.setPosition(setPos);
     }
 
     public double getLaunchPos(){
-        return droneServo.getPosition();
+        return droneLauncher.getPosition();
     }
 
+    public void setLauncherHeight(double setPos){
+        droneHeight.setPosition(setPos);
+    }
+    public double getLauncherHeight(){return droneHeight.getPosition();
+    }
 
 
 }

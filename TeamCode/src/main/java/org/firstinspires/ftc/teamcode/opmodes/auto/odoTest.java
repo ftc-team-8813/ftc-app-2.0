@@ -2,93 +2,75 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDController;
-import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.kinematics.HolonomicOdometry;
+import com.arcrobotics.ftclib.kinematics.Odometry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.hardware.Deposit;
 import org.firstinspires.ftc.teamcode.hardware.DistanceSensors;
 import org.firstinspires.ftc.teamcode.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.opmodes.LoggingOpMode;
-import org.firstinspires.ftc.teamcode.vision.AprilTagDetectionPipeline;
-import org.openftc.easyopencv.OpenCvCamera;
+
 
 @Config
 @Autonomous(name = "!!OdoTest!!")
-
 public class odoTest extends LoggingOpMode {
 
+    private HolonomicOdometry odometry;
     private Drivetrain drivetrain;
     private DistanceSensors sensors;
-    private AprilTagDetectionPipeline aprilTagDetectionPipeline;
-    private int pocket = 0;
-    public HolonomicOdometry odometry;
-    private ElapsedTime timer;
+    private Deposit deposit;
     private Pose2d currentPose;
-    public static PIDController xCont = new PIDController(0.5, 0, 0);
-    public static PIDController yCont = new PIDController(0.06, 0, 0);
-//    public static PIDController headingCont = new PIDController(0.007, 0.12, 0.0028);
-    public static PIDController headingCont = new PIDController(0, 0, 0);
-
-
-    private boolean reachedPos1;
+    private Pose2d targetPose;
+    private int ID;
+//    private final PIDController xCont = new PIDController(0.42,0.1,0.045);
+    private final PIDController yCont = new PIDController(0.07,0,0.09);
+//    private final PIDController headingCont = new PIDController(0.35,0,0);
     @Override
     public void init() {
         super.init();
         Robot robot = Robot.initialize(hardwareMap);
+        deposit = robot.deposit;
+        odometry = robot.odometry;
         drivetrain = robot.drivetrain;
-        odometry = robot.odo;
         sensors = robot.sensors;
-        odometry.updatePose(new Pose2d(0, 0, new Rotation2d(0, 0)));
-        timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-        currentPose = odometry.getPose();
-        reachedPos1 = false;
+        currentPose = new Pose2d(0, 0, new Rotation2d(0));
+        targetPose = new Pose2d(0, 0, new Rotation2d(0));
+        odometry.update(0,0,0);
+        odometry.updatePose();
+        robot.center_odometer.reset();
+        robot.right_odometer.reset();
+        robot.left_odometer.reset();
+//MOTOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
     @Override
     public void init_loop() {
         super.init_loop();
-        if(sensors.getRightDistance() > 700 && sensors.getRightDistance() < 500) {
-            pocket = 2;
-        }
-//        }else{
-//            pocket = 1;
-//        }
-
-        telemetry.addData("Pocket", pocket);
-
     }
 
     @Override
-
     public void loop() {
-        timer.reset();
         odometry.updatePose();
         currentPose = odometry.getPose();
+        deposit.setDepoPivot(0.680);
+        deposit.setDepoLock(0.85);
 
-        if(pocket == 3){
-            drivetrain.autoMove(new Pose2d(18, 4, new Rotation2d(0)), currentPose, xCont, yCont, headingCont, telemetry);
+
+
+
+        telemetry.addData("Current Pose", currentPose);
+        telemetry.addData("Target Pose", targetPose);
+
+    }
+
+    public boolean closeToPosition(Pose2d currentPose, Pose2d targetPose, double xDeadband, double yDeadband, double headingDeadband) {
+        if ((Math.abs((targetPose.getX() - currentPose.getX())) < xDeadband) && (Math.abs((targetPose.getY() - currentPose.getY())) < yDeadband) && (Math.abs((targetPose.getHeading() - currentPose.getHeading())) < headingDeadband)) {
+            return true;
+        } else {
+            return false;
         }
-        if (pocket == 2) {
-            drivetrain.autoMove(new Pose2d(28, 0, new Rotation2d(0)), currentPose, xCont, yCont, headingCont, telemetry);
-        }
-
-//        if(pocket == 3){
-//            if(currentPose.getX() < 27 && currentPose.getX() > 25){
-//                reachedPos1 = true;
-//            }
-//            if(reachedPos1){
-//                drivetrain.autoMove(new Pose2d(26, -17, new Rotation2d(0)), currentPose, xCont, yCont, headingCont, telemetry); //Left Pos
-//            }else{
-//                drivetrain.autoMove(new Pose2d(26, 0, new Rotation2d(0)), currentPose, xCont, yCont, headingCont, telemetry); //Left Pos
-//            }
-//        }
-
-
-        telemetry.addData("Odo Pose", currentPose);
-        telemetry.addData("Loop Time", timer.time());
-
     }
 }

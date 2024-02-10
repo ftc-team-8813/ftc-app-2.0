@@ -8,34 +8,30 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class DistanceSensors {
 
-    public Rev2mDistanceSensor l1;
-//    public Rev2mDistanceSensor l2;
-    public Rev2mDistanceSensor r1;
-//    public Rev2mDistanceSensor r2;
-    public RevColorSensorV3 colorSensor; //might need to change the object class
+    public Rev2mDistanceSensor left;
+    public Rev2mDistanceSensor right;
+    public RevColorSensorV3 tape; //might need to change the object class
 
-    public DistanceSensors(Rev2mDistanceSensor r1){
-//        this.l1 = l1;
-//        this.l2 = l2;
-        this.r1 = r1;
-//        this.r2 = r2;
-//        this.colorSensor = colorSensor;
+    public DistanceSensors(Rev2mDistanceSensor left, Rev2mDistanceSensor right, RevColorSensorV3 tape){
+        this.right = right;
+        this.left = left;
+        this.tape = tape;
     }
 
     public double getLeftDistance(){
-        return l1.getDistance(DistanceUnit.MM);
+        return left.getDistance(DistanceUnit.MM);
     }
 
     public double getRightDistance(){
-        return r1.getDistance(DistanceUnit.MM);
+        return right.getDistance(DistanceUnit.MM);
     }
 
-//    public double getRed(){
-//        return colorSensor.red();
-//    }
-//
-//    public double getBlue(){
-//        return colorSensor.blue();
-//    }
+    public double getRed(){
+        return tape.red();
+    }
+
+    public double getBlue(){
+        return tape.blue();
+    }
 
 }

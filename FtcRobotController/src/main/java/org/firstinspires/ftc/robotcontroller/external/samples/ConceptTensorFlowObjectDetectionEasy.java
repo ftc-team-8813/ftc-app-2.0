@@ -48,7 +48,6 @@ import java.util.List;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
 @TeleOp(name = "Concept: TensorFlow Object Detection Easy", group = "Concept")
-@Disabled
 public class ConceptTensorFlowObjectDetectionEasy extends LinearOpMode {
 
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
@@ -85,8 +84,11 @@ public class ConceptTensorFlowObjectDetectionEasy extends LinearOpMode {
                 // Save CPU resources; can resume streaming when needed.
                 if (gamepad1.dpad_down) {
                     visionPortal.stopStreaming();
+                    telemetry.addData("Stream", "Not Streaming");
                 } else if (gamepad1.dpad_up) {
                     visionPortal.resumeStreaming();
+                    telemetry.addData("Stream", "Streaming");
+
                 }
 
                 // Share the CPU.

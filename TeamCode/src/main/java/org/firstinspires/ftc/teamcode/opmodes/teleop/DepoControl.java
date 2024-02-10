@@ -51,7 +51,7 @@ public class DepoControl extends ControlModule{
         this.robot = robot;
         this.lift = robot.lift;
 
-        this.transferring = robot.transferring;
+//        this.transferring = robot.transferring;
 
         y_button = controllerMap.getButtonMap("lift:high","gamepad1","y");
         b_button = controllerMap.getButtonMap("lift:mid","gamepad1","b");

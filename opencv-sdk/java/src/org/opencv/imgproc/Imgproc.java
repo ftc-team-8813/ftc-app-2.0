@@ -9797,4 +9797,6 @@ public static Size getTextSize(String text, int fontFace, double fontScale, int 
     private static native double getFontScaleFromHeight_1(int fontFace, int pixelHeight);
 private static native double[] n_getTextSize(String text, int fontFace, double fontScale, int thickness, int[] baseLine);
 
+    public static void resize(Mat image, Mat image1, android.util.Size size) {
+    }
 }

@@ -19,20 +19,20 @@ public class RobotControl extends ControlModule {
         super(name);
     }
     private final double PIVOTUP = 0.263;
-    private final double LOWPIVOTUP = 0.079;
-    private final double HIGHPIVOTUP = 0.167;
-    private final double LIFTSERVSUP = 0.254;
+    private final double LOWPIVOTUP = 0.045;
+//    0.077
+    private final double HIGHPIVOTUP = 0.17;
+    private final double LIFTSERVSUP = 0.257;
     private final double LIFTSERVPRE = 0.51;
-    private final double PIVOTPRE = 0.03;
-    private final double LIFTSERVFULL = 0.63;
-//    0.63
-    private final double PIVOTFULL = 0.107;
+    private final double PIVOTPRE = 0.025;
+    private final double LIFTSERVFULL = 0.65;
+    private final double PIVOTFULL = 0.12;
     private final double PIVOTINIT = 0.95;
     private final double LIFTSERVINIT = 0.710;
-    private final double MICROCLOSED = 0.538;
-    private final double MICROOPENED = 0.153;
+    private final double MICROCLOSED = 0.85;
+    private final double MICROOPENED = 0.429;
     private final double INTAKELOCKOPENED = 0;
-    private final double INTAKELOCKClOSED = 0.156;
+    private final double INTAKELOCKClOSED = 0.2;
     private final double LIFTDOWNPOS = 0;
     private final double LIFTMIDPOS = 190;
     private final double LIFTHIGHPOS = 310;
@@ -45,6 +45,7 @@ public class RobotControl extends ControlModule {
     private ControllerMap.ButtonEntry y_button;
     private ControllerMap.ButtonEntry b_button;
     private ControllerMap.ButtonEntry a_button;
+    private ControllerMap.ButtonEntry hookDown;
     private ControllerMap.ButtonEntry dump;
     private ControllerMap.ButtonEntry takeInIntake;
     private ControllerMap.ButtonEntry x_button;
@@ -57,7 +58,7 @@ public class RobotControl extends ControlModule {
     private ElapsedTime timer3;
     private ElapsedTime timer4;
     private ElapsedTime timer5;
-    private boolean resetted;
+    private boolean inA;
     private boolean resetted2;
     private boolean resetted3;
     private boolean resetted4;
@@ -82,7 +83,7 @@ public class RobotControl extends ControlModule {
 
         dump = controllerMap.getButtonMap("dump", "gamepad1", "left_bumper");
         takeInIntake = controllerMap.getButtonMap("takeInIntake", "gamepad1", "right_bumper");
-        inHoriz = controllerMap.getButtonMap("inHoriz", "gamepad2", "left_bumper");
+        inHoriz = controllerMap.getButtonMap("inHoriz", "gamepad1", "right_stick_button");
 
         stateForLift = LiftStates.LiftDown;
         stateForIntake = IntakeStates.DrivingAround;
@@ -94,7 +95,6 @@ public class RobotControl extends ControlModule {
         timer4 = new ElapsedTime();
         timer5 = new ElapsedTime();
 
-        resetted = false;
         resetted2 = false;
         resetted3 = false;
         resetted4 = false;
@@ -106,6 +106,7 @@ public class RobotControl extends ControlModule {
         in = true;
         forward = true;
         intakePower =  0;
+        inA = false;
 
         horizontal.resetEncoders();
 
@@ -152,33 +153,37 @@ public class RobotControl extends ControlModule {
                 break;
 
             case Dump:
+                if (y_button.edge() == -1) {
+                    lift.setLiftTarget(LIFTHIGHPOS);
+                }
+                if (b_button.edge() == -1) {
+                    lift.setLiftTarget(LIFTMIDPOS);
+                }
                 if(dump.edge() == -1) {
                     deposit.setDepoLock(MICROOPENED);
                     transferred = false;
-                    if(!resetted){
-                        timer.reset();
-                        resetted = true;
-                        opened = true;
-                    }
                 }
-                if(timer.seconds() > 1 & opened){
+                if(a_button.edge() == -1){
+                    inA = true;
+                }
+                if(inA){
                     stateForDeposit = DepositStates.Pre;
-                    if(!resetted4){
+                    if (!resetted4) {
                         timer4.reset();
                         resetted4 = true;
                     }
-                    if(timer4.seconds() > 0.4){
-                        resetted = false;
+                    if (timer4.seconds() > 0.5) {
                         resetted2 = false;
                         resetted3 = false;
                         resetted4 = false;
                         resetted5 = false;
                         opened = false;
+                        inA = false;
+                        in = true;
                         stateForLift = LiftStates.LiftDown;
                         stateForIntake = IntakeStates.DrivingAround;
                     }
                 }
-                break;
         }
 
         switch (stateForIntake) {
@@ -189,9 +194,9 @@ public class RobotControl extends ControlModule {
                 } else {
                     horizontal.setHorizTarget(1440);
                     if (forward) {
-                        intakePower = 0.9;
+                        intakePower = 0.65;
                     } else {
-                        intakePower = -0.9;
+                        intakePower = -0.65;
                     }
                 }
 
@@ -208,21 +213,21 @@ public class RobotControl extends ControlModule {
                 }
 
                 if (horizontal.getCurrentPosition() < 50) {
-                    if(stateForLift != LiftStates.LiftUp && stateForLift != LiftStates.Dump){
+                    if(stateForLift!= LiftStates.LiftUp || stateForLift != LiftStates.Dump){
                         stateForDeposit = DepositStates.Full;
                         if(!resetted2){
-                            timer.reset();
+                            timer2.reset();
                             resetted2 = true;
                         }
-                        if(timer2.seconds() > 0.5){
-                            intake.setLock(INTAKELOCKOPENED); //this is weird
+                        if(timer2.seconds() > 0.2){
+                            intake.setLock(INTAKELOCKOPENED);
                             if(!resetted3){
-                                timer.reset();
+                                timer3.reset();
                                 resetted3 = true;
                             }
-                            if(timer3.seconds() > 0.4){
+                            if(timer3.seconds() > 0.3){
                                 transferred = true;
-                                intakePower = 0.7;
+                                intakePower = 0.65;
                                 stateForLift = LiftStates.LiftUp;
                             }
                         }
@@ -269,16 +274,18 @@ public class RobotControl extends ControlModule {
 
             }
 
-        if(a_button.edge() == -1 && (stateForLift == LiftStates.LiftUp || stateForLift == LiftStates.Dump) && stateForDeposit == DepositStates.Pre){
-            resetted = false;
-            resetted2 = false;
-            resetted3 = false;
-            resetted4 = false;
-            resetted5 = false;
-            opened = false;
-            stateForLift = LiftStates.LiftDown;
-            stateForIntake = IntakeStates.DrivingAround;
-        }
+            if (a_button.edge() == -1 && stateForLift == LiftStates.LiftUp && stateForDeposit == DepositStates.Pre && stateForIntake == IntakeStates.DrivingAround){
+                resetted2 = false;
+                resetted3 = false;
+                resetted4 = false;
+                resetted5 = false;
+                opened = false;
+                inA = false;
+                in = true;
+                stateForLift = LiftStates.LiftDown;
+                stateForIntake = IntakeStates.DrivingAround;
+            }
+
 
         if(x_button.edge() == -1 && stateForLift == LiftStates.LiftDown && stateForDeposit == DepositStates.Pre){
             stateForIntake = IntakeStates.Transfer;
@@ -298,22 +305,22 @@ public class RobotControl extends ControlModule {
 
         horizontal.setHorizPwr(horizPID.calculate(horizontal.getCurrentPosition(), horizontal.getHorizTarget()));
         lift.setLiftsPower(liftPID.calculate(lift.getCurrentPosition(), lift.getLiftTarget()));
-        intake.setPower(intakePower);
+        intake.setPower(-intakePower);
 
 
         telemetry.addData("Deposit State", stateForDeposit);
         telemetry.addData("Intake State", stateForIntake);
         telemetry.addData("Lift State", stateForLift);
-        telemetry.addData("Horiz Target", horizontal.getHorizTarget());
-        telemetry.addData("In Value", in);
-        telemetry.addData("Transferred Value", transferred);
-        telemetry.addData("Intake Power", intakePower);
-        telemetry.addData("Lift Current", lift.getCurrentPosition());
-        telemetry.addData("Intake Lock Position", intake.getLock());
-        telemetry.addData("Horiz Current", horizontal.getCurrentPosition());
-        telemetry.addData("Deposit Lock", deposit.getDepoLock());
-        telemetry.addData("Intake Lock", intake.getLock());
-
-
+//        telemetry.addData("Horiz Target", horizontal.getHorizTarget());
+//        telemetry.addData("Transferred Value", transferred);
+//        telemetry.addData("Intake Power", intakePower);
+//        telemetry.addData("Lift Current", lift.getCurrentPosition());
+//        telemetry.addData("Intake Lock Position", intake.getLock());
+//        telemetry.addData("Horiz Current", horizontal.getCurrentPosition());
+//        telemetry.addData("Deposit Lock", deposit.getDepoLock());
+//        telemetry.addData("Intake Lock", intake.getLock());
+//        telemetry.addData("Timer 2", timer2.seconds());
+//        telemetry.addData("Timer 4", timer4.seconds());
+//        telemetry.addData("Pivot Full Target Position", )
     }
 }

@@ -34,10 +34,9 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import java.util.ArrayList;
 
 @Config
-@Autonomous(name = "!!Camera Test!!")
+@Autonomous(name = "!!Detection Auto Left Red!!")
 
-public class CameraTest extends LoggingOpMode {
-
+public class DetectionAutoLeftRed extends LoggingOpMode {
     //    private PIDController xCont = new PIDController(0.03, 0, 0);
 //    private PIDController yCont = new PIDController(0.07, 0, 0.07);
 //    private PIDController headingCont = new PIDController(0.07, 0.125, 0.005);
@@ -78,23 +77,23 @@ public class CameraTest extends LoggingOpMode {
 //    public static double kiH;
 //    public static double kdH = 0.4;
 
-    public static double kpX = 0.06;
-    public static double kiX = 0;
-    public static double kdX = 0.02;
-    public static double kpY = 0.07;
-    public static double kiY = 0;
-    public static double kdY = 0.02;
-    public static double kpH = 0.8;
-    public static double kiH = 0.007;
-    public static double kdH = 0.12;
-    public static double targetX;
-    public static double targetY;
-    public static double targetHeading;
+    private double kpX = 0.06;
+    private double kiX = 0;
+    private double kdX = 0.02;
+    private double kpY = 0.07;
+    private double kiY = 0;
+    private double kdY = 0.02;
+    private double kpH = 0.8;
+    private double kiH = 0.007;
+    private double kdH = 0.12;
+//    public static double targetX;
+//    public static double targetY;
+//    public static double targetHeading;
     private Pose2d currentPose;
     private Pose2d targetPose;
     private FtcDashboard dashboard;
-    private PIDController xCont = new PIDController(kpX, kiX, kdX);
-    private PIDController yCont = new PIDController(kpY, kiY, kdY);
+    public PIDController xCont = new PIDController(kpX, kiX, kdX);
+    public PIDController yCont = new PIDController(kpY, kiY, kdY);
     private PIDController headingCont = new PIDController(kpH, kiH, kdH);
     private OpenCvCamera camera;
     private boolean onPart2;
@@ -111,7 +110,6 @@ public class CameraTest extends LoggingOpMode {
     private ElapsedTime timer6;
     private ElapsedTime timer7;
     private ElapsedTime timer8;
-
     private boolean resetted4;
     private boolean resetted5;
     private boolean resetted6;
@@ -125,10 +123,7 @@ public class CameraTest extends LoggingOpMode {
     private boolean resetted3;
     private double intakePower;
     private Horizontal horiz;
-
-
     private int num;
-
     @Override
     public void init() {
         super.init();
@@ -254,7 +249,7 @@ public class CameraTest extends LoggingOpMode {
                     resetted2 = false;
                     resetted3 = false;
                 }
-                
+
                 if (result == "left") {
                     targetPose = new Pose2d(12.3, 5, Rotation2d.fromDegrees(25));
                     if (closeToPosition(targetPose, currentPose, 1, 1.25, 1)) {
@@ -350,19 +345,19 @@ public class CameraTest extends LoggingOpMode {
                     timer1.reset();
                     resetted1 = true;
                 }
-                if (timer1.seconds() > 3) {
+                if (timer1.seconds() > 2.6) {
                     num += 1;
                     resetted1 = false;
                 }
-                if(result.equals("center") || result.equals("left")){
+                if (result.equals("center") || result.equals("left")) {
                     targetPose = new Pose2d(51, 17, Rotation2d.fromDegrees(0));
-                    if(closeToPosition(new Pose2d(51, 17, Rotation2d.fromDegrees(0)), currentPose, 1, 1.25, 1)){
+                    if (closeToPosition(new Pose2d(51, 17, Rotation2d.fromDegrees(0)), currentPose, 1, 1.25, 1)) {
                         num += 1;
                     }
                 }
                 break;
             case 4:
-                if(!resetted){
+                if (!resetted) {
                     resetOdo(robot);
                     resetted = true;
                 }
@@ -370,14 +365,121 @@ public class CameraTest extends LoggingOpMode {
                     timer1.reset();
                     resetted1 = true;
                 }
-                if (timer1.seconds() > 0.5) {
-                    targetPose = new Pose2d(0, 0, Rotation2d.fromDegrees(-90));
-                    if(closeToPosition(new Pose2d(0, 0, Rotation2d.fromDegrees(-90)), currentPose, 1, 1.25, 1)){
-                        num += 1;
-                    }
+                if (timer1.seconds() > 2.5) {
+//                    odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
+                    resetOdo(robot);
+                    xCont = new PIDController(kpX, kiX, kdX);
+                    yCont = new PIDController(kpY, kiY, kdY);
+                    resetted1 = false;
+                    num += 1;
+                }
+                xCont = new PIDController(0, 0, 0);
+                yCont = new PIDController(0, 0, 0);
+                targetPose = new Pose2d(0, 0, Rotation2d.fromDegrees(-85));
+                if (closeToPosition(new Pose2d(0, 0, Rotation2d.fromDegrees(-85)), currentPose, 1, 1.25, 1)) {
+//                    odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
+                    resetOdo(robot);
+                    xCont = new PIDController(kpX, kiX, kdX);
+                    yCont = new PIDController(kpY, kiY, kdY);
+                    resetted1 = false;
+                    num += 1;
                 }
                 break;
-//                if (!resetted1) {
+            case 5:
+                targetPose = new Pose2d(90, -4, Rotation2d.fromDegrees(0));
+                if (closeToPosition(new Pose2d(90, -4, Rotation2d.fromDegrees(0)), currentPose, 4, 1.5, 2)) {
+//                    odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
+                    resetOdo(robot);
+                    xCont = new PIDController(0, 0, 0);
+                    yCont = new PIDController(0, 0, 0);
+                    num += 1;
+                }
+                break;
+//            case 6:
+//                targetPose = new Pose2d(90, -10, Rotation2d.fromDegrees(0));
+//                if (closeToPosition(new Pose2d(90, 0, Rotation2d.fromDegrees(0)), currentPose, 3, 1.25, 1)) {
+//                    resetOdo(robot);
+//                    xCont = new PIDController(0, 0, 0);
+//                    yCont = new PIDController(0, 0, 0);
+//                    num += 1;
+//                }
+//                break;
+            case 6:
+                targetPose = new Pose2d(0, 0, Rotation2d.fromDegrees(-31));
+                if (closeToPosition(new Pose2d(0, 0, Rotation2d.fromDegrees(-31)), currentPose, 3, 3, 3)) {
+                    resetOdo(robot);
+                    num += 1;
+                }
+                break;
+            case 7:
+                targetPose = new Pose2d(4, 0, Rotation2d.fromDegrees(31));
+                if (closeToPosition(new Pose2d(4, 0, Rotation2d.fromDegrees(31)), currentPose, 2, 3, 2)) {
+                    xCont = new PIDController(kpX, kiX, kdX);
+                    yCont = new PIDController(kpY, kiY, kdY);
+                    resetOdo(robot);
+                    num += 1;
+                }
+                break;
+            case 8:
+                targetPose = new Pose2d(0, -18, Rotation2d.fromDegrees(0));
+                if (closeToPosition(new Pose2d(0, -18, Rotation2d.fromDegrees(0)), currentPose, 2, 1.25, 2)) {
+                    num += 1;
+                }
+                break;
+
+        }
+
+        autoMove(targetPose, currentPose, telemetry, drivetrain, xCont, yCont, headingCont);
+        horiz.setHorizPwr(horizPID.calculate(horiz.getCurrentPosition(), horiz.getHorizTarget()));
+        lift.setLiftsPower(liftPID.calculate(liftCurrent, liftTarget));
+        intake.setPower(-intakePower);
+
+        telemetry.addData("Current Pose", currentPose);
+        telemetry.addData("Target Pose", targetPose);
+        telemetry.addData("Target X", targetPose.getX());
+        telemetry.addData("Target Y", targetPose.getY());
+        telemetry.addData("Target Heading", targetPose.getHeading());
+        telemetry.addData("Case", num);
+        telemetry.addData("X Cont", xCont);
+        telemetry.addData("Y Cont", yCont);
+
+    }
+
+    //close red: ID:6; -25, 15, -5; ID:5, 23; ID:4, 20, 5 & then 50 heading, -4, 10
+
+
+    public void autoMove(Pose2d targetPose, Pose2d currentPose, Telemetry telemetry, Drivetrain
+        drivetrain, PIDController xCont, PIDController yCont, PIDController headingCont) {
+
+        double xPower = clipValue(-0.55, 0.55, xCont.calculate(currentPose.getY(), targetPose.getY()));
+        double headingPower = clipValue(-0.6, 0.6, headingCont.calculate(currentPose.getHeading(), targetPose.getHeading()));
+        double yPower = clipValue(-0.55, 0.55, yCont.calculate(currentPose.getX(), targetPose.getX()));
+
+        drivetrain.move(-yPower, xPower, -headingPower, 0);
+        telemetry.addData("x Power", xPower);
+        telemetry.addData("y Power", yPower);
+        telemetry.addData("heading Power", headingPower);
+    }
+
+    public boolean closeToPosition(Pose2d targetPose, Pose2d currentPose, double xDeadband, double yDeadband, double headingDeadband) {
+        if ((Math.abs((targetPose.getX() - currentPose.getX())) < xDeadband) && (Math.abs((targetPose.getY() - currentPose.getY())) < yDeadband) && (Math.abs((targetPose.getHeading() - currentPose.getHeading())) < headingDeadband)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void resetOdo(Robot robot) {
+        robot.center_odometer.reset();
+        robot.right_odometer.reset();
+        robot.left_odometer.reset();
+    }
+
+    public double clipValue(double min, double max, double value) {
+        return Math.min(Math.max(value, min), max);
+    }
+
+       //if (!resetted1) {
 //                    timer1.reset();
 //                    resetted1 = true;
 //                }
@@ -499,53 +601,8 @@ public class CameraTest extends LoggingOpMode {
 //                    num += 1;
 //                }
 //                break;
-        }
 
 
-        autoMove(targetPose, currentPose, telemetry, drivetrain, xCont, yCont, headingCont);
-        horiz.setHorizPwr(horizPID.calculate(horiz.getCurrentPosition(), horiz.getHorizTarget()));
-        lift.setLiftsPower(liftPID.calculate(liftCurrent, liftTarget));
-        intake.setPower(-intakePower);
-
-        telemetry.addData("Current Pose", currentPose);
-        telemetry.addData("Target Pose", targetPose);
-        telemetry.addData("Target X", targetPose.getX());
-        telemetry.addData("Target Y", targetPose.getY());
-        telemetry.addData("Target Heading", targetPose.getHeading());
-        telemetry.addData("Case", num);
-    }
-
-    //close red: ID:6; -25, 15, -5; ID:5, 23; ID:4, 20, 5 & then 50 heading, -4, 10
 
 
-    public void autoMove(Pose2d targetPose, Pose2d currentPose, Telemetry telemetry, Drivetrain
-        drivetrain, PIDController xCont, PIDController yCont, PIDController headingCont) {
-
-        double xPower = clipValue(-0.65, 0.65, xCont.calculate(currentPose.getY(), targetPose.getY()));
-        double headingPower = clipValue(-0.6, 0.6, headingCont.calculate(currentPose.getHeading(), targetPose.getHeading()));
-        double yPower = clipValue(-0.65, 0.65, yCont.calculate(currentPose.getX(), targetPose.getX()));
-
-        drivetrain.move(-yPower, xPower, -headingPower, 0);
-        telemetry.addData("x Power", xPower);
-        telemetry.addData("y Power", yPower);
-        telemetry.addData("heading Power", headingPower);
-    }
-
-    public boolean closeToPosition(Pose2d targetPose, Pose2d currentPose, double xDeadband, double yDeadband, double headingDeadband) {
-        if ((Math.abs((targetPose.getX() - currentPose.getX())) < xDeadband) && (Math.abs((targetPose.getY() - currentPose.getY())) < yDeadband) && (Math.abs((targetPose.getHeading() - currentPose.getHeading())) < headingDeadband)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public void resetOdo(Robot robot) {
-        robot.center_odometer.reset();
-        robot.right_odometer.reset();
-        robot.left_odometer.reset();
-    }
-
-    public double clipValue(double min, double max, double value) {
-        return Math.min(Math.max(value, min), max);
-    }
 }

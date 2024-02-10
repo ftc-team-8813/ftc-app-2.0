@@ -50,7 +50,6 @@ import java.util.List;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
 @TeleOp(name = "Concept: TensorFlow Object Detection Switchable Cameras", group = "Concept")
-@Disabled
 public class ConceptTensorFlowObjectDetectionSwitchableCameras extends LinearOpMode {
 
     /**

@@ -10,12 +10,11 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 
 public class DroneControl extends ControlModule{
 
-    public final double DroneSpinPos = 0;
-
     public DroneLauncher droneLauncher;
 
     public ControllerMap.ButtonEntry launchButton;
-//    public ElapsedTime timer;
+    public ControllerMap.ButtonEntry goUp;
+
 
     public DroneControl(String name) {
         super(name);
@@ -25,14 +24,17 @@ public class DroneControl extends ControlModule{
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         droneLauncher = robot.droneLauncher;
 
-        launchButton = controllerMap.getButtonMap("droneLauncher", "gamepad1", "dpad_up");
+        launchButton = controllerMap.getButtonMap("droneLauncherShoot", "gamepad2", "dpad_down");
+        goUp = controllerMap.getButtonMap("droneLauncherUp", "gamepad2", "dpad_up");
         droneLauncher.setLaunchPos(1);
-
-//        timer = new ElapsedTime();
+        droneLauncher.setLauncherHeight(0.6);
     }
 
     @Override
     public void update(Telemetry telemetry) {
+        if(goUp.edge() == -1){
+            droneLauncher.setLauncherHeight(0.9);
+        }
 
         if(launchButton.edge() == -1){
             droneLauncher.setLaunchPos(0);

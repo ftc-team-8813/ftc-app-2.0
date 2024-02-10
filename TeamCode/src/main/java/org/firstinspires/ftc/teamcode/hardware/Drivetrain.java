@@ -35,35 +35,29 @@ public class Drivetrain{
 
         front_right.setDirection(DcMotorSimple.Direction.REVERSE);
         back_right.setDirection(DcMotorSimple.Direction.REVERSE);
-
-
-
 //        this.imu_sensor = imu_sensor;
 //        drive = new MecanumDrive(front_left, front_right, back_left, back_right);
-
-
     }
 
-    public void moveRobotCentric(double strafeSpeed, double forwardSpeed, double turnSpeed){
-        drive.driveRobotCentric(strafeSpeed, forwardSpeed, turnSpeed);
-    }
+//    public void moveRobotCentric(double strafeSpeed, double forwardSpeed, double turnSpeed){
+//        drive.driveRobotCentric(strafeSpeed, forwardSpeed, turnSpeed);
+//    }
 
-    public void moveFieldCentric(double strafeSpeed, double forwardSpeed, double turnSpeed){
-        drive.driveFieldCentric(strafeSpeed, forwardSpeed, turnSpeed, imu_sensor.getAngularOrientation().firstAngle); //might need to look at imu
-    }
+//    public void moveFieldCentric(double strafeSpeed, double forwardSpeed, double turnSpeed){
+//        drive.driveFieldCentric(strafeSpeed, forwardSpeed, turnSpeed, imu_sensor.getAngularOrientation().firstAngle); //might need to look at imu
+//    }
 
-    public void autoMove(Pose2d targetPose, Pose2d currentPose, PIDController xCont, PIDController yCont, PIDController headingCont, Telemetry telemetry) {
-        double xPower = xCont.calculate(currentPose.getX(), targetPose.getX());
-        double yPower = yCont.calculate(currentPose.getY(), targetPose.getY());
-        double headingPower = headingCont.calculate(currentPose.getHeading(), targetPose.getHeading());
-
-        drive.driveRobotCentric(-yPower, -xPower, headingPower);
-
-        telemetry.addData("x Power", xPower);
-        telemetry.addData("y Power", yPower);
-        telemetry.addData("heading Power", headingPower);
-
-    }
+//    public void autoMove(Pose2d targetPose, Pose2d currentPose, PIDController xCont, PIDController yCont, PIDController headingCont, Telemetry telemetry) {
+//        double xPower = xCont.calculate(currentPose.getX(), targetPose.getX());
+//        double yPower = yCont.calculate(currentPose.getY(), targetPose.getY());
+//        double headingPower = headingCont.calculate(currentPose.getHeading(), targetPose.getHeading());
+//
+//        drive.driveRobotCentric(-yPower, -xPower, headingPower);
+//
+//        telemetry.addData("x Power", xPower);
+//        telemetry.addData("y Power", yPower);
+//        telemetry.addData("heading Power", headingPower);
+//    }
 
     public void move(double forward, double strafe, double turn, double turn_correct) {
         front_left.setPower((forward + strafe + (turn + turn_correct)));
@@ -77,7 +71,6 @@ public class Drivetrain{
         telemetry.addData("Front Right Power", front_right.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("Back Left Power", back_left.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("Back Right Power", back_right.getCurrent(CurrentUnit.AMPS));
-
     }
 
 
