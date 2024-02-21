@@ -26,9 +26,8 @@ import org.firstinspires.ftc.teamcode.util.event.EventBus;
 
 @TeleOp(name = "!!The TeleOp!!")
 public class CurrentTele extends LoggingOpMode {
-
-    private Robot robot;
     private ControllerMap controllerMap;
+    private Robot robot;
     private ControlMgr controlMgr;
 
     private EventBus evBus;

@@ -18,9 +18,7 @@ public class Intake {
     public Intake(DcMotorEx intake, Servo lock){
         this.intake = intake;
         this.lock = lock;
-
     }
-
     public void setPower(double pwr){
         intake.setPower(pwr);
     }

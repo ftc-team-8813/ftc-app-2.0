@@ -300,13 +300,13 @@ public class DetectionAutoLeftRed extends LoggingOpMode {
                     }
                 } else {
                     if (onPart2) {
-                        targetPose = new Pose2d(-4, -9, Rotation2d.fromDegrees(-42));
-                        if (closeToPosition(new Pose2d(-4, -9, Rotation2d.fromDegrees(-42)), currentPose, 1, 1.25, 1)) {
+                        targetPose = new Pose2d(-1, -8.5, Rotation2d.fromDegrees(-35));
+                        if (closeToPosition(new Pose2d(-1, -8.5, Rotation2d.fromDegrees(-35)), currentPose, 1, 1.25, 1)) {
                             if (!resetted1) {
                                 timer1.reset();
                                 resetted1 = true;
                             }
-                            if (timer1.seconds() > 0.6) {
+                            if (timer1.seconds() > 0.4) {
                                 num += 1;
                                 resetted1 = false;
                                 resetted2 = false;
@@ -316,7 +316,7 @@ public class DetectionAutoLeftRed extends LoggingOpMode {
                             }
                         }
                     } else {
-                        targetPose = new Pose2d(18, -5, Rotation2d.fromDegrees(0));
+                        targetPose = new Pose2d(14, -6.25, Rotation2d.fromDegrees(0));
                         if (!resetted3) {
                             timer3.reset();
                             resetted3 = true;
@@ -325,7 +325,7 @@ public class DetectionAutoLeftRed extends LoggingOpMode {
                             resetOdo(robot);
                             onPart2 = true;
                         }
-                        if (closeToPosition(new Pose2d(18, -5, Rotation2d.fromDegrees(0)), currentPose, 1, 1.25, 1)) {
+                        if (closeToPosition(new Pose2d(14, -6.25, Rotation2d.fromDegrees(0)), currentPose, 1, 1.25, 1)) {
                             resetOdo(robot);
                             onPart2 = true;
                         }
@@ -338,7 +338,7 @@ public class DetectionAutoLeftRed extends LoggingOpMode {
                         timer1.reset();
                         resetted1 = true;
                     }
-                    if (timer1.seconds() > 0.5) {
+                    if (timer1.seconds() > 0.6) {
                         deposit.setDepoPivot(PIVOTINIT);
                         deposit.setDepoLock(MICROCLOSED);
                         num += 1;
@@ -461,8 +461,8 @@ public class DetectionAutoLeftRed extends LoggingOpMode {
                     }
                 }
                 else{
-                    targetPose = new Pose2d(95, -1.5, Rotation2d.fromDegrees(-2));
-                    if (closeToPosition(new Pose2d(95, -1.5, Rotation2d.fromDegrees(-2)), currentPose, 4, 1.5, 2)) {
+                    targetPose = new Pose2d(95, -1.5, Rotation2d.fromDegrees(0));
+                    if (closeToPosition(new Pose2d(95, -1.5, Rotation2d.fromDegrees(0)), currentPose, 4, 1.5, 2)) {
 //                    odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
 //                    resetOdo(robot);
 //                    xCont = new PIDController(0, 0, 0);
@@ -492,8 +492,8 @@ public class DetectionAutoLeftRed extends LoggingOpMode {
 //                }
 //                break;
             case 7:
-                targetPose = new Pose2d(0, -25, Rotation2d.fromDegrees(0));
-                if (closeToPosition(new Pose2d(0, -25, Rotation2d.fromDegrees(0)), currentPose, 4, 5, 4)) {
+                targetPose = new Pose2d(0, -26, Rotation2d.fromDegrees(0));
+                if (closeToPosition(new Pose2d(0, -26, Rotation2d.fromDegrees(0)), currentPose, 4, 5, 4)) {
                     num += 1;
                     resetted = false;
                 }
