@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class Deposit {
@@ -8,11 +9,14 @@ public class Deposit {
     private Servo depoPivot;
     private Servo depoLock;
 
-    public Deposit(Servo leftLiftDepo, Servo rightLiftDepo, Servo depoPivot, Servo depoLock){
+    private AnalogInput input;
+
+    public Deposit(Servo leftLiftDepo, Servo rightLiftDepo, Servo depoPivot, Servo depoLock, AnalogInput input){
         this.leftLiftDepo = leftLiftDepo;
         this.rightLiftDepo = rightLiftDepo;
         this.depoPivot = depoPivot;
         this.depoLock = depoLock;
+        this.input = input;
     }
 
 
@@ -21,16 +25,16 @@ public class Deposit {
         rightLiftDepo.setPosition(pos);
     }
 
-    public double getLiftDepo(){
-        return leftLiftDepo.getPosition();
-    }
+//    public double getLiftDepo(){
+//        return ;
+//    }
 
     public void setDepoPivot(double pos){
         depoPivot.setPosition(pos);
     }
 
     public double getDepoPivot(){
-        return depoPivot.getPosition();
+        return input.getVoltage() / 3.3 * 360;
     }
 
     public void setDepoLock(double pos){
@@ -40,4 +44,5 @@ public class Deposit {
     public double getDepoLock(){
         return depoLock.getPosition();
     }
+
 }

@@ -184,7 +184,7 @@ public class DetectionAutoLeftBlue extends LoggingOpMode {
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        color_pipeline =  new ColorPipeline(410,200,190,230,"close blue"); //close red and far blue
+        color_pipeline = new ColorPipeline(410, 200, 190, 230, "close blue"); //close red and far blue
 
         camera.setPipeline(color_pipeline);
 
@@ -236,7 +236,7 @@ public class DetectionAutoLeftBlue extends LoggingOpMode {
         if (!odo) {
             detection = camera1.getDetection(ID);
 //            posFromBack = moveTowardsID(detection, telemetry);
-        }else{
+        } else {
             odometry.updatePose();
             currentPose = odometry.getPose();
         }
@@ -269,7 +269,7 @@ public class DetectionAutoLeftBlue extends LoggingOpMode {
                 }
 
                 if (result == "left") {
-                    targetPose = new Pose2d(12.3, 5, Rotation2d.fromDegrees(25));
+                    targetPose = new Pose2d(15, 4, Rotation2d.fromDegrees(25));
                     if (closeToPosition(targetPose, currentPose, 1, 1.25, 1)) {
                         if (!resetted1) {
                             timer1.reset();
@@ -346,7 +346,7 @@ public class DetectionAutoLeftBlue extends LoggingOpMode {
                 }
                 break;
             case 2:
-                if(result.equals("left") || result.equals("center")){
+                if (result.equals("left") || result.equals("center")) {
                     if (!resetted1) {
                         timer1.reset();
                         resetted1 = true;
@@ -359,7 +359,7 @@ public class DetectionAutoLeftBlue extends LoggingOpMode {
                     if (closeToPosition(new Pose2d(10, 12, Rotation2d.fromDegrees(0)), currentPose, 1, 1.25, 1)) {
                         num += 1;
                     }
-                }else {
+                } else {
                     if (!resetted1) {
                         timer1.reset();
                         resetted1 = true;
@@ -395,9 +395,9 @@ public class DetectionAutoLeftBlue extends LoggingOpMode {
                 }
                 xCont = new PIDController(0, 0, 0);
                 yCont = new PIDController(0, 0, 0);
-                if(result.equals("left") || result.equals("center")){
-                    targetPose = new Pose2d(0, 0, Rotation2d.fromDegrees(90));
-                    if (closeToPosition(new Pose2d(0, 0, Rotation2d.fromDegrees(90)), currentPose, 1, 1.25, 1)) {
+                if (result.equals("left") || result.equals("center")) {
+                    targetPose = new Pose2d(0, 0, Rotation2d.fromDegrees(87));
+                    if (closeToPosition(new Pose2d(0, 0, Rotation2d.fromDegrees(87)), currentPose, 1, 1.25, 1)) {
 //                    odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
                         resetOdo(robot);
                         xCont = new PIDController(kpX, kiX, kdX);
@@ -406,7 +406,7 @@ public class DetectionAutoLeftBlue extends LoggingOpMode {
                         resetted1 = false;
                         num += 1;
                     }
-                }else{
+                } else {
                     targetPose = new Pose2d(0, 0, Rotation2d.fromDegrees(90));
                     if (closeToPosition(new Pose2d(0, 0, Rotation2d.fromDegrees(90)), currentPose, 1, 1.25, 1)) {
 //                    odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
@@ -421,17 +421,17 @@ public class DetectionAutoLeftBlue extends LoggingOpMode {
 
                 break;
             case 4:
-                if(result.equals("center")) {
+                if (result.equals("center")) {
                     targetPose = new Pose2d(5.5, -20, Rotation2d.fromDegrees(0));
                     if (closeToPosition(new Pose2d(5.5, -20, Rotation2d.fromDegrees(0)), currentPose, 0.5, 2, 2)) {
                         num += 1;
                     }
-                } else if(result.equals("left")){
+                } else if (result.equals("left")) {
                     targetPose = new Pose2d(5.5, -15, Rotation2d.fromDegrees(0));
                     if (closeToPosition(new Pose2d(5.5, -15, Rotation2d.fromDegrees(0)), currentPose, 0.5, 2, 2)) {
                         num += 1;
                     }
-                }else{
+                } else {
                     targetPose = new Pose2d(23, -14, Rotation2d.fromDegrees(0));
                     if (closeToPosition(new Pose2d(23, -14, Rotation2d.fromDegrees(0)), currentPose, 1, 2, 2)) {
                         num += 1;
@@ -475,67 +475,65 @@ public class DetectionAutoLeftBlue extends LoggingOpMode {
 
 //                break;
             case 6:
-                if(!resetted1){
+                if (!resetted1) {
                     resetted1 = true;
                     timer1.reset();
                 }
-                if(timer1.seconds() > 3){
+                if (timer1.seconds() > 3) {
                     resetted1 = false;
                     num += 1;
                 }
                 odo = false;
-                if(!(detection == null)){
+                if (!(detection == null)) {
                     moveTowardsID(detection, drivetrain, telemetry);
-                }else{
-                    drivetrain.move(0,0 ,0,0);
+                } else {
+                    drivetrain.move(0, 0, 0, 0);
                 }
                 break;
             case 7:
                 deposit.setDepoLock(MICROCLOSED);
-                liftTarget = 310;
-                if(!resetted1){
+                liftTarget = 305;
+                if (!resetted1) {
                     resetted1 = true;
                     timer1.reset();
                 }
-                if(timer1.seconds() > 2.5){
-                    deposit.setLiftDepos(0.109); //0.109
+                if (timer1.seconds() > 1.25) {
                     deposit.setDepoPivot(0.032);
-                    if(!resetted2){
-                        resetted2 = true;
-                        timer2.reset();
-                    }
-                    if(timer2.seconds() > 1.25){
-                        liftTarget = 10;
-                        if(!resetted3){
-                            resetted3 = true;
-                            timer3.reset();
-                        }
-                        if(timer3.seconds() > 2){
-                            deposit.setDepoLock(MICROOPENED);
-                            if(!resetted4){
-                                resetted4 = true;
-                                timer4.seconds();
+                    deposit.setLiftDepos(0.109); //0.109
+
+                        if (timer2.seconds() > 1.5) {
+                            liftTarget = 10;
+                            if (!resetted3) {
+                                resetted3 = true;
+                                timer3.reset();
                             }
-                            if(timer4.seconds() > 1){
-                                resetOdo(robot);
-                                odo = true;
-                                resetted = false;
-                                num += 1;
-                            }
+                            if (timer3.seconds() > 1.5) {
+                                deposit.setDepoLock(MICROOPENED);
+                                if (!resetted4) {
+                                    resetted4 = true;
+                                    timer4.seconds();
+                                }
+                                if (timer4.seconds() > 2.5) {
+                                    resetOdo(robot);
+                                    odo = true;
+                                    resetted = false;
+                                    num += 1;
+                                }
+
                         }
                     }
                 }
                 break;
             case 8:
                 targetPose = new Pose2d(-4, 27, Rotation2d.fromDegrees(0));
-                if(!resetted){
+                if (!resetted) {
                     timer1.reset();
                     resetted = true;
                 }
-                if(timer1.seconds() > 1.25){
+                if (timer1.seconds() > 1.25) {
                     num += 1;
                 }
-                if(closeToPosition(targetPose, currentPose, 1, 1, 1)){
+                if (closeToPosition(targetPose, currentPose, 1, 1, 1)) {
                     num += 1;
                 }
                 break;
@@ -549,8 +547,8 @@ public class DetectionAutoLeftBlue extends LoggingOpMode {
             telemetry.addData("Target Y", targetPose.getY());
             telemetry.addData("Target Heading", targetPose.getHeading());
             telemetry.addData("Case", num);
-        } else if(posFromBack.length == 3){
-            drivetrain.move(-posFromBack[0], posFromBack[1],0, 0);
+        } else if (posFromBack.length == 3) {
+            drivetrain.move(-posFromBack[0], posFromBack[1], 0, 0);
         }
 
         horiz.setHorizPwr(horizPID.calculate(horiz.getCurrentPosition(), horiz.getHorizTarget()));
@@ -566,7 +564,7 @@ public class DetectionAutoLeftBlue extends LoggingOpMode {
     public void autoMove(Pose2d targetPose, Pose2d currentPose, Telemetry telemetry, Drivetrain
         drivetrain, PIDController xCont, PIDController yCont, PIDController headingCont, Boolean odo) {
 
-        if(odo){
+        if (odo) {
             double xPower = clipValue(-0.55, 0.55, xCont.calculate(currentPose.getY(), targetPose.getY()));
             double headingPower = clipValue(-0.6, 0.6, headingCont.calculate(currentPose.getHeading(), targetPose.getHeading()));
             double yPower = clipValue(-0.55, 0.55, yCont.calculate(currentPose.getX(), targetPose.getX()));
@@ -616,7 +614,7 @@ public class DetectionAutoLeftBlue extends LoggingOpMode {
             drivetrain.move(-yPower, -xPower, -zPower, 0);
 
             return new double[]{xPower, yPower, -zPower};
-        }else{
+        } else {
             return new double[]{0};
         }
     }
@@ -743,8 +741,6 @@ public class DetectionAutoLeftBlue extends LoggingOpMode {
 //                    num += 1;
 //                }
 //                break;
-
-
 
 
 }

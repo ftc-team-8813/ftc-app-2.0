@@ -311,6 +311,7 @@ public class RobotControl extends ControlModule {
         telemetry.addData("Deposit State", stateForDeposit);
         telemetry.addData("Intake State", stateForIntake);
         telemetry.addData("Lift State", stateForLift);
+        telemetry.addData("Depo Pivot Pos", deposit.getDepoPivot());
 //        telemetry.addData("Horiz Target", horizontal.getHorizTarget());
 //        telemetry.addData("Transferred Value", transferred);
 //        telemetry.addData("Intake Power", intakePower);

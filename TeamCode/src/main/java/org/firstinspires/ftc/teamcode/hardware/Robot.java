@@ -6,6 +6,7 @@ import com.arcrobotics.ftclib.kinematics.HolonomicOdometry;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -67,6 +68,7 @@ public class Robot {
         MotorEx front_right_a = new MotorEx(hardwareMap, "front right");
         MotorEx back_left_a = new MotorEx(hardwareMap, "back left");
         MotorEx back_right_a = new MotorEx(hardwareMap, "back right");
+        AnalogInput analogInput = hardwareMap.get(AnalogInput.class, "pivInput");
 
         DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "front left");
         DcMotorEx front_right = hardwareMap.get(DcMotorEx.class, "front right");
@@ -103,7 +105,7 @@ public class Robot {
         this.intake = new Intake(intake, intakelock);
         this.horiz = new Horizontal(horiz);
         this.lift = new Lift(lift1, lift2);
-        this.deposit = new Deposit(leftLiftDepo, rightLiftDepo, depoPivot, depoLock);
+        this.deposit = new Deposit(leftLiftDepo, rightLiftDepo, depoPivot, depoLock, analogInput);
 //        this.camera = new Camera(camera);
         this.hoist = new Hoist(hoist1, hoist2);
 //        this.camera1 = camera;

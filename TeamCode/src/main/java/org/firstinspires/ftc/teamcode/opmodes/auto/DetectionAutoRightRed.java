@@ -522,31 +522,31 @@ public class DetectionAutoRightRed extends LoggingOpMode {
                 break;
             case 7:
                 deposit.setDepoLock(MICROCLOSED);
-                liftTarget = 310;
+                liftTarget = 305;
                 if(!resetted1){
                     resetted1 = true;
                     timer1.reset();
                 }
-                if(timer1.seconds() > 2.5){
+                if(timer1.seconds() > 1){
                     deposit.setLiftDepos(0.109); //0.109
                     deposit.setDepoPivot(0.032);
                     if(!resetted2){
                         resetted2 = true;
                         timer2.reset();
                     }
-                    if(timer2.seconds() > 1.25){
+                    if(timer2.seconds() > 2){
                         liftTarget = 10;
                         if(!resetted3){
                             resetted3 = true;
                             timer3.reset();
                         }
-                        if(timer3.seconds() > 1){
+                        if(timer3.seconds() > 1.5){
                             deposit.setDepoLock(MICROOPENED);
                             if(!resetted4){
                                 resetted4 = true;
                                 timer4.seconds();
                             }
-                            if(timer4.seconds() > 1){
+                            if(timer4.seconds() > 2.5){
                                 resetOdo(robot);
                                 odo = true;
                                 resetted = false;
