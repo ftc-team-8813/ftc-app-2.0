@@ -459,7 +459,7 @@ public class DetectionAutoRightBlue extends LoggingOpMode {
                     }
                 }else{
                     targetPose = new Pose2d(95, 0, Rotation2d.fromDegrees(0));
-                    if (closeToPosition(new Pose2d(96, 0, Rotation2d.fromDegrees(0)), currentPose, 4, 1.5, 2)) {
+                    if (closeToPosition(new Pose2d(95, 0, Rotation2d.fromDegrees(0)), currentPose, 4, 1.5, 2)) {
                         num += 1;
                     }
                 }

@@ -34,9 +34,9 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import java.util.ArrayList;
 
 @Config
-@Autonomous(name = "!!Detection Auto Right Red!!")
+@Autonomous(name = "!!Detection Auto Left Blue!!")
 
-public class DetectionAutoRightRed extends LoggingOpMode {
+public class DetectionAutoLeftBlue extends LoggingOpMode {
     //    private PIDController xCont = new PIDController(0.03, 0, 0);
 //    private PIDController yCont = new PIDController(0.07, 0, 0.07);
 //    private PIDController headingCont = new PIDController(0.07, 0.125, 0.005);
@@ -184,7 +184,7 @@ public class DetectionAutoRightRed extends LoggingOpMode {
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        color_pipeline =  new ColorPipeline(250,220,460,220,"close red");//close red and far blue
+        color_pipeline =  new ColorPipeline(410,200,190,230,"close blue"); //close red and far blue
 
         camera.setPipeline(color_pipeline);
 
@@ -207,11 +207,11 @@ public class DetectionAutoRightRed extends LoggingOpMode {
         result = color_pipeline.getLocation();
 
         if (result.equals("left")) {
-            ID = 4;
+            ID = 1;
         } else if (result.equals("right")) {
-            ID = 6;
+            ID = 3;
         } else if (result.equals("center")) {
-            ID = 5;
+            ID = 2;
         }
 //        ID = 6;
 
@@ -269,35 +269,18 @@ public class DetectionAutoRightRed extends LoggingOpMode {
                 }
 
                 if (result == "left") {
-                    if (onPart2) {
-                        targetPose = new Pose2d(-1, 8.5, Rotation2d.fromDegrees(35));
-                        if (closeToPosition(new Pose2d(-1, 8.5, Rotation2d.fromDegrees(35)), currentPose, 1, 1.25, 1)) {
-                            if (!resetted1) {
-                                timer1.reset();
-                                resetted1 = true;
-                            }
-                            if (timer1.seconds() > 0.4) {
-                                num += 1;
-                                resetted1 = false;
-                                resetted2 = false;
-                                resetted3 = false;
-                                resetted = false;
-                                onPart2 = false;
-                            }
+                    targetPose = new Pose2d(12.3, 5, Rotation2d.fromDegrees(25));
+                    if (closeToPosition(targetPose, currentPose, 1, 1.25, 1)) {
+                        if (!resetted1) {
+                            timer1.reset();
+                            resetted1 = true;
                         }
-                    } else {
-                        targetPose = new Pose2d(14, 6.25, Rotation2d.fromDegrees(0));
-                        if (!resetted3) {
-                            timer3.reset();
-                            resetted3 = true;
-                        }
-                        if (timer3.seconds() > 3.5) {
-                            resetOdo(robot);
-                            onPart2 = true;
-                        }
-                        if (closeToPosition(new Pose2d(14, 6.25, Rotation2d.fromDegrees(0)), currentPose, 1, 1.25, 1)) {
-                            resetOdo(robot);
-                            onPart2 = true;
+                        if (timer1.seconds() > 0.6) {
+                            num += 1;
+                            resetted = false;
+                            resetted1 = false;
+                            resetted2 = false;
+                            resetted3 = false;
                         }
                     }
                 } else if (result == "center") {
@@ -316,21 +299,37 @@ public class DetectionAutoRightRed extends LoggingOpMode {
                         }
                     }
                 } else {
-                    targetPose = new Pose2d(12.3, -5, Rotation2d.fromDegrees(-25));
-                    if (closeToPosition(targetPose, currentPose, 1, 1.25, 1)) {
-                        if (!resetted1) {
-                            timer1.reset();
-                            resetted1 = true;
+                    if (onPart2) {
+                        targetPose = new Pose2d(-1, -8.5, Rotation2d.fromDegrees(-35));
+                        if (closeToPosition(new Pose2d(-1, -8.5, Rotation2d.fromDegrees(-35)), currentPose, 1, 1.25, 1)) {
+                            if (!resetted1) {
+                                timer1.reset();
+                                resetted1 = true;
+                            }
+                            if (timer1.seconds() > 0.4) {
+                                num += 1;
+                                resetted1 = false;
+                                resetted2 = false;
+                                resetted3 = false;
+                                resetted = false;
+                                onPart2 = false;
+                            }
                         }
-                        if (timer1.seconds() > 0.6) {
-                            num += 1;
-                            resetted = false;
-                            resetted1 = false;
-                            resetted2 = false;
-                            resetted3 = false;
+                    } else {
+                        targetPose = new Pose2d(14, -6.25, Rotation2d.fromDegrees(0));
+                        if (!resetted3) {
+                            timer3.reset();
+                            resetted3 = true;
+                        }
+                        if (timer3.seconds() > 3.5) {
+                            resetOdo(robot);
+                            onPart2 = true;
+                        }
+                        if (closeToPosition(new Pose2d(14, -6.25, Rotation2d.fromDegrees(0)), currentPose, 1, 1.25, 1)) {
+                            resetOdo(robot);
+                            onPart2 = true;
                         }
                     }
-
                 }
                 break;
             case 1:
@@ -339,7 +338,7 @@ public class DetectionAutoRightRed extends LoggingOpMode {
                     timer1.reset();
                     resetted1 = true;
                 }
-                if (timer1.seconds() > 0.5) {
+                if (timer1.seconds() > 0.6) {
                     deposit.setDepoPivot(PIVOTINIT);
                     deposit.setDepoLock(MICROCLOSED);
                     num += 1;
@@ -347,7 +346,7 @@ public class DetectionAutoRightRed extends LoggingOpMode {
                 }
                 break;
             case 2:
-                if(result.equals("right") || result.equals("center")){
+                if(result.equals("left") || result.equals("center")){
                     if (!resetted1) {
                         timer1.reset();
                         resetted1 = true;
@@ -356,8 +355,8 @@ public class DetectionAutoRightRed extends LoggingOpMode {
                         num += 1;
                         resetted1 = false;
                     }
-                    targetPose = new Pose2d(10, -12, Rotation2d.fromDegrees(0));
-                    if (closeToPosition(new Pose2d(10, -12, Rotation2d.fromDegrees(0)), currentPose, 1, 1.25, 1)) {
+                    targetPose = new Pose2d(10, 12, Rotation2d.fromDegrees(0));
+                    if (closeToPosition(new Pose2d(10, 12, Rotation2d.fromDegrees(0)), currentPose, 1, 1.25, 1)) {
                         num += 1;
                     }
                 }else {
@@ -376,35 +375,6 @@ public class DetectionAutoRightRed extends LoggingOpMode {
                 }
 
                 break;
-//            case 3:
-//                if(result.equals("right") || result.equals("center")) {
-//                    if (!resetted1) {
-//                        timer1.reset();
-//                        resetted1 = true;
-//                    }
-//                    if (timer1.seconds() > 2.6) {
-//                        num += 1;
-//                        resetted1 = false;
-//                    }
-//                    targetPose = new Pose2d(51, -19.5, Rotation2d.fromDegrees(0));
-//                    if (closeToPosition(new Pose2d(51, -19.5, Rotation2d.fromDegrees(0)), currentPose, 1, 1.25, 1)) {
-//                        num += 1;
-//                    }
-//                }else{
-//                    if (!resetted1) {
-//                        timer1.reset();
-//                        resetted1 = true;
-//                    }
-//                    if (timer1.seconds() > 2.6) {
-//                        num += 1;
-//                        resetted1 = false;
-//                    }
-//                    targetPose = new Pose2d(28, -18, Rotation2d.fromDegrees(0));
-//                    if (closeToPosition(new Pose2d(28, -18, Rotation2d.fromDegrees(0)), currentPose, 1, 1.25, 1)) {
-//                        num += 1;
-//                    }
-//                }
-//                break;
             case 3:
                 if (!resetted) {
                     resetOdo(robot);
@@ -425,9 +395,9 @@ public class DetectionAutoRightRed extends LoggingOpMode {
                 }
                 xCont = new PIDController(0, 0, 0);
                 yCont = new PIDController(0, 0, 0);
-                if(result.equals("right") || result.equals("center")){
-                    targetPose = new Pose2d(0, 0, Rotation2d.fromDegrees(-90));
-                    if (closeToPosition(new Pose2d(0, 0, Rotation2d.fromDegrees(-90)), currentPose, 1, 1.25, 1)) {
+                if(result.equals("left") || result.equals("center")){
+                    targetPose = new Pose2d(0, 0, Rotation2d.fromDegrees(90));
+                    if (closeToPosition(new Pose2d(0, 0, Rotation2d.fromDegrees(90)), currentPose, 1, 1.25, 1)) {
 //                    odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
                         resetOdo(robot);
                         xCont = new PIDController(kpX, kiX, kdX);
@@ -437,8 +407,8 @@ public class DetectionAutoRightRed extends LoggingOpMode {
                         num += 1;
                     }
                 }else{
-                    targetPose = new Pose2d(0, 0, Rotation2d.fromDegrees(-90));
-                    if (closeToPosition(new Pose2d(0, 0, Rotation2d.fromDegrees(-90)), currentPose, 1, 1.25, 1)) {
+                    targetPose = new Pose2d(0, 0, Rotation2d.fromDegrees(90));
+                    if (closeToPosition(new Pose2d(0, 0, Rotation2d.fromDegrees(90)), currentPose, 1, 1.25, 1)) {
 //                    odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
                         resetOdo(robot);
                         xCont = new PIDController(kpX, kiX, kdX);
@@ -452,18 +422,18 @@ public class DetectionAutoRightRed extends LoggingOpMode {
                 break;
             case 4:
                 if(result.equals("center")) {
-                    targetPose = new Pose2d(5.5, 20, Rotation2d.fromDegrees(0));
-                    if (closeToPosition(new Pose2d(5.5, 20, Rotation2d.fromDegrees(0)), currentPose, 0.5, 2, 2)) {
+                    targetPose = new Pose2d(5.5, -20, Rotation2d.fromDegrees(0));
+                    if (closeToPosition(new Pose2d(5.5, -20, Rotation2d.fromDegrees(0)), currentPose, 0.5, 2, 2)) {
                         num += 1;
                     }
-                } else if(result.equals("right")){
-                    targetPose = new Pose2d(5.5, 15, Rotation2d.fromDegrees(0));
-                    if (closeToPosition(new Pose2d(5.5, 15, Rotation2d.fromDegrees(0)), currentPose, 0.5, 2, 2)) {
+                } else if(result.equals("left")){
+                    targetPose = new Pose2d(5.5, -15, Rotation2d.fromDegrees(0));
+                    if (closeToPosition(new Pose2d(5.5, -15, Rotation2d.fromDegrees(0)), currentPose, 0.5, 2, 2)) {
                         num += 1;
                     }
                 }else{
-                    targetPose = new Pose2d(23, 14, Rotation2d.fromDegrees(0));
-                    if (closeToPosition(new Pose2d(23, 14, Rotation2d.fromDegrees(0)), currentPose, 1, 2, 2)) {
+                    targetPose = new Pose2d(23, -14, Rotation2d.fromDegrees(0));
+                    if (closeToPosition(new Pose2d(23, -14, Rotation2d.fromDegrees(0)), currentPose, 1, 2, 2)) {
                         num += 1;
                     }
                 }
@@ -540,7 +510,7 @@ public class DetectionAutoRightRed extends LoggingOpMode {
                             resetted3 = true;
                             timer3.reset();
                         }
-                        if(timer3.seconds() > 1){
+                        if(timer3.seconds() > 2){
                             deposit.setDepoLock(MICROOPENED);
                             if(!resetted4){
                                 resetted4 = true;
@@ -557,7 +527,7 @@ public class DetectionAutoRightRed extends LoggingOpMode {
                 }
                 break;
             case 8:
-                targetPose = new Pose2d(-4, -27, Rotation2d.fromDegrees(0));
+                targetPose = new Pose2d(-4, 27, Rotation2d.fromDegrees(0));
                 if(!resetted){
                     timer1.reset();
                     resetted = true;
