@@ -12,12 +12,11 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 public class Intake {
 
     private DcMotorEx intake;
-    private Servo lock;
+//    private Servo lock;
 
 
-    public Intake(DcMotorEx intake, Servo lock){
+    public Intake(DcMotorEx intake){
         this.intake = intake;
-        this.lock = lock;
     }
     public void setPower(double pwr){
         intake.setPower(pwr);
@@ -27,11 +26,11 @@ public class Intake {
         return intake.getPower();
     }
 
-    public void setLock(double pos){
-        lock.setPosition(pos);
-    }
-
-    public double getLock(){
-        return lock.getPosition();
-    }
+//    public void setLock(double pos){
+//        lock.setPosition(pos);
+//    }
+//
+//    public double getLock(){
+//        return lock.getPosition();
+//    }
 }

@@ -38,8 +38,8 @@ public class Drivetrain{
     public void move(double forward, double strafe, double turn, double turn_correct) {
         front_left.setPower((forward + strafe + (turn + turn_correct)));
         front_right.setPower((forward - strafe - (turn + turn_correct)));
-        back_left.setPower((-forward - strafe + (turn + turn_correct)));
-        back_right.setPower((-forward + strafe - (turn + turn_correct)));
+        back_left.setPower((forward - strafe + (turn + turn_correct)));
+        back_right.setPower((forward + strafe - (turn + turn_correct)));
     }
 
     public void getMotorPowers(Telemetry telemetry){

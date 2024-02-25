@@ -38,8 +38,8 @@ public class Robot {
     public Scheduler scheduler = new Scheduler(eventBus);
 
     private static Robot instance;
-    private final double TRACKWIDTH = 9.167;
-    private final double CENTER_WHEEL_OFFSET = -6.024;
+    private final double TRACKWIDTH = 10.89;
+    private final double CENTER_WHEEL_OFFSET = -5.805;
     private final double WHEEL_DIAMETER = 1.37795;
     private final double TICKS_PER_REV = 8192;
     private final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;
@@ -64,56 +64,16 @@ public class Robot {
     public Robot(HardwareMap hardwareMap) {
 //
         //Motors
-        MotorEx front_left_a = new MotorEx(hardwareMap, "front left");
-        MotorEx front_right_a = new MotorEx(hardwareMap, "front right");
-        MotorEx back_left_a = new MotorEx(hardwareMap, "back left");
-        MotorEx back_right_a = new MotorEx(hardwareMap, "back right");
-        AnalogInput analogInput = hardwareMap.get(AnalogInput.class, "pivInput");
 
-        DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "front left");
-        DcMotorEx front_right = hardwareMap.get(DcMotorEx.class, "front right");
-        DcMotorEx back_left = hardwareMap.get(DcMotorEx.class, "back left");
-        DcMotorEx back_right = hardwareMap.get(DcMotorEx.class, "back right");
+        DcMotorEx front_left = hardwareMap.get(DcMotorEx.class, "fl");
+        DcMotorEx front_right = hardwareMap.get(DcMotorEx.class, "fr");
+        DcMotorEx back_left = hardwareMap.get(DcMotorEx.class, "bl");
+        DcMotorEx back_right = hardwareMap.get(DcMotorEx.class, "br");
 
         DcMotorEx intake = hardwareMap.get(DcMotorEx.class, "intake");
-        DcMotorEx horiz = hardwareMap.get(DcMotorEx.class, "horiz");
-
-        DcMotorEx lift1 = hardwareMap.get(DcMotorEx.class, "lift1");
-        DcMotorEx lift2 = hardwareMap.get(DcMotorEx.class, "lift2");
-
-//        WebcamName camera = hardwareMap.get(WebcamName.class, "Webcam 1");
-
-        Servo hoist1 = hardwareMap.get(Servo.class, "leftHoist");
-        Servo hoist2 = hardwareMap.get(Servo.class, "rightHoist");
-
-        Servo droneServo = hardwareMap.get(Servo.class, "droneLauncher");
-        Servo droneHeight = hardwareMap.get(Servo.class, "droneAngle");
-
-        Rev2mDistanceSensor left = hardwareMap.get(Rev2mDistanceSensor.class, "left");
-        Rev2mDistanceSensor right = hardwareMap.get(Rev2mDistanceSensor.class, "right");
-        RevColorSensorV3 tape = hardwareMap.get(RevColorSensorV3.class, "tape");
-
-        Servo intakelock = hardwareMap.get(Servo.class, "intakeLock");
-
-        Servo depoPivot = hardwareMap.get(Servo.class, "depoPivot");
-        Servo depoLock = hardwareMap.get(Servo.class, "depoLock");
-        Servo leftLiftDepo = hardwareMap.get(Servo.class, "leftLiftDepo");
-        Servo rightLiftDepo = hardwareMap.get(Servo.class, "rightLiftDepo");
 //
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
-        this.sensors = new DistanceSensors(left, right, tape);
-        this.intake = new Intake(intake, intakelock);
-        this.horiz = new Horizontal(horiz);
-        this.lift = new Lift(lift1, lift2);
-        this.deposit = new Deposit(leftLiftDepo, rightLiftDepo, depoPivot, depoLock, analogInput);
-//        this.camera = new Camera(camera);
-        this.hoist = new Hoist(hoist1, hoist2);
-//        this.camera1 = camera;
-        this.droneLauncher = new DroneLauncher(droneServo, droneHeight);
-
-        left_odometer = back_left_a.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
-        right_odometer = front_left_a.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
-        center_odometer = back_right_a.encoder.setDistancePerPulse(DISTANCE_PER_PULSE);
+        this.intake = new Intake(intake);
 
         right_odometer.setDirection(MotorEx.Direction.REVERSE);
 

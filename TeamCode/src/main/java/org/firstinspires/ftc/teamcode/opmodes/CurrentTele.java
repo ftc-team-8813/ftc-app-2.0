@@ -44,13 +44,7 @@ public class CurrentTele extends LoggingOpMode {
         controlMgr = new ControlMgr(robot, controllerMap);
 
         controlMgr.addModule(new DriveControl("Drive Control"));
-        controlMgr.addModule(new DroneControl("Drone Control"));
-//        controlMgr.addModule(new IntakeControl("Intake Control"));
-//        controlMgr.addModule(new HorizControl("Horiz Control"));
-//        controlMgr.addModule(new LiftControl("Lift Control"));
-//        controlMgr.addModule(new DepoControl("Depo Control"));
-        controlMgr.addModule(new RobotControl("Robot Control"));
-        controlMgr.addModule(new HoistControl("Hoist Control"));
+        controlMgr.addModule(new IntakeControl("Intake Control"));
 
 //        controlMgr.addModule(new OdoTestModule("Odo Control"));
 
