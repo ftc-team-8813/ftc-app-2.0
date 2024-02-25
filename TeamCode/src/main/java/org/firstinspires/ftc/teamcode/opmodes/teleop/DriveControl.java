@@ -33,6 +33,6 @@ public class DriveControl extends ControlModule{
 
     @Override
     public void update(Telemetry telemetry) {
-        drivetrain.move(-ax_drive_left_y.get(), ax_drive_left_x.get(), ax_drive_right_x.get(), 0);
+        drivetrain.move(ax_drive_left_y.get(), -ax_drive_left_x.get(), -ax_drive_right_x.get(), 0);
     }
 }

@@ -21,8 +21,6 @@ public class odoTest extends LoggingOpMode {
 
     private HolonomicOdometry odometry;
     private Drivetrain drivetrain;
-    private DistanceSensors sensors;
-    private Deposit deposit;
     private Pose2d currentPose;
     private Pose2d targetPose;
     private int ID;
@@ -33,10 +31,9 @@ public class odoTest extends LoggingOpMode {
     public void init() {
         super.init();
         Robot robot = Robot.initialize(hardwareMap);
-        deposit = robot.deposit;
         odometry = robot.odometry;
         drivetrain = robot.drivetrain;
-        sensors = robot.sensors;
+//        sensors = robot.sensors;
         currentPose = new Pose2d(0, 0, new Rotation2d(0));
         targetPose = new Pose2d(0, 0, new Rotation2d(0));
         odometry.update(0,0,0);
@@ -55,8 +52,8 @@ public class odoTest extends LoggingOpMode {
     public void loop() {
         odometry.updatePose();
         currentPose = odometry.getPose();
-        deposit.setDepoPivot(0.680);
-        deposit.setDepoLock(0.85);
+//        deposit.setDepoPivot(0.680);
+//        deposit.setDepoLock(0.85);
 
 
 

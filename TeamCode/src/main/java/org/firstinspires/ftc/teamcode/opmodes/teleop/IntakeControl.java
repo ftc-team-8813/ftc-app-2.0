@@ -45,9 +45,9 @@ public class IntakeControl extends ControlModule{
     public void update(Telemetry telemetry) {
 
         if (forward && !stop) {
-            power = 0.9;
+            power = 0.65;
         } else if (!forward && !stop) {
-            power = -0.9;
+            power = -0.65;
         } else if (stop){
             power = 0;
         }
