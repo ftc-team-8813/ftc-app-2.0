@@ -12,11 +12,14 @@ import org.firstinspires.ftc.teamcode.input.ControllerMap;
 public class Intake {
 
     private DcMotorEx intake;
-//    private Servo lock;
+    private Servo roller;
+    private Servo cage;
 
 
-    public Intake(DcMotorEx intake){
+    public Intake(DcMotorEx intake, Servo roller, Servo cage){
         this.intake = intake;
+        this.roller = roller;
+        this.cage = cage;
     }
     public void setPower(double pwr){
         intake.setPower(pwr);
@@ -26,9 +29,12 @@ public class Intake {
         return intake.getPower();
     }
 
-//    public void setLock(double pos){
-//        lock.setPosition(pos);
-//    }
+    public void setRol(double pos){
+        roller.setPosition(pos);
+    }
+    public void setCage(double pos){
+        cage.setPosition(pos);
+    }
 //
 //    public double getLock(){
 //        return lock.getPosition();

@@ -70,18 +70,21 @@ public class Robot {
         DcMotorEx back_right = hardwareMap.get(DcMotorEx.class, "br");
 
         DcMotorEx intake = hardwareMap.get(DcMotorEx.class, "intake");
+
+        Servo roller = hardwareMap.get(Servo.class, "rol");
+        Servo cage = hardwareMap.get(Servo.class, "cage");
 //
         this.drivetrain = new Drivetrain(front_left, front_right, back_left, back_right);
-        this.intake = new Intake(intake);
-
-        right_odometer.setDirection(MotorEx.Direction.REVERSE);
-
-        this.odometry = new HolonomicOdometry(
-            left_odometer::getDistance,
-            right_odometer::getDistance,
-            center_odometer::getDistance,
-            TRACKWIDTH, CENTER_WHEEL_OFFSET
-        );
+        this.intake = new Intake(intake, roller, cage);
+//
+//        right_odometer.setDirection(MotorEx.Direction.REVERSE);
+//
+//        this.odometry = new HolonomicOdometry(
+//            left_odometer::getDistance,
+//            right_odometer::getDistance,
+//            center_odometer::getDistance,
+//            TRACKWIDTH, CENTER_WHEEL_OFFSET
+//        );
 
     }
 

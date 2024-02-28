@@ -1,327 +1,254 @@
-//package org.firstinspires.ftc.teamcode.opmodes.teleop;
-//
-//import com.arcrobotics.ftclib.controller.PIDFController;
-//import com.qualcomm.robotcore.util.ElapsedTime;
-//
-//import org.firstinspires.ftc.robotcore.external.Telemetry;
-//import org.firstinspires.ftc.teamcode.hardware.Deposit;
-//import org.firstinspires.ftc.teamcode.hardware.DepositStates;
-//import org.firstinspires.ftc.teamcode.hardware.Horizontal;
-//import org.firstinspires.ftc.teamcode.hardware.Intake;
-//import org.firstinspires.ftc.teamcode.hardware.IntakeStates;
-//import org.firstinspires.ftc.teamcode.hardware.Lift;
-//import org.firstinspires.ftc.teamcode.hardware.LiftStates;
-//import org.firstinspires.ftc.teamcode.hardware.Robot;
-//import org.firstinspires.ftc.teamcode.input.ControllerMap;
-//
-//public class RobotControl extends ControlModule {
-//    public RobotControl(String name) {
-//        super(name);
-//    }
-//    private final double PIVOTUP = 0.263;
-//    private final double LOWPIVOTUP = 0.045;
-////    0.077
-//    private final double HIGHPIVOTUP = 0.17;
-//    private final double LIFTSERVSUP = 0.257;
-//    private final double LIFTSERVPRE = 0.51;
-//    private final double PIVOTPRE = 0.025;
-//    private final double LIFTSERVFULL = 0.65;
-//    private final double PIVOTFULL = 0.12;
-//    private final double PIVOTINIT = 0.95;
-//    private final double LIFTSERVINIT = 0.710;
-//    private final double MICROCLOSED = 0.85;
-//    private final double MICROOPENED = 0.429;
-//    private final double INTAKELOCKOPENED = 0;
-//    private final double INTAKELOCKClOSED = 0.2;
-//    private final double LIFTDOWNPOS = 0;
-//    private final double LIFTMIDPOS = 190;
-//    private final double LIFTHIGHPOS = 310;
-//    private Lift lift;
-//    private Horizontal horizontal;
-//    private Intake intake;
-//    private Deposit deposit;
-//    private PIDFController horizPID = new PIDFController(0.027, 0, 0, 0);
-//    private PIDFController liftPID = new PIDFController(0.02, 0, 0, 0);
-//    private ControllerMap.ButtonEntry y_button;
-//    private ControllerMap.ButtonEntry b_button;
-//    private ControllerMap.ButtonEntry a_button;
-//    private ControllerMap.ButtonEntry hookDown;
-//    private ControllerMap.ButtonEntry dump;
-//    private ControllerMap.ButtonEntry takeInIntake;
-//    private ControllerMap.ButtonEntry x_button;
-//    private ControllerMap.ButtonEntry inHoriz;
-//    private LiftStates stateForLift;
-//    private DepositStates stateForDeposit;
-//    private IntakeStates stateForIntake;
-//    private ElapsedTime timer;
-//    private ElapsedTime timer2;
-//    private ElapsedTime timer3;
-//    private ElapsedTime timer4;
-//    private ElapsedTime timer5;
-//    private boolean inA;
-//    private boolean resetted2;
-//    private boolean resetted3;
-//    private boolean resetted4;
-//    private boolean resetted5;
-//    private boolean transferred;
-//    private boolean in;
-//    public boolean forward;
-//    private double intakePower;
-//    private boolean opened;
-//
-//    @Override
-//    public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
-//        this.lift = robot.lift;
-//        this.horizontal = robot.horiz;
-//        this.intake = robot.intake;
-//        this.deposit = robot.deposit;
-//
-//        y_button = controllerMap.getButtonMap("lift:high", "gamepad1", "y");
-//        b_button = controllerMap.getButtonMap("lift:mid", "gamepad1", "b");
-//        a_button = controllerMap.getButtonMap("lift:low", "gamepad1", "a");
-//        x_button = controllerMap.getButtonMap("transfer", "gamepad1", "x");
-//
-//        dump = controllerMap.getButtonMap("dump", "gamepad1", "left_bumper");
-//        takeInIntake = controllerMap.getButtonMap("takeInIntake", "gamepad1", "right_bumper");
-//        inHoriz = controllerMap.getButtonMap("inHoriz", "gamepad1", "right_stick_button");
-//
-//        stateForLift = LiftStates.LiftDown;
-//        stateForIntake = IntakeStates.DrivingAround;
-//        stateForDeposit = DepositStates.Init;
-//
-//        timer = new ElapsedTime();
-//        timer2 = new ElapsedTime();
-//        timer3 = new ElapsedTime();
-//        timer4 = new ElapsedTime();
-//        timer5 = new ElapsedTime();
-//
-//        resetted2 = false;
-//        resetted3 = false;
-//        resetted4 = false;
-//        resetted5 = false;
-//
-//        opened = false;
-//
-//        transferred = false;
-//        in = true;
-//        forward = true;
-//        intakePower =  0;
-//        inA = false;
-//
-//        horizontal.resetEncoders();
-//
-//    }
-//
-//    @Override
-//    public void init_loop(Telemetry telemetry) {
-//        super.init_loop(telemetry);
-//
-//    }
-//
-//    @Override
-//    public void update(Telemetry telemetry) {
-//        lift.update();
-//        horizontal.update();
-//
-//        switch (stateForLift) {
-//            case LiftDown:
-//                lift.setLiftTarget(LIFTDOWNPOS);
-//                break;
-//
-//            case LiftUp:
-//                if(!resetted5){
-//                    timer5.reset();
-//                    resetted5 = true;
-//                }
-//                if(timer5.seconds() > 1){
-//                    deposit.setDepoLock(MICROCLOSED);
-//                }
-//                if (y_button.edge() == -1) {
-//                    lift.setLiftTarget(LIFTHIGHPOS);
-//                }
-//                if (b_button.edge() == -1) {
-//                    lift.setLiftTarget(LIFTMIDPOS);
-//                }
-//                if (transferred && lift.getCurrentPosition() > 170) {
-//                    stateForDeposit = DepositStates.HighUp;
-//                    stateForIntake = IntakeStates.PixelIn;
-//                    stateForLift = LiftStates.Dump;
-//                }
-//                if(!transferred && lift.getCurrentPosition() > 170){
-//                    stateForDeposit = DepositStates.Pre;
-//                }
-//                break;
-//
-//            case Dump:
-//                if (y_button.edge() == -1) {
-//                    lift.setLiftTarget(LIFTHIGHPOS);
-//                }
-//                if (b_button.edge() == -1) {
-//                    lift.setLiftTarget(LIFTMIDPOS);
-//                }
-//                if(dump.edge() == -1) {
-//                    deposit.setDepoLock(MICROOPENED);
-//                    transferred = false;
-//                }
-//                if(a_button.edge() == -1){
-//                    inA = true;
-//                }
-//                if(inA){
-//                    stateForDeposit = DepositStates.Pre;
-//                    if (!resetted4) {
-//                        timer4.reset();
-//                        resetted4 = true;
-//                    }
-//                    if (timer4.seconds() > 0.5) {
-//                        resetted2 = false;
-//                        resetted3 = false;
-//                        resetted4 = false;
-//                        resetted5 = false;
-//                        opened = false;
-//                        inA = false;
-//                        in = true;
-//                        stateForLift = LiftStates.LiftDown;
-//                        stateForIntake = IntakeStates.DrivingAround;
-//                    }
-//                }
-//        }
-//
-//        switch (stateForIntake) {
-//            case DrivingAround:
-//                if(in){
-//                    horizontal.setHorizTarget(0);
-//                    intakePower = 0;
-//                } else {
-//                    horizontal.setHorizTarget(1440);
-//                    if (forward) {
-//                        intakePower = 0.65;
-//                    } else {
-//                        intakePower = -0.65;
-//                    }
-//                }
-//
-//                intake.setLock(INTAKELOCKClOSED);
-//                deposit.setDepoLock(MICROCLOSED);
-//                break;
-//
-//            case Transfer:
-//                horizontal.setHorizTarget(0);
-////
-//                if(!transferred){
-//                    intakePower = 0;
-//                    deposit.setDepoLock(MICROOPENED);
-//                }
-//
-//                if (horizontal.getCurrentPosition() < 50) {
-//                    if(stateForLift!= LiftStates.LiftUp || stateForLift != LiftStates.Dump){
-//                        stateForDeposit = DepositStates.Full;
-//                        if(!resetted2){
-//                            timer2.reset();
-//                            resetted2 = true;
-//                        }
-//                        if(timer2.seconds() > 0.2){
-//                            intake.setLock(INTAKELOCKOPENED);
-//                            if(!resetted3){
-//                                timer3.reset();
-//                                resetted3 = true;
-//                            }
-//                            if(timer3.seconds() > 0.3){
-//                                transferred = true;
-//                                intakePower = 0.65;
-//                                stateForLift = LiftStates.LiftUp;
-//                            }
-//                        }
-//                    }else if(stateForLift == LiftStates.LiftUp || stateForLift == LiftStates.Dump){
-//                        if (transferred && lift.getCurrentPosition() > 170) {
-//                            stateForDeposit = DepositStates.HighUp;
-//                            stateForLift = LiftStates.Dump;
-//                        }
-//                    }
-//
-//                    break;
-//                }
-//            case PixelIn:
-//                horizontal.setHorizTarget(0);
-//                intakePower = 0;
-//            }
-//
-//        switch (stateForDeposit){
-//            case Pre:
-//                deposit.setDepoPivot(PIVOTPRE);
-//                deposit.setLiftDepos(LIFTSERVPRE); //change later
-//                break;
-//
-//            case Full:
-//                deposit.setDepoPivot(PIVOTFULL);
-//                deposit.setLiftDepos(LIFTSERVFULL);
-//                break;
-//
-//            case Init:
-//                deposit.setDepoPivot(PIVOTINIT);
-//                deposit.setLiftDepos(LIFTSERVINIT);
-//                stateForLift = LiftStates.LiftUp;
-//                break;
-//
-//            case LowUp:
-//                deposit.setDepoPivot(LOWPIVOTUP);
-//                deposit.setLiftDepos(LIFTSERVSUP);
-//                break;
-//
-//            case HighUp:
-//                deposit.setDepoPivot(HIGHPIVOTUP);
-//                deposit.setLiftDepos(LIFTSERVSUP);
-//                break;
-//
-//            }
-//
-//            if (a_button.edge() == -1 && stateForLift == LiftStates.LiftUp && stateForDeposit == DepositStates.Pre && stateForIntake == IntakeStates.DrivingAround){
-//                resetted2 = false;
-//                resetted3 = false;
-//                resetted4 = false;
-//                resetted5 = false;
-//                opened = false;
-//                inA = false;
-//                in = true;
-//                stateForLift = LiftStates.LiftDown;
-//                stateForIntake = IntakeStates.DrivingAround;
-//            }
-//
-//
-//        if(x_button.edge() == -1 && stateForLift == LiftStates.LiftDown && stateForDeposit == DepositStates.Pre){
-//            stateForIntake = IntakeStates.Transfer;
-//        }
-//
-//        if(takeInIntake.edge() == -1 && forward && stateForIntake == IntakeStates.DrivingAround){
-//            forward = false;
-//        }else if(takeInIntake.edge() == -1 && !forward && stateForIntake == IntakeStates.DrivingAround){
-//            forward = true;
-//        }
-//
-//        if(inHoriz.edge() == -1 && in && stateForIntake == IntakeStates.DrivingAround){
-//            in = false;
-//        }else if(inHoriz.edge() == -1 && !in && stateForIntake == IntakeStates.DrivingAround){
-//            in = true;
-//        }
-//
-//        horizontal.setHorizPwr(horizPID.calculate(horizontal.getCurrentPosition(), horizontal.getHorizTarget()));
-//        lift.setLiftsPower(liftPID.calculate(lift.getCurrentPosition(), lift.getLiftTarget()));
-//        intake.setPower(-intakePower);
-//
-//
-//        telemetry.addData("Deposit State", stateForDeposit);
-//        telemetry.addData("Intake State", stateForIntake);
-//        telemetry.addData("Lift State", stateForLift);
-//        telemetry.addData("Depo Pivot Pos", deposit.getDepoPivot());
-////        telemetry.addData("Horiz Target", horizontal.getHorizTarget());
-////        telemetry.addData("Transferred Value", transferred);
-////        telemetry.addData("Intake Power", intakePower);
-////        telemetry.addData("Lift Current", lift.getCurrentPosition());
-////        telemetry.addData("Intake Lock Position", intake.getLock());
-////        telemetry.addData("Horiz Current", horizontal.getCurrentPosition());
-////        telemetry.addData("Deposit Lock", deposit.getDepoLock());
-////        telemetry.addData("Intake Lock", intake.getLock());
-////        telemetry.addData("Timer 2", timer2.seconds());
-////        telemetry.addData("Timer 4", timer4.seconds());
-////        telemetry.addData("Pivot Full Target Position", )
-//    }
-//}
+package org.firstinspires.ftc.teamcode.opmodes.teleop;
+
+import com.arcrobotics.ftclib.controller.PIDFController;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.Deposit;
+import org.firstinspires.ftc.teamcode.hardware.DepositStates;
+import org.firstinspires.ftc.teamcode.hardware.Intake;
+import org.firstinspires.ftc.teamcode.hardware.IntakeStates;
+import org.firstinspires.ftc.teamcode.hardware.Lift;
+import org.firstinspires.ftc.teamcode.hardware.LiftStates;
+import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.input.ControllerMap;
+
+public class RobotControl extends ControlModule {
+    public RobotControl(String name) {
+        super(name);
+    }
+
+    private final double LIFTDOWNPOS = 0;
+    private final double LIFTMIDPOS = 0;
+    private final double LIFTHIGHPOS = 0;
+    private final double LIFTPRE = 0;
+    private final double DEPOPRE = 0;
+    private final double DEPOMID = 0;
+    private final double C1OPEN = 0;
+    private final double C2OPEN = 0;
+    private final double C1CLOSE = 0;
+    private final double C2CLOSE = 0;
+    private final double CAGEOPEN = 0;
+    private final double CAGECLOSE = 0;
+
+    private Lift lift;
+    private Intake intake;
+    private Deposit deposit;
+    private PIDFController liftPID = new PIDFController(0.02, 0, 0, 0);
+    //Driver 1 Buttons
+    private ControllerMap.ButtonEntry y_button;
+    private ControllerMap.ButtonEntry b_button;
+    private ControllerMap.ButtonEntry a_button;
+    private ControllerMap.ButtonEntry x_button;
+    private ControllerMap.ButtonEntry leftDump;
+    private ControllerMap.ButtonEntry rightDump;
+    private ControllerMap.ButtonEntry overrideFor1;
+
+    //Driver 2 Buttons
+    private ControllerMap.AxisEntry depoAdjust;
+    private ControllerMap.AxisEntry liftAdjust;
+    private ControllerMap.ButtonEntry hang;
+    private ControllerMap.ButtonEntry droneUp;
+    private ControllerMap.ButtonEntry shoot;
+
+    //Driver 2 Buttons
+    private LiftStates stateForLift;
+    private DepositStates stateForDeposit;
+    private IntakeStates stateForIntake;
+    private ElapsedTime timer;
+    private ElapsedTime timer1;
+
+    private boolean resetted;
+    private boolean resetted1;
+
+    private boolean pixelInD1;
+    private boolean pixelInD2;
+    private boolean transferred;
+    private boolean readyToDeposit;
+    private double intakePower;
+    private int numStage;
+    @Override
+    public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
+        this.lift = robot.lift;
+        this.intake = robot.intake;
+        this.deposit = robot.deposit;
+
+        y_button = controllerMap.getButtonMap("lift:high", "gamepad1", "y");
+        b_button = controllerMap.getButtonMap("lift:mid", "gamepad1", "b");
+        a_button = controllerMap.getButtonMap("lift:low", "gamepad1", "a");
+        x_button = controllerMap.getButtonMap("transfer", "gamepad1", "x");
+        overrideFor1 = controllerMap.getButtonMap("override", "gamepad1", "dpad_up"); //i don't remember
+        leftDump = controllerMap.getButtonMap("leftDump", "gamepad1", "left_bumper");
+        rightDump = controllerMap.getButtonMap("rightDump", "gamepad1", "right_bumper");
+
+
+        depoAdjust = controllerMap.getAxisMap("depoAdjust", "gamepad2", "right_stick_x");
+        liftAdjust = controllerMap.getAxisMap("liftAdjust", "gamepad2", "left_stick_y");
+
+        hang = controllerMap.getButtonMap("hang", "gamepad2", "y");
+        shoot = controllerMap.getButtonMap("shoot", "gamepad2", "a");
+        droneUp = controllerMap.getButtonMap("goUp", "gamepad2", "b");
+
+        stateForLift = LiftStates.Down;
+        stateForIntake = IntakeStates.Stop;
+        stateForDeposit = DepositStates.Pre;
+
+        timer = new ElapsedTime();
+        timer1 = new ElapsedTime();
+
+
+        resetted = false;
+        resetted1 = false;
+
+        intakePower = 0;
+
+        numStage = 0;
+
+    }
+
+    @Override
+    public void init_loop(Telemetry telemetry) {
+        super.init_loop(telemetry);
+
+    }
+
+    @Override
+    public void update(Telemetry telemetry) {
+        lift.update();
+
+        switch (stateForLift) {
+            case Down:
+                lift.setLiftTarget(LIFTDOWNPOS);
+                break;
+
+            case Up:
+                lift.setLiftTarget(LIFTHIGHPOS);
+                break;
+
+            case Mid:
+                lift.setLiftTarget(LIFTMIDPOS);
+                break;
+
+            case Pre:
+                lift.setLiftTarget(LIFTPRE);
+                break;
+
+            case FineAdjust:
+                //
+                break;
+        }
+
+        switch (stateForIntake){
+            case In:
+                intake.setPower(0.75);
+                intake.setRol(0);
+                break;
+            case Out:
+                intake.setPower(-0.5); //change for a slower outspeed honestly
+                intake.setRol(1);
+                break;
+            case Stop:
+                intake.setPower(0);
+                intake.setRol(0.5);
+                break;
+        }
+
+        switch (stateForDeposit){
+            case Pre:
+                deposit.setPivot(DEPOPRE);
+                break;
+            case Mid:
+                deposit.setPivot(DEPOMID);
+                break;
+            case FineAdjust:
+                //
+                break;
+        }
+
+        if(x_button.edge() == -1 || numStage == 1){ //add cage code
+            numStage = 1;
+            intake.setCage(CAGECLOSE);
+            stateForIntake = IntakeStates.In;
+            stateForDeposit = DepositStates.Pre;
+            stateForLift = LiftStates.Pre;
+
+
+            if(deposit.getPivot() > 0 && lift.getCurrentPosition() > 0){ //add threshold
+                deposit.setC1(C1OPEN);
+                deposit.setC2(C2OPEN);
+            }
+
+            //if polulu sensor 1 detects
+            pixelInD1 = true;
+            //if polulu sensor 2 detects
+            pixelInD2 = true;
+
+            if(pixelInD2 && pixelInD1){
+//                transferred = true;
+                numStage = 2;
+            }
+
+            if(overrideFor1.edge() == -1){
+//                transferred = true;
+                numStage = 2;
+            }
+        }
+
+        if(numStage == 2){
+            intake.setCage(CAGECLOSE);
+            deposit.setC1(C1CLOSE);
+            deposit.setC2(C2CLOSE);
+
+            if(!resetted){
+                timer.reset();
+                resetted = true;
+            }
+            if(timer.seconds() > 3){
+                stateForIntake = IntakeStates.Out;
+            }
+            if(y_button.edge() == -1){
+                stateForLift = LiftStates.Up;
+            }else if(b_button.edge() == -1){
+                stateForLift = LiftStates.Mid;
+            }else if(a_button.edge() == -1){
+                stateForLift = LiftStates.Down;
+            }
+
+            if(lift.getCurrentPosition() > 0){//change threshold
+                deposit.setPivot(DEPOMID);
+            }
+
+            if(deposit.getPivot() > 0) { //some threshold
+                numStage = 3;
+                resetted = false;
+            }
+        }
+
+        if(numStage == 3){
+            stateForLift = LiftStates.FineAdjust;
+            stateForIntake = IntakeStates.Stop;
+            stateForDeposit = DepositStates.FineAdjust;
+
+            if(leftDump.edge() == -1){
+                deposit.setC1(C1OPEN); //switch if necessary
+            }
+            if(rightDump.edge() == -1){
+                deposit.setC1(C2OPEN); //switch if necessary
+            }
+
+            //if both polulu sensors stop detecting
+            if(!resetted){
+                timer.reset();
+                resetted = false;
+            }
+            if(timer.seconds() > 1){
+                numStage = 1;
+            }
+        }
+
+        lift.setLiftsPower(liftPID.calculate(lift.getCurrentPosition(), lift.getLiftTarget()));
+        intake.setPower(intakePower); //make this negative
+
+
+    }
+}

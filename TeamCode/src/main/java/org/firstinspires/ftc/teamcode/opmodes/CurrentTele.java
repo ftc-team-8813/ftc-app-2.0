@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.opmodes.teleop.DriveControl;
 //import org.firstinspires.ftc.teamcode.opmodes.teleop.LiftControl;
 import org.firstinspires.ftc.teamcode.opmodes.teleop.IntakeControl;
 //import org.firstinspires.ftc.teamcode.opmodes.teleop.OdoTestModule;
+import org.firstinspires.ftc.teamcode.opmodes.teleop.RobotControl;
 import org.firstinspires.ftc.teamcode.util.LoopTimer;
 import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Scheduler;
@@ -38,7 +39,9 @@ public class CurrentTele extends LoggingOpMode {
         controlMgr = new ControlMgr(robot, controllerMap);
 
         controlMgr.addModule(new DriveControl("Drive Control"));
-        controlMgr.addModule(new IntakeControl("Intake Control"));
+        controlMgr.addModule(new RobotControl("Robot Control"));
+
+//        controlMgr.addModule(new IntakeControl("Intake Control"));
 
 //        controlMgr.addModule(new OdoTestModule("Odo Control"));
 

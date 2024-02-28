@@ -4,45 +4,53 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class Deposit {
-    private Servo leftLiftDepo;
-    private Servo rightLiftDepo;
-    private Servo depoPivot;
-    private Servo depoLock;
+    private Servo swivel;
+    private Servo c1;
+    private Servo c2;
+    private Servo pivot;
+    private AnalogInput c1I;
+    private AnalogInput c2I;
+    private AnalogInput pivotI;
 
-    private AnalogInput input;
 
-    public Deposit(Servo leftLiftDepo, Servo rightLiftDepo, Servo depoPivot, Servo depoLock, AnalogInput input){
-        this.leftLiftDepo = leftLiftDepo;
-        this.rightLiftDepo = rightLiftDepo;
-        this.depoPivot = depoPivot;
-        this.depoLock = depoLock;
-        this.input = input;
+    public Deposit(Servo swivel, Servo c1, Servo c2, Servo pivot, AnalogInput swivelI, AnalogInput c1I, AnalogInput c2I, AnalogInput pivotI){
+        this.swivel = swivel;
+        this.c1 = c1;
+        this.c2 = c2;
+        this.pivot = pivot;
+
+        this.c1I = c1I;
+        this.c2I = c2I;
+        this.pivotI = pivotI;
     }
 
 
-    public void setLiftDepos(double pos){
-        leftLiftDepo.setPosition(pos);
-        rightLiftDepo.setPosition(pos);
+    public void setC1(double pos){
+        c1.setPosition(pos);
     }
 
-//    public double getLiftDepo(){
-//        return ;
-//    }
-
-    public void setDepoPivot(double pos){
-        depoPivot.setPosition(pos);
+    public void setC2(double pos){
+        c2.setPosition(pos);
+    }
+    public void setPivot(double pos){
+        pivot.setPosition(pos);
     }
 
-    public double getDepoPivot(){
-        return input.getVoltage() / 3.3 * 360;
+    public void setSwivel(double pos){
+        swivel.setPosition(pos);
     }
 
-    public void setDepoLock(double pos){
-        depoLock.setPosition(pos);
+    public double getPivot(){
+        return pivotI.getVoltage() / 3.3 * 360;
+    }
+    public double getC1(){
+        return c2I.getVoltage() / 3.3 * 360;
+    }
+    public double getC2(){
+        return c2I.getVoltage() / 3.3 * 360;
     }
 
-    public double getDepoLock(){
-        return depoLock.getPosition();
-    }
+
+
 
 }

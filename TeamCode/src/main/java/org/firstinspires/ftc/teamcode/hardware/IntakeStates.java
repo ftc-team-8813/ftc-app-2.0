@@ -1,8 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 public enum IntakeStates {
-    DrivingAround,
-//    PickingPixelUp,
-    Transfer,
-    PixelIn
+    In,
+    Out,
+    Stop
 }

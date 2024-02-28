@@ -45,11 +45,14 @@ public class IntakeControl extends ControlModule{
     public void update(Telemetry telemetry) {
 
         if (forward && !stop) {
-            power = 0.65;
+            power = 0.75;
+            intake.setRol(0);
         } else if (!forward && !stop) {
-            power = -0.65;
+            power = -0.75;
+            intake.setRol(1);
         } else if (stop){
             power = 0;
+            intake.setRol(0.5);
         }
         intake.setPower(power);
 
