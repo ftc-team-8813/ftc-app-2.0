@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Deposit;
 import org.firstinspires.ftc.teamcode.hardware.DepositStates;
+import org.firstinspires.ftc.teamcode.hardware.DistanceSensors;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.IntakeStates;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
@@ -30,11 +31,14 @@ public class RobotControl extends ControlModule {
     private final double C2CLOSE = 0;
     private final double CAGEOPEN = 0;
     private final double CAGECLOSE = 0;
-
+    private double swivelPos; //add swivel stuff
+    private double liftTarget;
     private Lift lift;
     private Intake intake;
     private Deposit deposit;
+    private DistanceSensors sensors;
     private PIDFController liftPID = new PIDFController(0.02, 0, 0, 0);
+
     //Driver 1 Buttons
     private ControllerMap.ButtonEntry y_button;
     private ControllerMap.ButtonEntry b_button;
@@ -50,28 +54,22 @@ public class RobotControl extends ControlModule {
     private ControllerMap.ButtonEntry hang;
     private ControllerMap.ButtonEntry droneUp;
     private ControllerMap.ButtonEntry shoot;
-
-    //Driver 2 Buttons
     private LiftStates stateForLift;
     private DepositStates stateForDeposit;
     private IntakeStates stateForIntake;
     private ElapsedTime timer;
-    private ElapsedTime timer1;
-
     private boolean resetted;
-    private boolean resetted1;
-
     private boolean pixelInD1;
     private boolean pixelInD2;
-    private boolean transferred;
-    private boolean readyToDeposit;
     private double intakePower;
     private int numStage;
+
     @Override
     public void initialize(Robot robot, ControllerMap controllerMap, ControlMgr manager) {
         this.lift = robot.lift;
         this.intake = robot.intake;
         this.deposit = robot.deposit;
+        this.sensors = robot.sensors;
 
         y_button = controllerMap.getButtonMap("lift:high", "gamepad1", "y");
         b_button = controllerMap.getButtonMap("lift:mid", "gamepad1", "b");
@@ -94,22 +92,16 @@ public class RobotControl extends ControlModule {
         stateForDeposit = DepositStates.Pre;
 
         timer = new ElapsedTime();
-        timer1 = new ElapsedTime();
-
-
         resetted = false;
-        resetted1 = false;
-
         intakePower = 0;
-
         numStage = 0;
-
+        swivelPos = 0;
+        liftTarget = 0;
     }
 
     @Override
     public void init_loop(Telemetry telemetry) {
         super.init_loop(telemetry);
-
     }
 
     @Override
@@ -118,23 +110,30 @@ public class RobotControl extends ControlModule {
 
         switch (stateForLift) {
             case Down:
-                lift.setLiftTarget(LIFTDOWNPOS);
+                liftTarget = LIFTDOWNPOS;
                 break;
 
             case Up:
-                lift.setLiftTarget(LIFTHIGHPOS);
+                liftTarget = LIFTHIGHPOS;
                 break;
 
             case Mid:
-                lift.setLiftTarget(LIFTMIDPOS);
+                liftTarget = LIFTMIDPOS;
+
                 break;
 
             case Pre:
-                lift.setLiftTarget(LIFTPRE);
+                liftTarget = LIFTPRE;
                 break;
 
             case FineAdjust:
-                //
+                liftTarget += liftAdjust.get() * 90; //some value, do math
+                if (liftTarget > LIFTHIGHPOS){
+                    liftTarget = LIFTHIGHPOS;
+                }
+                if (liftTarget < LIFTPRE){ //maybe change this to low
+                    liftTarget = LIFTPRE;
+                }
                 break;
         }
 
@@ -144,7 +143,7 @@ public class RobotControl extends ControlModule {
                 intake.setRol(0);
                 break;
             case Out:
-                intake.setPower(-0.5); //change for a slower outspeed honestly
+                intake.setPower(-0.45); //change for a slower outspeed honestly
                 intake.setRol(1);
                 break;
             case Stop:
@@ -161,35 +160,43 @@ public class RobotControl extends ControlModule {
                 deposit.setPivot(DEPOMID);
                 break;
             case FineAdjust:
-                //
+                swivelPos += depoAdjust.get() * 0.5; //some value, do math
+                if (swivelPos > 1){
+                    swivelPos = 1;
+                }
+                if (swivelPos < 0){
+                    swivelPos = 0;
+                }
+                deposit.setSwivel(swivelPos);
                 break;
         }
 
-        if(x_button.edge() == -1 || numStage == 1){ //add cage code
+        if(x_button.edge() == -1 || numStage == 1){
             numStage = 1;
-            intake.setCage(CAGECLOSE);
+            intake.setCage(CAGEOPEN);
+            deposit.setSwivel(swivelPos);
+
             stateForIntake = IntakeStates.In;
             stateForDeposit = DepositStates.Pre;
             stateForLift = LiftStates.Pre;
 
-
-            if(deposit.getPivot() > 0 && lift.getCurrentPosition() > 0){ //add threshold
+            if(closeToPosition(DEPOMID, deposit.getPivotCurrent(), 0.1) && closeToPosition(lift.getLiftTarget(), lift.getCurrentPosition(), 10)){ //add threshold
                 deposit.setC1(C1OPEN);
                 deposit.setC2(C2OPEN);
             }
 
-            //if polulu sensor 1 detects
-            pixelInD1 = true;
-            //if polulu sensor 2 detects
-            pixelInD2 = true;
+            if(sensors.getLeft()){ //states might be inversed
+                pixelInD1 = true;
+            }
+            if(sensors.getRight()){ //states might be inversed
+                pixelInD2 = true;
+            }
 
             if(pixelInD2 && pixelInD1){
-//                transferred = true;
                 numStage = 2;
             }
 
             if(overrideFor1.edge() == -1){
-//                transferred = true;
                 numStage = 2;
             }
         }
@@ -198,6 +205,7 @@ public class RobotControl extends ControlModule {
             intake.setCage(CAGECLOSE);
             deposit.setC1(C1CLOSE);
             deposit.setC2(C2CLOSE);
+            deposit.setSwivel(swivelPos);
 
             if(!resetted){
                 timer.reset();
@@ -214,11 +222,11 @@ public class RobotControl extends ControlModule {
                 stateForLift = LiftStates.Down;
             }
 
-            if(lift.getCurrentPosition() > 0){//change threshold
+            if(closeToPosition(lift.getLiftTarget(), lift.getCurrentPosition(), 10)){//change threshold
                 deposit.setPivot(DEPOMID);
             }
 
-            if(deposit.getPivot() > 0) { //some threshold
+            if(closeToPosition(DEPOMID, deposit.getPivotCurrent(), 0.1)) { //change threshold
                 numStage = 3;
                 resetted = false;
             }
@@ -236,19 +244,28 @@ public class RobotControl extends ControlModule {
                 deposit.setC1(C2OPEN); //switch if necessary
             }
 
-            //if both polulu sensors stop detecting
-            if(!resetted){
-                timer.reset();
-                resetted = false;
-            }
-            if(timer.seconds() > 1){
-                numStage = 1;
+            if(!sensors.getRight() && !sensors.getLeft()){
+                if(!resetted){
+                    timer.reset();
+                    resetted = false;
+                }
+                if(timer.seconds() > 1){
+                    numStage = 1;
+                    swivelPos = 0.5; //default value
+                    resetted = false;
+                }
             }
         }
 
-        lift.setLiftsPower(liftPID.calculate(lift.getCurrentPosition(), lift.getLiftTarget()));
+        lift.setLiftsPower(liftPID.calculate(lift.getCurrentPosition(), liftTarget));
         intake.setPower(intakePower); //make this negative
+    }
 
-
+    public boolean closeToPosition(double target, double current, double deadband) {
+        if ((Math.abs(target - current) < deadband)){
+            return true;
+        } else {
+            return false;
+        }
     }
 }

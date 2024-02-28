@@ -3,35 +3,28 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class DistanceSensors {
 
-    public Rev2mDistanceSensor left;
-    public Rev2mDistanceSensor right;
-    public RevColorSensorV3 tape; //might need to change the object class
+    private DigitalChannel polulu1;
+    private DigitalChannel polulu2;
 
-    public DistanceSensors(Rev2mDistanceSensor left, Rev2mDistanceSensor right, RevColorSensorV3 tape){
-        this.right = right;
-        this.left = left;
-        this.tape = tape;
+    public DistanceSensors(DigitalChannel polulu1, DigitalChannel polulu2){
+        this.polulu1 = polulu1;
+        this.polulu2 = polulu2;
     }
 
-    public double getLeftDistance(){
-        return left.getDistance(DistanceUnit.MM);
+    public boolean getLeft(){
+        return polulu1.getState();
     }
 
-    public double getRightDistance(){
-        return right.getDistance(DistanceUnit.MM);
+    public boolean getRight(){
+        return polulu2.getState();
     }
 
-    public double getRed(){
-        return tape.red();
-    }
-
-    public double getBlue(){
-        return tape.blue();
     }
 
 }

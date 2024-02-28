@@ -9,16 +9,13 @@ import org.firstinspires.ftc.teamcode.hardware.Lift;
 
 @TeleOp(name = "Lift Test")
 public class LiftTest extends OpMode {
-
-
     private Lift lift;
-
 
     @Override
     public void init() {
 
-        DcMotorEx lift1 = hardwareMap.get(DcMotorEx.class, "lift1");
-        DcMotorEx lift2 = hardwareMap.get(DcMotorEx.class, "lift2");
+        DcMotorEx lift1 = hardwareMap.get(DcMotorEx.class, "L1");
+        DcMotorEx lift2 = hardwareMap.get(DcMotorEx.class, "L2");
 
         lift = new Lift(lift1, lift2);
 
